@@ -1,7 +1,8 @@
 {
   "permissions": {
     "deny": [
-      "Read(./_old/**)"
+      "Read(./_old/**)",
+      "Read(./_archive/**)"
     ]
   }
 }

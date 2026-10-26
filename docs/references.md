@@ -21,3 +21,16 @@ details before quoting them anywhere.
 | **Dorfromantik**        | Quests to complete landscape features; cozy procedural art                                              | Niche quests; calm presentation                                         | —                                                             |
 | **Rusty's Retirement**  | An idle farm that lives on your screen                                                                  | "The garden is always there" presence                                   | —                                                             |
 | **Pokémon / Animal Crossing museum** | Collecting, with facts                                                                     | Codex, tree of life as a collection                                     | —                                                             |
+
+## The look (from playtest 01)
+
+| Game                   | Take                                                                  |
+| ---------------------- | --------------------------------------------------------------------- |
+| **OSRS**               | Low-res, low-poly models; chunky old-school menus                     |
+| **Idle Obelisk Miner** | Pixel menus that stay readable when they're full of numbers           |
+| **Stardew Valley**     | Warm 2D pixel world; tiles that read at a glance                      |
+
+## Sims and toys (for the minigame question)
+
+Viridi, Equilinox, Terra Nil, Reus, SimLife, SimEarth, Spore (cell stage), The Sapling, The Powder Toy / Sandspiel,
+Dorfromantik, Islanders, Mini Metro. What to take from each is in [minigames.md](minigames.md). From memory; verify.

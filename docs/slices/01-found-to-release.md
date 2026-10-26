@@ -5,11 +5,11 @@ placeholder art?
 
 The playtest should answer three things:
 1. Does the growth split stay live, or do you set it once and forget it? (critic note 2 in
-   [first-30-min.md](../first-30-min.md))
+   the archived `first-30-min.md`)
 2. Does a gene pool pick feel like it matters, i.e. does the type specimen visibly change?
 3. Does the first release feel like it pays?
 
-**Source:** acts 1–4 of [first-30-min.md](../first-30-min.md), the beats from 0:00 to 14:00. Where this page and the
+**Source:** acts 1–4 of the archived `first-30-min.md`, the beats from 0:00 to 14:00. Where this page and the
 beat sheet disagree, this page wins.
 
 ## In scope

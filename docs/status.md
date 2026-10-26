@@ -1,29 +1,29 @@
 # Status
 
-Updated 2026-10-26 by `/handoff`.
+Updated 2026-10-26 (design session: notes and direction, docs reset).
 
 ## Done
-- Slice 01 is built and playable: Vite + Svelte 5 + TS. `src/core/` holds the sim, `src/data/` the numbers and
-  content, `src/ui/` the screens. The dev panel opens with the ` key; `window.dev.dump()` works in the console.
-- `npm run check` passes: typecheck plus 13 core tests in `tests/core.test.ts`, run 26 Oct.
-- The AI's choices beyond the spec are listed in `docs/slices/01-found-to-release.md` ("Built beyond the spec"), and
-  its done-when list is ticked. Still open there: a ×1 timing, and animation constants in `src/ui/`.
-- You played it and wrote `docs/playtests/01-found-to-release.md`. The AI's answers are in `docs/systems.md` S26.
+- **Git:** initialised, with a snapshot commit of slice 01 before the reset. `_old/` is git-ignored.
+- **Docs reset:** old S0–S26, the first-30-minutes beat sheet and the review moved to `_archive/2026-10-26/` (reads
+  blocked). `systems.md` now holds only live proposals P1–P7. The brief is regrouped into Pillars / Current bets
+  (an AI draft for you to check; no decisions were changed).
+- **Brainstorm:** `docs/minigames.md` covers the honest frame for math toys, one grid with four verbs (Grow, Gather,
+  Guard, Bet) across kingdoms, classic sim methods and game mechanics, and a toy backlog.
+- **Research:** VirtualPlantLab can't run in the browser, but its ideas port: `docs/research/virtual-plant-lab.md`.
+- **Slice 02, built:** three toys in `toys/` (Patch, Specimen, Rules). Spec: `docs/slices/02-toys.md`.
+  `npm run check` passes (toys are typechecked). All three load in headless Chrome; the rates are rough.
+- Tech-art now has your look (pixel menus; Stardew 2D or OSRS low-res low-poly) and revised art spikes.
 
 ## Decided
-- Nothing new this session. Your playtest notes have candidates (see Open).
+- Nothing new in the brief. You chose to build toys first and to reset the docs.
 
 ## Next
-1. Read S26 and pick a direction for the colony: keep the split, add trade-off picks, or add more interaction.
-2. Design slice 02 (acts 5–7), including biomass's first use.
-3. An art spike for the look you described: OSRS / Idle Obelisk-style pixel menus with Stardew-style 2D or low-poly
-   models (Q7).
+1. Play the toys: `npm run dev` → `/toys/`. About 10 minutes each, notes in `docs/playtests/02-toys.md`.
+2. Check the brief's Pillars / Current bets split; move items and delete the AI note.
+3. From the toy notes, pick the colony's play (Q11), then plan the rebuild slice or the art spike.
 
 ## Open
-- Candidates from your notes for the brief: fit as a tier list (S–D); traits with downsides; the art direction above.
-  Move them yourself if you agree.
-- You liked the old prototype's growing minigame and its UI. Should the AI look at `_old/` for that? It's off limits
-  until you say so.
-- Two slice 01 assumptions are built but still unconfirmed: Svelte for menus, and no saving.
-- From before: a second fact-check of the [M] lines in moss-facts.md. Move S0, S2, S3, S7, S8, S9, S11, S12, S16 and
-  S17 into the brief? Also Q9 layout and Q10 which relationships go in the core.
+- Q11: what's the colony's hands-on play? (the toys)
+- P2: one grid, four verbs across kingdoms?
+- Still open from before: Q5–Q10 in the brief. Svelte for menus and "no saving yet" are unconfirmed. The second
+  fact-check of the [M] lines in `research/moss-facts.md`.

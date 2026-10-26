@@ -5,7 +5,7 @@ placeholder art?
 
 The playtest should answer three things:
 1. Does the growth split stay live, or do you set it once and forget it? (critic note 2 in
-   [first-30-min.md](../first-30-min.md))
+   the archived `first-30-min.md`)
 2. Does a gene pool pick feel like it matters, i.e. does the type specimen visibly change?
 3. Does the first release feel like it pays?
 

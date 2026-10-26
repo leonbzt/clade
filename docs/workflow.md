@@ -20,7 +20,8 @@
 1. **A short CLAUDE.md.** It's loaded on every turn. Rules and pointers only.
 2. **Small, focused docs** plus an index ([README.md](README.md)). Read the index, open only what you need.
 3. **Reference files by path.** Never paste them into the chat.
-4. **The old prototype is blocked** in `.claude/settings.json`. No accidental reads, no drift.
+4. **The old prototype and retired docs are blocked** (`_old/`, `_archive/` in `.claude/settings.json`). No
+   accidental reads, no drift.
 5. **Small source files** (under ~400 lines), with data separate from logic, so reads stay small.
 6. **Text over screenshots.** A dev panel and a state dump (`window.dev.dump()`) for debugging. Screenshots only for
    visual questions, and scaled down.
@@ -56,3 +57,5 @@ An agent starts cold and has to re-read everything, which can cost *more* in tot
   question, what's in and out of scope, and "done when".
 - One or two sessions each. If it's bigger, split it.
 - **Play it before calling it done.** Write playtest notes to `docs/playtests/`.
+- **Toys** (`toys/`) are throwaway pages for testing feel: plain TS and canvas, no shared code with `src/`. Delete
+  them or fold the winner into the game; never build on them.

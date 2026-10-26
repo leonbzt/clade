@@ -1,7 +1,10 @@
 # Clade — Brief
 
-What's **decided**. Only the user moves things into this file. AI proposals live in [systems.md](systems.md);
-the critical review lives in [review-2026-10-25.md](review-2026-10-25.md).
+What's **decided**. Only the user moves things into this file. AI proposals live in [systems.md](systems.md).
+
+> **26 Oct, AI draft for you to check:** the decisions are split into **Pillars** (stable) and **Current bets**
+> (decided, but drop them freely while we look for the best base). No decision was added or removed; only the
+> grouping is new. Move items between the two as you see fit, then delete this note.
 
 ## The idea (your words, condensed)
 
@@ -10,24 +13,19 @@ the critical review lives in [review-2026-10-25.md](review-2026-10-25.md).
 - Long term: an interesting, rewarding ecosystem, a little like a garden you tend.
 - The feeling of **growing an ecosystem** and **growing your species** is the most important thing.
 
-## Decided
+## Pillars
 
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.
 - **Core first** *(25 Oct)*. Start from something basic, only the core, before fleshing things out.
 
-### Loop and structure
+### Loop and species
 - The core loop is found → adapt → release → establish → the ecosystem grows. Establishing can be strategic or boostable.
-- **A few species in parallel** *(25 Oct)*. Each has its own minigame you keep working on. **Releasing a species is the prestige of its minigame.** Slots unlock slowly *(25 Oct)*.
-- **Founder colony** *(25 Oct)*. You found a species at a home spot, which shapes its minigame. At release it disperses from home; dispersal traits and spending decide how far (systems S4, option C).
 - Released species stay on the map and grow the ecosystem.
+- **The species is the core unit** *(25 Oct)*. Its gene pool shows how the population evolves, and it's **the one shared adaptation core for all kingdoms**.
 - **Speciation loosely follows the real tree of life** *(25 Oct)*. You progress when you reach a point that exists on the real tree, with a lot of freedom.
 - Everything you introduce (plants, animals, ...) uses the same founding and introducing core. Flavours differ.
-- **Runs start at an ancestor node** *(25 Oct)*. From there a lineage goes a few steps before it reaches trees, roughly.
-  "Tree" is a growth form, not a clade, so the end of that line is a real node, such as seed plants.
-- **The species is the core unit** *(25 Oct)*. Its gene pool shows how the population evolves, and it's **the one shared adaptation core for all kingdoms**.
-- **One activity minigame per kingdom**; guilds change its rules *(25 Oct; replaces "adapting mechanics differ")*.
 
 ### Pushback and choice
 - Things push back. Progression is clear, and decisions matter.
@@ -37,33 +35,19 @@ the critical review lives in [review-2026-10-25.md](review-2026-10-25.md).
 - **Pressure is good** *(25 Oct)*. Once a niche is filled, newcomers compete with the species already there.
 
 ### World and garden
-- **A young volcanic island** *(25 Oct)*. Progression follows ecological succession (systems S1).
+- **A young volcanic island** *(25 Oct)*. Progression follows ecological succession.
 - **The garden runs on a simple, stable model**, not a full ecosystem sim *(25 Oct)*. A richer sim later stays possible.
 - **Relationships between species are a core value** *(25 Oct)*: symbiosis, predation, grazing, pollination. They get a place in the core, not only later.
-- **Small interactions in the garden matter** *(25 Oct)*. The form is open (systems S15).
+- **Small interactions in the garden matter** *(25 Oct)*. The form is open.
 
-### Groups
+### Groups and resources
 - **The guild (role) is the main design unit** *(25 Oct)*. Examples: herbivore, carnivore, grass, shrub, tree, flower.
 - **Guilds can have members from different kingdoms.** Kingdoms are flavour, plus systems that reinforce themselves *(25 Oct)*.
-
-### Resources
 - **Biomass** pays for the major steps. **Horizontal resources** from the guilds are needed to complete things and unlock niches *(25 Oct, agreed)*.
 - Abstract multipliers are fine. Feeling right beats everything being readable.
 
-### Pacing and skills
+### Pacing
 - **Hybrid idle.** Minigames start to take long, so you idle. Early systems need attention first and go idle as you move on.
-- **Skills:** one or two main kingdom skills at the start; more unlock through the right builds or niches; some skills depend on class. Scope still open.
-
-### First session *(25 Oct; the draft is [first-30-min.md](first-30-min.md))*
-- **The first release comes at about 12 minutes.**
-- **The home is fixed in the first run**, to teach the mechanics step by step. You choose from run 2 on.
-- **Wild seabirds arrive at the start of session 2**, as the welcome-back surprise.
-- **The first home is a steam vent in the lava field**: damp near the vent, dry further out. Surtsey's first mosses grew at steam vents.
-- **Mosses is reached through the leafy shoot.** Its precursors are rhizoids, surviving drying out, and a stalked spore
-  capsule. The peristome comes later, for True mosses. Facts: [research/moss-facts.md](research/moss-facts.md).
-- **Keep every beat of the draft**, including the cheap cut candidates (naming, slot teaser, incumbent line, standing
-  rules, beach fit). **Session 1 ends on a cliffhanger:** run 2 is one generation short of Vascular plants.
-- **Acts 1–4 of the draft are slice 01** ([slices/01-found-to-release.md](slices/01-found-to-release.md)).
 
 ### Audience and feel
 - **Primary audience: idle/RPG players who like nature**, think Tierzoo *(25 Oct)*. Learn from Stardew Valley and other games that worked.
@@ -78,6 +62,29 @@ the critical review lives in [review-2026-10-25.md](review-2026-10-25.md).
 - The old 3D close-up is not carried over.
 - Design with the full core in mind. Grazers are the first animals.
 
+## Current bets
+
+Decided, and built into slice 01, but open to change while we look for the best base.
+
+### Structure
+- **A few species in parallel** *(25 Oct)*. Each has its own minigame you keep working on. **Releasing a species is the prestige of its minigame.** Slots unlock slowly *(25 Oct)*.
+- **Founder colony** *(25 Oct)*. You found a species at a home spot, which shapes its minigame. At release it disperses from home; dispersal traits and spending decide how far.
+- **Runs start at an ancestor node** *(25 Oct)*. From there a lineage goes a few steps before it reaches trees, roughly.
+  "Tree" is a growth form, not a clade, so the end of that line is a real node, such as seed plants.
+- **One activity minigame per kingdom**; guilds change its rules *(25 Oct)*. What the minigame is, is open again (slice 02 toys).
+- **Skills:** one or two main kingdom skills at the start; more unlock through the right builds or niches; some skills depend on class. Scope still open.
+
+### First session *(25 Oct; the old beat sheet is archived in `_archive/2026-10-26/first-30-min.md`)*
+- **The first release comes at about 12 minutes.**
+- **The home is fixed in the first run**, to teach the mechanics step by step. You choose from run 2 on.
+- **Wild seabirds arrive at the start of session 2**, as the welcome-back surprise.
+- **The first home is a steam vent in the lava field**: damp near the vent, dry further out. Surtsey's first mosses grew at steam vents.
+- **Mosses is reached through the leafy shoot.** Its precursors are rhizoids, surviving drying out, and a stalked spore
+  capsule. The peristome comes later, for True mosses. Facts: [research/moss-facts.md](research/moss-facts.md).
+- **Keep every beat of the draft**, including the cheap cut candidates (naming, slot teaser, incumbent line, standing
+  rules, beach fit). **Session 1 ends on a cliffhanger:** run 2 is one generation short of Vascular plants.
+- **Acts 1–4 of the draft are slice 01** ([slices/01-found-to-release.md](slices/01-found-to-release.md)).
+
 ## Later (wanted, after the core)
 
 You want these in the game at some point, but not before the core works *(25 Oct)*. Details are in
@@ -89,13 +96,14 @@ You want these in the game at some point, but not before the core works *(25 Oct
 
 ## Open questions
 
-| #   | Question                                                                  | Where it's discussed        |
-| --- | ------------------------------------------------------------------------- | --------------------------- |
-| 5   | First run: always a pioneer plant, or your choice?                        | [systems.md](systems.md) S3 |
-| 6   | Does the garden ever reset (eras)?                                        | [systems.md](systems.md) S9 |
-| 7   | 2D or low-poly 3D look? (Decide after the art spikes.)                    | [tech-art.md](tech-art.md)  |
-| 8   | How many parallel slots, and when do they unlock?                         | [systems.md](systems.md) S3 |
-| 9   | itch.io first means desktop browsers. Keep touch-first portrait, or a layout that fits both? | [tech-art.md](tech-art.md)  |
-| 10  | Which relationships go in the core, and which come later?                 | [systems.md](systems.md) S24 |
+| #   | Question                                                                  | Notes                                     |
+| --- | ------------------------------------------------------------------------- | ----------------------------------------- |
+| 5   | First run: always a pioneer plant, or your choice?                        | Old S3 (archived)                         |
+| 6   | Does the garden ever reset (eras)?                                        | Old S9 (archived)                         |
+| 7   | 2D or low-poly 3D look? (Decide after the art spikes.)                    | [tech-art.md](tech-art.md)                |
+| 8   | How many parallel slots, and when do they unlock?                         | Old S3 (archived)                         |
+| 9   | itch.io first means desktop browsers. Keep touch-first portrait, or a layout that fits both? | [tech-art.md](tech-art.md) |
+| 10  | Which relationships go in the core, and which come later?                 | [minigames.md](minigames.md) (layers)     |
+| 11  | What's the colony's hands-on play?                                        | [slices/02-toys.md](slices/02-toys.md)    |
 
 Answered 25 Oct: 1 web · 2 itch.io first, stores later · 3 founder colony · 4 volcanic island · relationships get a place in the core · the first session: ancestor start, first release at ~12 min, fixed first home, seabirds in session 2.
