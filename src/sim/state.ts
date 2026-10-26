@@ -1,6 +1,6 @@
 // The game state: plain data and typed arrays, so it can be cloned, hashed and (later) saved.
 import { NUM } from '../data/numbers';
-import { SPECIES, SPECIES_INDEX } from '../data/species';
+import { SPECIES } from '../data/species';
 import { START_REACHED } from '../data/tree';
 import { rand } from './rng';
 
@@ -64,12 +64,6 @@ function buildIsland(s: State) {
   for (const v of vents) {
     const i = Math.floor(v.y) * w + Math.floor(v.x);
     if (s.terrain[i] !== SEA && s.terrain[i] !== BEACH) s.terrain[i] = VENT;
-  }
-  const lichen = SPECIES_INDEX.lichen, home = vents[0];
-  for (let k = 0, tries = 0; k < I.lichenSeeds && tries < 500; tries++) {
-    const i = Math.floor(rand(s) * w * h), x = i % w, y = (i / w) | 0;
-    if (s.terrain[i] !== LAVA || Math.hypot(x - home.x, y - home.y) < I.lichenClear) continue;
-    s.occ[i] = lichen; s.growth[i] = 0.6; k++;
   }
 }
 

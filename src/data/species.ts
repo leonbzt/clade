@@ -26,13 +26,29 @@ export type SpeciesDef = {
 
 export const SPECIES: SpeciesDef[] = [
   {
-    id: 'lichen', name: 'Crust lichens', wild: true, salt: 0.6, wetFalloff: 0.5, soilMax: 1.6,
-    base: { spread: 0.006, vigor: 0.7, yield: 0, soilBuild: 0.0006, moistMin: 0, moistIdeal: 0.15, soilMin: 0 },
-    traits: [],
-    blurb: 'Wild pioneers. Strong on dry bare rock; they fade once soil gets deep.',
+    id: 'cyano', name: 'Cyanobacteria', salt: 1, wetFalloff: 0.2, soilMax: 1.2,
+    base: { spread: 0.04, vigor: 0.6, yield: 0.4, soilBuild: 0.0005, moistMin: 0.25, moistIdeal: 0.6, soilMin: 0 },
+    blurb: 'A dark living crust on damp rock and salty sand. Quick to spread, easy to push aside, at home on the beach.',
+    traits: [
+      { id: 'sheath', name: 'Sun-screen sheath', up: 'lives 0.1 drier', down: 'spreads 15% slower', cost: 15,
+        mods: [{ stat: 'moistMin', add: -0.1 }, { stat: 'spread', mul: 0.85 }] },
+      { id: 'fixing', name: 'Nitrogen fixing', up: 'builds soil 60% faster', down: 'yields 20% less', cost: 40,
+        mods: [{ stat: 'soilBuild', mul: 1.6 }, { stat: 'yield', mul: 0.8 }] },
+    ],
   },
   {
-    id: 'moss', name: 'Mosses', salt: 0.3, wetFalloff: 0.3,
+    id: 'liverwort', name: 'Liverworts', salt: 0.2, wetFalloff: 0.1,
+    base: { spread: 0.035, vigor: 1.2, yield: 0.8, soilBuild: 0.001, moistMin: 0.45, moistIdeal: 0.85, soilMin: 0 },
+    blurb: 'Flat green ribbons that need it very wet. They own the steam vents.',
+    traits: [
+      { id: 'gemmae', name: 'Gemma cups', up: 'spreads 40% faster', down: 'yields 15% less', cost: 40,
+        mods: [{ stat: 'spread', mul: 1.4 }, { stat: 'yield', mul: 0.85 }] },
+      { id: 'oil', name: 'Oil bodies', up: 'lives 0.08 drier', down: 'holds ground 10% worse', cost: 90,
+        mods: [{ stat: 'moistMin', add: -0.08 }, { stat: 'vigor', mul: 0.9 }] },
+    ],
+  },
+  {
+    id: 'moss', name: 'Mosses', salt: 0.3, wetFalloff: 0.6,
     base: { spread: 0.03, vigor: 1, yield: 1, soilBuild: 0.0012, moistMin: 0.3, moistIdeal: 0.7, soilMin: 0 },
     blurb: 'Damp-lovers. They grow near the vents and build the first real soil.',
     traits: [
@@ -41,6 +57,17 @@ export const SPECIES: SpeciesDef[] = [
       { id: 'cushion', name: 'Cushion growth', up: 'holds ground 30% better', down: 'spreads 20% slower', cost: 80,
         mods: [{ stat: 'vigor', mul: 1.3 }, { stat: 'spread', mul: 0.8 }] },
       { id: 'capsule', name: 'Stalked spore capsule', up: 'spreads 50% faster', down: 'yields 20% less', cost: 150,
+        mods: [{ stat: 'spread', mul: 1.5 }, { stat: 'yield', mul: 0.8 }] },
+    ],
+  },
+  {
+    id: 'lichen', name: 'Lichens', salt: 0.3, wetFalloff: 0.5, soilMax: 1.6,
+    base: { spread: 0.012, vigor: 0.8, yield: 0.5, soilBuild: 0.0008, moistMin: 0, moistIdeal: 0.15, soilMin: 0 },
+    blurb: 'A fungus living with cyanobacteria. The pioneer of dry bare lava; it fades once soil gets deep.',
+    traits: [
+      { id: 'crustose', name: 'Tight crust', up: 'holds ground 30% better', down: 'spreads 20% slower', cost: 120,
+        mods: [{ stat: 'vigor', mul: 1.3 }, { stat: 'spread', mul: 0.8 }] },
+      { id: 'soredia', name: 'Soredia', up: 'spreads 50% faster', down: 'yields 20% less', cost: 250,
         mods: [{ stat: 'spread', mul: 1.5 }, { stat: 'yield', mul: 0.8 }] },
     ],
   },

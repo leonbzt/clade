@@ -12,8 +12,6 @@ export const NUM = {
     beachMoisture: 0.45,
     crackShare: 0.12,
     crackMoisture: 0.2,
-    lichenSeeds: 9,
-    lichenClear: 5, // no lichen this close to the first vent
   },
   soil: { water: 0.12, capLava: 3, capBeach: 1, capBase: 0.8, capPerMoisture: 3 }, // dry ground keeps thin soil
   growth: 0.01, // per tick at fit 1

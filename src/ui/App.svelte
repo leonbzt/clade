@@ -8,7 +8,8 @@
   import { ui } from './game.svelte';
 
   function key(e: KeyboardEvent) {
-    if (e.key === '`') ui.dev = !ui.dev;
+    // The backtick is a dead key on German keyboards, so match the physical key (left of 1) and F2 too.
+    if (e.code === 'Backquote' || e.key === '`' || e.key === 'F2') { e.preventDefault(); ui.dev = !ui.dev; }
     if (e.key === 'Escape') ui.placing = null;
   }
 </script>

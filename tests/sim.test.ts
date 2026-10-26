@@ -20,10 +20,10 @@ function ventTile(s: State): number {
 
 function play(seed: number): State {
   const s = createState(seed);
-  evolve(s, 'mosses');
-  found(s, 'moss', ventTile(s));
+  evolve(s, 'cyanobacteria');
+  found(s, 'cyano', ventTile(s));
   advance(s, 1500);
-  buyTrait(s, 'moss', 'rhizoids');
+  buyTrait(s, 'cyano', 'sheath');
   advance(s, 1500);
   return s;
 }
@@ -34,33 +34,37 @@ describe('sim', () => {
     expect(hash(play(7))).not.toBe(hash(play(8)));
   });
 
-  it('needs Mosses reached before founding, and the first founding is free', () => {
+  it('starts bare', () => {
     const s = createState(1);
-    expect(found(s, 'moss', ventTile(s)).ok).toBe(false);
-    evolve(s, 'mosses');
-    expect(foundingCost(s, 'moss')).toBe(0);
-    expect(found(s, 'moss', ventTile(s)).ok).toBe(true);
-    expect(coverCount(s, 'moss')).toBeGreaterThan(1);
-    expect(foundingCost(s, 'moss')).toBeGreaterThan(0);
+    expect(s.occ.every((o) => o < 0)).toBe(true);
+  });
+
+  it('needs the node before founding, and the first founding is free', () => {
+    const s = createState(1);
+    expect(found(s, 'cyano', ventTile(s)).ok).toBe(false);
+    evolve(s, 'cyanobacteria');
+    expect(foundingCost(s, 'cyano')).toBe(0);
+    expect(found(s, 'cyano', ventTile(s)).ok).toBe(true);
+    expect(coverCount(s, 'cyano')).toBeGreaterThan(1);
+    expect(foundingCost(s, 'cyano')).toBeGreaterThan(0);
   });
 
   it('refuses tiles a species cannot live on', () => {
     const s = createState(1);
-    evolve(s, 'mosses');
-    const sea = 0; // the corner is always sea
-    expect(found(s, 'moss', sea).ok).toBe(false);
+    evolve(s, 'cyanobacteria');
+    expect(found(s, 'cyano', 0).ok).toBe(false); // the corner is always sea
   });
 
-  it('mosses spread, build soil and earn biomass', () => {
+  it('a crust spreads, builds soil and earns biomass', () => {
     const s = play(3);
-    expect(coverCount(s, 'moss')).toBeGreaterThan(20);
-    expect(Math.max(...s.soil)).toBeGreaterThan(0.5);
+    expect(coverCount(s, 'cyano')).toBeGreaterThan(20);
+    expect(Math.max(...s.soil)).toBeGreaterThan(0.3);
     expect(s.biomass).toBeGreaterThan(0);
   });
 
-  it('lichen fades from deep soil', () => {
+  it('lichens fade from deep soil', () => {
     const s = createState(2), lichen = SPECIES_INDEX.lichen;
-    const i = s.occ.findIndex((o) => o === lichen);
+    const i = s.terrain.findIndex((t) => t === VENT);
     s.soil[i] = 2;
     expect(fit(s, stats(s, lichen), lichen, i)).toBe(0);
   });

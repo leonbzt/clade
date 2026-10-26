@@ -1,122 +1,155 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { NUM } from '../data/numbers';
-  import { TIER_COLORS } from '../data/palette';
-  import { SPECIES, SPECIES_INDEX } from '../data/species';
-  import { foundingCost, unlockedSpecies } from '../sim/commands';
-  import { TERRAIN_NAMES, SEA } from '../sim/state';
-  import { allStats, fit, moistureAt, tierOf } from '../sim/stats';
+  import { DETAIL_FROM, ZOOM_STEPS } from '../data/view';
+  import { SPECIES } from '../data/species';
   import { GardenRenderer } from '../view/render';
+  import MapReadout from './MapReadout.svelte';
   import { doFound, game, ui } from './game.svelte';
+
+  const W = NUM.map.w * NUM.map.tile, H = NUM.map.h * NUM.map.tile;
 
   let canvas: HTMLCanvasElement;
   let wrap: HTMLElement;
+  let viewport: HTMLElement;
   let renderer: GardenRenderer | null = null;
+
+  let fitScale = $state(1); // screen px per art px when the whole island fits
+  let zi = $state(Number(new URLSearchParams(location.search).get('zoom')) || 0); // index into ZOOM_STEPS (dev: ?zoom=3)
+  let pan = $state({ x: 0, y: 0 });
+  const scale = $derived(fitScale * ZOOM_STEPS[zi]);
 
   $effect(() => {
     ui.gen;
     renderer = new GardenRenderer(game, canvas);
-    fitToSpace();
   });
 
-  $effect(() => {
+  // Set up once. (An $effect here would re-run whenever zoom or pan change, since it reads them.)
+  onMount(() => {
     let raf = 0;
     const loop = (t: number) => {
-      renderer?.draw({ placing: ui.placing, hover: ui.hover, overlay: ui.overlay, time: t });
+      renderer?.draw({ placing: ui.placing, hover: ui.hover, overlay: ui.overlay, time: t, detail: scale >= DETAIL_FROM });
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     const ro = new ResizeObserver(fitToSpace);
     ro.observe(wrap);
-    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+    fitToSpace();
+    viewport.addEventListener('wheel', wheel, { passive: false });
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); viewport.removeEventListener('wheel', wheel); };
   });
 
-  /** Scale the pixel canvas up: whole-number steps when there's room, so pixels stay crisp. */
+  /** Whole-number steps when there's room, so pixels stay crisp. */
   function fitToSpace() {
-    if (!canvas || !wrap) return;
-    const byW = wrap.clientWidth / canvas.width, byH = (window.innerHeight - 150) / canvas.height;
-    const s = Math.max(1, Math.min(byW, byH));
-    const scale = s >= 2 ? Math.floor(s) : s;
-    canvas.style.width = `${Math.floor(canvas.width * scale)}px`;
+    const s = Math.max(1, Math.min(wrap.clientWidth / W, (window.innerHeight - 150) / H));
+    fitScale = s >= 2 ? Math.floor(s) : s;
+    clampPan();
   }
 
-  function tileAt(e: PointerEvent | MouseEvent): number {
+  function clampPan() {
+    const vw = W * fitScale, vh = H * fitScale, cw = W * scale, ch = H * scale;
+    pan = { x: Math.min(0, Math.max(vw - cw, pan.x)), y: Math.min(0, Math.max(vh - ch, pan.y)) };
+  }
+
+  /** Zoom to a step, keeping the point under (cx, cy) in place. */
+  function zoomTo(next: number, cx = (W * fitScale) / 2, cy = (H * fitScale) / 2) {
+    next = Math.max(0, Math.min(ZOOM_STEPS.length - 1, next));
+    const old = scale, nz = fitScale * ZOOM_STEPS[next];
+    const wx = (cx - pan.x) / old, wy = (cy - pan.y) / old;
+    zi = next;
+    pan = { x: cx - wx * nz, y: cy - wy * nz };
+    clampPan();
+  }
+
+  function wheel(e: WheelEvent) {
+    e.preventDefault();
+    const r = viewport.getBoundingClientRect();
+    zoomTo(zi + (e.deltaY < 0 ? 1 : -1), e.clientX - r.left, e.clientY - r.top);
+  }
+
+  function tileAt(e: PointerEvent): number {
     const r = canvas.getBoundingClientRect(), T = NUM.map.tile;
-    const x = Math.floor(((e.clientX - r.left) / r.width) * canvas.width / T);
-    const y = Math.floor(((e.clientY - r.top) / r.height) * canvas.height / T);
+    const x = Math.floor((((e.clientX - r.left) / r.width) * W) / T);
+    const y = Math.floor((((e.clientY - r.top) / r.height) * H) / T);
     return x >= 0 && y >= 0 && x < game.w && y < game.h ? y * game.w + x : -1;
   }
 
-  function click(e: MouseEvent) {
-    const i = tileAt(e);
+  // Drag to pan; a press that barely moves is a click.
+  let press = $state<{ x: number; y: number; px: number; py: number; moved: boolean } | null>(null);
+
+  function down(e: PointerEvent) {
+    if (e.button === 2) return;
+    press = { x: e.clientX, y: e.clientY, px: pan.x, py: pan.y, moved: false };
+    viewport.setPointerCapture(e.pointerId);
+  }
+
+  function move(e: PointerEvent) {
+    ui.hover = tileAt(e);
+    if (!press) return;
+    const dx = e.clientX - press.x, dy = e.clientY - press.y;
+    if (!press.moved && Math.hypot(dx, dy) > 5) press.moved = true;
+    if (press.moved) { pan = { x: press.px + dx, y: press.py + dy }; clampPan(); }
+  }
+
+  function up(e: PointerEvent) {
+    if (press && !press.moved) click(tileAt(e));
+    press = null;
+  }
+
+  function click(i: number) {
     if (i < 0) return;
     if (ui.placing) { doFound(i); return; }
     const sp = game.occ[i];
     if (sp >= 0) { ui.focus = SPECIES[sp].id; ui.tab = 'species'; }
   }
-
-  const readout = $derived.by(() => {
-    ui.v;
-    const i = ui.hover;
-    if (i < 0 || game.terrain[i] === SEA) return null;
-    const st = allStats(game), occ = game.occ[i];
-    const fits = unlockedSpecies(game).map((id) => {
-      const sp = SPECIES_INDEX[id];
-      return { name: SPECIES[sp].name, tier: tierOf(fit(game, st[sp], sp, i)) };
-    });
-    return {
-      terrain: TERRAIN_NAMES[game.terrain[i]],
-      moisture: moistureAt(game, i).toFixed(2),
-      soil: game.soil[i].toFixed(1),
-      occupant: occ >= 0 ? `${SPECIES[occ].name} (${Math.round(game.growth[i] * 100)}%)` : 'bare',
-      fits,
-    };
-  });
-
-  const placingInfo = $derived.by(() => {
-    ui.v;
-    if (!ui.placing) return null;
-    const cost = foundingCost(game, ui.placing);
-    return { name: SPECIES[SPECIES_INDEX[ui.placing]].name, cost };
-  });
 </script>
 
 <section class="map" bind:this={wrap}>
-  <canvas
-    bind:this={canvas}
+  <div
+    class="viewport"
     class:placing={!!ui.placing}
-    onpointermove={(e) => (ui.hover = tileAt(e))}
+    class:grabbing={press?.moved}
+    bind:this={viewport}
+    style:width="{W * fitScale}px"
+    style:height="{H * fitScale}px"
+    onpointerdown={down}
+    onpointermove={move}
+    onpointerup={up}
     onpointerleave={() => (ui.hover = -1)}
-    onclick={click}
     oncontextmenu={(e) => { e.preventDefault(); ui.placing = null; }}
-  ></canvas>
+    role="application"
+  >
+    <canvas
+      bind:this={canvas}
+      style:width="{W * scale}px"
+      style:height="{H * scale}px"
+      style:transform="translate({pan.x}px, {pan.y}px)"
+    ></canvas>
+  </div>
 
-  <div class="panel readout">
-    {#if placingInfo}
-      <span class="gold">Founding {placingInfo.name}</span>
-      <span>{placingInfo.cost ? `${placingInfo.cost} biomass` : 'free'}</span>
-      <span class="legend">
-        {#each Object.entries(TIER_COLORS) as [t, c] (t)}<span class="tier" style:background={c}>{t}</span>{/each}
-        <span class="dim">fit · faded = held by a stronger species · dark = can't live · Esc cancels</span>
-      </span>
-    {:else if readout}
-      <span>{readout.terrain}</span>
-      <span class="dim">moisture {readout.moisture} · soil {readout.soil}</span>
-      <span>{readout.occupant}</span>
-      {#each readout.fits as f (f.name)}
-        <span class="dim">{f.name} {#if f.tier}<span class="tier" style:background={TIER_COLORS[f.tier]}>{f.tier}</span>{:else}–{/if}</span>
+  <div class="panel tools">
+    <MapReadout />
+    <span class="group">
+      <button onclick={() => zoomTo(zi - 1)} disabled={zi === 0} title="Zoom out (mouse wheel)">−</button>
+      <button onclick={() => zoomTo(zi + 1)} disabled={zi === ZOOM_STEPS.length - 1} title="Zoom in (mouse wheel)">+</button>
+      <button onclick={() => zoomTo(0)} disabled={zi === 0}>Fit</button>
+    </span>
+    <span class="group">
+      {#each [['none', 'Garden'], ['zones', 'Zones'], ['soil', 'Soil']] as [id, label] (id)}
+        <button class:on={ui.overlay === id} onclick={() => (ui.overlay = id as typeof ui.overlay)}>{label}</button>
       {/each}
-    {:else}
-      <span class="dim">Hover the island to inspect a tile. Click a plant to see its species.</span>
-    {/if}
-    <button class="soil" class:on={ui.overlay === 'soil'} onclick={() => (ui.overlay = ui.overlay === 'soil' ? 'none' : 'soil')}>Soil view</button>
+    </span>
   </div>
 </section>
 
 <style>
   .map { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; align-items: center; }
-  canvas { image-rendering: pixelated; display: block; border: 3px solid var(--ink); box-shadow: 0 0 0 2px var(--edge); }
-  canvas.placing { cursor: crosshair; }
-  .readout { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; width: 100%; min-height: 44px; padding: 6px 10px; font-size: 16px; }
-  .legend { display: flex; gap: 4px; align-items: center; }
-  .soil { margin-left: auto; }
+  .viewport { position: relative; overflow: hidden; border: 3px solid var(--ink); box-shadow: 0 0 0 2px var(--edge);
+    background: #142a44; cursor: grab; touch-action: none; box-sizing: content-box; }
+  .viewport.placing { cursor: crosshair; }
+  .viewport.grabbing { cursor: grabbing; }
+  canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; display: block; transform-origin: 0 0; }
+  .tools { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; width: 100%; min-height: 44px; padding: 6px 10px; }
+  .group { display: flex; gap: 2px; }
+  .group:first-of-type { margin-left: auto; }
 </style>

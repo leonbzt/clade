@@ -47,10 +47,12 @@ export function start() {
     state: () => game,
     skip, addBiomass, reset, autoplay,
   };
-  // Dev URL options for screenshots and previews: ?bot=600 (the bot plays 600 s), ?tab=species, ?place=moss.
+  // Dev URL options for screenshots and previews: ?bot=600 (the bot plays 600 s), ?tab=species, ?place=moss,
+  // ?view=zones, ?zoom=3 (read in MapView).
   const q = new URLSearchParams(location.search), bot = Number(q.get('bot'));
   if (bot > 0) autoplay(bot);
   if (q.get('tab') === 'species') ui.tab = 'species';
+  if (q.get('view') === 'zones' || q.get('view') === 'soil') ui.overlay = q.get('view') as Overlay;
   if (q.get('place')) startPlacing(q.get('place')!);
 }
 

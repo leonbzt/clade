@@ -1,6 +1,7 @@
 // Draws the whole garden each frame: ground, plants (back to front), steam, sparkles and overlays.
 import { NUM } from '../data/numbers';
-import { PAL, TIER_COLORS } from '../data/palette';
+import { PAL, TIER_COLORS, ZONE } from '../data/palette';
+import { CALM_MIN_GROWTH, SPRITE_DENSITY } from '../data/view';
 import { SPECIES, SPECIES_INDEX } from '../data/species';
 import { SEA, VENT, type State } from '../sim/state';
 import { allStats, fit, tierOf } from '../sim/stats';
@@ -10,8 +11,8 @@ import { SPRITE, sprite } from './plants';
 import { TerrainLayer } from './terrain';
 
 const T = NUM.map.tile;
-export type Overlay = 'none' | 'soil';
-export type ViewOpts = { placing: string | null; hover: number; overlay: Overlay; time: number };
+export type Overlay = 'none' | 'soil' | 'zones';
+export type ViewOpts = { placing: string | null; hover: number; overlay: Overlay; time: number; detail: boolean };
 
 export class GardenRenderer {
   readonly canvas: HTMLCanvasElement;
@@ -33,19 +34,26 @@ export class GardenRenderer {
     if (s.tick - this.lastTerrainTick >= 5 || s.tick < this.lastTerrainTick) { this.terrain.update(); this.lastTerrainTick = s.tick; }
     ctx.drawImage(this.terrain.canvas, 0, 0);
     this.sparkles(o.time);
-    this.plants();
+    if (o.overlay === 'zones') { this.zonesOverlay(); return this.hoverOrPlacing(o); }
+    this.plants(o.detail);
     this.steam(o.time);
     if (o.overlay === 'soil') this.soilOverlay();
+    this.hoverOrPlacing(o);
+  }
+
+  private hoverOrPlacing(o: ViewOpts) {
     if (o.placing) this.fitOverlay(o.placing, o.hover);
     else if (o.hover >= 0) this.outline(o.hover, PAL.text);
   }
 
-  private plants() {
-    const s = this.s;
+  private plants(detail: boolean) {
+    const s = this.s, density = SPRITE_DENSITY[detail ? 'detail' : 'calm'];
     for (let i = 0; i < s.occ.length; i++) {
       const sp = s.occ[i];
       if (sp < 0) continue;
       const def = SPECIES[sp], g = s.growth[i];
+      // Only some tiles get a sprite; the rest show the species' ground cover.
+      if (hash2(i, 8) >= density[def.id] || (!detail && g < CALM_MIN_GROWTH)) continue;
       const stage = g < 0.35 ? 0 : g < 0.7 ? 1 : 2;
       const img = sprite(def.id, Math.floor(hash2(i, 5) * SPRITE.variants), { stage, traits: s.traits[def.id] });
       // A small fixed jitter per tile hides the grid.
@@ -100,6 +108,20 @@ export class GardenRenderer {
     for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
       const x = hx + dx, y = hy + dy;
       if (Math.abs(dx) + Math.abs(dy) <= r && x >= 0 && y >= 0 && x < s.w && y < s.h) this.outline(y * s.w + x, dx || dy ? PAL.textDim : PAL.gold);
+    }
+  }
+
+  /** A flat map of who holds what: one clear colour per species. */
+  private zonesOverlay() {
+    const s = this.s, ctx = this.ctx;
+    ctx.globalAlpha = 0.55;
+    ctx.fillStyle = PAL.ink;
+    ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.globalAlpha = 1;
+    for (let i = 0; i < s.occ.length; i++) {
+      if (s.occ[i] < 0) continue;
+      ctx.fillStyle = ZONE[SPECIES[s.occ[i]].id];
+      ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
     }
   }
 

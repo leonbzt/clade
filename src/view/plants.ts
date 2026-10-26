@@ -14,19 +14,49 @@ const MAP_BOX: Box = { x: 4, y: 12, w: 16, h: 16 };
 const has = (look: Look, id: string) => look.traits.includes(id);
 const spot = (r: () => number, b: Box, m = 2) => ({ x: b.x + m + r() * (b.w - 2 * m), y: b.y + m + r() * (b.h - 2 * m) });
 
-const lichen: Paint = (p, r, look, b) => {
-  const n = look.big ? 10 : [2, 3, 5][look.stage];
+const cyano: Paint = (p, r, look, b) => {
+  // A dark crust: a few low bumps with teal glints. Most of its look is the ground cover.
+  const n = look.big ? 12 : [1, 2, 3][look.stage];
   for (let k = 0; k < n; k++) {
-    const { x, y } = spot(r, b), rad = look.big ? 2 + Math.floor(r() * 2) : look.stage === 2 && r() < 0.5 ? 2 : 1;
+    const { x, y } = spot(r, b), rad = look.big ? 2 : 1;
+    p.disc(x, y, rad, has(look, 'sheath') ? PAL.rhizoid : PAL.cyano1);
+    p.set(x, y - rad, PAL.cyano3);
+    if (has(look, 'fixing') && r() < 0.5) p.set(x + rad, y, PAL.cone);
+  }
+};
+
+const liverwort: Paint = (p, r, look, b) => {
+  // Flat green ribbons that fork at the tips, lying on the ground.
+  const n = look.big ? 5 : [1, 2, 3][look.stage];
+  for (let k = 0; k < n; k++) {
+    const { x, y } = spot(r, b, 4), a = r() * Math.PI * 2, len = look.big ? 12 : 4 + look.stage * 2;
+    const ex = x + Math.cos(a) * len, ey = y + Math.sin(a) * len * 0.5;
+    for (const off of [-1, 0, 1]) p.line(x, y + off * 0.6, ex, ey + off * 0.6, off ? PAL.liver2 : PAL.liver1);
+    for (const fork of [-0.5, 0.5]) {
+      const fx = ex + Math.cos(a + fork) * 2.5, fy = ey + Math.sin(a + fork) * 1.5;
+      p.line(ex, ey, fx, fy, PAL.liver2);
+      p.set(fx, fy, PAL.liver3);
+    }
+    if (has(look, 'gemmae')) { const mx = (x + ex) / 2, my = (y + ey) / 2; p.set(mx, my - 1, PAL.liver0); p.set(mx, my, PAL.liver3); }
+    if (has(look, 'oil')) p.set(x + Math.cos(a) * len * 0.3, y + Math.sin(a) * len * 0.15 - 1, PAL.liver3);
+  }
+};
+
+const lichen: Paint = (p, r, look, b) => {
+  const tight = has(look, 'crustose');
+  const n = look.big ? 9 : [1, 2, 3][look.stage];
+  for (let k = 0; k < n; k++) {
+    const { x, y } = spot(r, b), rad = (look.big ? 2 : 1) + (tight ? 1 : 0);
     const v = r(), c = v < 0.6 ? PAL.lichenGrey : v < 0.85 ? PAL.lichenYellow : PAL.lichenOrange;
     p.disc(x, y, rad, c);
     p.set(x, y, PAL.lichenPale);
+    if (has(look, 'soredia')) { p.set(x + rad + 1, y - 1, PAL.lichenPale); p.set(x - rad, y + rad, PAL.lichenPale); }
   }
 };
 
 const moss: Paint = (p, r, look, b) => {
   const cushion = has(look, 'cushion');
-  const n = (look.big ? 9 : [3, 5, 8][look.stage]) + (cushion ? 2 : 0);
+  const n = (look.big ? 9 : [2, 3, 5][look.stage]) + (cushion ? 1 : 0);
   const tufts = Array.from({ length: n }, () => spot(r, b, 1)).sort((a, c) => a.y - c.y);
   for (const { x, y } of tufts) {
     // A low dome: wide and short, like a real moss cushion.
@@ -51,7 +81,7 @@ const moss: Paint = (p, r, look, b) => {
 };
 
 const clubmoss: Paint = (p, r, look, b) => {
-  const n = look.big ? 6 : [2, 3, 5][look.stage];
+  const n = look.big ? 6 : [1, 2, 4][look.stage];
   const stems = Array.from({ length: n }, () => spot(r, b, 3)).sort((a, c) => a.y - c.y);
   const leaf = has(look, 'tough') ? PAL.club1 : PAL.club2;
   if (has(look, 'creeping') && stems.length > 1) {
@@ -99,7 +129,7 @@ const fern: Paint = (p, r, look, b) => {
   }
 };
 
-const PAINTERS: Record<string, Paint> = { lichen, moss, clubmoss, fern };
+const PAINTERS: Record<string, Paint> = { cyano, liverwort, moss, lichen, clubmoss, fern };
 const cache = new Map<string, HTMLCanvasElement>();
 
 /** A map sprite for one tile. Draw it at the tile's corner plus SPRITE.ox / SPRITE.oy. */

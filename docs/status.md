@@ -1,11 +1,15 @@
 # Status
 
-Updated 2026-10-26 (design + build session).
+Updated 2026-10-26 (design + build session, slice 04).
 
 **Core in one line:** place species on the island; they spread, compete and build soil; evolve the next one and
 place it while the old ones stay. Placing is the decision; growth is the reward.
 
 ## Done
+- **Slice 04 built** (`docs/slices/04-calm-map-early-line.md`): ground cover per species (zones read as areas),
+  far fewer sprites, zoom and pan (wheel, drag, + / − / Fit), Garden / Zones / Soil views, a working dev panel
+  (key left of 1, F2, or the Dev button). The island starts bare. Early line: Cyanobacteria → Land plants →
+  Liverworts → Mosses → Fungi → Lichens → Vascular plants → Club mosses / Ferns. Six species coexist in niches.
 - **Slice 03, the garden core, is built:** spec `docs/slices/03-garden-core.md`. It replaces the slice 01 code
   (git tag `slice-01`).
   - `src/sim/`: a deterministic cellular automaton with seeded RNG, stats with sources, and commands.
@@ -22,10 +26,9 @@ place it while the old ones stay. Placing is the decision; growth is the reward.
   the review. 2D for now. Art matters. Traits stay visible. Minigame and first-session bets are on hold.
 
 ## Next
-1. Play slice 03 (`npm run dev`; ` opens the dev panel) and write `docs/playtests/03-garden-core.md`: does placing
-   feel like a decision, does it look good, can you read it?
-2. Then the review's next milestones: M2 (relationships as adjacency rules, a disturbance like lava flows) or M3
-   (save and offline progress).
+1. Play slice 04 (`npm run dev`) and write `docs/playtests/04-calm-map.md`: is the map calm and readable, and do the
+   early unlocks pull you in?
+2. Slice 05: early biomes (your call, 26 Oct). Saving and offline progress wait; the dev panel is enough for now.
 
 ## Open
 - Is the "On hold" mark on the minigame and first-session bets right? (I set it from your message.)
