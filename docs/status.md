@@ -13,14 +13,19 @@ Updated 2026-10-26 (design session: notes and direction, docs reset).
 - **Slice 02, built:** three toys in `toys/` (Patch, Specimen, Rules). Spec: `docs/slices/02-toys.md`.
   `npm run check` passes (toys are typechecked). All three load in headless Chrome; the rates are rough.
 - Tech-art now has your look (pixel menus; Stardew 2D or OSRS low-res low-poly) and revised art spikes.
+- **Round 2:** your toy notes are in `docs/playtests/02-toys.md`. Toy 4 "Colony" is built in `toys/colony*.ts`:
+  limited drops, hidden ground with hints, lichen to surround, a gene draft with combos, slide to collect, a skill.
+  A headless greedy-bot run reaches all three goals in under 3 minutes, so the goals are too easy (rough on purpose).
+- **Fresh-eyes review:** `docs/review-fresh-eyes.md`. Core: placement is the decision and growth is the reward. Cut
+  slots and zoom levels until after the first release; build in milestones M0–M5; go 2D.
 
 ## Decided
 - Nothing new in the brief. You chose to build toys first and to reset the docs.
 
 ## Next
-1. Play the toys: `npm run dev` → `/toys/`. About 10 minutes each, notes in `docs/playtests/02-toys.md`.
-2. Check the brief's Pillars / Current bets split; move items and delete the AI note.
-3. From the toy notes, pick the colony's play (Q11), then plan the rebuild slice or the art spike.
+1. Play toy 4 (`npm run dev` → `/toys/colony.html`) and add notes to `docs/playtests/02-toys.md`.
+2. Read the review. Decide which Current bets to drop, and Q7 (2D?).
+3. If toy 4's choices feel strong, write the next slice: the review's M0/M1 (place, spread, evolve, place again).
 
 ## Open
 - Q11: what's the colony's hands-on play? (the toys)

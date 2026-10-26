@@ -8,6 +8,7 @@ Read this index first, then open only what the task needs.
 | [brief.md](brief.md)                 | What's decided: pillars, current bets, open questions              | Every design session           |
 | [systems.md](systems.md)             | Live AI proposals (P1–P7)                                          | Design sessions                |
 | [minigames.md](minigames.md)         | Brainstorm: hands-on play, one grid with four verbs, classic approaches | Minigame and kingdom design |
+| [review-fresh-eyes.md](review-fresh-eyes.md) | An outside designer's view: the core, cuts, build order, tech (26 Oct) | Before big decisions |
 | [references.md](references.md)       | What to take from other games, and the look                        | Design sessions                |
 | [tech-art.md](tech-art.md)           | Stack, art direction, art spikes                                   | Setup and art work             |
 | [workflow.md](workflow.md)           | Sessions, token saving, delegation, slices                         | Once; when the process changes |
