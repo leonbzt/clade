@@ -1,34 +1,33 @@
 # Status
 
-Updated 2026-10-26 (design session: notes and direction, docs reset).
+Updated 2026-10-26 (design + build session).
+
+**Core in one line:** place species on the island; they spread, compete and build soil; evolve the next one and
+place it while the old ones stay. Placing is the decision; growth is the reward.
 
 ## Done
-- **Git:** initialised, with a snapshot commit of slice 01 before the reset. `_old/` is git-ignored.
-- **Docs reset:** old S0–S26, the first-30-minutes beat sheet and the review moved to `_archive/2026-10-26/` (reads
-  blocked). `systems.md` now holds only live proposals P1–P7. The brief is regrouped into Pillars / Current bets
-  (an AI draft for you to check; no decisions were changed).
-- **Brainstorm:** `docs/minigames.md` covers the honest frame for math toys, one grid with four verbs (Grow, Gather,
-  Guard, Bet) across kingdoms, classic sim methods and game mechanics, and a toy backlog.
-- **Research:** VirtualPlantLab can't run in the browser, but its ideas port: `docs/research/virtual-plant-lab.md`.
-- **Slice 02, built:** three toys in `toys/` (Patch, Specimen, Rules). Spec: `docs/slices/02-toys.md`.
-  `npm run check` passes (toys are typechecked). All three load in headless Chrome; the rates are rough.
-- Tech-art now has your look (pixel menus; Stardew 2D or OSRS low-res low-poly) and revised art spikes.
-- **Round 2:** your toy notes are in `docs/playtests/02-toys.md`. Toy 4 "Colony" is built in `toys/colony*.ts`:
-  limited drops, hidden ground with hints, lichen to surround, a gene draft with combos, slide to collect, a skill.
-  A headless greedy-bot run reaches all three goals in under 3 minutes, so the goals are too easy (rough on purpose).
-- **Fresh-eyes review:** `docs/review-fresh-eyes.md`. Core: placement is the decision and growth is the reward. Cut
-  slots and zoom levels until after the first release; build in milestones M0–M5; go 2D.
+- **Slice 03, the garden core, is built:** spec `docs/slices/03-garden-core.md`. It replaces the slice 01 code
+  (git tag `slice-01`).
+  - `src/sim/`: a deterministic cellular automaton with seeded RNG, stats with sources, and commands.
+  - `src/view/`: pixel art painted by code (organic coast, soil that browns the lava, sprites that show traits).
+  - `src/ui/`: Svelte panels (Tree of life, Species), a pixel font and OSRS-like panels.
+  - Wild lichen → Mosses → Vascular plants → Club mosses / Ferns. A fit heatmap S–D while placing.
+- `npm run check` passes (5 sim tests, including determinism). `npm run curve`: the greedy bot reaches Ferns at
+  ~10 min, and 4 species coexist after 40 min. Screenshots checked in headless Chrome. **Not hand-played yet.**
+- Earlier today: the docs reset, toys 1–4 (`toys/`, git tag `toys-02`), the fresh-eyes review
+  (`docs/review-fresh-eyes.md`), and your decisions in the brief (Direction, 26 Oct).
 
 ## Decided
-- Nothing new in the brief. You chose to build toys first and to reset the docs.
+- 26 Oct, in the brief: the garden with several species is the core loop first, and minigames come later. Build on
+  the review. 2D for now. Art matters. Traits stay visible. Minigame and first-session bets are on hold.
 
 ## Next
-1. Play toy 4 (`npm run dev` → `/toys/colony.html`) and add notes to `docs/playtests/02-toys.md`.
-2. Read the review. Decide which Current bets to drop, and Q7 (2D?).
-3. If toy 4's choices feel strong, write the next slice: the review's M0/M1 (place, spread, evolve, place again).
+1. Play slice 03 (`npm run dev`; ` opens the dev panel) and write `docs/playtests/03-garden-core.md`: does placing
+   feel like a decision, does it look good, can you read it?
+2. Then the review's next milestones: M2 (relationships as adjacency rules, a disturbance like lava flows) or M3
+   (save and offline progress).
 
 ## Open
-- Q11: what's the colony's hands-on play? (the toys)
-- P2: one grid, four verbs across kingdoms?
-- Still open from before: Q5–Q10 in the brief. Svelte for menus and "no saving yet" are unconfirmed. The second
-  fact-check of the [M] lines in `research/moss-facts.md`.
+- Is the "On hold" mark on the minigame and first-session bets right? (I set it from your message.)
+- `toys/` can be deleted once you're done comparing (the tag `toys-02` keeps them).
+- Q5, Q6, Q8–Q11 in the brief. Svelte for menus is unconfirmed. The [M] fact-check in `research/moss-facts.md`.

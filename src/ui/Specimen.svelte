@@ -1,35 +1,20 @@
 <script lang="ts">
-  import type { TraitId } from '../data/traits';
-  import { drawSpecimen } from './specimen';
+  import { specimen } from '../view/plants';
 
-  let { traits }: { traits: TraitId[] } = $props();
-  const shapes = $derived(drawSpecimen(traits));
-  const key = $derived(traits.join(','));
+  let { species, traits, scale = 3, size = 48 }: { species: string; traits: string[]; scale?: number; size?: number } = $props();
+  let canvas: HTMLCanvasElement;
+
+  $effect(() => {
+    const img = specimen(species, traits, size);
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d')!;
+    ctx.clearRect(0, 0, size, size);
+    ctx.drawImage(img, 0, 0);
+  });
 </script>
 
-{#key key}
-  <svg viewBox="0 0 120 112" class="specimen" aria-label="type specimen">
-    {#each shapes as sh, i (i)}
-      {#if sh.kind === 'path'}
-        <path d={sh.d} stroke={sh.stroke} stroke-width={sh.width} fill={sh.fill ?? 'none'} stroke-linecap="round" stroke-linejoin="round" />
-      {:else}
-        <ellipse cx={sh.cx} cy={sh.cy} rx={sh.rx} ry={sh.ry} fill={sh.fill} transform="rotate({sh.rot} {sh.cx} {sh.cy})" />
-      {/if}
-    {/each}
-  </svg>
-{/key}
+<canvas bind:this={canvas} style:width="{size * scale}px" style:height="{size * scale}px"></canvas>
 
 <style>
-  .specimen {
-    width: 100%;
-    height: 100%;
-    animation: redraw 0.9s ease-out;
-  }
-  @keyframes redraw {
-    from {
-      opacity: 0.2;
-      transform: scale(0.94);
-      filter: brightness(1.8);
-    }
-  }
+  canvas { image-rendering: pixelated; display: block; background: var(--panel-dark); border: 2px solid var(--ink); }
 </style>

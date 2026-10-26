@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "check": "node scripts/check.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "curve": "CURVE=1 vitest run tests/curve.test.ts"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
@@ -17,5 +18,8 @@
     "typescript": "^6.0.3",
     "vite": "^8.3.5",
     "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@fontsource/pixelify-sans": "^5.3.0"
   }
 }

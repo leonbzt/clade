@@ -7,8 +7,8 @@
 | Language  | TypeScript                                 | In use                                         |
 | Build     | Vite                                       | In use. `toys/*.html` are extra pages          |
 | Menus     | Svelte 5                                   | In use, still unconfirmed by you               |
-| Logic     | Plain TS in `src/core/`, no DOM            | In use; `step(dt)` drives everything           |
-| Landscape | PixiJS for 2D, or Three.js for low-poly 3D | Decide after the art spikes (Q7)               |
+| Logic     | Plain TS in `src/sim/`, no DOM, seeded RNG | In use; a fixed 10 ticks/s; commands in, state out |
+| Landscape | Canvas 2D, pixel art painted by code (`src/view/`) | **2D decided 26 Oct.** PixiJS only if speed needs it |
 | Saves     | localStorage, later cloud sync             | Not built yet                                  |
 
 Mobile later: Capacitor for the stores, a PWA for installing. Calculate offline progress on resume, render only

@@ -15,6 +15,17 @@ What's **decided**. Only the user moves things into this file. AI proposals live
 
 ## Pillars
 
+### Direction *(26 Oct)*
+- **The core loop first: several species in the garden.** Place species, watch them spread and compete, evolve the next one, and place it while the old ones stay. Minigames for adapting well come later.
+- **Build on the fresh-eyes review** ([review-fresh-eyes.md](review-fresh-eyes.md)) as far as it fits: placement is the decision and growth is the reward, milestones, and a sim/view split.
+- **2D, for now** (Q7). **Art matters**: the garden has to look good and read clearly from the start.
+- **Traits are visible** on the species, even when it's drawn small.
+- **Map and menus first; other layers later** *(26 Oct, after playing slice 03)*. The map should get simpler and less cluttered.
+- **Lichens are an unlock, not the starting state** *(26 Oct)*.
+- **Pacing: fast unlocks at the start** to learn and get going, **then a midgame** where the real game starts: more kingdoms, interactions, trickier placement *(26 Oct)*.
+- **Adapting has to feel like adapting** *(26 Oct)*. Buying every trait isn't it yet; it can come later.
+- **Idea:** a second line in the sea: sponges, jellies, then arthropods and later vertebrates, which come onto land as the way animals arrive. Small biomes or microbiomes that develop *(26 Oct, idea)*.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.
@@ -65,6 +76,8 @@ What's **decided**. Only the user moves things into this file. AI proposals live
 ## Current bets
 
 Decided, and built into slice 01, but open to change while we look for the best base.
+**On hold since 26 Oct:** everything about minigames and the first session waits until the garden core is fun
+(the colony minigame "is not it yet"; the review says to lock first-session beats only after the loop works).
 
 ### Structure
 - **A few species in parallel** *(25 Oct)*. Each has its own minigame you keep working on. **Releasing a species is the prestige of its minigame.** Slots unlock slowly *(25 Oct)*.
@@ -100,10 +113,10 @@ You want these in the game at some point, but not before the core works *(25 Oct
 | --- | ------------------------------------------------------------------------- | ----------------------------------------- |
 | 5   | First run: always a pioneer plant, or your choice?                        | Old S3 (archived)                         |
 | 6   | Does the garden ever reset (eras)?                                        | Old S9 (archived)                         |
-| 7   | 2D or low-poly 3D look? (Decide after the art spikes.)                    | [tech-art.md](tech-art.md)                |
 | 8   | How many parallel slots, and when do they unlock?                         | Old S3 (archived)                         |
 | 9   | itch.io first means desktop browsers. Keep touch-first portrait, or a layout that fits both? | [tech-art.md](tech-art.md) |
 | 10  | Which relationships go in the core, and which come later?                 | [minigames.md](minigames.md) (layers)     |
 | 11  | What's the colony's hands-on play?                                        | [slices/02-toys.md](slices/02-toys.md)    |
 
+Answered 26 Oct: 7 2D for now.
 Answered 25 Oct: 1 web · 2 itch.io first, stores later · 3 founder colony · 4 volcanic island · relationships get a place in the core · the first session: ancestor start, first release at ~12 min, fixed first home, seabirds in session 2.
