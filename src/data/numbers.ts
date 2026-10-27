@@ -4,34 +4,32 @@
 export const NUM = {
   ticksPerSec: 10,
   fieldsEvery: 10, // ticks between layer updates (they run with dt = 1 s)
-  map: { w: 40, h: 24, tile: 16 },
+  map: { w: 96, h: 56, tile: 12 },
   island: {
-    radius: 0.44, // share of the map
-    beachWidth: 0.1, // share of the radius
-    vents: 3,
-    ventRadius: 5.5, // tiles; wetness falls to the base at this distance
+    radius: 0.45, // share of the map
+    coastWidth: 0.07, // share of the radius: the ring where beaches can be
     lavaWet: 0.08,
-    beachWet: 0.45,
-    crackShare: 0.12,
-    crackWet: 0.2,
-    beachSalt: 0.8,
-    coastSalt: 0.3, // land next to the beach
-    soilCapBeach: 0.35,
+    crackShare: 0.1,
+    crackWet: 0.18,
     soilCapBase: 0.27, // soil cap on dry ground; plus the wetness
   },
   life: {
-    stress: 3, // death rate × (1 + stress × (1 − fit))
-    starve: 15, // seconds a plant lasts where it can't live at all
+    stress: 1.5, // death rate × (1 + stress × (1 − health))
+    starve: 20, // seconds a plant lasts once its health is near 0
+    dieback: 30, // seconds a dying plant takes to thin out from full cover
+    shrink: 0.02, // per second: how fast cover falls toward what health allows
+    dyingHold: 0.3, // a dying plant keeps this share of its hold on the tile
     settleCover: 0.05, // cover of a new seedling
-    incumbentEdge: 0.25, // a challenger must be this much stronger to take a living plant's tile
+    reach: 2, // tiles a spore can travel from its parent
+    incumbentEdge: 0.4, // a challenger must be this much stronger to take a living plant's tile
     takeover: 0.3, // chance it then does
-    floor: 5, // your species' last tiles don't die
-    rain: 0.3, // spore rain: tries per second per placed species, anywhere on the island
+    floor: 12, // your species' last tiles don't die
+    rain: 1.2, // spore rain: tries per second per placed species, anywhere on the island
     rainMinFit: 0.3,
   },
-  flare: { every: 150, radius: 2, soilLoss: 0.5 }, // a steam vent flares about every 150 s
+  flare: { every: 150, radius: 4, soilLoss: 0.5 }, // a steam vent flares about every 150 s
   rateSmoothing: 30, // seconds; the shown income is an average
   trendEvery: 60, // seconds between "Mosses retreat" lines in the feed
-  founding: { base: 40, growth: 3, patch: 1, cover: 0.3 }, // patch radius in tiles
+  founding: { base: 40, growth: 3, patch: 2, cover: 0.3 }, // patch radius in tiles
   tiers: [['S', 0.85], ['A', 0.65], ['B', 0.45], ['C', 0.25], ['D', 0]] as const,
 };

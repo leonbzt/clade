@@ -1,4 +1,5 @@
-// The ground layer: sea, beach and lava drawn once per pixel; then soil and ground cover dithered in.
+// The ground layer: sea, beach and lava drawn once per pixel, then streams, springs and lava tubes on top; then
+// soil and ground cover dithered in.
 // Coastlines come from a smoothed tile mask plus noise, so they read organic instead of blocky.
 // Soil and cover grow in organic blotches because each pixel has a fixed threshold from noise.
 // Ground cover is how a ground species "dyes" the tile it holds, so zones read as areas, not sprite fields.
@@ -6,7 +7,7 @@ import { NUM } from '../data/numbers';
 import { GROUND, PAL } from '../data/palette';
 import { SPECIES } from '../data/species';
 import { COVER_STRENGTH } from '../data/view';
-import { BEACH, SEA, VENT, CRACK, type State } from '../sim/state';
+import { BEACH, CAVE, SEA, VENT, CRACK, type State } from '../sim/state';
 import { hash2, makeCanvas, noise, rgba32 } from './pixels';
 
 const T = NUM.map.tile;
@@ -85,6 +86,48 @@ export class TerrainLayer {
         this.soilAt[p] = 0.15 + 0.7 * noise(x, y, 3, 11) + 0.15 * fine;
         this.coverAt[p] = 0.2 + 0.55 * noise(x, y, 2.5, 17) + 0.25 * hash2(x, y, 2);
         this.shade[p] = noise(x, y, 4, 13) > 0.5 ? 1 : 0;
+      }
+    }
+    this.paintLandmarks();
+  }
+
+  /** A pixel that shows its own colour and never gets soil or cover. */
+  private bare(x: number, y: number, c: string) {
+    const W = this.s.w * T;
+    if (x < 0 || y < 0 || x >= W || y >= this.s.h * T) return;
+    const p = y * W + x;
+    this.base[p] = rgba32(c); this.soilAt[p] = 9; this.coverAt[p] = 9;
+  }
+
+  private paintLandmarks() {
+    const s = this.s, W = s.w * T, H = s.h * T, c = (i: number) => [(i % s.w) * T + T / 2, ((i / s.w) | 0) * T + T / 2];
+    for (const m of s.landmarks) {
+      if (m.kind === 'spring') {
+        // A trickle from tile centre to tile centre, wobbling a little, and a small pool at the source.
+        for (let k = 1; k < m.tiles.length; k++) {
+          const [x0, y0] = c(m.tiles[k - 1]), [x1, y1] = c(m.tiles[k]), steps = T * 2;
+          for (let q = 0; q <= steps; q++) {
+            const t = q / steps, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t, wob = (noise(x, y, 6, 31) - 0.5) * 5;
+            const px = Math.round(x + wob), py = Math.round(y - wob * 0.5);
+            this.bare(px, py, PAL.seaLight); this.bare(px + 1, py, PAL.sea);
+          }
+        }
+        const [sx, sy] = c(m.tiles[0]);
+        for (let y = -4; y <= 4; y++) for (let x = -4; x <= 4; x++) {
+          const d = Math.hypot(x, y * 1.3);
+          if (d < 4.2) this.bare(sx + x, sy + y, d < 2.5 ? PAL.sea : PAL.seaLight);
+        }
+      } else if (m.kind === 'cave') {
+        // The tube's roof is smooth dark rock; collapsed holes (skylights) show the black tunnel below.
+        for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+          const v = this.field(x, y, (k) => k === CAVE) + (noise(x, y, 4, 33) - 0.5) * 0.3;
+          if (v > 0.5) this.base[y * W + x] = rgba32(noise(x, y, 5, 34) > 0.55 ? PAL.lava3 : PAL.lava2);
+        }
+        m.tiles.forEach((i, k) => {
+          if (k !== m.tiles.length - 1 && hash2(i, 35) > 0.45) return;
+          const [hx, hy] = c(i), r = k === m.tiles.length - 1 ? 3.6 : 2.4;
+          for (let y = -4; y <= 4; y++) for (let x = -4; x <= 4; x++) if (Math.hypot(x, y) < r) this.bare(hx + x, hy + y, PAL.crack);
+        });
       }
     }
   }

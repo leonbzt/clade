@@ -13,7 +13,7 @@
     // The backtick is a dead key on German keyboards, so match the physical key (left of 1) and F2 too.
     if (e.code === 'Backquote' || e.key === '`' || e.key === 'F2') { e.preventDefault(); ui.dev = !ui.dev; }
     if (e.key === 'Escape') ui.placing = null;
-    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ...
+    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... (6 views)
     const k = Number(e.key);
     if (k >= 1 && k <= VIEWS.length && !(e.target instanceof HTMLInputElement)) ui.view = VIEWS[k - 1];
   }
@@ -39,12 +39,14 @@
 </div>
 
 <style>
-  .app { display: flex; flex-direction: column; gap: 8px; padding: 8px; min-height: 100vh; }
-  main { display: flex; gap: 8px; align-items: flex-start; }
-  .side { width: 360px; flex: none; max-height: calc(100vh - 80px); overflow-y: auto; }
+  /* Fixed to the window: no page scrollbar can appear and resize the map. */
+  .app { display: flex; flex-direction: column; gap: 8px; padding: 8px; height: 100vh; overflow: hidden; }
+  main { display: flex; gap: 8px; align-items: flex-start; flex: 1; min-height: 0; }
+  .side { width: 380px; flex: none; max-height: 100%; overflow-y: auto; scrollbar-gutter: stable; }
   .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
   .tabs button { flex: 1; }
   @media (max-width: 900px) {
+    .app { height: auto; overflow: visible; }
     main { flex-direction: column; }
     .side { width: 100%; max-height: none; }
   }

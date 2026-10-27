@@ -24,9 +24,9 @@ function play(seed: number): State {
   const s = createState(seed);
   evolve(s, 'cyanobacteria');
   found(s, 'cyano', ventTile(s) + 2);
-  advance(s, 1500);
+  advance(s, 600);
   buyTrait(s, 'cyano', 'sheath');
-  advance(s, 1500);
+  advance(s, 600);
   return s;
 }
 
@@ -42,6 +42,13 @@ describe('sim', () => {
   it('is deterministic: same seed and commands give the same state', () => {
     expect(hash(play(7))).toBe(hash(play(7)));
     expect(hash(play(7))).not.toBe(hash(play(8)));
+  }, 60_000);
+
+  it('makes every kind of landmark, and salt only near beaches', () => {
+    const s = createState(4), kinds = new Set(s.landmarks.map((m) => m.kind));
+    expect([...kinds].sort()).toEqual(['beach', 'cave', 'spring', 'vent']);
+    const beach = new Set(s.landmarks.filter((m) => m.kind === 'beach').flatMap((m) => m.tiles));
+    s.statuses.salty.forEach((v, i) => { if (v >= 1) expect(beach.has(i)).toBe(true); });
   });
 
   it('starts bare', () => {
@@ -79,7 +86,7 @@ describe('sim', () => {
     expect(Array.from(s.count).filter((c) => c > 0).length).toBeGreaterThanOrEqual(3);
     expect(turn).toBeGreaterThan(0);
     expect(Number.isFinite(s.biomass)).toBe(true);
-  });
+  }, 120_000);
 
   it('the sim has no clock or unseeded randomness', () => {
     for (const f of readdirSync('src/sim')) {

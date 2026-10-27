@@ -1,5 +1,6 @@
 // Plant sprites, painted pixel by pixel from code. Bought traits change the drawing, on the map and on the
-// specimen. Map sprites are 24×28 and overhang their 16×16 tile, so the garden reads as one growth, not a grid.
+// specimen. Map sprites overhang their tile (4 px to the sides, 12 px up), so the garden reads as one growth, not a grid.
+import { NUM } from '../data/numbers';
 import { PAL } from '../data/palette';
 import { Painter, seeded } from './pixels';
 
@@ -8,8 +9,9 @@ export type Look = { stage: number; traits: string[]; big?: boolean };
 type Box = { x: number; y: number; w: number; h: number };
 type Paint = (p: Painter, r: () => number, look: Look, box: Box) => void;
 
-export const SPRITE = { w: 24, h: 28, ox: -4, oy: -12, variants: 8 };
-const MAP_BOX: Box = { x: 4, y: 12, w: 16, h: 16 };
+const T = NUM.map.tile;
+export const SPRITE = { w: T + 8, h: T + 12, ox: -4, oy: -12, variants: 8 };
+const MAP_BOX: Box = { x: 4, y: 12, w: T, h: T };
 
 const has = (look: Look, id: string) => look.traits.includes(id);
 const spot = (r: () => number, b: Box, m = 2) => ({ x: b.x + m + r() * (b.w - 2 * m), y: b.y + m + r() * (b.h - 2 * m) });

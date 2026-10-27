@@ -1,6 +1,6 @@
 <script lang="ts">
   // The last few things the island did on its own, with their causes.
-  import { FIELDS, LAYER_IDS } from '../data/fields';
+  import { limitName } from '../data/fields';
   import { NUM } from '../data/numbers';
   import { SPECIES } from '../data/species';
   import type { LogLine } from '../sim/state';
@@ -8,8 +8,8 @@
   import { game, ui } from './game.svelte';
 
   function text(l: LogLine): string {
-    if (l.kind === 'flare') return `A steam vent flared: ${l.n} plants cleared. Pioneers will move back in.`;
-    const name = SPECIES[l.sp].name, lim = l.limit >= 0 ? `, mostly held back by ${FIELDS[LAYER_IDS[l.limit]].name.toLowerCase()}` : '';
+    if (l.kind === 'flare') return `${l.name} flared: ${l.n} plants cleared. Pioneers will move back in.`;
+    const name = SPECIES[l.sp].name, lim = l.limit >= 0 ? `, mostly held back by ${limitName(l.limit).toLowerCase()}` : '';
     return l.delta > 0 ? `${name} spread: +${l.delta} tiles in a minute.` : `${name} retreat: ${l.delta} tiles in a minute${lim}.`;
   }
 
@@ -19,12 +19,12 @@
   });
 </script>
 
-{#if lines.length}
-  <div class="panel feed">
-    {#each lines as l (l.key)}<div><span class="dim">{l.time}</span> {l.text}</div>{/each}
-  </div>
-{/if}
+<!-- Always four lines tall, so new lines never push anything around. -->
+<div class="panel feed">
+  {#each lines as l (l.key)}<div class="line"><span class="dim">{l.time}</span> {l.text}</div>{/each}
+</div>
 
 <style>
-  .feed { width: 100%; padding: 4px 10px; font-size: 15px; display: flex; flex-direction: column; gap: 1px; }
+  .feed { width: 100%; height: 92px; padding: 4px 10px; font-size: 15px; display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+  .line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 </style>

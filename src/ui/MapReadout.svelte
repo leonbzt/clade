@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { FIELDS, LAYER_IDS, STRATA, type LayerId } from '../data/fields';
+  import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATA, limitColor, limitName, type LayerId } from '../data/fields';
   import { TIER_COLORS, ZONE } from '../data/palette';
   import { SPECIES, SPECIES_INDEX } from '../data/species';
   import { canFoundAt, foundingCost, unlockedSpecies } from '../sim/commands';
-  import { fitInfo, limitText } from '../sim/explain';
+  import { fitInfo, limitText, placeInfo } from '../sim/explain';
   import { profiles } from '../sim/fit';
-  import { SEA, TERRAIN_NAMES } from '../sim/state';
+  import { SEA } from '../sim/state';
   import { game, ui } from './game.svelte';
 
   /** Hover: the tile in one line. While placing: how well the species fits here and what holds it back. */
@@ -15,8 +15,8 @@
     if (i < 0 || game.terrain[i] === SEA) return null;
     const P = profiles(game), n = game.w * game.h;
     const who = STRATA.map((_, k) => game.occ[k * n + i]).filter((sp) => sp >= 0).map((sp) => SPECIES[sp].name);
-    const vals = LAYER_IDS.filter((l) => l !== 'salt' || game.layers.salt[i] > 0)
-      .map((l) => `${FIELDS[l].name.toLowerCase()} ${game.layers[l][i].toFixed(2)}`);
+    const vals = LAYER_IDS.filter((l) => !FIELDS[l].hidden).map((l) => `${FIELDS[l].name.toLowerCase()} ${game.layers[l][i].toFixed(2)}`)
+      .concat(STATUS_IDS.filter((id) => game.statuses[id][i] > 0).map((id) => `${STATUSES[id].name.toLowerCase()} ${game.statuses[id][i].toFixed(2)}`));
     let place: { tier: string | null; text: string } | null = null;
     if (ui.placing) {
       const sp = SPECIES_INDEX[ui.placing], p = P[sp], info = fitInfo(game, p, i);
@@ -29,7 +29,8 @@
           : `Fit ${info.tier} · ${limitText(p, info)}`,
       };
     }
-    return { terrain: TERRAIN_NAMES[game.terrain[i]], who: who.join(' + ') || 'bare', vals: vals.join(' · '), place };
+    const where = placeInfo(game, i);
+    return { terrain: where.landmark ? `${where.landmark} (${where.terrain.toLowerCase()})` : where.terrain, who: who.join(' + ') || 'bare', vals: vals.join(' · '), place };
   });
 
   const placingInfo = $derived.by(() => {
@@ -55,7 +56,7 @@
     {:else}
       {#each Object.entries(TIER_COLORS) as [t, c] (t)}<span class="tier" style:background={c}>{t}</span>{/each}
       <span class="dim">outlined = you can place · gold = best spots · corner mark = what holds it back:</span>
-      {#each LAYER_IDS as l (l)}<span class="small"><span class="swatch" style:background={FIELDS[l].color}></span>{FIELDS[l].name}</span>{/each}
+      {#each Array.from({ length: LIMIT_COUNT }, (_, k) => k) as k (k)}<span class="small"><span class="swatch" style:background={limitColor(k)}></span>{limitName(k)}</span>{/each}
       <span class="dim">· Esc cancels</span>
     {/if}
   {:else if hover}
@@ -67,14 +68,14 @@
     <span class="dim small">fill = ground · inner square = herbs · corners = fungi</span>
   {:else if layer}
     <span><span class="swatch" style:background={layer.color}></span>{layer.name}</span>
-    <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${layer.viewMax}+)` : ''}</span>
+    <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${layer.viewMax}+)` : ''} · litter and salt are on the tile card</span>
   {:else}
-    <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom, drag to move. Keys 1–7 switch views.</span>
+    <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (names show when zoomed in), drag to move. Keys 1–6 switch views.</span>
   {/if}
 </span>
 
 <style>
-  .readout { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 16px; }
+  .readout { display: flex; gap: 4px 12px; align-items: center; flex-wrap: wrap; font-size: 16px; }
   .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 4px; border: 1px solid var(--ink); }
   .small { font-size: 14px; }
 </style>

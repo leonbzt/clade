@@ -1,36 +1,42 @@
 // "Why is this tile like this?" Breakdowns are recomputed from the state with the same math the sim uses,
 // never stored. The tile card shows them.
-import { FIELDS, LAYER_IDS, STRATA, STRATUM_NAMES, type LayerId, type LevelDef, type StockDef } from '../data/fields';
+import { FIELDS, LAYER_IDS, STATUS_IDS, STATUSES, STRATA, STRATUM_NAMES, limitName, type LayerId, type LevelDef, type StockDef } from '../data/fields';
+import { LANDMARKS } from '../data/landmarks';
 import { NUM } from '../data/numbers';
 import { SPECIES } from '../data/species';
-import { gatherFlows, landMean, levelTerms, stockTerms } from './fields';
-import { feltValue, fit, limitOf, score, tierOf, type Profile } from './fit';
-import { EV, SEA, type State } from './state';
+import { fellLast, gatherFlows, landMean, levelTerms, stockTerms } from './fields';
+import { feltValue, fit, limitOf, score, statusScore, tierOf, type Profile } from './fit';
+import { EV, SEA, TERRAIN_NAMES, type State } from './state';
 
-export type NeedScore = { layer: LayerId; value: number; score: number; limiting: boolean };
-export type FitInfo = { fit: number; tier: string | null; limit: LayerId | null; needs: NeedScore[] };
+export type NeedScore = { name: string; value: number; score: number; limiting: boolean };
+export type FitInfo = { fit: number; tier: string | null; limit: number; needs: NeedScore[] };
 
 export function fitInfo(s: State, p: Profile, i: number): FitInfo {
-  const f = fit(s, p, i), l = limitOf();
-  const needs = p.needs.map((n) => {
+  const f = fit(s, p, i), l = f < 0.999 ? limitOf() : -1;
+  const needs: NeedScore[] = p.needs.map((n) => {
     const value = feltValue(s, n.layer, p.stratum, i);
-    return { layer: LAYER_IDS[n.layer], value, score: score(value, n.band), limiting: n.layer === l && f < 0.999 };
+    return { name: LAYER_IDS[n.layer], value, score: score(value, n.band), limiting: n.layer === l };
   });
-  return { fit: f, tier: tierOf(f), limit: l >= 0 && f < 0.999 ? LAYER_IDS[l] : null, needs };
+  for (const t of p.tolerance) {
+    const value = s.statuses[STATUS_IDS[t.status]][i];
+    if (value > 0) needs.push({ name: STATUSES[STATUS_IDS[t.status]].name.toLowerCase(), value, score: statusScore(value, t.tol), limiting: LAYER_IDS.length + t.status === l });
+  }
+  return { fit: f, tier: tierOf(f), limit: l, needs };
 }
 
-/** A sentence for the limit: "limited by water (0.31; ideal from 0.45)". */
+/** A sentence for the limit: "limited by water (0.31; ideal from 0.45)" or "limited by salt (scores 0.30 here)". */
 export function limitText(p: Profile, info: FitInfo): string {
-  if (!info.limit) return info.fit > 0 ? 'nothing holds it back' : '';
-  const n = p.needs.find((x) => LAYER_IDS[x.layer] === info.limit)!, v = info.needs.find((x) => x.layer === info.limit)!.value;
-  const name = FIELDS[info.limit].name.toLowerCase(), b = n.band;
+  if (info.limit < 0) return info.fit > 0 ? 'nothing holds it back' : '';
+  const verb = info.fit > 0 ? 'limited' : 'ruled out', name = limitName(info.limit).toLowerCase();
+  if (info.limit >= LAYER_IDS.length) return `${verb} by ${name} (scores ${r2(info.fit)} here)`;
+  const n = p.needs.find((x) => x.layer === info.limit)!, v = info.needs.find((x) => x.limiting)!.value, b = n.band;
   const side = v < b[1] ? `ideal from ${r2(b[1])}` : `ideal up to ${r2(b[2])}`;
-  return `${info.fit > 0 ? 'limited' : 'ruled out'} by ${name} (${r2(v)}; ${side})`;
+  return `${verb} by ${name} (${r2(v)}; ${side})`;
 }
 
 const CODE_TEXT: Record<number, string> = {
-  [EV.settled]: 'settled from a neighbour', [EV.founded]: 'founded by you', [EV.age]: 'died of age',
-  [EV.stress]: 'died of stress', [EV.taken]: 'lost the tile', [EV.flare]: 'killed by a vent flare',
+  [EV.settled]: 'settled from a neighbour', [EV.founded]: 'founded by you', [EV.age]: 'started dying of age',
+  [EV.stress]: 'started dying of stress', [EV.taken]: 'lost the tile', [EV.flare]: 'killed by a vent flare',
   [EV.rain]: 'arrived as spores from elsewhere',
 };
 
@@ -38,8 +44,10 @@ export type SlotInfo = {
   stratum: string;
   species: string | null;
   cover: number;
+  health: number;
+  dying: boolean;
   fit: FitInfo | null;
-  last: string | null; // "Mosses died of stress, limited by shade · 40 s ago"
+  last: string | null; // "Mosses started dying of stress, limited by shade · 40 s ago"
 };
 
 export function slotInfo(s: State, P: Profile[], k: number, i: number): SlotInfo {
@@ -47,7 +55,7 @@ export function slotInfo(s: State, P: Profile[], k: number, i: number): SlotInfo
   let last: string | null = null;
   if (s.lastCode[slot] !== EV.none) {
     const who = s.lastSp[slot] >= 0 ? SPECIES[s.lastSp[slot]].name + ' ' : '';
-    const lim = s.lastLimit[slot] >= 0 ? `, limited by ${FIELDS[LAYER_IDS[s.lastLimit[slot]]].name.toLowerCase()}` : '';
+    const lim = s.lastLimit[slot] >= 0 ? `, limited by ${limitName(s.lastLimit[slot]).toLowerCase()}` : '';
     const ago = Math.round((s.tick - s.lastTick[slot]) / NUM.ticksPerSec);
     last = `${who}${CODE_TEXT[s.lastCode[slot]]}${lim} · ${ago < 90 ? `${ago} s` : `${Math.round(ago / 60)} min`} ago`;
   }
@@ -55,12 +63,14 @@ export function slotInfo(s: State, P: Profile[], k: number, i: number): SlotInfo
     stratum: STRATUM_NAMES[STRATA[k]],
     species: sp >= 0 ? SPECIES[sp].name : null,
     cover: sp >= 0 ? s.cover[slot] : 0,
+    health: sp >= 0 ? s.health[slot] : 0,
+    dying: sp >= 0 && s.dying[slot] === 1,
     fit: sp >= 0 ? fitInfo(s, P[sp], i) : null,
     last,
   };
 }
 
-export type LayerInfo = { id: LayerId; name: string; value: number; parts: { label: string; value: number }[]; perSec: boolean };
+export type LayerInfo = { id: LayerId; name: string; value: number; parts: { label: string; value: number }[]; perSec: boolean; hidden: boolean };
 
 /** Each layer's value on a tile, with its parts. Stocks show rates per second; levels show what adds up. */
 export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
@@ -69,32 +79,41 @@ export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
   const who = (id: LayerId, sign: 1 | -1) => {
     const out: { label: string; value: number }[] = [];
     for (let k = 0; k < STRATA.length; k++) {
-      const sp = s.occ[k * n + i], r = sp >= 0 ? P[sp].makes[id] : undefined;
+      const slot = k * n + i, sp = s.occ[slot], r = sp >= 0 ? P[sp].makes[id] : undefined;
       if (r === undefined || Math.sign(r) !== sign) continue;
-      const cover = s.cover[k * n + i];
-      out.push({ label: SPECIES[sp].name, value: FIELDS[id].kind === 'level' ? r * cover : r * cover * fit(s, P[sp], i) });
+      const cover = s.cover[slot];
+      out.push({ label: SPECIES[sp].name, value: FIELDS[id].kind === 'level' ? r * cover : r * cover * s.health[slot] });
     }
     return out;
   };
   return LAYER_IDS.map((id) => {
-    const def = FIELDS[id], value = s.layers[id][i], name = def.name;
-    if (def.kind === 'base') return { id, name, value, parts: [], perSec: false };
+    const def = FIELDS[id], value = s.layers[id][i], name = def.name, hidden = !!def.hidden;
     if (def.kind === 'level') {
-      const parts = [...levelTerms(s, def as LevelDef, 0, i), ...who(id, 1)];
-      return { id, name, value, parts, perSec: false };
+      const parts = [...levelTerms(s, id, def as LevelDef, 0, i), ...who(id, 1)];
+      return { id, name, value, parts, perSec: false, hidden };
     }
     const st = def as StockDef, mean = st.diffuse ? landMean(s, s.layers[id], i) : value;
-    const t = stockTerms(st, value, F.plus[id][i], F.minus[id][i], F.cover[i], mean);
+    const t = stockTerms(st, value, F.plus[id][i], F.minus[id][i], F.cover[i], mean, st.fall ? fellLast[i] ?? 0 : 0);
     const total = F.plus[id][i] || 1, used = F.minus[id][i] || 1;
+    // Every row is always listed, so the card keeps its shape while the numbers move.
     const parts = [
       ...who(id, 1).map((p) => ({ label: p.label, value: (p.value / total) * t.made })),
       ...who(id, -1).map((p) => ({ label: `used by ${p.label}`, value: (-p.value / used) * t.used })),
+      { label: id === 'soil' ? 'erosion' : 'loss', value: t.decay },
     ];
-    if (Math.abs(t.decay) > 1e-5) parts.push({ label: t.decay < 0 ? (id === 'soil' ? 'erosion' : 'loss') : 'drifts back', value: t.decay });
-    if (Math.abs(t.spread) > 1e-5) parts.push({ label: 'from neighbours', value: t.spread });
-    if (id === 'litter') parts.push({ label: 'plants that die here add to it', value: 0 });
-    return { id, name, value, parts, perSec: true };
+    if (st.diffuse) parts.push({ label: 'from neighbours', value: t.spread });
+    if (st.fall) parts.push({ label: 'dead plants, here and next door', value: t.fell });
+    return { id, name, value, parts, perSec: true, hidden };
   });
+}
+
+export type PlaceInfo = { terrain: string; landmark: string | null; blurb: string | null; statuses: { name: string; value: number }[] };
+
+/** What the ground is: terrain, the landmark it belongs to, and its statuses. */
+export function placeInfo(s: State, i: number): PlaceInfo {
+  const m = s.landmarks[s.mark[i]];
+  const statuses = STATUS_IDS.filter((id) => s.statuses[id][i] > 0).map((id) => ({ name: STATUSES[id].name, value: s.statuses[id][i] }));
+  return { terrain: TERRAIN_NAMES[s.terrain[i]], landmark: m ? m.name : null, blurb: m ? LANDMARKS[m.kind].blurb : null, statuses };
 }
 
 const r2 = (v: number) => String(+v.toFixed(2));

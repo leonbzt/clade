@@ -8,7 +8,7 @@
   import { doFound, game, selectTile, ui } from './game.svelte';
   import EventFeed from './EventFeed.svelte';
 
-  const W = NUM.map.w * NUM.map.tile, H = NUM.map.h * NUM.map.tile;
+  const T = NUM.map.tile, W = NUM.map.w * T, H = NUM.map.h * T;
 
   let canvas: HTMLCanvasElement;
   let wrap: HTMLElement;
@@ -19,6 +19,11 @@
   let zi = $state(Number(new URLSearchParams(location.search).get('zoom')) || 0); // index into ZOOM_STEPS (dev: ?zoom=3)
   let pan = $state({ x: 0, y: 0 });
   const scale = $derived(fitScale * ZOOM_STEPS[zi]);
+  // Landmark names show once you zoom in.
+  const labels = $derived.by(() => {
+    ui.gen;
+    return game.landmarks.map((m) => ({ name: m.name, x: ((m.at % game.w) + 0.5) * T, y: Math.floor(m.at / game.w) * T }));
+  });
 
   $effect(() => {
     ui.gen;
@@ -34,15 +39,16 @@
     };
     raf = requestAnimationFrame(loop);
     const ro = new ResizeObserver(fitToSpace);
-    ro.observe(wrap);
+    ro.observe(wrap.parentElement!);
     fitToSpace();
     viewport.addEventListener('wheel', wheel, { passive: false });
     return () => { cancelAnimationFrame(raf); ro.disconnect(); viewport.removeEventListener('wheel', wheel); };
   });
 
-  /** Whole-number steps when there's room, so pixels stay crisp. */
+  /** Fills the space left by the fixed rows under the map. Whole-number steps when there's room, so pixels stay crisp. */
   function fitToSpace() {
-    const s = Math.max(1, Math.min(wrap.clientWidth / W, (window.innerHeight - 150) / H));
+    const rows = wrap.scrollHeight - viewport.offsetHeight, room = (wrap.parentElement!.clientHeight || window.innerHeight) - rows - 4;
+    const s = Math.max(0.5, Math.min(wrap.clientWidth / W, room / H));
     fitScale = s >= 2 ? Math.floor(s) : s;
     clampPan();
   }
@@ -69,7 +75,7 @@
   }
 
   function tileAt(e: PointerEvent): number {
-    const r = canvas.getBoundingClientRect(), T = NUM.map.tile;
+    const r = canvas.getBoundingClientRect();
     const x = Math.floor((((e.clientX - r.left) / r.width) * W) / T);
     const y = Math.floor((((e.clientY - r.top) / r.height) * H) / T);
     return x >= 0 && y >= 0 && x < game.w && y < game.h ? y * game.w + x : -1;
@@ -127,10 +133,14 @@
       style:height="{H * scale}px"
       style:transform="translate({pan.x}px, {pan.y}px)"
     ></canvas>
+    {#if zi > 0}
+      {#each labels as l (l.name)}
+        <span class="label" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
+      {/each}
+    {/if}
   </div>
 
   <div class="panel tools">
-    <MapReadout />
     <span class="group">
       <button onclick={() => zoomTo(zi - 1)} disabled={zi === 0} title="Zoom out (mouse wheel)">−</button>
       <button onclick={() => zoomTo(zi + 1)} disabled={zi === ZOOM_STEPS.length - 1} title="Zoom in (mouse wheel)">+</button>
@@ -142,6 +152,7 @@
       {/each}
     </span>
   </div>
+  <div class="panel readout"><MapReadout /></div>
   <EventFeed />
 </section>
 
@@ -152,7 +163,9 @@
   .viewport.placing { cursor: crosshair; }
   .viewport.grabbing { cursor: grabbing; }
   canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; display: block; transform-origin: 0 0; }
-  .tools { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; width: 100%; min-height: 44px; padding: 6px 10px; }
+  .label { position: absolute; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap; font-size: 14px;
+    color: var(--text); text-shadow: 1px 1px 0 var(--ink), -1px 1px 0 var(--ink), 1px -1px 0 var(--ink), -1px -1px 0 var(--ink); }
+  .tools { display: flex; gap: 14px; align-items: center; justify-content: space-between; width: 100%; height: 44px; padding: 2px 10px; }
+  .readout { width: 100%; height: 56px; padding: 4px 10px; overflow: hidden; }
   .group { display: flex; gap: 2px; }
-  .group:first-of-type { margin-left: auto; }
 </style>

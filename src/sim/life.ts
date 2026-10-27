@@ -1,5 +1,7 @@
-// Life in every slot: growth, death (age, or faster when stressed), yield and spread. Open slots go to whichever
-// seed arrives and fits, so fast spreaders win gaps and strong holders keep their tiles.
+// Life in every slot. Health follows fit slowly (the plant's reserves); cover follows health; growth, spores, yield
+// and death follow health too, so plants switch on and off slowly. A dying plant thins out over time and drops its
+// litter as it goes. Open slots go to whichever seed arrives and fits, so fast spreaders win gaps and strong holders
+// keep their tiles.
 import { STRATA } from '../data/fields';
 import { NUM } from '../data/numbers';
 import { SPECIES } from '../data/species';
@@ -13,33 +15,36 @@ export function record(s: State, slot: number, code: number, sp: number, limit =
   s.lastTick[slot] = s.tick; s.lastCode[slot] = code; s.lastSp[slot] = sp; s.lastLimit[slot] = limit;
 }
 
-/** Empties a slot; the dead plant becomes litter. */
-export function kill(s: State, slot: number, code: number, limit = -1) {
-  const n = s.w * s.h, i = slot % n, sp = s.occ[slot];
-  const lit = s.layers.litter;
-  lit[i] = Math.min(1, lit[i] + s.cover[slot] * SPECIES[sp].litter);
-  record(s, slot, code, sp, limit);
-  s.occ[slot] = -1; s.cover[slot] = 0;
+function clear(s: State, slot: number) {
+  s.occ[slot] = -1; s.cover[slot] = 0; s.health[slot] = 0; s.dying[slot] = 0;
 }
 
-export function settle(s: State, slot: number, sp: number, cover: number, code: number) {
-  s.occ[slot] = sp; s.cover[slot] = cover;
+/** Empties a slot at once (taken over, or a flare); the dead plant becomes litter. */
+export function kill(s: State, slot: number, code: number, limit = -1) {
+  const sp = s.occ[slot];
+  s.fall[slot % (s.w * s.h)] += s.cover[slot] * SPECIES[sp].litter;
+  record(s, slot, code, sp, limit);
+  clear(s, slot);
+}
+
+export function settle(s: State, slot: number, sp: number, cover: number, code: number, health: number) {
+  s.occ[slot] = sp; s.cover[slot] = cover; s.health[slot] = health; s.dying[slot] = 0;
   record(s, slot, code, sp);
 }
 
 /** Your species' last few tiles don't die and can't be taken. */
 const protectedSp = (s: State, sp: number) => s.foundings[SPECIES[sp].id] > 0 && s.count[sp] <= L.floor;
 
-/** A plant's strength on a tile: fit × hold. Young plants hold on less well. */
-export function strength(s: State, p: Profile, i: number, cover = 1): number {
-  return fit(s, p, i) * p.stats.hold * (0.5 + 0.5 * cover);
+/** The occupant's strength: its health × hold; young and dying plants hold on less well. */
+function holding(s: State, p: Profile, slot: number): number {
+  return s.health[slot] * p.stats.hold * (0.5 + 0.5 * s.cover[slot]) * (s.dying[slot] ? L.dyingHold : 1);
 }
 
 /** Can species `sp` take this slot from its occupant (or settle it, if empty)? */
 export function canTake(s: State, P: Profile[], sp: number, slot: number): boolean {
-  const n = s.w * s.h, i = slot % n, occ = s.occ[slot];
+  const i = slot % (s.w * s.h), occ = s.occ[slot];
   if (occ < 0) return true;
-  return !protectedSp(s, occ) && strength(s, P[sp], i) > strength(s, P[occ], i, s.cover[slot]) * (1 + L.incumbentEdge);
+  return !protectedSp(s, occ) && fit(s, P[sp], i) * P[sp].stats.hold > holding(s, P[occ], slot) * (1 + L.incumbentEdge);
 }
 
 export function lifeStep(s: State, P: Profile[], dt: number) {
@@ -51,18 +56,30 @@ export function lifeStep(s: State, P: Profile[], dt: number) {
     for (let q = 0; q < n; q++) {
       const i = (start + q) % n, slot = k * n + i, sp = s.occ[slot];
       if (sp < 0) continue;
-      const p = P[sp], f = fit(s, p, i), limit = limitOf();
-      const c = (s.cover[slot] += dt * p.stats.grow * f * (1 - s.cover[slot]));
-      const strain = L.stress * (1 - f);
-      const death = f <= 0 ? dt / L.starve : (dt / p.stats.life) * (1 + strain);
-      if (!protectedSp(s, sp) && rand(s) < death) {
-        const stressed = f <= 0 || rand(s) < strain / (1 + strain);
-        kill(s, slot, stressed ? EV.stress : EV.age, stressed ? limit : -1);
+      const p = P[sp];
+      if (s.dying[slot]) {
+        const loss = Math.min(s.cover[slot], dt / L.dieback);
+        s.cover[slot] -= loss;
+        s.fall[i] += loss * SPECIES[sp].litter;
+        if (s.cover[slot] < 0.03) { s.fall[i] += s.cover[slot] * SPECIES[sp].litter; clear(s, slot); continue; }
+        counts[sp]++;
         continue;
       }
+      const f = fit(s, p, i), limit = limitOf();
+      const h = (s.health[slot] += (f - s.health[slot]) * Math.min(1, dt / p.stats.reserve));
+      // Cover grows toward what health allows, and shrinks slowly when health falls.
+      const target = Math.sqrt(Math.max(0, h)), c0 = s.cover[slot];
+      const c = (s.cover[slot] = c0 + dt * (target > c0 ? p.stats.grow * (target - c0) * 2 : L.shrink * (target - c0)));
+      const strain = L.stress * (1 - h);
+      const death = (dt / p.stats.life) * (1 + strain) + (h < 0.05 ? dt / L.starve : 0);
+      if (!protectedSp(s, sp) && rand(s) < death) {
+        const stressed = h < 0.05 || rand(s) < strain / (1 + strain);
+        s.dying[slot] = 1;
+        record(s, slot, stressed ? EV.stress : EV.age, sp, stressed ? limit : -1);
+      }
       counts[sp]++;
-      gain += p.stats.yield * c * f * dt;
-      if (rand(s) < dt * p.stats.seeds * c * f) spread(s, P, sp, k, i); // stressed plants make fewer spores
+      gain += p.stats.yield * c * h * dt;
+      if (rand(s) < dt * p.stats.seeds * c * h) spread(s, P, sp, k, i); // weak plants make fewer spores
     }
   }
   s.count.set(counts);
@@ -70,18 +87,18 @@ export function lifeStep(s: State, P: Profile[], dt: number) {
 }
 
 function spread(s: State, P: Profile[], sp: number, k: number, from: number) {
-  const n = s.w * s.h, x = from % s.w, y = (from / s.w) | 0;
-  const dx = Math.floor(rand(s) * 3) - 1, dy = Math.floor(rand(s) * 3) - 1;
+  const n = s.w * s.h, x = from % s.w, y = (from / s.w) | 0, R = L.reach;
+  const dx = Math.floor(rand(s) * (2 * R + 1)) - R, dy = Math.floor(rand(s) * (2 * R + 1)) - R;
   const nx = x + dx, ny = y + dy;
   if ((!dx && !dy) || nx < 0 || ny < 0 || nx >= s.w || ny >= s.h) return;
   const j = ny * s.w + nx, slot = k * n + j, occ = s.occ[slot];
   if (occ === sp || s.terrain[j] === SEA) return;
   const f = fit(s, P[sp], j);
   if (f <= 0) return;
-  if (occ < 0) { if (rand(s) < f * f) settle(s, slot, sp, L.settleCover, EV.settled); return; } // seedlings rarely take on poor tiles
+  if (occ < 0) { if (rand(s) < f * f * f) settle(s, slot, sp, L.settleCover, EV.settled, f); return; } // seedlings rarely take on poor tiles
   if (canTake(s, P, sp, slot) && rand(s) < L.takeover) {
     kill(s, slot, EV.taken);
-    settle(s, slot, sp, L.settleCover, EV.settled);
+    settle(s, slot, sp, L.settleCover, EV.settled, f);
   }
 }
 
@@ -92,7 +109,8 @@ export function sporeRain(s: State, P: Profile[], dt: number) {
     if (!s.foundings[SPECIES[sp].id] || rand(s) >= dt * L.rain) continue;
     const i = Math.floor(rand(s) * n), slot = P[sp].stratum * n + i;
     if (s.terrain[i] === SEA || s.occ[slot] >= 0) continue;
-    if (fit(s, P[sp], i) >= L.rainMinFit) settle(s, slot, sp, L.settleCover, EV.rain);
+    const f = fit(s, P[sp], i);
+    if (f >= L.rainMinFit) settle(s, slot, sp, L.settleCover, EV.rain, f);
   }
 }
 
@@ -114,5 +132,5 @@ export function flares(s: State, dt: number) {
       kill(s, slot, EV.flare); s.count[sp]--; cleared++;
     }
   }
-  s.log.push({ tick: s.tick, kind: 'flare', x: vx, y: vy, n: cleared });
+  s.log.push({ tick: s.tick, kind: 'flare', x: vx, y: vy, n: cleared, name: s.landmarks[s.mark[v]]?.name ?? 'A steam vent' });
 }

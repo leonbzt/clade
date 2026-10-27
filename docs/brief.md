@@ -40,6 +40,14 @@ What's **decided**. Only the user moves things into this file. AI proposals live
   level up, random combinations, realistic trade-offs, and some picks that are mostly gain. "Characterised"
   species or individuals you combine; you see the traits change; clearly visible meanings. Still open.
 
+### Direction *(27 Oct, after playing slice 05)*
+- **Calm the sim:** tiles and stocks such as litter change gradually. Nitrogen mustn't be high everywhere;
+  plants using more of it is the first approach.
+- **A larger island at a higher resolution.**
+- **Landmarks, starting with vents, springs, beaches and caves.** No seabird cliff for now. Salt becomes a status
+  of the beach, not a layer.
+- **Fewer visible layers, more hidden depth.**
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.
@@ -122,7 +130,7 @@ You want these in the game at some point, but not before the core works *(25 Oct
 - The other research proposals: a diary-style map of next steps, bundles as regional goals, relationships that feed each other, small named levels
 - **Idea (27 Oct): two zoom levels.** A rough overview and a detailed, animated view of a tile. Chunks of tiles
   as a higher-level unit: a landscape view from far away; only up close you see the local ground and biomes.
-- **Idea (27 Oct): landmarks.** Vents, beaches, waterfalls, rivers, caves. Salt as a status of the beach, not a layer.
+- **Idea (27 Oct): landmarks.** Waterfalls, rivers and the rest. The first set (vents, springs, beaches, caves) moved to Direction (after slice 05).
 
 ## Open questions
 

@@ -42,6 +42,6 @@ export function interactionTable(): string {
     return ((m ? (m > 0 ? '+' : '−') : '') + need).padEnd(7);
   }).join(''));
   const made = new Set(SPECIES.flatMap((sp) => Object.entries(sp.makes).filter(([, v]) => v! > 0).map(([l]) => l)));
-  const orphans = LAYER_IDS.filter((l) => FIELDS[l].kind !== 'base' && !made.has(l) && !(FIELDS[l].kind === 'level'));
+  const orphans = LAYER_IDS.filter((l) => !made.has(l) && !(FIELDS[l].kind === 'level'));
   return [head, ...rows, `layers nobody makes: ${orphans.join(', ') || 'none'}`].join('\n');
 }

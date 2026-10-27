@@ -1,13 +1,13 @@
 // Numbers about the whole island: limits per species, trends for the feed, diversity and dominance for the runner.
-import { LAYER_IDS, STRATA } from '../data/fields';
+import { LIMIT_COUNT, STRATA } from '../data/fields';
 import { NUM } from '../data/numbers';
 import { SPECIES } from '../data/species';
 import { fit, limitOf, type Profile } from './fit';
 import { SEA, type State } from './state';
 
-/** For one species: how many of its tiles each layer holds back (index = layer; one more = not held back). */
+/** For one species: how many of its tiles each limit holds back (index = limit; one more = not held back). */
 export function limitShare(s: State, p: Profile): number[] {
-  const n = s.w * s.h, none = LAYER_IDS.length, out = new Array(none + 1).fill(0);
+  const n = s.w * s.h, none = LIMIT_COUNT, out = new Array(none + 1).fill(0);
   for (let i = 0; i < n; i++) {
     if (s.occ[p.stratum * n + i] !== p.sp) continue;
     const f = fit(s, p, i), l = limitOf();
@@ -21,7 +21,7 @@ export function trends(s: State, P: Profile[]) {
   for (let sp = 0; sp < SPECIES.length; sp++) {
     const before = s.prevCount[sp], now = s.count[sp], delta = now - before;
     if (!s.foundings[SPECIES[sp].id] || Math.abs(delta) < Math.max(8, 0.25 * before)) continue;
-    const share = limitShare(s, P[sp]).slice(0, LAYER_IDS.length);
+    const share = limitShare(s, P[sp]).slice(0, LIMIT_COUNT);
     const limit = share.indexOf(Math.max(...share));
     s.log.push({ tick: s.tick, kind: 'trend', sp, delta, limit: share[limit] > 0 ? limit : -1 });
   }
@@ -71,3 +71,33 @@ export function changed(s: State, a: Int8Array, b: Int8Array): number {
 }
 
 export const minutes = (s: State) => s.tick / (60 * NUM.ticksPerSec);
+
+/** Mean change per land tile of one layer between two copies of it. */
+export function swing(s: State, a: Float32Array, b: Float32Array): number {
+  let sum = 0, c = 0;
+  for (let i = 0; i < a.length; i++) if (s.terrain[i] !== SEA) { sum += Math.abs(a[i] - b[i]); c++; }
+  return c ? sum / c : 0;
+}
+
+/** A layer's median and top tenth over the land. */
+export function spreadOf(s: State, v: Float32Array): { median: number; top: number } {
+  const xs = Array.from(v).filter((_, i) => s.terrain[i] !== SEA).sort((a, b) => a - b);
+  return { median: xs[Math.floor(xs.length / 2)] ?? 0, top: xs[Math.floor(xs.length * 0.9)] ?? 0 };
+}
+
+/** Landmarks with at least `min` plant species living within `radius` tiles of them. */
+export function livelyLandmarks(s: State, radius = 4, min = 3): number {
+  const n = s.w * s.h;
+  let lively = 0;
+  for (const m of s.landmarks) {
+    const seen = new Set<number>();
+    for (const t of m.tiles) {
+      const tx = t % s.w, ty = (t / s.w) | 0;
+      for (let y = Math.max(0, ty - radius); y <= Math.min(s.h - 1, ty + radius); y++)
+        for (let x = Math.max(0, tx - radius); x <= Math.min(s.w - 1, tx + radius); x++)
+          for (let k = 1; k < STRATA.length; k++) { const sp = s.occ[k * n + y * s.w + x]; if (sp >= 0) seen.add(sp); }
+    }
+    if (seen.size >= min) lively++;
+  }
+  return lively;
+}

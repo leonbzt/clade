@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FIELDS, LAYER_IDS, STRATUM_NAMES, type LayerId } from '../data/fields';
+  import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUSES, STRATUM_NAMES, limitName, type LayerId, type StatusId } from '../data/fields';
   import { SPECIES, SPECIES_INDEX, type Scalar } from '../data/species';
   import { coverCount, foundingCost, unlockedSpecies } from '../sim/commands';
   import { profile } from '../sim/fit';
@@ -13,6 +13,7 @@
     ['hold', 'Holds ground', (v) => v.toFixed(2)],
     ['yield', 'Yield', (v) => `${v.toFixed(2)}/s`],
     ['life', 'Lifespan', (v) => `${Math.round(v)} s`],
+    ['reserve', 'Reserves', (v) => `${Math.round(v)} s`],
   ];
 
   const list = $derived.by(() => {
@@ -32,7 +33,7 @@
     if (!list.some((s) => s.id === def.id)) return null;
     const p = profile(game, SPECIES_INDEX[def.id]);
     const share = limitShare(game, p), total = share.reduce((a, b) => a + b, 0);
-    const limits = share.map((c, j) => ({ name: j < LAYER_IDS.length ? FIELDS[LAYER_IDS[j]].name.toLowerCase() : 'nothing', pct: total ? Math.round((100 * c) / total) : 0 }))
+    const limits = share.map((c, j) => ({ name: j < LIMIT_COUNT ? limitName(j).toLowerCase() : 'nothing', pct: total ? Math.round((100 * c) / total) : 0 }))
       .filter((x) => x.pct > 0).sort((a, b) => b.pct - a.pct);
     return {
       def, owned: [...game.traits[def.id]], biomass: game.biomass, stratum: STRATUM_NAMES[def.stratum], limits,
@@ -41,6 +42,7 @@
         return { id, name: FIELDS[id].name, color: FIELDS[id].color, lo: clip(b[0]), a: clip(b[1]), z: clip(b[2]), hi: clip(b[3]),
           text: `ideal ${b[1] < 0 ? 0 : b[1]}–${b[2] > 1 ? 1 : b[2]}`, why: p.parts[`need:${id}`].join('\n') || 'base' };
       }),
+      tolerance: (Object.entries(def.tolerance) as [StatusId, number][]).map(([id, tol]) => `${STATUSES[id].name}: keeps ${Math.round(tol * 100)}% of its fit`),
       makes: (Object.entries(p.makes) as [LayerId, number][]).map(([id, r]) => ({
         text: FIELDS[id].kind === 'level' ? `${FIELDS[id].name.toLowerCase()} +${r}` : r > 0 ? `${FIELDS[id].name.toLowerCase()} +${r}/s` : `uses ${FIELDS[id].name.toLowerCase()} ${-r}/s`,
         color: FIELDS[id].color, why: p.parts[`make:${id}`].join('\n'),
@@ -81,6 +83,9 @@
         <span class="dim small">{n.text}</span>
       </div>
     {/each}
+    {#if card.tolerance.length}
+      <div class="makes dim">{#each card.tolerance as t (t)}<span>{t}</span>{/each}</div>
+    {/if}
     <h3>Makes</h3>
     <div class="makes">
       {#each card.makes as m (m.text)}<span title={m.why}><span class="swatch" style:background={m.color}></span>{m.text}</span>{/each}

@@ -1,6 +1,6 @@
 // The map's reading views: zones (who holds each stratum), one layer as a single-colour ramp, and the placement
 // view (fit tier, the limiting layer, an outline around where you can place, and the best spots).
-import { FIELDS, LAYER_IDS, STRATA, type LayerId } from '../data/fields';
+import { FIELDS, STRATA, limitColor, type LayerId } from '../data/fields';
 import { NUM } from '../data/numbers';
 import { PAL, TIER_COLORS, ZONE } from '../data/palette';
 import { SPECIES, SPECIES_INDEX } from '../data/species';
@@ -93,8 +93,8 @@ export class PlacingView {
       ctx.globalAlpha = 1;
       // The limiting layer, as a small mark in its colour (S tiles have nothing holding them back).
       if (c.ok && tier !== 'S' && c.limit >= 0) {
-        ctx.fillStyle = PAL.ink; ctx.fillRect(x + 2, y + 2, 6, 6);
-        ctx.fillStyle = FIELDS[LAYER_IDS[c.limit]].color; ctx.fillRect(x + 3, y + 3, 4, 4);
+        ctx.fillStyle = PAL.ink; ctx.fillRect(x + 2, y + 2, 5, 5);
+        ctx.fillStyle = limitColor(c.limit); ctx.fillRect(x + 3, y + 3, 3, 3);
       }
     }
     // An outline around the area you can place on.

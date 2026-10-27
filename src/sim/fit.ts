@@ -1,20 +1,22 @@
 // Profiles (a species with its traits applied, each change tagged with its source), need scores, fit and tiers.
-import { FIELDS, LAYER_IDS, STRATA, type LayerId, type LevelDef } from '../data/fields';
+import { FIELDS, LAYER_IDS, STATUS_IDS, STRATA, type LayerId, type LevelDef, type StatusId } from '../data/fields';
 import { NUM } from '../data/numbers';
 import { SPECIES, type Band, type Scalar } from '../data/species';
 import { SEA, type State } from './state';
 
 export type Need = { layer: number; band: Band };
+export type Tolerance = { status: number; tol: number }; // index into STATUS_IDS; the score at full strength
 export type Profile = {
   sp: number;
   stratum: number;
   needs: Need[];
+  tolerance: Tolerance[];
   makes: Partial<Record<LayerId, number>>;
   stats: Record<Scalar, number>;
   parts: Record<string, string[]>; // why each number is what it is: 'seeds', 'need:water', 'make:nitrogen', ...
 };
 
-const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow'];
+const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'reserve'];
 
 export function profile(s: State, sp: number): Profile {
   const def = SPECIES[sp], owned = def.traits.filter((t) => s.traits[def.id].includes(t.id));
@@ -37,7 +39,9 @@ export function profile(s: State, sp: number): Profile {
   const needs = (Object.entries(bands) as [LayerId, number[]][]).map(([id, b]) => ({
     layer: LAYER_IDS.indexOf(id), band: b as unknown as Band,
   }));
-  return { sp, stratum: STRATA.indexOf(def.stratum), needs, makes, stats, parts };
+  // Statuses not listed are tolerated fully.
+  const tolerance = (Object.entries(def.tolerance) as [StatusId, number][]).map(([id, tol]) => ({ status: STATUS_IDS.indexOf(id), tol }));
+  return { sp, stratum: STRATA.indexOf(def.stratum), needs, tolerance, makes, stats, parts };
 }
 
 export function profiles(s: State): Profile[] {
@@ -62,7 +66,10 @@ export function feltValue(s: State, layer: number, stratum: number, i: number): 
 }
 
 let lastLimit = -1;
-/** Fit 0–1: the lowest need score. `limitOf()` right after tells which layer set it. */
+/** The score a status gives: 1 where it's absent, down to the tolerance at full strength. */
+export const statusScore = (strength: number, tol: number) => 1 - strength * (1 - tol);
+
+/** Fit 0–1: the lowest need score, statuses included. `limitOf()` right after tells which limit set it. */
 export function fit(s: State, p: Profile, i: number): number {
   lastLimit = -1;
   if (s.terrain[i] === SEA) return 0;
@@ -71,10 +78,14 @@ export function fit(s: State, p: Profile, i: number): number {
     const v = score(feltValue(s, n.layer, p.stratum, i), n.band);
     if (v < f) { f = v; lastLimit = n.layer; }
   }
+  for (const t of p.tolerance) {
+    const v = statusScore(s.statuses[STATUS_IDS[t.status]][i], t.tol);
+    if (v < f) { f = v; lastLimit = LAYER_IDS.length + t.status; }
+  }
   return f;
 }
 
-/** The limiting layer of the last fit() call, or -1 when nothing held it back. */
+/** The limit (layer, or LAYER_IDS.length + status) of the last fit() call, or -1 when nothing held it back. */
 export const limitOf = () => lastLimit;
 
 export function tierOf(f: number): string | null {

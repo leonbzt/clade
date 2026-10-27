@@ -5,14 +5,16 @@
 // it scores 1, on the slopes 0.2–1. Fit on a tile = its lowest need score (the limit).
 // Makes into a stock (soil, nitrogen, litter) are per second × activity (cover × fit); negative means "uses".
 // Makes into a level (shade, water) are a contribution × cover.
-import type { LayerId, StratumId } from './fields';
+// Health follows fit with a lag of `reserve` seconds, so big plants switch on and off slowly. A status (salt)
+// counts like a need: at full strength it scores the species' tolerance (1 = doesn't mind).
+import type { LayerId, StatusId, StratumId } from './fields';
 
 export type Band = readonly [number, number, number, number];
 const band = (a: number, b: number, c: number, d: number): Band => [a, b, c, d];
 const upTo = (ok: number, max: number): Band => [-1, -1, ok, max];
 const from = (min: number, ok: number): Band => [min, ok, 2, 2];
 
-export type Scalar = 'seeds' | 'hold' | 'yield' | 'life' | 'grow';
+export type Scalar = 'seeds' | 'hold' | 'yield' | 'life' | 'grow' | 'reserve';
 export type Mod =
   | { stat: Scalar; mul: number }
   | { need: LayerId; low?: number; high?: number } // moves the lower or upper edge of a band
@@ -29,8 +31,10 @@ export type SpeciesDef = {
   yield: number; // biomass per second at full activity
   life: number; // mean lifespan in seconds
   grow: number; // cover gained per second at fit 1
-  litter: number; // litter left on the tile when it dies, × cover
+  reserve: number; // seconds for health to follow fit
+  litter: number; // litter left when it dies, × cover
   needs: Partial<Record<LayerId, Band>>;
+  tolerance: Partial<Record<StatusId, number>>;
   makes: Partial<Record<LayerId, number>>;
   traits: Trait[];
   blurb: string;
@@ -39,9 +43,9 @@ export type SpeciesDef = {
 export const SPECIES: SpeciesDef[] = [
   {
     id: 'cyano', name: 'Cyanobacteria', stratum: 'ground',
-    seeds: 0.4, hold: 0.6, yield: 0.04, life: 120, grow: 0.1, litter: 0.05,
+    seeds: 0.4, hold: 0.6, yield: 0.04, life: 400, grow: 0.1, reserve: 15, litter: 0.02, tolerance: {},
     needs: { water: band(0.22, 0.45, 0.85, 1.3), soil: upTo(0.35, 0.55), shade: upTo(0.2, 0.5) },
-    makes: { nitrogen: 0.006, soil: 0.0017 },
+    makes: { nitrogen: 0.005, soil: 0.0017 },
     blurb: 'A dark living crust on damp rock and salty sand. Fixes nitrogen from the air. Quick to spread, easy to push aside, needs open sky.',
     traits: [
       { id: 'sheath', name: 'Sun-screen sheath', up: 'lives 0.1 drier', down: 'spreads 15% slower', cost: 15,
@@ -52,8 +56,8 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'liverwort', name: 'Liverworts', stratum: 'ground',
-    seeds: 0.35, hold: 1.2, yield: 0.08, life: 200, grow: 0.08, litter: 0.15,
-    needs: { water: from(0.45, 0.75), shade: upTo(0.6, 0.95), salt: upTo(0.1, 0.9) },
+    seeds: 0.35, hold: 1.2, yield: 0.08, life: 700, grow: 0.08, reserve: 25, litter: 0.06, tolerance: { salty: 0.3 },
+    needs: { water: from(0.45, 0.75), shade: upTo(0.6, 0.95) },
     makes: { water: 0.05, soil: 0.0033, nitrogen: -0.0005 },
     blurb: 'Flat green ribbons that need it very wet. They own the steam vents and put up with shade.',
     traits: [
@@ -65,9 +69,9 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'moss', name: 'Mosses', stratum: 'ground',
-    seeds: 0.3, hold: 1, yield: 0.1, life: 240, grow: 0.08, litter: 0.2,
-    needs: { water: band(0.3, 0.5, 0.7, 1.05), shade: upTo(0.45, 0.85), salt: upTo(0.1, 0.95) },
-    makes: { soil: 0.004, water: 0.1, nitrogen: -0.001, litter: 0.0005 },
+    seeds: 0.3, hold: 1, yield: 0.1, life: 900, grow: 0.08, reserve: 30, litter: 0.08, tolerance: { salty: 0.35 },
+    needs: { water: band(0.3, 0.5, 0.7, 1.05), shade: upTo(0.45, 0.85) },
+    makes: { soil: 0.004, water: 0.1, nitrogen: -0.001, litter: 0.0003 },
     blurb: 'Damp-lovers. They build the first real soil and hold water in it. They grow on under ferns.',
     traits: [
       { id: 'rhizoids', name: 'Rhizoids', up: 'lives 0.1 drier', down: 'spreads 15% slower', cost: 30,
@@ -80,9 +84,9 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'lichen', name: 'Lichens', stratum: 'ground',
-    seeds: 0.12, hold: 0.8, yield: 0.05, life: 600, grow: 0.03, litter: 0.1,
-    needs: { water: upTo(0.2, 0.65), soil: upTo(0.25, 0.55), shade: upTo(0.15, 0.4), salt: upTo(0.1, 0.95) },
-    makes: { soil: 0.0027, nitrogen: 0.003 },
+    seeds: 0.12, hold: 0.8, yield: 0.05, life: 2400, grow: 0.03, reserve: 60, litter: 0.04, tolerance: { salty: 0.4 },
+    needs: { water: upTo(0.2, 0.65), soil: upTo(0.25, 0.55), shade: upTo(0.15, 0.4) },
+    makes: { soil: 0.0027, nitrogen: 0.0003 },
     blurb: 'A fungus living with cyanobacteria. The pioneer of dry bare lava: it weathers rock into soil, then fades once the soil gets deep.',
     traits: [
       { id: 'crustose', name: 'Tight crust', up: 'holds ground 30% better', down: 'spreads 20% slower', cost: 120,
@@ -93,9 +97,9 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'fungus', name: 'Soil fungi', stratum: 'under',
-    seeds: 0.25, hold: 1, yield: 0.08, life: 180, grow: 0.08, litter: 0.05,
-    needs: { litter: from(0.03, 0.15), water: band(0.25, 0.4, 0.9, 1.2), soil: from(0.05, 0.15), salt: upTo(0.2, 0.9) },
-    makes: { litter: -0.01, nitrogen: 0.006 },
+    seeds: 0.25, hold: 1, yield: 0.08, life: 600, grow: 0.08, reserve: 30, litter: 0.02, tolerance: { salty: 0.35 },
+    needs: { litter: from(0.03, 0.2), water: band(0.25, 0.4, 0.9, 1.2), soil: from(0.05, 0.15) },
+    makes: { litter: -0.004, nitrogen: 0.006 },
     blurb: 'Threads under the ground that rot dead plants. They turn litter back into nitrogen that plants can use.',
     traits: [
       { id: 'mycelium', name: 'Fast mycelium', up: 'spreads 40% faster', down: 'yields 15% less', cost: 200,
@@ -106,9 +110,9 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'clubmoss', name: 'Club mosses', stratum: 'herb',
-    seeds: 0.2, hold: 1.4, yield: 0.25, life: 300, grow: 0.06, litter: 0.3,
-    needs: { water: band(0.26, 0.36, 0.6, 0.85), soil: band(0.2, 0.3, 0.55, 0.85), nitrogen: from(0.03, 0.1), salt: upTo(0.05, 0.85) },
-    makes: { shade: 0.3, soil: 0.005, nitrogen: -0.002, litter: 0.002 },
+    seeds: 0.12, hold: 1.4, yield: 0.25, life: 1800, grow: 0.06, reserve: 60, litter: 0.12, tolerance: { salty: 0.25 },
+    needs: { water: band(0.28, 0.4, 0.62, 0.85), soil: band(0.2, 0.3, 0.55, 0.85), nitrogen: from(0.02, 0.07) },
+    makes: { shade: 0.3, soil: 0.005, nitrogen: -0.005, litter: 0.001 },
     blurb: 'The first vascular plants here. They take thin soil and some nitrogen, cast a light shade, and give way to ferns where soil gets deep.',
     traits: [
       { id: 'strobili', name: 'Spore cones', up: 'spreads 40% faster', down: 'yields 15% less', cost: 250,
@@ -121,9 +125,9 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'fern', name: 'Ferns', stratum: 'herb',
-    seeds: 0.12, hold: 2, yield: 0.6, life: 420, grow: 0.04, litter: 0.5,
-    needs: { water: band(0.3, 0.42, 0.72, 0.92), soil: from(0.45, 0.6), nitrogen: from(0.05, 0.15), salt: upTo(0.05, 0.82) },
-    makes: { shade: 0.7, soil: 0.005, nitrogen: -0.004, litter: 0.004 },
+    seeds: 0.16, hold: 2, yield: 0.6, life: 2400, grow: 0.04, reserve: 90, litter: 0.2, tolerance: { salty: 0.2 },
+    needs: { water: band(0.3, 0.42, 0.72, 0.92), soil: from(0.45, 0.6), nitrogen: from(0.03, 0.12) },
+    makes: { shade: 0.7, soil: 0.005, nitrogen: -0.008, litter: 0.002 },
     blurb: 'Tall and shady. They need deep soil and a lot of nitrogen, and shade out the crusts beneath them.',
     traits: [
       { id: 'sori', name: 'Spore dots', up: 'spreads 50% faster', down: 'yields 20% less', cost: 1500,

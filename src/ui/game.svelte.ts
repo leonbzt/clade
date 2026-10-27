@@ -1,5 +1,5 @@
 // Holds the live game, runs the fixed-tick loop, and turns UI actions into sim commands.
-// Panels re-read the game when `ui.v` bumps (5 times a second); the map redraws every frame.
+// Panels re-read the game when `ui.v` bumps (twice a second, so numbers stay readable); the map redraws every frame.
 import { NUM } from '../data/numbers';
 import { SPECIES } from '../data/species';
 import * as cmd from '../sim/commands';
@@ -36,7 +36,7 @@ function frame(now: number) {
   let n = 0;
   while (acc >= TICK_MS && n < 5000) { step(game); acc -= TICK_MS; n++; }
   if (n >= 5000) acc = 0;
-  if (now - lastBump > 200) { ui.v++; lastBump = now; }
+  if (now - lastBump > 500) { ui.v++; lastBump = now; }
   requestAnimationFrame(frame);
 }
 
@@ -49,7 +49,7 @@ export function start() {
     skip, addBiomass, reset, autoplay, unlockAll,
   };
   // Dev URL options for screenshots and previews: ?bot=600 (the bot plays 600 s), ?tab=species|tile, ?tile=412,
-  // ?place=moss, ?view=zones|water|soil|nitrogen|shade|litter, ?zoom=3 (read in MapView).
+  // ?place=moss, ?view=zones|water|soil|nitrogen|shade, ?zoom=3 (read in MapView).
   const q = new URLSearchParams(location.search), bot = Number(q.get('bot'));
   if (bot > 0) autoplay(bot);
   if (q.get('tab') === 'species' || q.get('tab') === 'tile') ui.tab = q.get('tab') as 'species' | 'tile';

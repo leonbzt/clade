@@ -49,7 +49,7 @@ export function found(s: State, speciesId: string, i: number): Result {
     const sl = slotFor(s, sp, j);
     if (s.occ[sl] === sp || fit(s, P[sp], j) <= 0 || !canTake(s, P, sp, sl)) continue;
     if (s.occ[sl] >= 0) kill(s, sl, EV.taken);
-    settle(s, sl, sp, NUM.founding.cover, EV.founded);
+    settle(s, sl, sp, NUM.founding.cover, EV.founded, fit(s, P[sp], j));
     s.count[sp]++;
   }
   return { ok: true };
