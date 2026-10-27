@@ -100,3 +100,34 @@ agree on the core; the points where they differed are marked.
 - View only: the whole sim keeps running (it's under 1 ms). Overview: ~8×8-tile chunks as ground colour + name, no
   sprites. Close view: one chunk at ~4× with sprites and animals. Biomes become named chunks instead of a stage.
 - The real compute issue is offline catch-up (8 h ≈ 12 min at today's headless speed): needs a coarse fast-forward.
+
+## P16. Variants in the UI and the tree of life *(27 Oct, after playing slice 07)*
+Three questions: how to order species and variants, what founding means, how both sit in the tree.
+
+**Ordering (pick one or mix):**
+- **a. Lineage list.** The species tab becomes an indented list: clade → species → variants. A founded species
+  nests under the species it came from. Rows collapse; variants sort by tiles.
+- **b. Population bar.** One compact row per species with a single chromosome-style strip: its variants as
+  segments sized by tiles, coloured by tier. Click to expand into the full variant rows. Scans well with many species.
+- **c. One tree screen.** Merge the Tree and Species tabs: real clades are branches, your species are leaves,
+  variants are twigs on hover. A side card shows whatever you click.
+- *AI pick: b inside a* (the list stays the workhorse; the tree becomes the trophy view, see below).
+
+**What founding means (today it's only a new name and pool):**
+- **d. Founding moves the centre (a ratchet).** A species' variants stay within ±2 of its own base. Founding a
+  Rare form makes that form the new base, so its children can reach +3, +4. Extremes (and some combos) are only
+  reachable through a chain of foundings. Founding becomes the steering verb, not a cosmetic split.
+- **e. Precursor genes lead to the next clade.** Each key innovation needs precursor genes first, as in the brief
+  (Mosses: rhizoids, surviving drying out, a stalked capsule, then the leafy shoot). A species carrying more
+  precursors gets better key-innovation odds. You found species that carry them, to breed toward the next node.
+  Every node could get one key gene this way (Vascular: water-carrying tissue).
+- **f. Slots (Q8).** Each founded species takes a slot; few slots make the pick matter. Can come later.
+- *AI pick: d + e.* They make founding the path to unlocks, and the pity timer still keeps the pacing.
+
+**In the tree of life:**
+- Real nodes stay fixed (the clades). **Your species are leaves** under their clade, linked to the species they
+  came from: your own family tree inside the real one. Extinct species stay as grey fossils.
+- A leaf shows its tier colour, tiles and a mini population bar (b). The next locked node shows which of your
+  species is closest to its key gene (e's precursors as a checklist).
+- Later, maybe: a time axis (branches drawn when founded), and wild splits (shown as leaves you didn't found).
+- Cost: d + e and the tree leaves ≈ one slice; the ordering alone ≈ half a slice.
