@@ -122,6 +122,7 @@ You want these in the game at some point, but not before the core works *(25 Oct
 - The other research proposals: a diary-style map of next steps, bundles as regional goals, relationships that feed each other, small named levels
 - **Idea (27 Oct): two zoom levels.** A rough overview and a detailed, animated view of a tile. Chunks of tiles
   as a higher-level unit: a landscape view from far away; only up close you see the local ground and biomes.
+- **Idea (27 Oct): landmarks.** Vents, beaches, waterfalls, rivers, caves. Salt as a status of the beach, not a layer.
 
 ## Open questions
 

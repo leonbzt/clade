@@ -58,3 +58,12 @@ agree on the core; the points where they differed are marked.
 - **Stages:** 05 readable layers (rewrite of the sim core, six species ported, fungi added as data only) → 06 first
   biomes → 07 trees (canopy) → sea line → animals as density fields (individuals drawn only in the view) → the
   adapting minigame (traits move need curves, so you see what they change).
+
+## P10. Landmarks and static layers *(27 Oct, from your landmark idea)*
+- **Static layers cost nothing per tick:** they're set when the island is made (like terrain and base wetness) and
+  never recomputed. So the CPU allows many. The real limit is reading: each layer you *see* should change a
+  placement decision. So: few visible layers, and more static ones folded into landmarks.
+- **Landmarks as tile features:** a feature per tile (vent, beach, river, waterfall, cave, ...) with fixed effects:
+  wetness, shelter, a status. The beach gives the status **Salty**; species have a tolerance instead of a salt band
+  (fit × tolerance). The tile card shows "Beach: salty (−70% for mosses)".
+- Landmarks also give the map names and places to aim for, and biomes can grow around them.

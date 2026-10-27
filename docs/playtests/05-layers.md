@@ -6,13 +6,20 @@ Your notes from chat, condensed.
 - It looks different and feels a lot more dynamic. A good first start that needs refinement.
 - Water stays concentrated around the vents (maybe a good thing). There are two healthy, diverse spots around them.
 
+- The rendering is ugly, but you like the game state that evolved.
+
 **Big issues**
 - **Everything is very jumpy.** Some stocks should be larger. Litter, for example, swings a lot.
 - **Few layers of organisms, and no real canopy.**
 - **The island feels small.** Maybe a higher resolution and a larger map.
 
+- Salt shouldn't really be a layer. Maybe a reduction or a status instead.
+
 **Idea, saved for later:** a rough overview and a detailed, animated view of a tile. Maybe chunks of tiles become a
 higher-level unit: a landscape view from far away, and only up close do you see the local ground and biomes.
+
+**Idea: landmarks.** Vents, beaches, waterfalls, rivers, caves and so on. The beach could carry the salt. Or a few
+static layers that are cheaper to compute: could that allow many layers?
 
 ## AI notes for the next session (causes to check, not decided)
 - **Jumpy tiles:** a plant vanishes at once when it dies (cover goes straight to 0), and lifespans are short
