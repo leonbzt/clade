@@ -12,8 +12,8 @@ export function strataMap(s: State, stratum: (typeof STRATA)[number]): string {
   for (let y = 0; y < s.h; y++) {
     let row = '';
     for (let x = 0; x < s.w; x++) {
-      const i = y * s.w + x, sp = s.occ[k * n + i];
-      row += s.terrain[i] === SEA ? ' ' : sp < 0 ? '.' : LETTERS[sp];
+      const i = y * s.w + x, v = s.occ[k * n + i];
+      row += s.terrain[i] === SEA ? ' ' : v < 0 ? '.' : LETTERS[s.species[s.variants[v].sp].base];
     }
     rows.push(row);
   }

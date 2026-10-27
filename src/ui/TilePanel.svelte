@@ -7,7 +7,8 @@
   import { profiles } from '../sim/fit';
   import { SEA } from '../sim/state';
   import { TIER_COLORS } from '../data/palette';
-  import { game, ui } from './game.svelte';
+  import { TIER, TIERS } from '../data/genes';
+  import { game, seeVariants, ui } from './game.svelte';
 
   const card = $derived.by(() => {
     ui.v;
@@ -15,11 +16,14 @@
     if (i < 0 || game.terrain[i] === SEA) return null;
     const P = profiles(game), n = game.w * game.h;
     const slots = STRATA.map((_, k) => {
-      const info = slotInfo(game, P, k, i), sp = game.occ[k * n + i];
-      return { ...info, why: info.fit && sp >= 0 ? limitText(P[sp], info.fit) : '' };
+      const info = slotInfo(game, P, k, i), v = game.occ[k * n + i];
+      return { ...info, why: info.fit && v >= 0 ? limitText(P[v], info.fit) : '' };
     }).reverse();
     return { x: i % game.w, y: (i / game.w) | 0, place: placeInfo(game, i), slots, layers: layerInfo(game, P, i) };
   });
+
+  // Looking at a tile counts as looking at its variants: a rare one stops glinting.
+  $effect(() => { if (card) seeVariants(card.slots.filter((sl) => sl.variant?.shown).map((sl) => sl.variant!.v)); });
 
   const num = (v: number) => (Math.abs(v) < 5e-6 ? '0' : (v > 0 ? '+' : '') + String(+v.toPrecision(2)));
   const pct = (v: number) => `${Math.round(v * 100)}%`;
@@ -42,6 +46,14 @@
           {#if sl.dying}<span class="bad">dying</span>{/if}
         {:else}<span class="dim">empty</span>{/if}
       </div>
+      {#if sl.variant}
+        {@const t = TIERS[sl.variant.tier]}
+        <div class="small">
+          {#if sl.variant.shown || sl.variant.tier === TIER.base}<b style:color={t.color}>{sl.variant.name}</b>
+            <span class="dim">({sl.variant.tier === TIER.base ? 'base form' : `${t.name}: ${sl.variant.genes}`})</span>
+          {:else}<span class="dim">a new form, too few plants to name yet</span>{/if}
+        </div>
+      {/if}
       <div class="small">{sl.why || ' '}</div>
       {#if sl.fit}
         <div class="needs">

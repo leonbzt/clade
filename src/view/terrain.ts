@@ -2,20 +2,19 @@
 // soil and ground cover dithered in.
 // Coastlines come from a smoothed tile mask plus noise, so they read organic instead of blocky.
 // Soil and cover grow in organic blotches because each pixel has a fixed threshold from noise.
-// Ground cover is how a ground species "dyes" the tile it holds, so zones read as areas, not sprite fields.
+// Ground cover is how a ground species "dyes" the tile it holds, so zones read as areas, not sprite fields. The
+// species decides where cover shows; the strongest variant on the spot gives its tinted colour.
 import { NUM } from '../data/numbers';
 import { GROUND, PAL } from '../data/palette';
-import { SPECIES } from '../data/species';
 import { COVER_STRENGTH } from '../data/view';
 import { BEACH, CAVE, SEA, VENT, CRACK, type State } from '../sim/state';
-import { hash2, makeCanvas, noise, rgba32 } from './pixels';
+import { defOf } from '../sim/variants';
+import { lookOf } from './look';
+import { hash2, makeCanvas, noise, rgba32, tinted } from './pixels';
 
 const T = NUM.map.tile;
 const SOIL = [PAL.soil0, PAL.soil1, PAL.soil2, PAL.soil3].map((c) => rgba32(c));
 const SOIL_DARK = [PAL.soil0, PAL.soil0, PAL.soil1, PAL.soil2].map((c) => rgba32(c));
-const COVER = SPECIES.map((s) => rgba32(GROUND[s.id]));
-const COVER_LIGHT = SPECIES.map((s) => rgba32(shift(GROUND[s.id], 1.25)));
-const STRENGTH = SPECIES.map((s) => COVER_STRENGTH[s.id] ?? 1);
 
 function shift(hex: string, k: number): string {
   const n = parseInt(hex.slice(1), 16), c = (v: number) => Math.min(255, Math.round(v * k)).toString(16).padStart(2, '0');
@@ -31,7 +30,8 @@ export class TerrainLayer {
   private coverAt: Float32Array; // cover shows on a pixel once the local cover passes this
   private shade: Uint8Array; // which soil and cover shade a pixel uses
   private sig: Int32Array; // per tile: what was drawn last time
-  private ws = new Float32Array(SPECIES.length); // scratch for coverHere
+  private colors = new Map<string, [number, number]>(); // look → cover colour, light cover colour
+  private sps = [-1, -1, -1, -1]; private ws = [0, 0, 0, 0]; private vs = [-1, -1, -1, -1]; private wk = [0, 0, 0, 0]; // coverHere scratch
 
   constructor(private s: State) {
     const W = s.w * T, H = s.h * T;
@@ -163,28 +163,45 @@ export class TerrainLayer {
       const p = y * W + x;
       let c = f * 1.25 > this.soilAt[p] ? (this.shade[p] ? SOIL[deep] : SOIL_DARK[deep]) : this.base[p];
       if (this.coverAt[p] < 2) {
-        const [sp, w] = this.coverHere(x, y);
-        if (sp >= 0 && w > this.coverAt[p]) c = this.shade[p] && hash2(x, y, 3) > 0.6 ? COVER_LIGHT[sp] : COVER[sp];
+        const [v, w] = this.coverHere(x, y);
+        if (v >= 0 && w > this.coverAt[p]) c = this.cover(v)[this.shade[p] && hash2(x, y, 3) > 0.6 ? 1 : 0];
       }
       this.px[p] = c;
     }
   }
 
-  /** Which species covers this pixel, and how strongly: a bilinear blend of the four nearest tile centres. */
+  private cover(v: number): [number, number] {
+    const look = lookOf(this.s, v);
+    let c = this.colors.get(look.key);
+    if (!c) {
+      const hex = GROUND[look.species];
+      c = [rgba32(tinted(hex, look.tint)), rgba32(tinted(shift(hex, 1.25), look.tint))];
+      this.colors.set(look.key, c);
+    }
+    return c;
+  }
+
+  /** Which variant covers this pixel, and how strongly: species blend bilinearly over the four nearest tile
+   * centres; the winning species shows its strongest variant there. */
   private coverHere(x: number, y: number): [number, number] {
     const s = this.s, u = x / T - 0.5, v = y / T - 0.5, x0 = Math.floor(u), y0 = Math.floor(v), fx = u - x0, fy = v - y0;
-    let best = -1, bestW = 0;
-    const ws = this.ws;
-    ws.fill(0);
+    const { sps, ws, vs, wk } = this;
+    let best = -1, bestW = 0, used = 0;
     const add = (tx: number, ty: number, k: number) => {
       if (tx < 0 || ty < 0 || tx >= s.w || ty >= s.h) return;
-      const j = s.w * s.h + ty * s.w + tx, sp = s.occ[j]; // ground stratum
-      if (sp < 0) return;
-      ws[sp] += k * Math.min(1, 0.45 + s.cover[j]) * STRENGTH[sp];
-      if (ws[sp] > bestW) { bestW = ws[sp]; best = sp; }
+      const j = s.w * s.h + ty * s.w + tx, va = s.occ[j]; // ground stratum
+      if (va < 0) return;
+      const sp = s.variants[va].sp, w = k * Math.min(1, 0.45 + s.cover[j]) * (COVER_STRENGTH[defOf(s, sp).id] ?? 1);
+      let e = sps.indexOf(sp, 0);
+      if (e < 0 || e >= used) { e = used++; sps[e] = sp; ws[e] = 0; wk[e] = 0; }
+      ws[e] += w;
+      if (w > wk[e]) { wk[e] = w; vs[e] = va; }
+      if (ws[e] > bestW) { bestW = ws[e]; best = e; }
     };
     add(x0, y0, (1 - fx) * (1 - fy)); add(x0 + 1, y0, fx * (1 - fy));
     add(x0, y0 + 1, (1 - fx) * fy); add(x0 + 1, y0 + 1, fx * fy);
-    return [best, bestW];
+    const out: [number, number] = [best < 0 ? -1 : vs[best], bestW];
+    sps.fill(-1);
+    return out;
   }
 }

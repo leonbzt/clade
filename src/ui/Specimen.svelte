@@ -1,11 +1,12 @@
 <script lang="ts">
+  import type { VariantLook } from '../view/look';
   import { specimen } from '../view/plants';
 
-  let { species, traits, scale = 3, size = 48 }: { species: string; traits: string[]; scale?: number; size?: number } = $props();
+  let { look, scale = 3, size = 48 }: { look: VariantLook; scale?: number; size?: number } = $props();
   let canvas: HTMLCanvasElement;
 
   $effect(() => {
-    const img = specimen(species, traits, size);
+    const img = specimen(look.species, look.traits, size, look.tint);
     canvas.width = size; canvas.height = size;
     const ctx = canvas.getContext('2d')!;
     ctx.clearRect(0, 0, size, size);

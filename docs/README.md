@@ -7,6 +7,7 @@ Read this index first, then open only what the task needs.
 | [status.md](status.md)               | Where we are; the next step                                        | Every session                  |
 | [brief.md](brief.md)                 | What's decided: pillars, current bets, open questions              | Every design session           |
 | [systems.md](systems.md)             | Live AI proposals (P1–P9)                                          | Design sessions                |
+| [species-models.md](species-models.md) | Species models compared (individuals, species, variants, mix); the variant proposal (27 Oct) | Species and evolution design |
 | [review-layer-sim.md](review-layer-sim.md) | Fresh-eyes proposal for the layered sim: model, rules, tools, stages (27 Oct) | Sim design and build |
 | [minigames.md](minigames.md)         | Brainstorm: hands-on play, one grid with four verbs, classic approaches | Minigame and kingdom design |
 | [review-fresh-eyes.md](review-fresh-eyes.md) | An outside designer's view: the core, cuts, build order, tech (26 Oct) | Before big decisions |

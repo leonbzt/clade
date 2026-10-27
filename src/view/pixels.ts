@@ -43,14 +43,20 @@ export class Painter {
   readonly h: number;
   private img: ImageData;
   private px: Uint32Array;
-  constructor(w: number, h: number) {
+  private tints = new Map<string, number>();
+  constructor(w: number, h: number, private tint: Tint = NO_TINT) {
     this.w = w; this.h = h;
     this.img = new ImageData(w, h);
     this.px = new Uint32Array(this.img.data.buffer);
   }
+  /** Colours set from now on are tinted with `t`. */
+  setTint(t: Tint) { this.tint = t; this.tints.clear(); }
   set(x: number, y: number, hex: string) {
     x = Math.round(x); y = Math.round(y);
-    if (x >= 0 && y >= 0 && x < this.w && y < this.h) this.px[y * this.w + x] = rgba32(hex);
+    if (x < 0 || y < 0 || x >= this.w || y >= this.h) return;
+    let c = this.tints.get(hex);
+    if (c === undefined) { c = rgba32(tinted(hex, this.tint)); this.tints.set(hex, c); }
+    this.px[y * this.w + x] = c;
   }
   line(x0: number, y0: number, x1: number, y1: number, hex: string) {
     const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
@@ -64,4 +70,28 @@ export class Painter {
     c.getContext('2d')!.putImageData(this.img, 0, 0);
     return c;
   }
+}
+
+/** A colour shift: hue in turns, lightness added, saturation scaled by 1 + sat. */
+export type Tint = { hue: number; light: number; sat: number };
+export const NO_TINT: Tint = { hue: 0, light: 0, sat: 0 };
+export const tintKey = (t: Tint) => `${t.hue.toFixed(3)},${t.light.toFixed(3)},${t.sat.toFixed(3)}`;
+
+/** '#rrggbb' shifted in HSL. */
+export function tinted(hex: string, t: Tint): string {
+  if (!t.hue && !t.light && !t.sat) return hex;
+  const n = parseInt(hex.slice(1), 16), r = (n >> 16) / 255, g = ((n >> 8) & 255) / 255, b = (n & 255) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), l0 = (max + min) / 2, d = max - min;
+  let h = 0, s0 = 0;
+  if (d) {
+    s0 = d / (1 - Math.abs(2 * l0 - 1));
+    h = max === r ? ((g - b) / d + 6) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    h /= 6;
+  }
+  h = (((h + t.hue) % 1) + 1) % 1;
+  const s = Math.max(0, Math.min(1, s0 * (1 + t.sat))), l = Math.max(0, Math.min(1, l0 + t.light));
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h * 6) % 2) - 1)), m = l - c / 2;
+  const [rr, gg, bb] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(h * 6) % 6];
+  const hx = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${hx(rr)}${hx(gg)}${hx(bb)}`;
 }

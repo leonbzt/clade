@@ -3,10 +3,10 @@
 import { FIELDS, LAYER_IDS, STATUS_IDS, STATUSES, STRATA, STRATUM_NAMES, limitName, type LayerId, type LevelDef, type StockDef } from '../data/fields';
 import { LANDMARKS } from '../data/landmarks';
 import { NUM } from '../data/numbers';
-import { SPECIES } from '../data/species';
 import { fellLast, gatherFlows, landMean, levelTerms, stockTerms } from './fields';
 import { feltValue, fit, limitOf, score, statusScore, tierOf, type Profile } from './fit';
 import { EV, SEA, TERRAIN_NAMES, type State } from './state';
+import { geneText, tierName, variantName } from './variants';
 
 export type NeedScore = { name: string; value: number; score: number; limiting: boolean };
 export type FitInfo = { fit: number; tier: string | null; limit: number; needs: NeedScore[] };
@@ -37,12 +37,15 @@ export function limitText(p: Profile, info: FitInfo): string {
 const CODE_TEXT: Record<number, string> = {
   [EV.settled]: 'settled from a neighbour', [EV.founded]: 'founded by you', [EV.age]: 'started dying of age',
   [EV.stress]: 'started dying of stress', [EV.taken]: 'lost the tile', [EV.flare]: 'killed by a vent flare',
-  [EV.rain]: 'arrived as spores from elsewhere',
+  [EV.rain]: 'arrived as spores from elsewhere', [EV.mutated]: 'grew a leafy shoot',
 };
+
+export type VariantInfo = { v: number; name: string; tier: number; tierName: string; genes: string; shown: boolean };
 
 export type SlotInfo = {
   stratum: string;
   species: string | null;
+  variant: VariantInfo | null;
   cover: number;
   health: number;
   dying: boolean;
@@ -51,21 +54,22 @@ export type SlotInfo = {
 };
 
 export function slotInfo(s: State, P: Profile[], k: number, i: number): SlotInfo {
-  const n = s.w * s.h, slot = k * n + i, sp = s.occ[slot];
+  const n = s.w * s.h, slot = k * n + i, v = s.occ[slot], x = v >= 0 ? s.variants[v] : null;
   let last: string | null = null;
   if (s.lastCode[slot] !== EV.none) {
-    const who = s.lastSp[slot] >= 0 ? SPECIES[s.lastSp[slot]].name + ' ' : '';
+    const who = s.lastSp[slot] >= 0 ? s.species[s.lastSp[slot]].name + ' ' : '';
     const lim = s.lastLimit[slot] >= 0 ? `, limited by ${limitName(s.lastLimit[slot]).toLowerCase()}` : '';
     const ago = Math.round((s.tick - s.lastTick[slot]) / NUM.ticksPerSec);
     last = `${who}${CODE_TEXT[s.lastCode[slot]]}${lim} · ${ago < 90 ? `${ago} s` : `${Math.round(ago / 60)} min`} ago`;
   }
   return {
     stratum: STRATUM_NAMES[STRATA[k]],
-    species: sp >= 0 ? SPECIES[sp].name : null,
-    cover: sp >= 0 ? s.cover[slot] : 0,
-    health: sp >= 0 ? s.health[slot] : 0,
-    dying: sp >= 0 && s.dying[slot] === 1,
-    fit: sp >= 0 ? fitInfo(s, P[sp], i) : null,
+    species: x ? s.species[x.sp].name : null,
+    variant: x ? { v, name: variantName(s, v), tier: x.tier, tierName: tierName(x.tier), genes: geneText(s, v), shown: x.shown } : null,
+    cover: x ? s.cover[slot] : 0,
+    health: x ? s.health[slot] : 0,
+    dying: !!x && s.dying[slot] === 1,
+    fit: x ? fitInfo(s, P[v], i) : null,
     last,
   };
 }
@@ -79,10 +83,10 @@ export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
   const who = (id: LayerId, sign: 1 | -1) => {
     const out: { label: string; value: number }[] = [];
     for (let k = 0; k < STRATA.length; k++) {
-      const slot = k * n + i, sp = s.occ[slot], r = sp >= 0 ? P[sp].makes[id] : undefined;
+      const slot = k * n + i, v = s.occ[slot], r = v >= 0 ? P[v].makes[id] : undefined;
       if (r === undefined || Math.sign(r) !== sign) continue;
       const cover = s.cover[slot];
-      out.push({ label: SPECIES[sp].name, value: FIELDS[id].kind === 'level' ? r * cover : r * cover * s.health[slot] });
+      out.push({ label: s.species[P[v].sp].name, value: FIELDS[id].kind === 'level' ? r * cover : r * cover * s.health[slot] });
     }
     return out;
   };

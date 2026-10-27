@@ -4,7 +4,8 @@ import type { LayerId } from './fields';
 
 export type Req =
   | { kind: 'layer'; layer: LayerId; min: number; tiles: number }
-  | { kind: 'cover'; species: string; tiles: number };
+  | { kind: 'cover'; species: string; tiles: number }
+  | { kind: 'gene'; species: string; gene: string }; // a key innovation appeared in that species
 
 export type TreeNode = {
   id: string;
@@ -26,7 +27,7 @@ export const TREE: TreeNode[] = [
   { id: 'liverworts', name: 'Liverworts', parent: 'land', species: 'liverwort', cost: 30, reqs: [],
     fact: 'Many liverworts grow as flat green ribbons called thalli, and they dry out quickly.' },
   { id: 'mosses', name: 'Mosses', parent: 'land', species: 'moss', cost: 80,
-    reqs: [{ kind: 'cover', species: 'liverwort', tiles: 70 }],
+    reqs: [{ kind: 'gene', species: 'liverwort', gene: 'leafy' }],
     fact: 'On Surtsey, a volcanic island that rose off Iceland in 1963, mosses were among the first plants, near steam vents.' },
   { id: 'fungi', name: 'Fungi', parent: 'life', species: 'fungus', cost: 150, reqs: [{ kind: 'cover', species: 'moss', tiles: 90 }],
     fact: 'Fungi are more closely related to animals than to plants. Most of a fungus is a net of threads in the ground.' },

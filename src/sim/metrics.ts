@@ -1,16 +1,18 @@
 // Numbers about the whole island: limits per species, trends for the feed, diversity and dominance for the runner.
 import { LIMIT_COUNT, STRATA } from '../data/fields';
 import { NUM } from '../data/numbers';
-import { SPECIES } from '../data/species';
 import { fit, limitOf, type Profile } from './fit';
 import { SEA, type State } from './state';
+import { stratumOf } from './variants';
 
-/** For one species: how many of its tiles each limit holds back (index = limit; one more = not held back). */
-export function limitShare(s: State, p: Profile): number[] {
-  const n = s.w * s.h, none = LIMIT_COUNT, out = new Array(none + 1).fill(0);
+/** For one species: how many of its tiles each limit holds back (index = limit; one more = not held back).
+ * Each tile is judged with its own variant's profile. */
+export function limitShare(s: State, P: Profile[], sp: number): number[] {
+  const n = s.w * s.h, none = LIMIT_COUNT, out = new Array(none + 1).fill(0), k = stratumOf(s, sp);
   for (let i = 0; i < n; i++) {
-    if (s.occ[p.stratum * n + i] !== p.sp) continue;
-    const f = fit(s, p, i), l = limitOf();
+    const v = s.occ[k * n + i];
+    if (v < 0 || s.variants[v].sp !== sp) continue;
+    const f = fit(s, P[v], i), l = limitOf();
     out[f >= 0.999 || l < 0 ? none : l]++;
   }
   return out;
@@ -18,14 +20,14 @@ export function limitShare(s: State, p: Profile): number[] {
 
 /** Every minute: a feed line for each placed species whose range grew or shrank a lot, with its main limit. */
 export function trends(s: State, P: Profile[]) {
-  for (let sp = 0; sp < SPECIES.length; sp++) {
+  for (let sp = 0; sp < s.species.length; sp++) {
     const before = s.prevCount[sp], now = s.count[sp], delta = now - before;
-    if (!s.foundings[SPECIES[sp].id] || Math.abs(delta) < Math.max(8, 0.25 * before)) continue;
-    const share = limitShare(s, P[sp]).slice(0, LIMIT_COUNT);
+    if (!s.foundings[s.species[sp].id] || Math.abs(delta) < Math.max(8, 0.25 * before)) continue;
+    const share = limitShare(s, P, sp).slice(0, LIMIT_COUNT);
     const limit = share.indexOf(Math.max(...share));
     s.log.push({ tick: s.tick, kind: 'trend', sp, delta, limit: share[limit] > 0 ? limit : -1 });
   }
-  s.prevCount.set(s.count);
+  s.prevCount = [...s.count];
 }
 
 export function landTiles(s: State): number {
@@ -47,19 +49,19 @@ export function hill1(s: State): number {
 export function dominance(s: State): { sp: number; share: number } {
   const land = landTiles(s);
   let best = { sp: -1, share: 0 };
-  for (let sp = 0; sp < SPECIES.length; sp++) {
-    if (SPECIES[sp].stratum === 'under') continue;
+  for (let sp = 0; sp < s.species.length; sp++) {
+    if (STRATA[stratumOf(s, sp)] === 'under') continue;
     const share = s.count[sp] / land;
     if (share > best.share) best = { sp, share };
   }
   return best;
 }
 
-/** A copy of who holds which slot, to measure turnover between two moments. */
-export const snapshot = (s: State) => Int8Array.from(s.occ);
+/** A copy of which species holds which slot, to measure turnover between two moments. */
+export const snapshot = (s: State) => Int16Array.from(s.occ, (v) => (v < 0 ? -1 : s.variants[v].sp));
 
-/** Share of plant slots (ground and herb, on land) whose occupant differs between two snapshots. */
-export function changed(s: State, a: Int8Array, b: Int8Array): number {
+/** Share of plant slots (ground and herb, on land) whose species differs between two snapshots. */
+export function changed(s: State, a: Int16Array, b: Int16Array): number {
   const n = s.w * s.h;
   let diff = 0, all = 0;
   for (let k = 1; k < STRATA.length; k++) for (let i = 0; i < n; i++) {
@@ -95,7 +97,7 @@ export function livelyLandmarks(s: State, radius = 4, min = 3): number {
       const tx = t % s.w, ty = (t / s.w) | 0;
       for (let y = Math.max(0, ty - radius); y <= Math.min(s.h - 1, ty + radius); y++)
         for (let x = Math.max(0, tx - radius); x <= Math.min(s.w - 1, tx + radius); x++)
-          for (let k = 1; k < STRATA.length; k++) { const sp = s.occ[k * n + y * s.w + x]; if (sp >= 0) seen.add(sp); }
+          for (let k = 1; k < STRATA.length; k++) { const v = s.occ[k * n + y * s.w + x]; if (v >= 0) seen.add(s.variants[v].sp); }
     }
     if (seen.size >= min) lively++;
   }

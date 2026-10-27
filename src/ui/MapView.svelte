@@ -34,7 +34,7 @@
   onMount(() => {
     let raf = 0;
     const loop = (t: number) => {
-      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1 });
+      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus });
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -109,7 +109,7 @@
     selectTile(i);
   }
 
-  const label = (v: View) => (v === 'none' ? 'Garden' : v === 'zones' ? 'Zones' : FIELDS[v as LayerId].name);
+  const label = (v: View) => (v === 'none' ? 'Garden' : v === 'zones' ? 'Zones' : v === 'variants' ? 'Variants' : FIELDS[v as LayerId].name);
 </script>
 
 <section class="map" bind:this={wrap}>

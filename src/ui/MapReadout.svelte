@@ -1,11 +1,12 @@
 <script lang="ts">
   import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATA, limitColor, limitName, type LayerId } from '../data/fields';
-  import { TIER_COLORS, ZONE } from '../data/palette';
-  import { SPECIES, SPECIES_INDEX } from '../data/species';
-  import { canFoundAt, foundingCost, unlockedSpecies } from '../sim/commands';
+  import { TIER_COLORS } from '../data/palette';
+  import { placement, unlockedSpecies } from '../sim/commands';
   import { fitInfo, limitText, placeInfo } from '../sim/explain';
   import { profiles } from '../sim/fit';
   import { SEA } from '../sim/state';
+  import { speciesIndex, stratumOf, variantName } from '../sim/variants';
+  import { variantColors, zoneColor } from '../view/overlays';
   import { game, ui } from './game.svelte';
 
   /** Hover: the tile in one line. While placing: how well the species fits here and what holds it back. */
@@ -14,18 +15,18 @@
     const i = ui.hover;
     if (i < 0 || game.terrain[i] === SEA) return null;
     const P = profiles(game), n = game.w * game.h;
-    const who = STRATA.map((_, k) => game.occ[k * n + i]).filter((sp) => sp >= 0).map((sp) => SPECIES[sp].name);
+    const who = STRATA.map((_, k) => game.occ[k * n + i]).filter((v) => v >= 0).map((v) => game.species[game.variants[v].sp].name);
     const vals = LAYER_IDS.filter((l) => !FIELDS[l].hidden).map((l) => `${FIELDS[l].name.toLowerCase()} ${game.layers[l][i].toFixed(2)}`)
       .concat(STATUS_IDS.filter((id) => game.statuses[id][i] > 0).map((id) => `${STATUSES[id].name.toLowerCase()} ${game.statuses[id][i].toFixed(2)}`));
     let place: { tier: string | null; text: string } | null = null;
-    if (ui.placing) {
-      const sp = SPECIES_INDEX[ui.placing], p = P[sp], info = fitInfo(game, p, i);
-      const slot = STRATA.indexOf(SPECIES[sp].stratum) * n + i, occ = game.occ[slot];
-      const held = info.fit > 0 && !canFoundAt(game, ui.placing, i, P);
+    const pl = ui.placing ? placement(game, ui.placing, P) : null;
+    if (pl) {
+      const p = pl.p, info = fitInfo(game, p, i), occ = game.occ[stratumOf(game, p.sp) * n + i];
+      const held = info.fit > 0 && !pl.ok(i), mine = occ >= 0 && game.variants[occ].sp === p.sp;
       place = {
         tier: info.tier,
         text: info.fit <= 0 ? `can't live here: ${limitText(p, info)}`
-          : held ? (occ === sp ? 'already yours' : `${SPECIES[occ].name} hold it too well`)
+          : held ? (mine && !ui.placing!.startsWith('v:') ? 'already yours' : `${game.species[game.variants[occ].sp].name} hold it too well`)
           : `Fit ${info.tier} · ${limitText(p, info)}`,
       };
     }
@@ -35,13 +36,22 @@
 
   const placingInfo = $derived.by(() => {
     ui.v;
-    if (!ui.placing) return null;
-    return { name: SPECIES[SPECIES_INDEX[ui.placing]].name, cost: foundingCost(game, ui.placing) };
+    const pl = ui.placing ? placement(game, ui.placing) : null;
+    if (!pl) return null;
+    return { name: ui.placing!.startsWith('v:') ? `${ui.foundName} (new species from ${pl.name})` : pl.name, cost: pl.cost };
   });
 
   const zones = $derived.by(() => {
     ui.v;
-    return unlockedSpecies(game).map((id) => ({ id, name: SPECIES[SPECIES_INDEX[id]].name }));
+    return unlockedSpecies(game).map((id) => ({ id, name: game.species[speciesIndex(game, id)].name, color: zoneColor(game, speciesIndex(game, id)) }));
+  });
+
+  const variants = $derived.by(() => {
+    ui.v;
+    const sp = speciesIndex(game, ui.focus);
+    if (ui.view !== 'variants' || sp < 0) return null;
+    return { name: game.species[sp].name, list: [...variantColors(game, sp)].filter(([v]) => game.variants[v].shown)
+      .map(([v, color]) => ({ v, color, name: variantName(game, v), tiles: game.variants[v].tiles })) };
   });
 
   const layer = $derived(ui.view !== 'none' && ui.view !== 'zones' ? FIELDS[ui.view as LayerId] : null);
@@ -64,13 +74,17 @@
     <span class="dim">{hover.vals}</span>
     <span class="dim small">click for the full tile</span>
   {:else if ui.view === 'zones'}
-    {#each zones as z (z.id)}<span><span class="swatch" style:background={ZONE[z.id]}></span>{z.name}</span>{/each}
+    {#each zones as z (z.id)}<span><span class="swatch" style:background={z.color}></span>{z.name}</span>{/each}
     <span class="dim small">fill = ground · inner square = herbs · corners = fungi</span>
+  {:else if variants}
+    <span>{variants.name}:</span>
+    {#each variants.list as x (x.v)}<span><span class="swatch" style:background={x.color}></span>{x.name} <span class="dim">{x.tiles}</span></span>{/each}
+    <span class="dim small">grey = not shown yet · pick the species in the Species tab</span>
   {:else if layer}
     <span><span class="swatch" style:background={layer.color}></span>{layer.name}</span>
     <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${layer.viewMax}+)` : ''} · litter and salt are on the tile card</span>
   {:else}
-    <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (names show when zoomed in), drag to move. Keys 1–6 switch views.</span>
+    <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (names show when zoomed in), drag to move. Keys 1–7 switch views.</span>
   {/if}
 </span>
 

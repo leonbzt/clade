@@ -1,5 +1,6 @@
 <script lang="ts">
   import { SPECIES, SPECIES_INDEX } from '../data/species';
+  import { speciesLook } from '../view/look';
   import { TREE } from '../data/tree';
   import { canEvolve, reqStatus } from '../sim/commands';
   import Specimen from './Specimen.svelte';
@@ -32,7 +33,7 @@
   {#each nodes as n (n.id)}
     <div class="node" class:reached={n.reached} class:locked={!n.open} style:margin-left="{n.depth * 18}px">
       <div class="head">
-        {#if n.species && n.reached}<Specimen species={n.species} traits={game.traits[n.species]} scale={1} size={32} />{/if}
+        {#if n.species && n.reached}<Specimen look={speciesLook(game, SPECIES_INDEX[n.species])} scale={1} size={32} />{/if}
         <b>{n.reached ? '✔ ' : ''}{n.name}</b>
       </div>
       {#if n.reached}

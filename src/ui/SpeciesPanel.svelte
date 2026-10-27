@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUSES, STRATUM_NAMES, limitName, type LayerId, type StatusId } from '../data/fields';
-  import { SPECIES, SPECIES_INDEX, type Scalar } from '../data/species';
+  // Your species, each with its shown variants underneath; the focused species' card below: needs, makes, limits
+  // and stats of its base form, its trait genes and the combos.
+  import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATUM_NAMES, limitName, type LayerId } from '../data/fields';
+  import { COMBOS, TIER } from '../data/genes';
+  import { type Scalar } from '../data/species';
   import { coverCount, foundingCost, unlockedSpecies } from '../sim/commands';
-  import { profile } from '../sim/fit';
+  import { buildProfile, profiles } from '../sim/fit';
   import { limitShare } from '../sim/metrics';
+  import { defOf, glints, poolOf, speciesIndex } from '../sim/variants';
+  import { speciesLook } from '../view/look';
   import Specimen from './Specimen.svelte';
-  import { doBuy, game, startPlacing, ui } from './game.svelte';
+  import VariantRow from './VariantRow.svelte';
+  import { game, seeVariants, startPlacing, ui } from './game.svelte';
   import { fmt } from './format';
 
   const STATS: [Scalar, string, (v: number) => string][] = [
@@ -16,60 +22,73 @@
     ['reserve', 'Reserves', (v) => `${Math.round(v)} s`],
   ];
 
+  // Variants that were glinting when you opened this tab keep a "new" mark while it stays open.
+  const fresh = new Set<number>();
+
   const list = $derived.by(() => {
     ui.v;
-    const open = unlockedSpecies(game);
-    return SPECIES.filter((s) => open.includes(s.id)).map((s) => ({
-      id: s.id, name: s.name, tiles: coverCount(game, s.id), cost: foundingCost(game, s.id), traits: [...game.traits[s.id]],
-    }));
+    return unlockedSpecies(game).map((id) => {
+      const sp = speciesIndex(game, id), x = game.species[sp];
+      const vs = poolOf(game, sp).filter((v) => game.variants[v].shown && game.variants[v].tier !== TIER.base);
+      for (const v of vs) if (glints(game.variants[v])) fresh.add(v);
+      return { id, sp, name: x.name, tiles: coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
+        made: x.parent >= 0 ? game.species[x.parent].name : null, variants: vs };
+    });
   });
+
+  // Seeing a variant in this list counts as looking at it: its glint on the map stops.
+  $effect(() => { seeVariants(list.flatMap((s) => s.variants)); });
 
   /** A band on a 0–1 axis: the survivable range light, the ideal range solid (in % of the bar). */
   const clip = (v: number) => Math.max(0, Math.min(1, v)) * 100;
 
   const card = $derived.by(() => {
     ui.v;
-    const def = SPECIES[SPECIES_INDEX[ui.focus]];
-    if (!list.some((s) => s.id === def.id)) return null;
-    const p = profile(game, SPECIES_INDEX[def.id]);
-    const share = limitShare(game, p), total = share.reduce((a, b) => a + b, 0);
+    const sp = speciesIndex(game, ui.focus);
+    if (!list.some((s) => s.sp === sp)) return null;
+    const x = game.species[sp], def = defOf(game, sp), p = buildProfile(game, sp, x.genome);
+    const share = limitShare(game, profiles(game), sp), total = share.reduce((a, b) => a + b, 0);
     const limits = share.map((c, j) => ({ name: j < LIMIT_COUNT ? limitName(j).toLowerCase() : 'nothing', pct: total ? Math.round((100 * c) / total) : 0 }))
-      .filter((x) => x.pct > 0).sort((a, b) => b.pct - a.pct);
+      .filter((l) => l.pct > 0).sort((a, b) => b.pct - a.pct);
+    const pool = poolOf(game, sp).filter((v) => game.variants[v].shown);
     return {
-      def, owned: [...game.traits[def.id]], biomass: game.biomass, stratum: STRATUM_NAMES[def.stratum], limits,
+      name: x.name, def, look: speciesLook(game, sp), stratum: STRATUM_NAMES[def.stratum], limits,
       needs: p.needs.map((n) => {
         const id = LAYER_IDS[n.layer], b = n.band;
         return { id, name: FIELDS[id].name, color: FIELDS[id].color, lo: clip(b[0]), a: clip(b[1]), z: clip(b[2]), hi: clip(b[3]),
-          text: `ideal ${b[1] < 0 ? 0 : b[1]}–${b[2] > 1 ? 1 : b[2]}`, why: p.parts[`need:${id}`].join('\n') || 'base' };
+          text: `ideal ${b[1] < 0 ? 0 : +b[1].toFixed(2)}–${b[2] > 1 ? 1 : +b[2].toFixed(2)}`, why: p.parts[`need:${id}`].join('\n') || 'base' };
       }),
-      tolerance: (Object.entries(def.tolerance) as [StatusId, number][]).map(([id, tol]) => `${STATUSES[id].name}: keeps ${Math.round(tol * 100)}% of its fit`),
+      tolerance: p.tolerance.map((t) => `${STATUSES[STATUS_IDS[t.status]].name}: keeps ${Math.round(t.tol * 100)}% of its fit`),
       makes: (Object.entries(p.makes) as [LayerId, number][]).map(([id, r]) => ({
-        text: FIELDS[id].kind === 'level' ? `${FIELDS[id].name.toLowerCase()} +${r}` : r > 0 ? `${FIELDS[id].name.toLowerCase()} +${r}/s` : `uses ${FIELDS[id].name.toLowerCase()} ${-r}/s`,
+        text: FIELDS[id].kind === 'level' ? `${FIELDS[id].name.toLowerCase()} +${+r.toFixed(4)}` : r > 0 ? `${FIELDS[id].name.toLowerCase()} +${+r.toFixed(4)}/s` : `uses ${FIELDS[id].name.toLowerCase()} ${+(-r).toFixed(4)}/s`,
         color: FIELDS[id].color, why: p.parts[`make:${id}`].join('\n'),
       })),
       stats: STATS.map(([k, label, show]) => ({ label, value: show(p.stats[k]), why: p.parts[k].join('\n') })),
+      genes: def.traits.map((t) => ({ ...t, carried: pool.filter((v) => game.variants[v].genome.traits.includes(t.id)).length, inBase: x.genome.traits.includes(t.id) })),
     };
   });
 </script>
 
+<p class="small dim">Plants mutate by themselves as they spread. A new form shows once it holds 5 tiles. Combos found: {game.combos.length} / {COMBOS.length}</p>
 <div class="list">
   {#each list as s (s.id)}
     <div class="row" class:on={ui.focus === s.id} onclick={() => (ui.focus = s.id)} role="button" tabindex="0"
       onkeydown={(e) => e.key === 'Enter' && (ui.focus = s.id)}>
-      <Specimen species={s.id} traits={s.traits} scale={1} size={40} />
-      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} tiles</span></div>
+      <Specimen look={s.look} scale={1} size={40} />
+      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} tiles{s.made ? ` · from ${s.made}` : ''}</span></div>
       <button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
         Found {s.cost ? fmt(s.cost) : 'free'}
       </button>
     </div>
+    {#each s.variants as v (v)}<VariantRow {v} fresh={fresh.has(v)} />{/each}
   {/each}
 </div>
 
 {#if card}
   <div class="card">
-    <h2>{card.def.name} <span class="dim small">{card.stratum}</span></h2>
+    <h2>{card.name} <span class="dim small">{card.stratum} · base form</span></h2>
     <div class="top">
-      <Specimen species={card.def.id} traits={card.owned} scale={3} />
+      <Specimen look={card.look} scale={3} />
       <p class="dim">{card.def.blurb}</p>
     </div>
     <h3>Needs <span class="dim small">(solid = ideal, light = can live)</span></h3>
@@ -98,17 +117,19 @@
     {#each card.stats as st (st.label)}
       <div class="stat" title={st.why}><span>{st.label}</span><span>{st.value}</span></div>
     {/each}
-    {#if card.def.traits.length}
-      <h3>Traits</h3>
-      {#each card.def.traits as t (t.id)}
-        {@const owned = card.owned.includes(t.id)}
-        <div class="trait" class:owned>
-          <div><b>{t.name}</b><br /><span class="good">+ {t.up}</span><br /><span class="bad">− {t.down}</span></div>
-          {#if owned}<span class="gold">Common</span>
-          {:else}<button disabled={card.biomass < t.cost} onclick={() => doBuy(card.def.id, t.id)}>{fmt(t.cost)}</button>{/if}
-        </div>
-      {/each}
-    {/if}
+    <h3>Trait genes <span class="dim small">(they mutate in by chance)</span></h3>
+    {#each card.genes as t (t.id)}
+      <div class="trait" class:owned={t.inBase || t.carried}>
+        <div><b>{t.name}</b>{#if t.key} <span class="gold small">key innovation</span>{/if}<br /><span class="good">+ {t.up}</span><br /><span class="bad">− {t.down}</span></div>
+        <span class="dim small">{t.inBase ? 'in the base form' : t.carried ? `in ${t.carried} form${t.carried > 1 ? 's' : ''}` : 'not seen yet'}</span>
+      </div>
+    {/each}
+    <h3>Combos <span class="dim small">(two genes together open a niche)</span></h3>
+    {#each COMBOS as c (c.id)}
+      <div class="stat" class:gold={game.combos.includes(c.id)} title={c.text}>
+        <span>{c.name}</span><span class="small">{Object.entries(c.needs).map(([a, n]) => `${a} ${n! > 0 ? '+' : ''}${n}`).join(', ')}</span>
+      </div>
+    {/each}
   </div>
 {/if}
 
@@ -132,4 +153,5 @@
     background: var(--panel-dark); border: 2px solid var(--ink); }
   .trait.owned { border-color: var(--gold); }
   .small { font-size: 13px; }
+  p.small { margin: 0 0 6px; }
 </style>

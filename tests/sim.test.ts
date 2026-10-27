@@ -5,8 +5,10 @@ import { SPECIES_INDEX } from '../src/data/species';
 import { createState, VENT, type State } from '../src/sim/state';
 import { advance } from '../src/sim/tick';
 import { botTick } from '../src/sim/bot';
-import { buyTrait, coverCount, evolve, found, foundingCost } from '../src/sim/commands';
-import { fit, profile } from '../src/sim/fit';
+import { canFoundSpecies, coverCount, evolve, found, foundingCost, foundSpecies } from '../src/sim/commands';
+import { buildProfile, fit } from '../src/sim/fit';
+import { comboOf, poolOf, rarity, ZERO } from '../src/sim/variants';
+import { GENES, KEY, TIER } from '../src/data/genes';
 import { changed, snapshot } from '../src/sim/metrics';
 
 function hash(s: State): number {
@@ -24,9 +26,7 @@ function play(seed: number): State {
   const s = createState(seed);
   evolve(s, 'cyanobacteria');
   found(s, 'cyano', ventTile(s) + 2);
-  advance(s, 600);
-  buyTrait(s, 'cyano', 'sheath');
-  advance(s, 600);
+  advance(s, 1200);
   return s;
 }
 
@@ -35,7 +35,7 @@ function bot(seed: number, minutes: number): { s: State; turn: number } {
   for (let k = 0; k < (minutes - 2) * 600; k++) botTick(s);
   const before = snapshot(s);
   for (let k = 0; k < 2 * 600; k++) botTick(s);
-  return { s, turn: changed(s, before, s.occ) };
+  return { s, turn: changed(s, before, snapshot(s)) };
 }
 
 describe('sim', () => {
@@ -74,9 +74,9 @@ describe('sim', () => {
   it('lichens fade from deep soil; ferns need it', () => {
     const s = createState(2), i = ventTile(s);
     s.layers.soil[i] = 0.9;
-    expect(fit(s, profile(s, SPECIES_INDEX.lichen), i)).toBe(0);
+    expect(fit(s, buildProfile(s, SPECIES_INDEX.lichen, ZERO), i)).toBe(0);
     s.layers.soil[i] = 0;
-    expect(fit(s, profile(s, SPECIES_INDEX.fern), i)).toBe(0);
+    expect(fit(s, buildProfile(s, SPECIES_INDEX.fern, ZERO), i)).toBe(0);
   });
 
   it('after 10 bot minutes: layers stay in 0–1, several species live, and tiles keep changing', () => {
@@ -86,6 +86,40 @@ describe('sim', () => {
     expect(Array.from(s.count).filter((c) => c > 0).length).toBeGreaterThanOrEqual(3);
     expect(turn).toBeGreaterThan(0);
     expect(Number.isFinite(s.biomass)).toBe(true);
+  }, 120_000);
+
+  it('variants: within the cap, no orphan slots, Leafy shoot in its window, and a Rare+ variant founds a species', () => {
+    const s = createState(5);
+    for (let k = 0; k < 16 * 600; k++) {
+      botTick(s);
+      if (k % 600 === 0) {
+        for (let sp = 0; sp < s.species.length; sp++) {
+          const pool = poolOf(s, sp), shown = pool.filter((v) => s.variants[v].shown).length;
+          expect(shown).toBeLessThanOrEqual(GENES.cap);
+          expect(pool.length - shown).toBeLessThanOrEqual(GENES.hidden);
+        }
+        for (const v of s.occ) if (v >= 0) expect(s.variants[v].alive).toBe(true);
+      }
+    }
+    const liver = s.species[SPECIES_INDEX[KEY.species]], at = s.innovations[KEY.gene];
+    expect(at).toBeDefined();
+    expect((at - liver.at) / 600).toBeGreaterThanOrEqual(KEY.window[0]);
+    expect((at - liver.at) / 600).toBeLessThanOrEqual(KEY.window[1]);
+    expect(s.reached).toContain(KEY.node);
+    // A hand-made Rare: three steps from the base genome; it founds a new species with its genome as the base.
+    const g = { axes: [2, 0, 0, -1], traits: [] };
+    expect(comboOf(g)?.id).toBe('crust');
+    expect(rarity(s, SPECIES_INDEX.cyano, g)).toBe(TIER.rare);
+    const v = s.variants.findIndex((x) => x.alive && x.sp === SPECIES_INDEX.cyano);
+    Object.assign(s.variants[v], { genome: g, key: '2,0,0,-1|', tier: TIER.rare, shown: true });
+    s.biomass = 1e9;
+    expect(canFoundSpecies(s, v).ok).toBe(true);
+    const before = s.species.length, tile = [...s.terrain.keys()].find((i) => foundSpecies(s, v, i, 'Salt Crust').ok);
+    expect(tile).toBeDefined();
+    expect(s.species.length).toBe(before + 1);
+    expect(s.species[before].genome.axes).toEqual([2, 0, 0, -1]);
+    expect(coverCount(s, s.species[before].id)).toBeGreaterThan(0);
+    expect(canFoundSpecies(s, v).ok).toBe(false); // once only
   }, 120_000);
 
   it('the sim has no clock or unseeded randomness', () => {

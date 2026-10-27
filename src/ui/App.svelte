@@ -13,7 +13,7 @@
     // The backtick is a dead key on German keyboards, so match the physical key (left of 1) and F2 too.
     if (e.code === 'Backquote' || e.key === '`' || e.key === 'F2') { e.preventDefault(); ui.dev = !ui.dev; }
     if (e.key === 'Escape') ui.placing = null;
-    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... (6 views)
+    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 7 Variants
     const k = Number(e.key);
     if (k >= 1 && k <= VIEWS.length && !(e.target instanceof HTMLInputElement)) ui.view = VIEWS[k - 1];
   }

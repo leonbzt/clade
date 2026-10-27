@@ -1,7 +1,6 @@
 // Holds the live game, runs the fixed-tick loop, and turns UI actions into sim commands.
 // Panels re-read the game when `ui.v` bumps (twice a second, so numbers stay readable); the map redraws every frame.
 import { NUM } from '../data/numbers';
-import { SPECIES } from '../data/species';
 import * as cmd from '../sim/commands';
 import { createState, type State } from '../sim/state';
 import { step } from '../sim/tick';
@@ -16,7 +15,8 @@ class UI {
   v = $state(0);
   gen = $state(0); // bumps when the game object is replaced
   speed = $state(1);
-  placing = $state<string | null>(null);
+  placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
+  foundName = $state(''); // the name for that new species
   focus = $state('moss');
   tab = $state<'species' | 'tree' | 'tile'>('tree');
   view = $state<View>('none');
@@ -43,8 +43,9 @@ function frame(now: number) {
 export function start() {
   requestAnimationFrame(frame);
   (window as unknown as { dev: unknown }).dev = {
-    dump: () => ({ tick: game.tick, biomass: game.biomass, reached: game.reached, traits: game.traits,
-      cover: Object.fromEntries(SPECIES.map((s) => [s.id, cmd.coverCount(game, s.id)])) }),
+    dump: () => ({ tick: game.tick, biomass: game.biomass, reached: game.reached, combos: game.combos,
+      cover: Object.fromEntries(game.species.map((s) => [s.id, cmd.coverCount(game, s.id)])),
+      variants: game.variants.filter((x) => x.alive && x.shown).length }),
     state: () => game,
     skip, addBiomass, reset, autoplay, unlockAll,
   };
@@ -76,14 +77,26 @@ export function startPlacing(speciesId: string) {
   ui.placing = speciesId; ui.focus = speciesId;
 }
 
+/** Pick a spot for a new species founded from variant `v`, named `name`. */
+export function startFounding(v: number, name: string) {
+  ui.placing = `v:${v}`; ui.foundName = name;
+}
+
 export function doFound(i: number) {
   if (!ui.placing) return;
-  const name = SPECIES.find((s) => s.id === ui.placing)!.name;
+  if (ui.placing.startsWith('v:')) {
+    if (report(cmd.foundSpecies(game, Number(ui.placing.slice(2)), i, ui.foundName))) {
+      ui.placing = null; ui.focus = game.species[game.species.length - 1].id;
+    }
+    return;
+  }
+  const name = cmd.placement(game, ui.placing)?.name ?? ui.placing;
   if (report(cmd.found(game, ui.placing, i), `${name} founded.`)) ui.placing = null;
 }
 
-export function doBuy(speciesId: string, traitId: string) {
-  report(cmd.buyTrait(game, speciesId, traitId));
+/** You looked at these variants (tile card or panel): their glint stops. */
+export function seeVariants(vs: number[]) {
+  for (const v of vs) cmd.markSeen(game, v);
 }
 
 export function doEvolve(nodeId: string) {

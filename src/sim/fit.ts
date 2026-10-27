@@ -1,12 +1,16 @@
-// Profiles (a species with its traits applied, each change tagged with its source), need scores, fit and tiers.
+// Profiles (a species with a genome applied, each change tagged with its source), need scores, fit and tiers.
+// One profile per variant: P[v]. The species' own base genome is a profile too (for the panel and founding).
 import { FIELDS, LAYER_IDS, STATUS_IDS, STRATA, type LayerId, type LevelDef, type StatusId } from '../data/fields';
+import { AXES, type Step } from '../data/genes';
 import { NUM } from '../data/numbers';
-import { SPECIES, type Band, type Scalar } from '../data/species';
+import { type Band, type Mod, type Scalar } from '../data/species';
 import { SEA, type State } from './state';
+import { comboOf, defOf, type Genome } from './variants';
 
 export type Need = { layer: number; band: Band };
 export type Tolerance = { status: number; tol: number }; // index into STATUS_IDS; the score at full strength
 export type Profile = {
+  v: number; // the variant, or -1 for a genome that isn't on the map
   sp: number;
   stratum: number;
   needs: Need[];
@@ -18,34 +22,55 @@ export type Profile = {
 
 const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'reserve'];
 
-export function profile(s: State, sp: number): Profile {
-  const def = SPECIES[sp], owned = def.traits.filter((t) => s.traits[def.id].includes(t.id));
+/** The mods a genome brings, each with its source's name. */
+function genomeMods(s: State, sp: number, g: Genome): [string, Mod][] {
+  const out: [string, Mod][] = [], def = defOf(s, sp);
+  AXES.forEach((a, k) => {
+    const v = g.axes[k] as Step | 0;
+    if (v) for (const m of a.steps[v]) out.push([`${a.name} ${v > 0 ? '+' : '−'}${Math.abs(v)}`, m]);
+  });
+  for (const t of def.traits) if (g.traits.includes(t.id)) for (const m of t.mods) out.push([t.name, m]);
+  const combo = comboOf(g);
+  if (combo) for (const m of combo.mods) out.push([combo.name, m]);
+  return out;
+}
+
+export function buildProfile(s: State, sp: number, g: Genome, v = -1): Profile {
+  const def = defOf(s, sp);
   const stats = {} as Record<Scalar, number>, parts: Record<string, string[]> = {};
   for (const k of SCALARS) { stats[k] = def[k]; parts[k] = [`base ${fmt(def[k])}`]; }
   const bands: Partial<Record<LayerId, number[]>> = {};
   for (const [id, b] of Object.entries(def.needs)) { bands[id as LayerId] = [...b]; parts[`need:${id}`] = []; }
   const makes = { ...def.makes };
   for (const id of Object.keys(makes)) parts[`make:${id}`] = [`base ${fmt(makes[id as LayerId]!)}`];
-  for (const t of owned) for (const m of t.mods) {
-    if ('stat' in m) { stats[m.stat] *= m.mul; parts[m.stat].push(`${t.name} ×${m.mul}`); }
-    else if ('make' in m) { makes[m.make] = (makes[m.make] ?? 0) * m.mul; parts[`make:${m.make}`]?.push(`${t.name} ×${m.mul}`); }
+  const tol: Partial<Record<StatusId, number>> = { ...def.tolerance };
+  for (const [src, m] of genomeMods(s, sp, g)) {
+    if ('stat' in m) { stats[m.stat] *= m.mul; parts[m.stat].push(`${src} ×${m.mul}`); }
+    else if ('make' in m) { makes[m.make] = (makes[m.make] ?? 0) * m.mul; parts[`make:${m.make}`]?.push(`${src} ×${m.mul}`); }
+    else if ('status' in m) { if (tol[m.status] !== undefined) tol[m.status] = Math.min(1, tol[m.status]! + m.tol); }
     else {
       const b = bands[m.need];
       if (!b) continue;
-      if (m.low) { b[0] += m.low; b[1] += m.low; parts[`need:${m.need}`].push(`${t.name}: lower edge ${sign(m.low)}`); }
-      if (m.high) { b[2] += m.high; b[3] += m.high; parts[`need:${m.need}`].push(`${t.name}: upper edge ${sign(m.high)}`); }
+      if (m.low) { b[0] += m.low; b[1] += m.low; parts[`need:${m.need}`].push(`${src}: lower edge ${sign(m.low)}`); }
+      if (m.high) { b[2] += m.high; b[3] += m.high; parts[`need:${m.need}`].push(`${src}: upper edge ${sign(m.high)}`); }
     }
   }
   const needs = (Object.entries(bands) as [LayerId, number[]][]).map(([id, b]) => ({
     layer: LAYER_IDS.indexOf(id), band: b as unknown as Band,
   }));
   // Statuses not listed are tolerated fully.
-  const tolerance = (Object.entries(def.tolerance) as [StatusId, number][]).map(([id, tol]) => ({ status: STATUS_IDS.indexOf(id), tol }));
-  return { sp, stratum: STRATA.indexOf(def.stratum), needs, tolerance, makes, stats, parts };
+  const tolerance = (Object.entries(tol) as [StatusId, number][]).map(([id, t]) => ({ status: STATUS_IDS.indexOf(id), tol: t }));
+  return { v, sp, stratum: STRATA.indexOf(def.stratum), needs, tolerance, makes, stats, parts };
 }
 
+export function profile(s: State, v: number): Profile {
+  const x = s.variants[v];
+  return buildProfile(s, x.sp, x.genome, v);
+}
+
+/** One profile per variant entry (free entries too; no slot points at them). */
 export function profiles(s: State): Profile[] {
-  return SPECIES.map((_, i) => profile(s, i));
+  return s.variants.map((_, v) => profile(s, v));
 }
 
 /** 0 outside the band, 1 on its ideal part, 0.2–1 on the slopes. */

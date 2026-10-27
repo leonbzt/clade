@@ -1,21 +1,23 @@
 // Draws the garden: ground and plants (back to front, ground then herbs) go into a cached scene that is redrawn
-// only when the sim has moved; each frame adds sparkles, steam and the current view on top (zones, one layer, or
-// the placement view).
+// only when the sim has moved; each frame adds sparkles, steam, the glint of rare variants and the current view on
+// top (zones, one layer, the variants of one species, or the placement view).
 import { FIELDS, LAYER_IDS, STRATA, type LayerId } from '../data/fields';
+import { TIERS } from '../data/genes';
 import { NUM } from '../data/numbers';
 import { PAL } from '../data/palette';
 import { CALM_MIN_GROWTH, SPRITE_DENSITY } from '../data/view';
-import { SPECIES } from '../data/species';
 import { SEA, VENT, type State } from '../sim/state';
+import { defOf, glints } from '../sim/variants';
+import { lookOf } from './look';
 import { hash2, makeCanvas } from './pixels';
 import { SPRITE, sprite } from './plants';
 import { TerrainLayer } from './terrain';
-import { layerView, outline, PlacingView, zonesView } from './overlays';
+import { layerView, outline, PlacingView, variantsView, zonesView } from './overlays';
 
 const T = NUM.map.tile;
-export type View = 'none' | 'zones' | LayerId;
-export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden)];
-export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number };
+export type View = 'none' | 'zones' | LayerId | 'variants';
+export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants'];
+export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string };
 
 export class GardenRenderer {
   readonly canvas: HTMLCanvasElement;
@@ -26,6 +28,8 @@ export class GardenRenderer {
   private scene: HTMLCanvasElement;
   private sceneCtx: CanvasRenderingContext2D;
   private sceneKey = '';
+  private glint: { i: number; color: string }[] = [];
+  private glintTick = -1;
 
   constructor(private s: State, canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -48,7 +52,7 @@ export class GardenRenderer {
       this.sparkles(o.time);
       zonesView(ctx, s);
     } else {
-      const key = `${this.lastTerrainTick}|${o.detail}|${Object.values(s.traits).join()}`;
+      const key = `${this.lastTerrainTick}|${o.detail}`;
       if (key !== this.sceneKey) {
         this.sceneKey = key;
         this.sceneCtx.drawImage(this.terrain.canvas, 0, 0);
@@ -57,7 +61,9 @@ export class GardenRenderer {
       ctx.drawImage(this.scene, 0, 0);
       this.sparkles(o.time);
       this.steam(o.time);
-      if (o.view !== 'none') layerView(ctx, s, o.view);
+      if (o.view === 'variants') variantsView(ctx, s, o.focus);
+      else if (o.view !== 'none') layerView(ctx, s, o.view);
+      else this.glints(o.time);
     }
     if (o.placing) this.placingView.draw(ctx, o.placing, o.hover);
     else if (o.hover >= 0) outline(ctx, s, o.hover, PAL.text);
@@ -67,25 +73,51 @@ export class GardenRenderer {
   private plants(ctx: CanvasRenderingContext2D, detail: boolean) {
     const s = this.s, n = s.w * s.h, density = SPRITE_DENSITY[detail ? 'detail' : 'calm'];
     const strata = [STRATA.indexOf('under'), STRATA.indexOf('ground'), STRATA.indexOf('herb')];
+    const has = new Uint8Array(n); // calm: a tile next to an earlier sprite gets none, so sprites don't clump
+    const near = (i: number) => {
+      const x = i % s.w;
+      return (x > 0 && (has[i - 1] || (i >= s.w && has[i - s.w - 1]))) || (i >= s.w && has[i - s.w]) || (x < s.w - 1 && i >= s.w && has[i - s.w + 1]);
+    };
     for (let i = 0; i < n; i++) {
       let drew = false;
       for (const k of strata) {
-        const slot = k * n + i, sp = s.occ[slot];
-        if (sp < 0) continue;
-        const def = SPECIES[sp], c = s.cover[slot];
+        const slot = k * n + i, v = s.occ[slot];
+        if (v < 0) continue;
+        const def = defOf(s, s.variants[v].sp), c = s.cover[slot];
         // Only some tiles get a sprite; the rest show the ground cover. Fungi show only where nothing else does.
         if (def.stratum === 'under' && drew) continue;
-        if (hash2(i, 8 + k) >= density[def.id] || (!detail && c < CALM_MIN_GROWTH)) continue;
-        const stage = c < 0.35 ? 0 : c < 0.7 ? 1 : 2;
-        const img = sprite(def.id, Math.floor(hash2(i, 5 + k) * SPRITE.variants), { stage, traits: s.traits[def.id] });
+        if (hash2(i, 8 + k) >= density[def.id] || (!detail && (c < CALM_MIN_GROWTH || near(i)))) continue;
+        const stage = c < 0.35 ? 0 : c < 0.7 ? 1 : 2, look = lookOf(s, v);
+        const img = sprite(def.id, Math.floor(hash2(i, 5 + k) * SPRITE.variants), { stage, traits: look.traits, tint: look.tint });
         // A small fixed jitter per tile hides the grid.
         const jx = Math.floor(hash2(i, 6, k) * 3) - 1, jy = Math.floor(hash2(i, 7, k) * 3) - 1;
         // Dying plants fade as they thin out.
         ctx.globalAlpha = s.dying[slot] ? 0.35 + 0.65 * c : 1;
         ctx.drawImage(img, (i % s.w) * T + SPRITE.ox + jx, ((i / s.w) | 0) * T + SPRITE.oy + jy);
         ctx.globalAlpha = 1;
-        if (def.stratum !== 'under') drew = true;
+        if (def.stratum !== 'under') { drew = true; has[i] = 1; }
       }
+    }
+  }
+
+  /** Rare and better variants you haven't looked at yet sparkle on some of their tiles, in their tier's colour. */
+  private glints(time: number) {
+    const s = this.s, ctx = this.ctx, n = s.w * s.h;
+    if (s.tick !== this.glintTick) {
+      this.glintTick = s.tick;
+      this.glint = [];
+      if (s.variants.some(glints)) for (let slot = 0; slot < s.occ.length; slot++) {
+        const v = s.occ[slot], i = slot % n;
+        if (v >= 0 && glints(s.variants[v]) && hash2(i, 77) < 0.5) this.glint.push({ i, color: TIERS[s.variants[v].tier].color });
+      }
+    }
+    for (const { i, color } of this.glint) {
+      const t = (time / 900 + hash2(i, 78)) % 1;
+      if (t > 0.45) continue;
+      const r = t < 0.15 || t > 0.3 ? 1 : 2, cx = (i % s.w) * T + 3 + Math.floor(hash2(i, 79) * (T - 6)), cy = ((i / s.w) | 0) * T + 3 + Math.floor(hash2(i, 80) * (T - 6));
+      ctx.fillStyle = color;
+      ctx.fillRect(cx - r, cy, 2 * r + 1, 1); ctx.fillRect(cx, cy - r, 1, 2 * r + 1);
+      ctx.fillStyle = PAL.text; ctx.fillRect(cx, cy, 1, 1);
     }
   }
 

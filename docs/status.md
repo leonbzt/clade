@@ -1,34 +1,30 @@
 # Status
 
-Updated 2026-10-27 (planning + build session, slice 05). Git: `slice-05` (e60bbed), then docs (f96c0e8).
+Updated 2026-10-27 (slice 07 built). Git: `slice-06` (5f6d8b7); slice 07 code and all doc changes are uncommitted.
+`npm run check` passes.
 
 ## Done
-- **Slice 06 built (27 Oct):** calm sim (health with reserves, gradual dieback, slow stores), 96×56 island at 12 px,
-  landmarks as data (`src/data/landmarks.ts`, made in `src/sim/island.ts`), salt as a status, 4 layer views, steady UI.
-  `npm run sim`: 5/5 pass, flips 1.1%/min (was 2.8), litter swing 10× lower. Nitrogen middle still flat.
-- **Planning:** fresh-eyes proposal `docs/review-layer-sim.md`, research `docs/research/layer-sim-{games,ecology,engineering}.md`,
-  combined approach as P9 in `docs/systems.md`. Playtest notes: `docs/playtests/04-calm-map.md`, `05-layers.md`.
-- **Slice 05 built** (`docs/slices/05-readable-layers.md`): the sim core is a layered sim.
-  - Strata under / ground / herbs; layers water, shade, soil, nitrogen, litter, salt (`src/data/fields.ts`).
-  - Species as needs/makes data (`src/data/species.ts`); fit = the lowest need; Soil fungi added as data only.
-  - Sim: `src/sim/{fit,fields,life,tick,metrics,explain,ascii}.ts`. View: `src/view/overlays.ts` (placement view,
-    layer views, zones). UI: `TilePanel.svelte`, `EventFeed.svelte`, new `SpeciesPanel.svelte`.
-  - `npm run check` passes (7 tests). `npm run sim`: 5/5 seeds pass (all 6 plants alive at 60 min, top share ~53%,
-    ~2.8% of tiles change per minute). Quick check: `SEEDS=1 MIN=30 LIMITS=1 npm run sim`.
+- **Slice 07 (variants) built**, per `docs/slices/07-variants.md` (results and deviations under "Build notes").
+  - Genes as data: `src/data/genes.ts` (4 axes, 3 combos, tiers, mutation and Leafy numbers). Trait shop removed.
+  - Sim: `src/sim/variants.ts` (variants, rarity, mutation, naming, the Leafy pity timer); slots hold variant ids.
+    Founding a Rare+ variant as a new species in `src/sim/commands.ts`. Mosses unlock through the Leafy gene (`tree.ts`).
+  - UI/view: `src/ui/VariantRow.svelte`, species panel rework, the Variants view (key 7), tints (`src/view/look.ts`),
+    glints, feed lines, a calmer sprite layer.
+  - Tests: invariant test in `tests/sim.test.ts`; variant stats in `tests/variant-stats.ts`.
+- Sim 5×60: 5/5 seeds pass slice 06's checks; 5 of 7 new checks pass. Misses: busy species ≥2 shown variants per
+  10 min (moss, fern low), combos (1/5), first Rare too early on some seeds.
 
-## Decided (by you, 27 Oct; in the brief under Direction 27 Oct)
-- A layered sim with feedback: readable local rules, every layer visible. You can't influence everything.
-- Water (merged with humidity), shade, soil, nitrogen; fungi and litter in slice 05. Readable placement matters.
-- Order: layered sim first, then the first biomes (named regions). Build it to grow and stay manageable.
+## Decided
+- Nothing new this session (you asked to build slice 07 as specified).
 
 ## Next
-1. **Play slice 06** (`docs/slices/06-calm-island.md`, built 27 Oct, not committed yet) and judge: calm but alive?
-   Bigger island? Nitrogen view readable? Landmarks worth aiming for?
-2. Then trees (canopy) and the first biomes; your chunk / two-zoom idea (brief, Later) may shape how biomes work.
+1. Playtest slice 07: frame rate, does a variant spreading get noticed, does a Rare glint feel like a find, does
+   founding feel like your step, is the map calmer.
+2. Tune by feel: `GENES.mutate`, Dry steps, `KEY.window` (the tree is now 10–20 min later than slice 06).
+3. Commit slice 07 when you're happy; then P13 flows, P14 animals, P15 zooms (rough order, not decided).
 
 ## Open
-- Game identity and world context: how new species arrive, setting, tone. After the biomes slice, before the art pass.
-- Rendering is ugly (placeholder); the Zones view is busy. Pacing is slower than slice 04 (bot: Lichens 4–9 min).
-- Ferns stay small (30–80 tiles). The "fern stands break up and return" check is still open.
-- Token practice: one slice per session, handoff + /clear between, agents rarely (~70–80k tokens each), short runs.
-- Older: "On hold" mark on minigame bets; delete `toys/`?; brief Q5, Q6, Q8–Q11; fact-check the tree facts.
+- Accept the deviations? Shown cap + hidden buffer, only shown variants mutate, near-neutral Leafy, name before spot.
+- Combos are rare (1/5): bigger Dry steps help them but let a dry moss take 61% of the ground.
+- Chunks: does the whole sim always run? The sea line: when? Game identity before the art pass. Nitrogen (P11).
+- Older: the 0.5 s plant-scene hitch; delete `toys/`?; brief Q5, Q6, Q8–Q11; fact-check tree facts and Surtsey animals.

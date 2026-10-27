@@ -47,6 +47,22 @@ What's **decided**. Only the user moves things into this file. AI proposals live
 - **Landmarks, starting with vents, springs, beaches and caves.** No seabird cliff for now. Salt becomes a status
   of the beach, not a layer.
 - **Fewer visible layers, more hidden depth.**
+- **Calm means slow, big stores** *(27 Oct)*: fewer rapid changes; stores such as nitrogen build up over time, so
+  plants switch on and off slowly.
+- **Slice 06 works** *(27 Oct, after building it)*. Next: a new overall planning thread.
+
+### Direction *(27 Oct, species talk after slice 06)*
+- **Species carry variants with differing genes.** Mutations happen by themselves and can be an unexpected reward.
+  You see them, pick one as a founder for another part of the map, or push a direction. Rare combinations can fit
+  outside the usual range or open new niches. It has to work with the traits.
+- **Early on you pick the founding variant to make a new species** (maybe naming it). Later: breeding or combining
+  interesting variants.
+- **Rarity uses game-like tiers.** A big enough difference (a few good combinations) is enough for a new species;
+  a **key innovation is a new clade**.
+- **Wild species may split off** when left alone and very survivable, but it should be acknowledged or give you a chance.
+- **The species rework comes next** (slice 07), before animals. You want animals later.
+- **Fixed flows of water, soil and nutrients across the map: yes, wanted.** Chunks: good for an overview long term;
+  whether the whole sim always runs is still open. The clutter fix (fewer plant sprites) is agreed.
 
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.

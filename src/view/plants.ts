@@ -1,10 +1,10 @@
-// Plant sprites, painted pixel by pixel from code. Bought traits change the drawing, on the map and on the
-// specimen. Map sprites overhang their tile (4 px to the sides, 12 px up), so the garden reads as one growth, not a grid.
+// Plant sprites, painted pixel by pixel from code. Trait genes change the drawing, and axis genes tint it, on the
+// map and on the specimen. Map sprites overhang their tile (4 px to the sides, 12 px up), so the garden reads as one growth, not a grid.
 import { NUM } from '../data/numbers';
 import { PAL } from '../data/palette';
-import { Painter, seeded } from './pixels';
+import { NO_TINT, Painter, seeded, tintKey, type Tint } from './pixels';
 
-export type Look = { stage: number; traits: string[]; big?: boolean };
+export type Look = { stage: number; traits: string[]; big?: boolean; tint?: Tint };
 /** The ground area plants stand in, inside the sprite. */
 type Box = { x: number; y: number; w: number; h: number };
 type Paint = (p: Painter, r: () => number, look: Look, box: Box) => void;
@@ -41,6 +41,11 @@ const liverwort: Paint = (p, r, look, b) => {
     }
     if (has(look, 'gemmae')) { const mx = (x + ex) / 2, my = (y + ey) / 2; p.set(mx, my - 1, PAL.liver0); p.set(mx, my, PAL.liver3); }
     if (has(look, 'oil')) p.set(x + Math.cos(a) * len * 0.3, y + Math.sin(a) * len * 0.15 - 1, PAL.liver3);
+    if (has(look, 'leafy')) { // a small upright shoot with leaves: the first step toward mosses
+      const h = look.big ? 6 : 3;
+      p.line(x, y, x, y - h, PAL.liver1);
+      for (let k = 1; k <= h; k += 2) { p.set(x - 1, y - k, PAL.liver3); p.set(x + 1, y - k - 1, PAL.liver2); }
+    }
   }
 };
 
@@ -154,10 +159,10 @@ const cache = new Map<string, HTMLCanvasElement>();
 
 /** A map sprite for one tile. Draw it at the tile's corner plus SPRITE.ox / SPRITE.oy. */
 export function sprite(species: string, variant: number, look: Look): HTMLCanvasElement {
-  const key = `${species}|${variant}|${look.stage}|${look.traits.join(',')}`;
+  const key = `${species}|${variant}|${look.stage}|${look.traits.join(',')}|${tintKey(look.tint ?? NO_TINT)}`;
   let c = cache.get(key);
   if (!c) {
-    const p = new Painter(SPRITE.w, SPRITE.h);
+    const p = new Painter(SPRITE.w, SPRITE.h, look.tint);
     PAINTERS[species](p, seeded(variant * 7919 + species.length * 31), look, MAP_BOX);
     c = p.toCanvas();
     cache.set(key, c);
@@ -166,9 +171,10 @@ export function sprite(species: string, variant: number, look: Look): HTMLCanvas
 }
 
 /** The type specimen: a bigger drawing on a strip of soil. */
-export function specimen(species: string, traits: string[], size = 48): HTMLCanvasElement {
+export function specimen(species: string, traits: string[], size = 48, tint: Tint = NO_TINT): HTMLCanvasElement {
   const p = new Painter(size, size);
   for (let x = 0; x < size; x++) for (let y = size - 3; y < size; y++) p.set(x, y, (x * 3 + y) % 4 ? PAL.soil1 : PAL.soil0);
+  p.setTint(tint);
   const box = { x: 4, y: Math.floor(size * 0.55), w: size - 8, h: Math.floor(size * 0.45) - 2 };
   PAINTERS[species](p, seeded(42), { stage: 2, traits, big: size >= 40 }, box);
   return p.toCanvas();
