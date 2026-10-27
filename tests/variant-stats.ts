@@ -1,18 +1,19 @@
 // Variant measures for the sim runner, sampled once a sim second. `line()` is one row per seed; `variantSummary()`
-// counts the slice 07 checks over all seeds.
-import { AXIS_INDEX, KEY, TIER } from '../src/data/genes';
+// counts the slice 07 and 08 checks over all seeds.
+import { AXIS_INDEX, KEY, KEYS, TIER } from '../src/data/genes';
 import { SPECIES_INDEX } from '../src/data/species';
 import type { State } from '../src/sim/state';
 import { stratumOf } from '../src/sim/variants';
 
 const MIN = 600; // ticks per minute
-const totals = { seeds: 0, busyOk: 0, share30: 0, sorted: 0, rare30: 0, combo: 0, leafy: 0, made: 0 };
+const totals = { seeds: 0, busyOk: 0, share30: 0, sorted: 0, rare30: 0, combo: 0, keys: 0, made: 0, farMade: 0, farBase: 0 };
 
 export type VariantStats = ReturnType<typeof variantStats>;
 
 export function variantStats() {
   const shown = new Map<number, Set<string>>(); // species → shown variants (by birth)
   let topShare = 0, firstRare = -1, sortSum = 0, sortN = 0;
+  const far = new Set<string>(); // shown variants with a gene beyond ±2: 'made|v|born' or 'base|v|born'
   return {
     sample(s: State) {
       for (const [v, x] of s.variants.entries()) {
@@ -20,6 +21,7 @@ export function variantStats() {
         if (!shown.has(x.sp)) shown.set(x.sp, new Set());
         shown.get(x.sp)!.add(`${v}|${x.born}`);
         if (firstRare < 0 && x.tier >= TIER.rare && x.tier < TIER.legendary) firstRare = s.tick;
+        if (x.genome.axes.some((a) => Math.abs(a) > 2)) far.add(`${s.species[x.sp].parent >= 0 ? 'made' : 'base'}|${v}|${x.born}`);
         if (s.count[x.sp] >= 50) topShare = Math.max(topShare, x.tiles / s.count[x.sp]);
       }
       if (s.tick % MIN === 0) { const d = drySort(s); if (d !== null) { sortSum += d; sortN++; } }
@@ -33,8 +35,13 @@ export function variantStats() {
         rates.push(`${x.id.slice(0, 4)} ${per10.toFixed(1)}`);
         if (s.count[sp] >= 150 && life >= 10) { busy++; if (per10 >= 2) busyOk++; }
       });
-      const liver = s.species[SPECIES_INDEX[KEY.species]], leafyAt = s.innovations[KEY.gene];
-      const leafy = leafyAt !== undefined ? (leafyAt - liver.at) / MIN : -1;
+      // Each key: minutes after its lineage was founded; in window if it fits the clock's slowest and fastest speed.
+      const keys = KEYS.map((k) => {
+        const at = s.innovations[k.gene], from = s.species[SPECIES_INDEX[k.species]].at;
+        const m = at !== undefined ? (at - from) / MIN : -1;
+        return { word: k.word, m, ok: m >= k.window[0] / Math.max(...KEY.speed) && m <= k.window[1] / Math.min(...KEY.speed) };
+      });
+      const farMade = [...far].filter((f) => f.startsWith('made')).length, farBase = far.size - farMade;
       const made = s.species.filter((x) => x.parent >= 0), judged = made.filter((x) => end - x.at >= 10 * MIN);
       const sort = sortN ? sortSum / sortN : null;
       totals.seeds++;
@@ -43,11 +50,13 @@ export function variantStats() {
       if (sort !== null && sort <= -0.03) totals.sorted++;
       if (firstRare >= 0 && firstRare <= 30 * MIN) totals.rare30++;
       if (s.combos.length) totals.combo++;
-      if (leafy >= KEY.window[0] && leafy <= KEY.window[1]) totals.leafy++;
+      if (keys.every((k) => k.ok)) totals.keys++;
+      totals.farMade += farMade; totals.farBase += farBase;
       if (judged.length && judged.every((x) => s.count[s.species.indexOf(x)] > 0)) totals.made++;
       return `     shown/10m ${rates.join(' ')} | busy ok ${busyOk}/${busy} | top ${Math.round(topShare * 100)}% | ` +
         `dry sort ${sort === null ? '-' : sort.toFixed(3)} | rare ${firstRare < 0 ? '-' : (firstRare / MIN).toFixed(1) + 'm'} | ` +
-        `combos ${s.combos.join(',') || '-'} | leafy ${leafy < 0 ? '-' : '+' + leafy.toFixed(1) + 'm'} | ` +
+        `combos ${s.combos.join(',') || '-'} | ${keys.map((k) => `${k.word} ${k.m < 0 ? '-' : '+' + k.m.toFixed(1) + 'm'}`).join(' ')} | ` +
+        `beyond ±2 made ${farMade} base ${farBase} | ` +
         `made ${made.length} (judged ${judged.length}) / ${minutes}m`;
     },
   };
@@ -76,5 +85,6 @@ function drySort(s: State): number | null {
 export function variantSummary(): string {
   const t = totals, n = t.seeds;
   return `variants: busy species ≥2 shown/10m ${t.busyOk}/${n} · a variant ≥30% ${t.share30}/${n} · Dry+ sorts drier ${t.sorted}/${n} · ` +
-    `Rare by 30m ${t.rare30}/${n} · combo ${t.combo}/${n} · Leafy in window ${t.leafy}/${n} · new species alive 10m ${t.made}/${n}`;
+    `Rare by 30m ${t.rare30}/${n} · combo ${t.combo}/${n} · keys in window ${t.keys}/${n} · new species alive 10m ${t.made}/${n} · ` +
+    `forms beyond ±2: in made species ${t.farMade}, in base species ${t.farBase}`;
 }

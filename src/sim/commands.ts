@@ -125,7 +125,7 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   const kin = s.species.filter((o) => o.base === parent.base).length;
   s.species.push({
     id: `${def.id}-${kin + 1}`, name: nm, base: parent.base, genome: { axes: [...x.genome.axes], traits: [...x.genome.traits] },
-    hue: parent.hue + GENES.hueShift * (kin % 2 ? 1 : -1) * Math.ceil(kin / 2), parent: x.sp, at: -1,
+    hue: parent.hue + GENES.hueShift * (kin % 2 ? 1 : -1) * Math.ceil(kin / 2), parent: x.sp, at: -1, form: variantName(s, v),
   });
   s.count.push(0); s.prevCount.push(0);
   s.foundings[s.species[sp].id] = 0;

@@ -1,6 +1,7 @@
 <script lang="ts">
-  // Your species, each with its shown variants underneath; the focused species' card below: needs, makes, limits
-  // and stats of its base form, its trait genes and the combos.
+  // Your species, each listed once with its population bar; the focused one opens its variant rows, and its card
+  // below: needs, makes, limits and stats of its base form, its trait genes and the combos. Hovering a bar segment
+  // or a variant row lights its tiles up on the map. The lineage and clades live on the tree screen.
   import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATUM_NAMES, limitName, type LayerId } from '../data/fields';
   import { COMBOS, TIER } from '../data/genes';
   import { type Scalar } from '../data/species';
@@ -10,6 +11,7 @@
   import { defOf, glints, poolOf, speciesIndex } from '../sim/variants';
   import { speciesLook } from '../view/look';
   import Specimen from './Specimen.svelte';
+  import PopBar from './PopBar.svelte';
   import VariantRow from './VariantRow.svelte';
   import { game, seeVariants, startPlacing, ui } from './game.svelte';
   import { fmt } from './format';
@@ -25,14 +27,22 @@
   // Variants that were glinting when you opened this tab keep a "new" mark while it stays open.
   const fresh = new Set<number>();
 
+  const depthOf = (sp: number): number => (game.species[sp].parent >= 0 ? 1 + depthOf(game.species[sp].parent) : 0);
+
   const list = $derived.by(() => {
     ui.v;
-    return unlockedSpecies(game).map((id) => {
+    // Lineage order: each species right after the one it was founded from.
+    const ids = unlockedSpecies(game), out: string[] = [];
+    const walk = (parent: number) => {
+      for (const id of ids) { const sp = speciesIndex(game, id); if (game.species[sp].parent === parent && !out.includes(id)) { out.push(id); walk(sp); } }
+    };
+    walk(-1);
+    return out.map((id) => {
       const sp = speciesIndex(game, id), x = game.species[sp];
       const vs = poolOf(game, sp).filter((v) => game.variants[v].shown && game.variants[v].tier !== TIER.base);
       for (const v of vs) if (glints(game.variants[v])) fresh.add(v);
       return { id, sp, name: x.name, tiles: coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
-        made: x.parent >= 0 ? game.species[x.parent].name : null, variants: vs };
+        made: x.parent >= 0 ? game.species[x.parent].name : null, depth: depthOf(sp), variants: vs };
     });
   });
 
@@ -72,15 +82,20 @@
 <p class="small dim">Plants mutate by themselves as they spread. A new form shows once it holds 5 tiles. Combos found: {game.combos.length} / {COMBOS.length}</p>
 <div class="list">
   {#each list as s (s.id)}
-    <div class="row" class:on={ui.focus === s.id} onclick={() => (ui.focus = s.id)} role="button" tabindex="0"
+    <div class="row" class:on={ui.focus === s.id} style:margin-left="{s.depth * 14}px" onclick={() => (ui.focus = s.id)} role="button" tabindex="0"
       onkeydown={(e) => e.key === 'Enter' && (ui.focus = s.id)}>
       <Specimen look={s.look} scale={1} size={40} />
-      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} tiles{s.made ? ` · from ${s.made}` : ''}</span></div>
+      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} tiles · {s.variants.length} form{s.variants.length === 1 ? '' : 's'}{s.made ? ` · from ${s.made}` : ''}</span>
+        {#if s.tiles}<PopBar sp={s.sp} />{/if}</div>
       <button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
         Found {s.cost ? fmt(s.cost) : 'free'}
       </button>
     </div>
-    {#each s.variants as v (v)}<VariantRow {v} fresh={fresh.has(v)} />{/each}
+    {#if ui.focus === s.id}
+      <div class="forms" role="presentation" onmouseleave={() => (ui.hoverVariant = -1)}>
+        {#each s.variants as v (v)}<VariantRow {v} fresh={fresh.has(v)} />{/each}
+      </div>
+    {/if}
   {/each}
 </div>
 
@@ -137,7 +152,8 @@
   .list { display: flex; flex-direction: column; gap: 4px; }
   .row { display: flex; gap: 10px; align-items: center; padding: 4px; border: 2px solid transparent; cursor: pointer; }
   .row.on { border-color: var(--edge); background: var(--panel-dark); }
-  .name { flex: 1; display: flex; flex-direction: column; }
+  .name { flex: 1; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .forms { border-left: 2px solid var(--edge); margin-left: 22px; }
   .card { margin-top: 12px; border-top: 2px solid var(--ink); padding-top: 8px; }
   .top { display: flex; gap: 10px; align-items: flex-start; }
   .top p { margin: 0; }

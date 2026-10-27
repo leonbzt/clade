@@ -34,7 +34,7 @@
   onMount(() => {
     let raf = 0;
     const loop = (t: number) => {
-      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus });
+      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus, hoverVariant: ui.hoverVariant });
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

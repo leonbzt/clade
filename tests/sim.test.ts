@@ -7,8 +7,8 @@ import { advance } from '../src/sim/tick';
 import { botTick } from '../src/sim/bot';
 import { canFoundSpecies, coverCount, evolve, found, foundingCost, foundSpecies } from '../src/sim/commands';
 import { buildProfile, fit } from '../src/sim/fit';
-import { comboOf, poolOf, rarity, ZERO } from '../src/sim/variants';
-import { GENES, KEY, TIER } from '../src/data/genes';
+import { comboOf, mutation, poolOf, rarity, ZERO } from '../src/sim/variants';
+import { GENES, KEY, KEYS, TIER } from '../src/data/genes';
 import { changed, snapshot } from '../src/sim/metrics';
 
 function hash(s: State): number {
@@ -101,11 +101,12 @@ describe('sim', () => {
         for (const v of s.occ) if (v >= 0) expect(s.variants[v].alive).toBe(true);
       }
     }
-    const liver = s.species[SPECIES_INDEX[KEY.species]], at = s.innovations[KEY.gene];
+    const leafy = KEYS[0], liver = s.species[SPECIES_INDEX[leafy.species]], at = s.innovations[leafy.gene];
     expect(at).toBeDefined();
-    expect((at - liver.at) / 600).toBeGreaterThanOrEqual(KEY.window[0]);
-    expect((at - liver.at) / 600).toBeLessThanOrEqual(KEY.window[1]);
-    expect(s.reached).toContain(KEY.node);
+    expect((at - liver.at) / 600).toBeGreaterThanOrEqual(leafy.window[0] / Math.max(...KEY.speed));
+    expect((at - liver.at) / 600).toBeLessThanOrEqual(leafy.window[1] / Math.min(...KEY.speed));
+    expect(s.reached).toContain(leafy.node);
+    expect(s.keyFrom[leafy.gene].form).toMatch(/^Leafy/);
     // A hand-made Rare: three steps from the base genome; it founds a new species with its genome as the base.
     const g = { axes: [2, 0, 0, -1], traits: [] };
     expect(comboOf(g)?.id).toBe('crust');
@@ -121,6 +122,17 @@ describe('sim', () => {
     expect(coverCount(s, s.species[before].id)).toBeGreaterThan(0);
     expect(canFoundSpecies(s, v).ok).toBe(false); // once only
   }, 120_000);
+
+  it('founding helps: a species founded at dry +2 steps to +3 far more often than its parent does', () => {
+    const s = createState(2), cy = SPECIES_INDEX.cyano, g = { axes: [2, 0, 0, 0], traits: [] };
+    const toThree = () => { let n = 0; for (let k = 0; k < 20000; k++) if (mutation(s, s.species.length - 1, g)?.axes[0] === 3) n++; return n; };
+    s.species.push({ ...s.species[cy], id: 'parent' });
+    const fromParent = toThree();
+    s.species.push({ ...s.species[cy], id: 'founded', genome: g, parent: cy });
+    const fromFounded = toThree();
+    expect(fromFounded).toBeGreaterThan(2.5 * fromParent);
+    expect(mutation(s, s.species.length - 1, { axes: [4, 0, 0, 0], traits: [] })?.axes[0] ?? 3).toBeLessThanOrEqual(4);
+  });
 
   it('the sim has no clock or unseeded randomness', () => {
     for (const f of readdirSync('src/sim')) {

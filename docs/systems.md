@@ -131,3 +131,8 @@ Three questions: how to order species and variants, what founding means, how bot
   species is closest to its key gene (e's precursors as a checklist).
 - Later, maybe: a time axis (branches drawn when founded), and wild splits (shown as leaves you didn't found).
 - Cost: d + e and the tree leaves ≈ one slice; the ordering alone ≈ half a slice.
+- **Your calls (27 Oct):** founded species shown twice is confusing. b inside a for play; clades and milestones
+  in a separate tree-of-life screen; the variants on the map clearly visible while playing. d without a hard
+  re-centre: rarity scales up cumulatively the further a form is from its clade's base (refunds can balance cost).
+  d + e yes. f later: a few active founded species as your "builds"; release old ones to take a new one. Wanted
+  if possible: a time axis, and new clades and species drawn as stemming from the variant you grew.

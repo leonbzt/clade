@@ -2,7 +2,7 @@
   import TopBar from './TopBar.svelte';
   import MapView from './MapView.svelte';
   import SpeciesPanel from './SpeciesPanel.svelte';
-  import TreePanel from './TreePanel.svelte';
+  import TreeScreen from './TreeScreen.svelte';
   import DevPanel from './DevPanel.svelte';
   import Toasts from './Toasts.svelte';
   import TilePanel from './TilePanel.svelte';
@@ -12,10 +12,12 @@
   function key(e: KeyboardEvent) {
     // The backtick is a dead key on German keyboards, so match the physical key (left of 1) and F2 too.
     if (e.code === 'Backquote' || e.key === '`' || e.key === 'F2') { e.preventDefault(); ui.dev = !ui.dev; }
-    if (e.key === 'Escape') ui.placing = null;
+    if (e.target instanceof HTMLInputElement) return;
+    if (e.key === 'Escape') { ui.placing = null; ui.tree = false; }
+    if (e.key === 't' || e.key === 'T') ui.tree = !ui.tree;
     // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 7 Variants
     const k = Number(e.key);
-    if (k >= 1 && k <= VIEWS.length && !(e.target instanceof HTMLInputElement)) ui.view = VIEWS[k - 1];
+    if (k >= 1 && k <= VIEWS.length) ui.view = VIEWS[k - 1];
   }
 </script>
 
@@ -27,13 +29,14 @@
     <MapView />
     <aside class="panel side">
       <nav class="tabs">
-        <button class:on={ui.tab === 'tree'} onclick={() => (ui.tab = 'tree')}>Tree of life</button>
+        <button class="treebtn" onclick={() => (ui.tree = true)} title="The tree of life (T)">Tree of life</button>
         <button class:on={ui.tab === 'species'} onclick={() => (ui.tab = 'species')}>Species</button>
         <button class:on={ui.tab === 'tile'} onclick={() => (ui.tab = 'tile')}>Tile</button>
       </nav>
-      {#if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'tile'}<TilePanel />{:else}<TreePanel />{/if}
+      {#if ui.tab === 'species'}<SpeciesPanel />{:else}<TilePanel />{/if}
     </aside>
   </main>
+  {#if ui.tree}<TreeScreen />{/if}
   {#if ui.dev}<DevPanel />{/if}
   <Toasts />
 </div>
@@ -45,6 +48,7 @@
   .side { width: 380px; flex: none; max-height: 100%; overflow-y: auto; scrollbar-gutter: stable; }
   .tabs { display: flex; gap: 4px; margin-bottom: 8px; }
   .tabs button { flex: 1; }
+  .tabs .treebtn { color: var(--gold); }
   @media (max-width: 900px) {
     .app { height: auto; overflow: visible; }
     main { flex-direction: column; }

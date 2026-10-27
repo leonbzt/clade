@@ -2,10 +2,10 @@
 // base species in the data. Variants mutate when a plant settles a new tile, win or lose by fit like species do,
 // and die out when they hold no tiles. Rarity is the distance to the species' base genome.
 import { STRATA } from '../data/fields';
-import { AXES, COMBOS, GENES, KEY, TIER, TIERS, type Combo } from '../data/genes';
-import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../data/species';
+import { AXES, COMBOS, GENES, KEYS, TIER, TIERS, type Combo } from '../data/genes';
+import { SPECIES, type SpeciesDef } from '../data/species';
 import { rand } from './rng';
-import { EV, type State } from './state';
+import { type State } from './state';
 import { type Profile, profile } from './fit';
 
 export type Genome = { axes: number[]; traits: string[] }; // axes in AXES order, traits sorted
@@ -17,6 +17,7 @@ export type Species = {
   hue: number; // colour shift in turns, for species you made
   parent: number; // the species it was founded from, or -1
   at: number; // tick of its first founding, or -1
+  form: string; // the variant it grew from ("Dry Moss"), for the tree; empty for base species
 };
 export type Variant = {
   sp: number;
@@ -32,15 +33,16 @@ export type Variant = {
 };
 
 export const ZERO: Genome = { axes: [0, 0, 0, 0], traits: [] };
+export const copyGenome = (g: Genome): Genome => ({ axes: [...g.axes], traits: [...g.traits] });
 export const genomeKey = (g: Genome) => `${g.axes.join(',')}|${g.traits.join(',')}`;
-const copy = (g: Genome): Genome => ({ axes: [...g.axes], traits: [...g.traits] });
+const copy = copyGenome;
 
 export const defOf = (s: State, sp: number): SpeciesDef => SPECIES[s.species[sp].base];
 export const spOf = (s: State, v: number) => s.variants[v].sp;
 export const speciesIndex = (s: State, id: string) => s.species.findIndex((x) => x.id === id);
 
 export function baseSpecies(): Species[] {
-  return SPECIES.map((d, i) => ({ id: d.id, name: d.name, base: i, genome: copy(ZERO), hue: 0, parent: -1, at: -1 }));
+  return SPECIES.map((d, i) => ({ id: d.id, name: d.name, base: i, genome: copy(ZERO), hue: 0, parent: -1, at: -1, form: '' }));
 }
 
 /** The first combo the genome carries (each of its steps reached, on the right side). */
@@ -59,14 +61,14 @@ export function distance(g: Genome, base: Genome): number {
   return d;
 }
 
-/** Common (1), Uncommon (2), Rare (3–4 or a combo), Epic (5+, or a combo plus a trait gene), Legendary (a key gene). */
+/** Common (1), Uncommon (2), Rare (3–4 or a combo), Epic (5+, or a combo plus a trait gene), Legendary (a key gene);
+ * one tier up if a gene sits beyond ±`reach.free` from the clade's original genes. */
 export function rarity(s: State, sp: number, g: Genome): number {
   const base = s.species[sp].genome, def = defOf(s, sp);
   if (g.traits.some((t) => !base.traits.includes(t) && def.traits.find((x) => x.id === t)?.key)) return TIER.legendary;
   const d = distance(g, base), combo = comboOf(g) && !comboOf(base), gene = g.traits.some((t) => !base.traits.includes(t));
-  if (d >= 5 || (combo && gene)) return TIER.epic;
-  if (d >= 3 || combo) return TIER.rare;
-  return Math.min(d, TIER.uncommon);
+  const t = d >= 5 || (combo && gene) ? TIER.epic : d >= 3 || combo ? TIER.rare : Math.min(d, TIER.uncommon);
+  return d && g.axes.some((a) => Math.abs(a) > GENES.reach.free) ? Math.min(TIER.epic, t + 1) : t;
 }
 
 export const glints = (x: Variant) => x.alive && x.shown && !x.seen && x.tier >= TIER.rare;
@@ -112,8 +114,9 @@ function free(s: State, v: number) {
   delete s.vkey[`${x.sp}|${x.key}`];
 }
 
-/** One random step on one axis, or (more rarely) one trait gene flips. Key genes never flip by chance. */
-export function mutation(s: State, sp: number, g: Genome): Genome {
+/** One random step on one axis, or (more rarely) one trait gene flips. Key genes never flip by chance. A step out
+ * past `reach.free` from the species' base, or from the clade's original genes, often fails to take (null). */
+export function mutation(s: State, sp: number, g: Genome): Genome | null {
   const out = copy(g), genes = defOf(s, sp).traits.filter((t) => !t.key);
   if (genes.length && rand(s) < GENES.traitShare) {
     const t = genes[Math.floor(rand(s) * genes.length)].id, at = out.traits.indexOf(t);
@@ -121,7 +124,11 @@ export function mutation(s: State, sp: number, g: Genome): Genome {
     return out;
   }
   const a = Math.floor(rand(s) * AXES.length), dir = rand(s) < 0.5 ? -1 : 1, m = GENES.maxStep;
-  out.axes[a] = Math.abs(out.axes[a] + dir) > m ? out.axes[a] - dir : out.axes[a] + dir;
+  const was = out.axes[a], now = Math.abs(was + dir) > m ? was - dir : was + dir, R = GENES.reach;
+  const home = s.species[sp].genome.axes[a], over = (x: number) => Math.max(0, x - R.free);
+  if (Math.abs(now - home) > Math.abs(was - home) && rand(s) >= R.out ** over(Math.abs(now - home))) return null;
+  if (Math.abs(now) > Math.abs(was) && rand(s) >= R.extreme ** over(Math.abs(now))) return null;
+  out.axes[a] = now;
   return out;
 }
 
@@ -130,7 +137,7 @@ export function mutation(s: State, sp: number, g: Genome): Genome {
 export function maybeMutate(s: State, P: Profile[], slot: number) {
   const v = s.occ[slot];
   if (!s.variants[v].shown || rand(s) >= GENES.mutate) return;
-  const sp = s.variants[v].sp, m = variantFor(s, sp, mutation(s, sp, s.variants[v].genome), P);
+  const sp = s.variants[v].sp, g = mutation(s, sp, s.variants[v].genome), m = g ? variantFor(s, sp, g, P) : -1;
   if (m >= 0) { s.occ[slot] = m; s.variants[m].tiles++; }
 }
 
@@ -171,7 +178,8 @@ export function show(s: State, v: number) {
   if (x.tier === TIER.base) return;
   let at = -1;
   for (let slot = 0; slot < s.occ.length && at < 0; slot++) if (s.occ[slot] === v) at = slot % (s.w * s.h);
-  const genes = x.tier === TIER.legendary ? defOf(s, x.sp).traits.find((t) => t.key && x.genome.traits.includes(t.id))!.name : geneText(s, v);
+  const key = x.tier === TIER.legendary ? defOf(s, x.sp).traits.find((t) => t.key && x.genome.traits.includes(t.id)) : null;
+  const genes = key ? key.name : geneText(s, v);
   s.log.push({ tick: s.tick, kind: 'variant', sp: x.sp, tier: x.tier, name: variantName(s, v), genes, place: placeName(s, at) });
 }
 
@@ -180,7 +188,8 @@ export function show(s: State, v: number) {
 export function variantName(s: State, v: number): string {
   const x = s.variants[v], def = defOf(s, x.sp), base = s.species[x.sp].genome;
   if (x.combo) return `${x.combo[0].toUpperCase()}${x.combo.slice(1)} ${def.short}`;
-  if (x.genome.traits.includes(KEY.gene) && !base.traits.includes(KEY.gene)) return `Leafy ${def.short}`;
+  const key = KEYS.find((k) => x.genome.traits.includes(k.gene) && !base.traits.includes(k.gene));
+  if (key) return `${key.word} ${def.short}`;
   const words = AXES.map((a, k) => ({ d: x.genome.axes[k] - base.axes[k], a }))
     .filter((w) => w.d).sort((p, q) => Math.abs(q.d) - Math.abs(p.d)).slice(0, 2)
     .map((w, _, all) => (all.length === 1 && Math.abs(w.d) > 1 ? 'Very ' : '') + (w.d > 0 ? w.a.plus : w.a.minus));
@@ -213,32 +222,6 @@ export function placeName(s: State, i: number): string {
   if (best) return `near ${best}`;
   const ns = y < s.h / 3 ? 'north' : y > (2 * s.h) / 3 ? 'south' : '', ew = x < s.w / 3 ? 'west' : x > (2 * s.w) / 3 ? 'east' : '';
   return `in the ${ns + ew || 'middle'}`;
-}
-
-/** The key innovation's pity timer: from `window[0]` minutes after its species is founded the odds rise each
- * second, faster with more tiles; at `window[1]` it arrives for sure. It takes a random plant and its neighbours. */
-export function keyInnovation(s: State, P: Profile[], dt: number) {
-  const sp = SPECIES_INDEX[KEY.species], at = s.species[sp].at;
-  if (s.innovations[KEY.gene] !== undefined || at < 0) return;
-  const t = (s.tick - at) / 600, [w0, w1] = KEY.window;
-  if (t < w0) return;
-  const factor = Math.min(2, Math.max(0.5, s.count[sp] / KEY.popRef));
-  if (t + dt / 60 < w1 && rand(s) >= (KEY.rate * (t - w0) * factor * dt) / 60) return; // the last check before w1 forces it
-  const n = s.w * s.h, k = stratumOf(s, sp), mine: number[] = [];
-  for (let i = 0; i < n; i++) { const v = s.occ[k * n + i]; if (v >= 0 && s.variants[v].sp === sp && !s.dying[k * n + i]) mine.push(i); }
-  if (!mine.length) return;
-  const i0 = mine[Math.floor(rand(s) * mine.length)], v0 = s.occ[k * n + i0], g = copy(s.variants[v0].genome);
-  g.traits = [...g.traits, KEY.gene].sort();
-  const v = variantFor(s, sp, g, P);
-  if (v < 0) return;
-  const x0 = i0 % s.w, y0 = (i0 / s.w) | 0;
-  for (let dy = -KEY.patch; dy <= KEY.patch; dy++) for (let dx = -KEY.patch; dx <= KEY.patch; dx++) {
-    const x = x0 + dx, y = y0 + dy, slot = k * n + y * s.w + x;
-    if (x < 0 || y < 0 || x >= s.w || y >= s.h) continue;
-    if (s.occ[slot] >= 0 && s.variants[s.occ[slot]].sp === sp) { s.occ[slot] = v; s.lastCode[slot] = EV.mutated; s.lastTick[slot] = s.tick; }
-  }
-  s.innovations[KEY.gene] = s.tick;
-  show(s, v);
 }
 
 export const stratumOf = (s: State, sp: number) => STRATA.indexOf(defOf(s, sp).stratum);

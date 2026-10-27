@@ -77,6 +77,19 @@ export function variantsView(ctx: Ctx, s: State, speciesId: string) {
   }
 }
 
+/** One variant's tiles light up in its Variants-view colour, over a light wash: hovering it in the panel. */
+export function variantHighlight(ctx: Ctx, s: State, v: number) {
+  const x = s.variants[v];
+  if (!x?.alive) return;
+  wash(ctx, 0.35);
+  const n = s.w * s.h, k = stratumOf(s, x.sp);
+  ctx.fillStyle = variantColors(s, x.sp).get(v) ?? PAL.text;
+  for (let i = 0; i < n; i++) {
+    if (s.occ[k * n + i] !== v) continue;
+    ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
+  }
+}
+
 /** One layer: a single colour, stronger where the value is higher. */
 export function layerView(ctx: Ctx, s: State, id: LayerId) {
   const v = s.layers[id], max = FIELDS[id].viewMax ?? 1;

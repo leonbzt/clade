@@ -1,5 +1,10 @@
 <script lang="ts">
+  // The clades: reached ones with your species as leaves (nested by who they came from; extinct ones as fossils),
+  // open ones with their requirements, and for a key gene the precursors its lineage's best form carries.
+  import { KEYS } from '../data/genes';
   import { SPECIES, SPECIES_INDEX } from '../data/species';
+  import { keyProgress } from '../sim/keys';
+  import { zoneColor } from '../view/overlays';
   import { speciesLook } from '../view/look';
   import { TREE } from '../data/tree';
   import { canEvolve, reqStatus } from '../sim/commands';
@@ -12,6 +17,20 @@
     return n?.parent ? 1 + depth(n.parent) : 0;
   };
 
+  /** The species of this base, each after the one it was founded from, with its depth. */
+  function leaves(base: number) {
+    const mine = game.species.map((x, sp) => ({ x, sp })).filter((o) => o.x.base === base);
+    const out: { sp: number; name: string; depth: number; tiles: number; dead: boolean; color: string; id: string }[] = [];
+    const walk = (parent: number, depth: number) => {
+      for (const o of mine.filter((m) => m.x.parent === parent)) {
+        out.push({ sp: o.sp, id: o.x.id, name: o.x.name, depth, tiles: game.count[o.sp], dead: o.x.at >= 0 && !game.count[o.sp], color: zoneColor(game, o.sp) });
+        walk(o.sp, depth + 1);
+      }
+    };
+    walk(-1, 0);
+    return out;
+  }
+
   const nodes = $derived.by(() => {
     ui.v;
     return TREE.map((n) => {
@@ -21,7 +40,11 @@
         ...n, depth: depth(n.id), reached, open,
         can: canEvolve(game, n.id).ok,
         // Requirements stay met once reached.
-        reqs: n.reqs.map((r) => { const st = reqStatus(game, r); return game.ready.includes(n.id) ? { ...st, met: true } : st; }),
+        reqs: n.reqs.map((r) => {
+          const st = reqStatus(game, r), key = r.kind === 'gene' ? KEYS.find((k) => k.gene === r.gene) : undefined;
+          return { ...st, met: st.met || game.ready.includes(n.id), key: key && !st.met ? keyProgress(game, key) : null };
+        }),
+        leaves: n.species && reached ? leaves(SPECIES_INDEX[n.species]) : [],
         speciesName: n.species ? SPECIES[SPECIES_INDEX[n.species]].name : null,
         placed: n.species ? game.foundings[n.species] > 0 : false,
       };
@@ -39,8 +62,15 @@
       {#if n.reached}
         <p class="dim fact">{n.fact}</p>
         {#if n.species && !n.placed}
-          <button class="go" onclick={() => { startPlacing(n.species!); ui.tab = 'species'; }}>Found {n.speciesName} on the island</button>
+          <button class="go" onclick={() => { startPlacing(n.species!); ui.tab = 'species'; ui.tree = false; }}>Found {n.speciesName} on the island</button>
         {/if}
+        {#each n.leaves.filter((l) => l.tiles || l.dead) as l (l.sp)}
+          <button class="leaf" class:dead={l.dead} style:margin-left="{l.depth * 14}px"
+            onclick={() => { ui.focus = l.id; ui.tab = 'species'; ui.tree = false; }}>
+            <span class="dot" style:background={l.dead ? 'transparent' : l.color}></span>{l.depth ? '└ ' : ''}{l.dead ? '† ' : ''}{l.name}
+            <span class="dim">{l.dead ? 'extinct' : `${l.tiles} tiles`}</span>
+          </button>
+        {/each}
       {:else if !n.open}
         <p class="dim">Reach its parent first.</p>
       {:else}
@@ -48,6 +78,12 @@
           <div class="req" class:met={r.met}>
             <span>{r.met ? '✔' : '○'} {r.text}</span><span>{Math.min(r.have, r.need)} / {r.need}</span>
           </div>
+          {#if r.key}
+            <div class="pre dim">Comes sooner when a form carries:
+              {#each r.key.items as p (p.text)}<div class:met={p.met}>{p.met ? '✔' : '○'} {p.text}</div>{/each}
+              <div>Best form now: {r.key.best ?? 'none shown yet'}</div>
+            </div>
+          {/if}
         {/each}
         <button class="go" disabled={!n.can} onclick={() => doEvolve(n.id)}>
           Evolve{n.cost ? ` · ${fmt(n.cost)} biomass` : ''}
@@ -67,5 +103,12 @@
   .req { display: flex; justify-content: space-between; font-size: 15px; }
   .req.met { color: var(--good); }
   .go { margin-top: 6px; width: 100%; }
+  .leaf { display: flex; gap: 6px; align-items: center; width: calc(100% - 4px); margin: 2px 0; padding: 2px 6px; font-size: 14px;
+    background: var(--panel); text-align: left; }
+  .leaf .dim { margin-left: auto; }
+  .leaf.dead { opacity: 0.6; }
+  .dot { width: 9px; height: 9px; border: 1px solid var(--dim); flex: none; }
+  .pre { font-size: 13px; margin: 2px 0 4px 14px; }
+  .pre .met { color: var(--good); }
   p { margin: 4px 0; }
 </style>

@@ -21,7 +21,7 @@ export type Mod =
   | { make: LayerId; mul: number }
   | { status: StatusId; tol: number }; // raises the tolerance (the score at full strength)
 
-/** A trait gene: on or off in a variant. A key one never mutates in by chance (see KEY in genes.ts). */
+/** A trait gene: on or off in a variant. A key one never mutates in by chance (see KEYS in genes.ts). */
 export type Trait = { id: string; name: string; up: string; down: string; mods: Mod[]; key?: boolean };
 
 export type SpeciesDef = {
@@ -86,6 +86,9 @@ export const SPECIES: SpeciesDef[] = [
         mods: [{ stat: 'hold', mul: 1.3 }, { stat: 'seeds', mul: 0.8 }] },
       { id: 'capsule', name: 'Stalked spore capsule', up: 'spreads 50% faster', down: 'yields 20% less',
         mods: [{ stat: 'seeds', mul: 1.5 }, { stat: 'yield', mul: 0.8 }] },
+      // Close to neutral on purpose, like the leafy shoot: it's the step toward vascular plants.
+      { id: 'hydroids', name: 'Hydroids', up: 'lives 0.05 drier', down: 'grows 5% slower', key: true,
+        mods: [{ need: 'water', low: -0.05 }, { stat: 'grow', mul: 0.95 }] },
     ],
   },
   {

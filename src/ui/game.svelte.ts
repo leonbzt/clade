@@ -18,7 +18,9 @@ class UI {
   placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
   foundName = $state(''); // the name for that new species
   focus = $state('moss');
-  tab = $state<'species' | 'tree' | 'tile'>('tree');
+  tab = $state<'species' | 'tile'>('species');
+  tree = $state(false); // the tree of life screen is open
+  hoverVariant = $state(-1); // a variant whose tiles light up on the map
   view = $state<View>('none');
   hover = $state(-1);
   selected = $state(-1); // the tile shown in the Tile tab
@@ -54,6 +56,7 @@ export function start() {
   const q = new URLSearchParams(location.search), bot = Number(q.get('bot'));
   if (bot > 0) autoplay(bot);
   if (q.get('tab') === 'species' || q.get('tab') === 'tile') ui.tab = q.get('tab') as 'species' | 'tile';
+  if (q.get('tab') === 'tree') ui.tree = true;
   if (q.get('tile')) ui.selected = Number(q.get('tile'));
   if (VIEWS.includes(q.get('view') as View)) ui.view = q.get('view') as View;
   if (q.get('place')) startPlacing(q.get('place')!);
@@ -128,6 +131,6 @@ export function addBiomass(n: number) {
 
 export function reset() {
   game = createState(Math.floor(Math.random() * 1e9));
-  ui.placing = null; ui.focus = 'moss'; ui.tab = 'tree'; ui.selected = -1;
+  ui.placing = null; ui.focus = 'moss'; ui.tab = 'species'; ui.tree = false; ui.selected = -1;
   ui.gen++; ui.v++;
 }

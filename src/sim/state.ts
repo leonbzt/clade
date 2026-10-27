@@ -57,6 +57,9 @@ export type State = {
   made: number; // species you founded from a variant
   combos: string[]; // combos shown so far
   innovations: Record<string, number>; // key gene → the tick it appeared
+  keyClock: Record<string, number>; // key gene → its pity clock, in minutes
+  keyFrom: Record<string, { sp: number; form: string }>; // key gene → the species and variant it grew in
+  history: { tick: number; counts: number[] }[]; // tiles per species, once a minute, for the spindle diagram
   log: LogLine[];
 };
 
@@ -76,7 +79,7 @@ export function createState(seed: number): State {
     species: baseSpecies(), variants: [], vkey: {}, count: [], prevCount: [],
     biomass: 0, gain: 0, rate: 0,
     reached: [...START_REACHED], ready: [],
-    foundings: {}, made: 0, combos: [], innovations: {},
+    foundings: {}, made: 0, combos: [], innovations: {}, keyClock: {}, keyFrom: {}, history: [],
     log: [],
   };
   s.count = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);

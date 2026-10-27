@@ -12,12 +12,12 @@ import { lookOf } from './look';
 import { hash2, makeCanvas } from './pixels';
 import { SPRITE, sprite } from './plants';
 import { TerrainLayer } from './terrain';
-import { layerView, outline, PlacingView, variantsView, zonesView } from './overlays';
+import { layerView, outline, PlacingView, variantHighlight, variantsView, zonesView } from './overlays';
 
 const T = NUM.map.tile;
 export type View = 'none' | 'zones' | LayerId | 'variants';
 export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants'];
-export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string };
+export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number };
 
 export class GardenRenderer {
   readonly canvas: HTMLCanvasElement;
@@ -64,6 +64,7 @@ export class GardenRenderer {
       if (o.view === 'variants') variantsView(ctx, s, o.focus);
       else if (o.view !== 'none') layerView(ctx, s, o.view);
       else this.glints(o.time);
+      if (o.hoverVariant >= 0) variantHighlight(ctx, s, o.hoverVariant);
     }
     if (o.placing) this.placingView.draw(ctx, o.placing, o.hover);
     else if (o.hover >= 0) outline(ctx, s, o.hover, PAL.text);
