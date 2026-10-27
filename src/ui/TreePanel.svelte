@@ -19,7 +19,8 @@
       return {
         ...n, depth: depth(n.id), reached, open,
         can: canEvolve(game, n.id).ok,
-        reqs: n.reqs.map((r) => reqStatus(game, r)),
+        // Requirements stay met once reached.
+        reqs: n.reqs.map((r) => { const st = reqStatus(game, r); return game.ready.includes(n.id) ? { ...st, met: true } : st; }),
         speciesName: n.species ? SPECIES[SPECIES_INDEX[n.species]].name : null,
         placed: n.species ? game.foundings[n.species] > 0 : false,
       };

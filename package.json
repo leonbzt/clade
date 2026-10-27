@@ -8,7 +8,7 @@
     "build": "vite build",
     "check": "node scripts/check.mjs",
     "test": "vitest run",
-    "curve": "CURVE=1 vitest run tests/curve.test.ts"
+    "sim": "SIM=1 vitest run tests/run.test.ts --reporter=dot"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

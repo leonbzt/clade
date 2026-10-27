@@ -1,10 +1,11 @@
 // The ground layer: sea, beach and lava drawn once per pixel; then soil and ground cover dithered in.
 // Coastlines come from a smoothed tile mask plus noise, so they read organic instead of blocky.
 // Soil and cover grow in organic blotches because each pixel has a fixed threshold from noise.
-// Ground cover is how a species "dyes" the ground it holds, so zones read as areas, not sprite fields.
+// Ground cover is how a ground species "dyes" the tile it holds, so zones read as areas, not sprite fields.
 import { NUM } from '../data/numbers';
 import { GROUND, PAL } from '../data/palette';
 import { SPECIES } from '../data/species';
+import { COVER_STRENGTH } from '../data/view';
 import { BEACH, SEA, VENT, CRACK, type State } from '../sim/state';
 import { hash2, makeCanvas, noise, rgba32 } from './pixels';
 
@@ -13,6 +14,7 @@ const SOIL = [PAL.soil0, PAL.soil1, PAL.soil2, PAL.soil3].map((c) => rgba32(c));
 const SOIL_DARK = [PAL.soil0, PAL.soil0, PAL.soil1, PAL.soil2].map((c) => rgba32(c));
 const COVER = SPECIES.map((s) => rgba32(GROUND[s.id]));
 const COVER_LIGHT = SPECIES.map((s) => rgba32(shift(GROUND[s.id], 1.25)));
+const STRENGTH = SPECIES.map((s) => COVER_STRENGTH[s.id] ?? 1);
 
 function shift(hex: string, k: number): string {
   const n = parseInt(hex.slice(1), 16), c = (v: number) => Math.min(255, Math.round(v * k)).toString(16).padStart(2, '0');
@@ -88,11 +90,11 @@ export class TerrainLayer {
   }
 
   private signature(i: number): number {
-    const s = this.s;
-    return (s.occ[i] + 1) * 10000 + Math.floor(s.growth[i] * 4) * 100 + Math.min(99, Math.floor(s.soil[i] * 12));
+    const s = this.s, g = s.w * s.h + i; // the ground stratum's slot
+    return (s.occ[g] + 1) * 10000 + Math.floor(s.cover[g] * 4) * 100 + Math.min(99, Math.floor(s.layers.soil[i] * 36));
   }
 
-  /** Repaints the tiles whose occupant, growth or soil band changed, plus their neighbours (cover edges blend). */
+  /** Repaints the tiles whose ground occupant, cover or soil band changed, plus their neighbours (cover edges blend). */
   update(force = false) {
     const s = this.s, n = s.w * s.h, dirty = new Uint8Array(n);
     let any = false;
@@ -113,7 +115,7 @@ export class TerrainLayer {
 
   private paintTile(i: number) {
     const s = this.s, W = s.w * T, x0 = (i % s.w) * T, y0 = ((i / s.w) | 0) * T;
-    const f = s.soil[i] / 3, deep = Math.min(3, Math.floor(s.soil[i]));
+    const f = s.layers.soil[i], deep = Math.min(3, Math.floor(f * 4));
     for (let y = y0; y < y0 + T; y++) for (let x = x0; x < x0 + T; x++) {
       const p = y * W + x;
       let c = f * 1.25 > this.soilAt[p] ? (this.shade[p] ? SOIL[deep] : SOIL_DARK[deep]) : this.base[p];
@@ -133,9 +135,9 @@ export class TerrainLayer {
     ws.fill(0);
     const add = (tx: number, ty: number, k: number) => {
       if (tx < 0 || ty < 0 || tx >= s.w || ty >= s.h) return;
-      const j = ty * s.w + tx, sp = s.occ[j];
+      const j = s.w * s.h + ty * s.w + tx, sp = s.occ[j]; // ground stratum
       if (sp < 0) return;
-      ws[sp] += k * Math.min(1, 0.45 + s.growth[j]);
+      ws[sp] += k * Math.min(1, 0.45 + s.cover[j]) * STRENGTH[sp];
       if (ws[sp] > bestW) { bestW = ws[sp]; best = sp; }
     };
     add(x0, y0, (1 - fx) * (1 - fy)); add(x0 + 1, y0, fx * (1 - fy));

@@ -1,8 +1,9 @@
 // The tree of life for this slice: real nodes, each with a visible list of requirements.
-// Quick, cheap unlocks first; Vascular plants is the gate into the midgame.
+// Quick, cheap unlocks first; Vascular plants is the gate into the midgame. Requirements stay met once reached.
+import type { LayerId } from './fields';
 
 export type Req =
-  | { kind: 'soil'; depth: number; tiles: number }
+  | { kind: 'layer'; layer: LayerId; min: number; tiles: number }
   | { kind: 'cover'; species: string; tiles: number };
 
 export type TreeNode = {
@@ -27,18 +28,18 @@ export const TREE: TreeNode[] = [
   { id: 'mosses', name: 'Mosses', parent: 'land', species: 'moss', cost: 80,
     reqs: [{ kind: 'cover', species: 'liverwort', tiles: 15 }],
     fact: 'On Surtsey, a volcanic island that rose off Iceland in 1963, mosses were among the first plants, near steam vents.' },
-  { id: 'fungi', name: 'Fungi', parent: 'life', cost: 150, reqs: [{ kind: 'cover', species: 'moss', tiles: 20 }],
-    fact: 'Fungi are more closely related to animals than to plants.' },
+  { id: 'fungi', name: 'Fungi', parent: 'life', species: 'fungus', cost: 150, reqs: [{ kind: 'cover', species: 'moss', tiles: 20 }],
+    fact: 'Fungi are more closely related to animals than to plants. Most of a fungus is a net of threads in the ground.' },
   { id: 'lichens', name: 'Lichens', parent: 'fungi', species: 'lichen', cost: 250,
     reqs: [{ kind: 'cover', species: 'cyano', tiles: 30 }],
     fact: 'A lichen is a fungus living with algae or cyanobacteria. On fresh lava they slowly turn rock into soil.' },
   { id: 'vascular', name: 'Vascular plants', parent: 'land', cost: 1500,
-    reqs: [{ kind: 'soil', depth: 1, tiles: 40 }, { kind: 'cover', species: 'moss', tiles: 60 }],
+    reqs: [{ kind: 'layer', layer: 'soil', min: 0.3, tiles: 40 }, { kind: 'cover', species: 'moss', tiles: 60 }],
     fact: 'Vascular plants have tissues that carry water, so they can grow taller than mosses.' },
   { id: 'lycophytes', name: 'Club mosses', parent: 'vascular', species: 'clubmoss', cost: 300, reqs: [],
     fact: 'Club mosses are not mosses: they are vascular plants from a lineage over 400 million years old.' },
   { id: 'ferns', name: 'Ferns', parent: 'vascular', species: 'fern', cost: 5000,
-    reqs: [{ kind: 'soil', depth: 2, tiles: 30 }],
+    reqs: [{ kind: 'layer', layer: 'soil', min: 0.55, tiles: 30 }],
     fact: 'Ferns spread by spores made in sori, the brown dots under their fronds.' },
 ];
 

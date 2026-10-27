@@ -129,7 +129,25 @@ const fern: Paint = (p, r, look, b) => {
   }
 };
 
-const PAINTERS: Record<string, Paint> = { cyano, liverwort, moss, lichen, clubmoss, fern };
+const fungus: Paint = (p, r, look, b) => {
+  // A few small mushrooms with pale threads (hyphae) across the ground; most of a fungus is out of sight.
+  const threads = (look.big ? 6 : 2) + (has(look, 'mycelium') ? 3 : 0);
+  for (let k = 0; k < threads; k++) {
+    const { x, y } = spot(r, b, 1), a = r() * Math.PI * 2, len = 3 + r() * (look.big ? 8 : 4);
+    p.line(x, y, x + Math.cos(a) * len, y + Math.sin(a) * len * 0.4, PAL.hypha);
+  }
+  const n = look.big ? 4 : [1, 1, 2][look.stage];
+  const cap = has(look, 'hardy') ? PAL.soil3 : PAL.fungusCap;
+  for (let k = 0; k < n; k++) {
+    const { x, y } = spot(r, b, 3), h = (look.big ? 6 : 2 + look.stage) + Math.floor(r() * 2), w = look.big ? 3 : 2;
+    p.line(x, y, x, y - h, PAL.fungusStalk);
+    for (let dx = -w; dx <= w; dx++) p.set(x + dx, y - h, cap);
+    for (let dx = -w + 1; dx <= w - 1; dx++) p.set(x + dx, y - h - 1, cap);
+    p.set(x - 1, y - h - 1, PAL.fungusCapLight);
+  }
+};
+
+const PAINTERS: Record<string, Paint> = { cyano, liverwort, moss, lichen, fungus, clubmoss, fern };
 const cache = new Map<string, HTMLCanvasElement>();
 
 /** A map sprite for one tile. Draw it at the tile's corner plus SPRITE.ox / SPRITE.oy. */

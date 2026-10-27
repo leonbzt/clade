@@ -6,7 +6,7 @@ import * as cmd from '../sim/commands';
 import { createState, type State } from '../sim/state';
 import { step } from '../sim/tick';
 import { botTick } from '../sim/bot';
-import type { Overlay } from '../view/render';
+import { VIEWS, type View } from '../view/render';
 
 export let game: State = createState(1);
 
@@ -18,9 +18,10 @@ class UI {
   speed = $state(1);
   placing = $state<string | null>(null);
   focus = $state('moss');
-  tab = $state<'species' | 'tree'>('tree');
-  overlay = $state<Overlay>('none');
+  tab = $state<'species' | 'tree' | 'tile'>('tree');
+  view = $state<View>('none');
   hover = $state(-1);
+  selected = $state(-1); // the tile shown in the Tile tab
   dev = $state(false);
   toasts = $state<Toast[]>([]);
 }
@@ -45,14 +46,15 @@ export function start() {
     dump: () => ({ tick: game.tick, biomass: game.biomass, reached: game.reached, traits: game.traits,
       cover: Object.fromEntries(SPECIES.map((s) => [s.id, cmd.coverCount(game, s.id)])) }),
     state: () => game,
-    skip, addBiomass, reset, autoplay,
+    skip, addBiomass, reset, autoplay, unlockAll,
   };
-  // Dev URL options for screenshots and previews: ?bot=600 (the bot plays 600 s), ?tab=species, ?place=moss,
-  // ?view=zones, ?zoom=3 (read in MapView).
+  // Dev URL options for screenshots and previews: ?bot=600 (the bot plays 600 s), ?tab=species|tile, ?tile=412,
+  // ?place=moss, ?view=zones|water|soil|nitrogen|shade|litter, ?zoom=3 (read in MapView).
   const q = new URLSearchParams(location.search), bot = Number(q.get('bot'));
   if (bot > 0) autoplay(bot);
-  if (q.get('tab') === 'species') ui.tab = 'species';
-  if (q.get('view') === 'zones' || q.get('view') === 'soil') ui.overlay = q.get('view') as Overlay;
+  if (q.get('tab') === 'species' || q.get('tab') === 'tile') ui.tab = q.get('tab') as 'species' | 'tile';
+  if (q.get('tile')) ui.selected = Number(q.get('tile'));
+  if (VIEWS.includes(q.get('view') as View)) ui.view = q.get('view') as View;
   if (q.get('place')) startPlacing(q.get('place')!);
 }
 
@@ -99,12 +101,20 @@ export function autoplay(seconds: number) {
   ui.v++;
 }
 
+export function selectTile(i: number) {
+  ui.selected = i; ui.tab = 'tile';
+}
+
+export function unlockAll() {
+  cmd.unlockAll(game); ui.v++;
+}
+
 export function addBiomass(n: number) {
   game.biomass += n; ui.v++;
 }
 
 export function reset() {
   game = createState(Math.floor(Math.random() * 1e9));
-  ui.placing = null; ui.focus = 'moss'; ui.tab = 'tree';
+  ui.placing = null; ui.focus = 'moss'; ui.tab = 'tree'; ui.selected = -1;
   ui.gen++; ui.v++;
 }

@@ -31,14 +31,30 @@ building. Show it greyed out on the release screen so the payoff reads.
 Draw the specimen from an organ graph (VirtualPlantLab ideas) or an L-system, driven by genes. Every pick changes
 its shape. That's cheap, and it answers "does the pick visibly change it?"
 
-## P8. The critical path after slice 03 (26 Oct)
-One question per slice, smallest first:
-1. **Slice 04, polish + save.** Declutter the map; save and offline progress (review M3). Question: does coming back feel good?
-2. **Slice 05, adapting + the early line.** Traits as choices between pairs instead of a shopping list; a longer land
-   line with fast early unlocks (crust → mosses → lichens as a symbiosis unlock → … → seed plants). Question: do the
-   first 15 minutes pull you into a midgame?
-3. **Slice 06, the sea line.** Sessile animals first (sponges, corals), because they fit the same spread engine;
-   arthropods come ashore once land has plants (that's real: plants reached land before animals). Question: do two
-   fronts make placement trickier and more interesting?
-4. **Slice 07, biomes.** Named zones that emerge from species mixes (a reef, a fern gully), with bonuses. This is
-   relationships as adjacency rules (review M2). Question: does the island feel like an ecosystem?
+## P8. The critical path *(replaced 27 Oct by P9's stages)*
+
+## P9. The layered sim: one approach from four sources *(27 Oct)*
+From [review-layer-sim.md](review-layer-sim.md) and `research/layer-sim-{games,ecology,engineering}.md`. All four
+agree on the core; the points where they differed are marked.
+- **Strata:** each tile has one species per stratum (soil / ground / herb, later canopy), each with a cover value.
+  Species compete only inside their stratum; up and down they touch only through layers. *(Ecology wanted fungi as
+  two tile values, not a slot. The proposal: a slot, because you want fungi as a species you place.)*
+- **Layers are typed 0–1 arrays of two kinds:** stocks with memory that decay (soil, nitrogen, litter), and levels
+  recomputed from the current state (shade, water). Defined as data; one generic kernel runs them all.
+- **Species are data:** needs are trapezoids (ideal band inside a survivable band), makes are rates. **Fit = the
+  lowest need**, so every tile has one named limit: "Fit C, limited by light".
+- **Species never name each other.** Every interaction goes through layers or guild tags, so the cost grows with
+  species + layers, not species².
+- **Not frozen:** lifespans, a seed lottery for open tiles (spreading fast vs holding well), loops that undermine
+  themselves (ferns shade out their own young), decay on every stock, small capped events. **Not collapsed:**
+  refuges, spore rain, a floor for your species. Disturbance is a lever, not a law (the peak-diversity claim is weak).
+- **Readable:** a placement view with tier + limiting factor, one view per layer (hotkeys), a tile card that names
+  the failing need, an event feed with causes, and later biomes as named regions (untested in any shipped game →
+  toy first).
+- **The economy can't hear sim noise:** smoothed income, requirements latch once met.
+- **Tools first:** a headless runner on 5 seeds, scenarios as command replays, invariants (bounded, not frozen,
+  coexistence), ASCII map dumps, a generated species × layer table, a `trace` for the tile card, cause-coded event
+  log, a determinism lint, and a "dt test" for offline.
+- **Stages:** 05 readable layers (rewrite of the sim core, six species ported, fungi added as data only) → 06 first
+  biomes → 07 trees (canopy) → sea line → animals as density fields (individuals drawn only in the view) → the
+  adapting minigame (traits move need curves, so you see what they change).

@@ -1,7 +1,7 @@
 # Clade
 
 An idle / RPG evolution game: raise species, release them, and grow an island ecosystem like a garden.
-**Prototype stage (fresh start 25 Oct 2026).** Slice 03 (the garden core) is built in `src/` (`sim/`, `data/`, `view/`, `ui/`). Old toys live in `toys/`. Git is set up.
+**Prototype stage (fresh start 25 Oct 2026).** Slice 05 (the layered sim) is built in `src/` (`sim/`, `data/`, `view/`, `ui/`). Old toys live in `toys/`. Git is set up.
 
 ## Rules
 - The user owns the design. Only the user moves things into `docs/brief.md` (Pillars or Current bets). AI ideas go in `docs/systems.md` as proposals.

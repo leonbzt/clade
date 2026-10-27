@@ -21,6 +21,8 @@ export const PAL = {
   club0: '#2a4420', club1: '#3e662a', club2: '#5a8a36', club3: '#88b04c', cone: '#d8b648',
   // ferns
   fern0: '#123826', fern1: '#1c5634', fern2: '#2a7444', fern3: '#4fa062', sori: '#8a4e26',
+  // fungi
+  fungusCap: '#a8643a', fungusCapLight: '#d0905a', fungusStalk: '#e6dcc0', hypha: '#cfc6aa',
   // ui
   ink: '#140f0b', panelDark: '#271e17', panel: '#3a2d22', panelLight: '#56442f', edge: '#7a6244',
   text: '#f0e6c8', textDim: '#b5a383', gold: '#ecc65a', bad: '#e0644e', good: '#9ad05c',
@@ -33,10 +35,10 @@ export const TIER_COLORS: Record<string, string> = {
 
 /** The colour each species dyes the ground it holds. */
 export const GROUND: Record<string, string> = {
-  cyano: '#1a3633', liverwort: '#28502a', moss: '#38581f', lichen: '#5c604e', clubmoss: '#2c4521', fern: '#183424',
+  cyano: '#1a3633', liverwort: '#28502a', moss: '#38581f', lichen: '#5c604e', fungus: '#3a3026', clubmoss: '#2c4521', fern: '#183424',
 };
 
 /** Flat colours for the Zones view: one clear colour per species. */
 export const ZONE: Record<string, string> = {
-  cyano: '#3aa8a0', liverwort: '#7ad06a', moss: '#d0d850', lichen: '#e0a050', clubmoss: '#a070d0', fern: '#4a7ad8',
+  cyano: '#3aa8a0', liverwort: '#7ad06a', moss: '#d0d850', lichen: '#e0a050', fungus: '#efe4c8', clubmoss: '#a070d0', fern: '#4a7ad8',
 };

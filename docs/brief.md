@@ -26,6 +26,20 @@ What's **decided**. Only the user moves things into this file. AI proposals live
 - **Adapting has to feel like adapting** *(26 Oct)*. Buying every trait isn't it yet; it can come later.
 - **Idea:** a second line in the sea: sponges, jellies, then arthropods and later vertebrates, which come onto land as the way animals arrive. Small biomes or microbiomes that develop *(26 Oct, idea)*.
 
+### Direction *(27 Oct, after playing slice 04)*
+- **A layered sim with feedback**: readable, local rules, and **every layer visible**. First layers: nitrogen,
+  shade, humidity, soil. This replaces "simple, stable model" below.
+- **You can't influence everything.** The sim has a life of its own. It mustn't be static; it's an ecosystem
+  that needs balancing.
+- **Niches you can see.** Species need and make things. **Fungi become a real species**, not only a gate.
+- **Readable placement is really important.** Biomes become **named regions** on the map.
+- **Order:** the layered sim first, then the first biomes.
+- **Built to grow.** It can become a very complex network (many species, layers and interactions), so the way we
+  build and test it has to stay manageable and quick to experiment with.
+- **Idea, the adapting minigame:** start from the roll idea, but it should feel like an interaction. Options to just
+  level up, random combinations, realistic trade-offs, and some picks that are mostly gain. "Characterised"
+  species or individuals you combine; you see the traits change; clearly visible meanings. Still open.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.
@@ -47,7 +61,7 @@ What's **decided**. Only the user moves things into this file. AI proposals live
 
 ### World and garden
 - **A young volcanic island** *(25 Oct)*. Progression follows ecological succession.
-- **The garden runs on a simple, stable model**, not a full ecosystem sim *(25 Oct)*. A richer sim later stays possible.
+- ~~**The garden runs on a simple, stable model**, not a full ecosystem sim *(25 Oct)*.~~ Replaced 27 Oct by the layered sim (Direction, 27 Oct).
 - **Relationships between species are a core value** *(25 Oct)*: symbiosis, predation, grazing, pollination. They get a place in the core, not only later.
 - **Small interactions in the garden matter** *(25 Oct)*. The form is open.
 
@@ -106,6 +120,8 @@ You want these in the game at some point, but not before the core works *(25 Oct
 - IdleOn-style interacting bonuses between slots (e.g. the best species per guild boosts all)
 - Fit tiers as Melvor-style checkpoints
 - The other research proposals: a diary-style map of next steps, bundles as regional goals, relationships that feed each other, small named levels
+- **Idea (27 Oct): two zoom levels.** A rough overview and a detailed, animated view of a tile. Chunks of tiles
+  as a higher-level unit: a landscape view from far away; only up close you see the local ground and biomes.
 
 ## Open questions
 

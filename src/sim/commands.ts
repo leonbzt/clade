@@ -1,10 +1,11 @@
 // Everything the player can do. The UI only changes the game through these.
+import { FIELDS, STRATA } from '../data/fields';
 import { NUM } from '../data/numbers';
 import { SPECIES, SPECIES_INDEX } from '../data/species';
 import { TREE, type Req } from '../data/tree';
-import { type State } from './state';
-import { allStats, fit } from './stats';
-import { strength } from './tick';
+import { EV, type State } from './state';
+import { fit, profiles, type Profile } from './fit';
+import { canTake, kill, settle } from './life';
 
 export type Result = { ok: true; msg?: string } | { ok: false; reason: string };
 const fail = (reason: string): Result => ({ ok: false, reason });
@@ -14,10 +15,7 @@ export function unlockedSpecies(s: State): string[] {
 }
 
 export function coverCount(s: State, speciesId: string): number {
-  const sp = SPECIES_INDEX[speciesId];
-  let n = 0;
-  for (let i = 0; i < s.occ.length; i++) if (s.occ[i] === sp) n++;
-  return n;
+  return s.count[SPECIES_INDEX[speciesId]];
 }
 
 export function foundingCost(s: State, speciesId: string): number {
@@ -25,37 +23,36 @@ export function foundingCost(s: State, speciesId: string): number {
   return n === 0 ? 0 : Math.round(F.base * F.growth ** (n - 1));
 }
 
+const slotFor = (s: State, sp: number, i: number) => STRATA.indexOf(SPECIES[sp].stratum) * s.w * s.h + i;
+
+/** Can this species be founded on this tile right now? */
+export function canFoundAt(s: State, speciesId: string, i: number, P: Profile[] = profiles(s)): boolean {
+  const sp = SPECIES_INDEX[speciesId], slot = slotFor(s, sp, i);
+  return s.occ[slot] !== sp && fit(s, P[sp], i) > 0 && canTake(s, P, sp, slot);
+}
+
 export function found(s: State, speciesId: string, i: number): Result {
-  const sp = SPECIES_INDEX[speciesId];
+  const sp = SPECIES_INDEX[speciesId], P = profiles(s), slot = slotFor(s, sp, i);
   if (!unlockedSpecies(s).includes(speciesId)) return fail('Evolve it first.');
   const cost = foundingCost(s, speciesId);
   if (s.biomass < cost) return fail(`Needs ${cost} biomass.`);
-  const st = allStats(s);
-  if (fit(s, st[sp], sp, i) <= 0) return fail(`${SPECIES[sp].name} can't live here.`);
-  const occ = s.occ[i];
+  if (fit(s, P[sp], i) <= 0) return fail(`${SPECIES[sp].name} can't live here.`);
+  const occ = s.occ[slot];
   if (occ === sp) return fail(`${SPECIES[sp].name} is already here.`);
-  if (!canTake(s, st, sp, i)) return fail(`${SPECIES[occ].name} hold this tile too well.`);
+  if (!canTake(s, P, sp, slot)) return fail(`${SPECIES[occ].name} hold this tile too well.`);
   s.biomass -= cost;
   s.foundings[speciesId]++;
   const x0 = i % s.w, y0 = (i / s.w) | 0, r = NUM.founding.patch;
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
     const x = x0 + dx, y = y0 + dy, j = y * s.w + x;
     if (Math.abs(dx) + Math.abs(dy) > r || x < 0 || y < 0 || x >= s.w || y >= s.h) continue;
-    if (s.occ[j] !== sp && fit(s, st[sp], sp, j) > 0 && canTake(s, st, sp, j)) { s.occ[j] = sp; s.growth[j] = 0.3; }
+    const sl = slotFor(s, sp, j);
+    if (s.occ[sl] === sp || fit(s, P[sp], j) <= 0 || !canTake(s, P, sp, sl)) continue;
+    if (s.occ[sl] >= 0) kill(s, sl, EV.taken);
+    settle(s, sl, sp, NUM.founding.cover, EV.founded);
+    s.count[sp]++;
   }
   return { ok: true };
-}
-
-/** Can this species be founded or spread onto this tile right now? */
-export function canFoundAt(s: State, speciesId: string, i: number, st = allStats(s)): boolean {
-  const sp = SPECIES_INDEX[speciesId];
-  return s.occ[i] !== sp && fit(s, st[sp], sp, i) > 0 && canTake(s, st, sp, i);
-}
-
-/** Founding works on empty tiles, or where the new species is stronger than the one already there. */
-function canTake(s: State, st: ReturnType<typeof allStats>, sp: number, i: number): boolean {
-  const occ = s.occ[i];
-  return occ < 0 || strength(s, st, sp, i) > strength(s, st, occ, i, s.growth[i]);
 }
 
 export function buyTrait(s: State, speciesId: string, traitId: string): Result {
@@ -73,13 +70,22 @@ export type ReqStatus = { text: string; have: number; need: number; met: boolean
 
 export function reqStatus(s: State, req: Req): ReqStatus {
   let have = 0;
-  if (req.kind === 'soil') {
-    for (let i = 0; i < s.soil.length; i++) if (s.soil[i] >= req.depth) have++;
-    return { text: `Tiles with soil ${req.depth}+`, have, need: req.tiles, met: have >= req.tiles };
+  if (req.kind === 'layer') {
+    const v = s.layers[req.layer];
+    for (let i = 0; i < v.length; i++) if (v[i] >= req.min) have++;
+    return { text: `Tiles with ${FIELDS[req.layer].name.toLowerCase()} ${req.min}+`, have, need: req.tiles, met: have >= req.tiles };
   }
   have = coverCount(s, req.species);
   const name = SPECIES[SPECIES_INDEX[req.species]].name;
   return { text: `${name} tiles`, have, need: req.tiles, met: have >= req.tiles };
+}
+
+/** Requirements latch: once a node's are all met, they stay met, so a storm can't take a gate away. */
+export function checkReady(s: State) {
+  for (const n of TREE) {
+    if (s.ready.includes(n.id) || s.reached.includes(n.id)) continue;
+    if (n.reqs.every((r) => reqStatus(s, r).met)) s.ready.push(n.id);
+  }
 }
 
 export function canEvolve(s: State, nodeId: string): Result {
@@ -87,7 +93,7 @@ export function canEvolve(s: State, nodeId: string): Result {
   if (!node) return fail('No such node.');
   if (s.reached.includes(nodeId)) return fail('Already reached.');
   if (node.parent && !s.reached.includes(node.parent)) return fail('Reach its parent first.');
-  if (!node.reqs.every((r) => reqStatus(s, r).met)) return fail('Requirements not met.');
+  if (!s.ready.includes(nodeId) && !node.reqs.every((r) => reqStatus(s, r).met)) return fail('Requirements not met.');
   if (s.biomass < node.cost) return fail(`Needs ${node.cost} biomass.`);
   return { ok: true };
 }
@@ -99,4 +105,9 @@ export function evolve(s: State, nodeId: string): Result {
   s.biomass -= node.cost;
   s.reached.push(nodeId);
   return { ok: true, msg: node.fact };
+}
+
+/** Dev: reach every node. */
+export function unlockAll(s: State) {
+  for (const n of TREE) if (!s.reached.includes(n.id)) s.reached.push(n.id);
 }

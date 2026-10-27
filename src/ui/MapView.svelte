@@ -2,10 +2,11 @@
   import { onMount } from 'svelte';
   import { NUM } from '../data/numbers';
   import { DETAIL_FROM, ZOOM_STEPS } from '../data/view';
-  import { SPECIES } from '../data/species';
-  import { GardenRenderer } from '../view/render';
+  import { FIELDS, type LayerId } from '../data/fields';
+  import { GardenRenderer, VIEWS, type View } from '../view/render';
   import MapReadout from './MapReadout.svelte';
-  import { doFound, game, ui } from './game.svelte';
+  import { doFound, game, selectTile, ui } from './game.svelte';
+  import EventFeed from './EventFeed.svelte';
 
   const W = NUM.map.w * NUM.map.tile, H = NUM.map.h * NUM.map.tile;
 
@@ -28,7 +29,7 @@
   onMount(() => {
     let raf = 0;
     const loop = (t: number) => {
-      renderer?.draw({ placing: ui.placing, hover: ui.hover, overlay: ui.overlay, time: t, detail: scale >= DETAIL_FROM });
+      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1 });
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -99,9 +100,10 @@
   function click(i: number) {
     if (i < 0) return;
     if (ui.placing) { doFound(i); return; }
-    const sp = game.occ[i];
-    if (sp >= 0) { ui.focus = SPECIES[sp].id; ui.tab = 'species'; }
+    selectTile(i);
   }
+
+  const label = (v: View) => (v === 'none' ? 'Garden' : v === 'zones' ? 'Zones' : FIELDS[v as LayerId].name);
 </script>
 
 <section class="map" bind:this={wrap}>
@@ -135,11 +137,12 @@
       <button onclick={() => zoomTo(0)} disabled={zi === 0}>Fit</button>
     </span>
     <span class="group">
-      {#each [['none', 'Garden'], ['zones', 'Zones'], ['soil', 'Soil']] as [id, label] (id)}
-        <button class:on={ui.overlay === id} onclick={() => (ui.overlay = id as typeof ui.overlay)}>{label}</button>
+      {#each VIEWS as v, k (v)}
+        <button class:on={ui.view === v} onclick={() => (ui.view = v)} title="Key {k + 1}">{label(v)}</button>
       {/each}
     </span>
   </div>
+  <EventFeed />
 </section>
 
 <style>
