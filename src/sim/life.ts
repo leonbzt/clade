@@ -17,7 +17,7 @@ export function record(s: State, slot: number, code: number, sp: number, limit =
 }
 
 function clear(s: State, slot: number) {
-  s.occ[slot] = -1; s.cover[slot] = 0; s.health[slot] = 0; s.dying[slot] = 0;
+  s.occ[slot] = -1; s.cover[slot] = 0; s.health[slot] = 0; s.dying[slot] = 0; s.old[slot] = 0;
 }
 
 const litterOf = (s: State, v: number) => defOf(s, s.variants[v].sp).litter;
@@ -31,7 +31,7 @@ export function kill(s: State, slot: number, code: number, limit = -1) {
 }
 
 export function settle(s: State, slot: number, v: number, cover: number, code: number, health: number) {
-  s.occ[slot] = v; s.cover[slot] = cover; s.health[slot] = health; s.dying[slot] = 0;
+  s.occ[slot] = v; s.cover[slot] = cover; s.health[slot] = health; s.dying[slot] = 0; s.old[slot] = 0;
   record(s, slot, code, s.variants[v].sp);
 }
 
@@ -51,7 +51,7 @@ export function canTake(s: State, P: Profile[], p: Profile, slot: number): boole
   return !protectedAt(s, slot) && fit(s, p, i) * p.stats.hold > holding(s, P[occ], slot) * (1 + L.incumbentEdge);
 }
 
-export function lifeStep(s: State, P: Profile[], dt: number) {
+export function lifeStep(s: State, P: Profile[], tickDt: number) {
   const n = s.w * s.h;
   let gain = 0;
   for (let k = 0; k < STRATA.length; k++) {
@@ -60,7 +60,9 @@ export function lifeStep(s: State, P: Profile[], dt: number) {
     for (let q = 0; q < n; q++) {
       const i = (start + q) % n, slot = k * n + i, v = s.occ[slot];
       if (v < 0) continue;
-      const p = P[v], sp = p.sp;
+      // Old growth (steady health, nearly full cover) updates every few ticks, with that much time at once.
+      if (s.old[slot] && (s.tick + slot) % L.oldEvery) continue;
+      const p = P[v], sp = p.sp, dt = s.old[slot] ? tickDt * L.oldEvery : tickDt;
       if (s.dying[slot]) {
         const loss = Math.min(s.cover[slot], dt / L.dieback), litter = litterOf(s, v);
         s.cover[slot] -= loss;
@@ -73,11 +75,12 @@ export function lifeStep(s: State, P: Profile[], dt: number) {
       // Cover grows toward what health allows, and shrinks slowly when health falls.
       const target = Math.sqrt(Math.max(0, h)), c0 = s.cover[slot];
       const c = (s.cover[slot] = c0 + dt * (target > c0 ? p.stats.grow * (target - c0) * 2 : L.shrink * (target - c0)));
+      s.old[slot] = c > L.oldCover && Math.abs(f - h) < L.oldDelta && Math.abs(target - c) < L.oldDelta ? 1 : 0;
       const strain = L.stress * (1 - h);
       const death = (dt / p.stats.life) * (1 + strain) + (h < 0.05 ? dt / L.starve : 0);
       if (!protectedSp(s, sp) && rand(s) < death) {
         const stressed = h < 0.05 || rand(s) < strain / (1 + strain);
-        s.dying[slot] = 1;
+        s.dying[slot] = 1; s.old[slot] = 0;
         record(s, slot, stressed ? EV.stress : EV.age, sp, stressed ? limit : -1);
       }
       gain += p.stats.yield * c * h * dt;

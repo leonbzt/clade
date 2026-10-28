@@ -163,16 +163,19 @@ export function pickVariant(s: State, sp: number): number {
 export function recount(s: State) {
   for (const x of s.variants) x.tiles = 0;
   s.count.fill(0);
+  s.members.fill(0);
   for (let slot = 0; slot < s.occ.length; slot++) {
     const v = s.occ[slot];
     if (v >= 0) s.variants[v].tiles++;
   }
-  for (const a of s.agents) s.variants[a.v].tiles++;
+  // Animals: a variant's groups count as its tiles; it's shown once it has `showAt` members.
+  const members = new Map<number, number>();
+  for (const a of s.agents) { s.variants[a.v].tiles++; s.members[a.sp] += a.n; members.set(a.v, (members.get(a.v) ?? 0) + a.n); }
   s.variants.forEach((x, v) => {
     if (!x.alive) return;
     if (!x.tiles) { free(s, v); return; }
     s.count[x.sp] += x.tiles;
-    if (!x.shown && x.tiles >= GENES.showAt && roomToShow(s, x.sp, v)) show(s, v);
+    if (!x.shown && (members.get(v) ?? x.tiles) >= GENES.showAt && roomToShow(s, x.sp, v)) show(s, v);
   });
 }
 

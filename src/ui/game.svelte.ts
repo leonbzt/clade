@@ -32,12 +32,15 @@ export const ui = new UI();
 
 const TICK_MS = 1000 / NUM.ticksPerSec;
 let acc = 0, last = 0, lastBump = 0, toastId = 0;
+export const perf = { ms: 0 }; // smoothed cost of one sim tick, for the dev panel
 
 function frame(now: number) {
   acc += Math.min(1000, now - (last || now)) * ui.speed;
   last = now;
   let n = 0;
+  const t0 = performance.now();
   while (acc >= TICK_MS && n < 5000) { step(game); acc -= TICK_MS; n++; }
+  if (n) perf.ms += ((performance.now() - t0) / n - perf.ms) * 0.05;
   if (n >= 5000) acc = 0;
   if (now - lastBump > 500) { ui.v++; lastBump = now; }
   requestAnimationFrame(frame);

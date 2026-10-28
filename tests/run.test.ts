@@ -3,8 +3,8 @@
 // LIMITS=1 what holds each species back on seed 1).
 // A second line per seed measures the variants: shown per species per 10 min, the top share a non-base variant
 // reached, sorting (water on Dry + tiles minus the rest of the species), first Rare, combos, Leafy shoot, species made.
-// A third line: animals. When each arrived (adopted by the bot), how many live at the end (min–max over the last 10
-// minutes), moss now vs its peak, and the agent step's cost.
+// A third line: animals. When each arrived (adopted by the bot), how many live at the end (members, min–max over the
+// last 10 minutes, and groups as a share of the cap), moss now vs its peak, agents (share settled), and the tick's cost.
 // A measuring tool, not a balance bot. Skipped in `npm run check`.
 import { it } from 'vitest';
 import { writeSync } from 'node:fs';
@@ -26,6 +26,8 @@ const ABBR = ['cy', 'th', 'lv', 'mo', 'li', 'fu', 'cl', 'fe'];
 
 /** Tiles (plants) or animals of every species built on this base. */
 const count = (s: ReturnType<typeof createState>, id: string) => s.species.reduce((a, x, sp) => a + (SPECIES[x.base].id === id ? s.count[sp] : 0), 0);
+const members = (s: ReturnType<typeof createState>, id: string) => s.species.reduce((a, x, sp) => a + (SPECIES[x.base].id === id ? s.members[sp] : 0), 0);
+const capOf = (id: string) => SPECIES.find((d) => d.id === id)!.animal!.cap;
 
 it.skipIf(!env.SIM)('sim', () => {
   if (env.TABLE) out(interactionTable());
@@ -33,16 +35,20 @@ it.skipIf(!env.SIM)('sim', () => {
   let pass = 0;
   for (let seed = 1; seed <= SEEDS; seed++) {
     const s = createState(seed), when: Record<string, string> = {}, vs: VariantStats = variantStats();
-    let ms = 0, msN = 0, mossPeak = 0;
+    let ms = 0, msN = 0, mossPeak = 0, landed = -1, landTick = 0, reach = -1;
     const lo: Record<string, number> = {}, hi: Record<string, number> = {};
     let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0;
     for (let k = 0; k < MIN * 600; k++) {
-      const t0 = performance.now();
+      const t0 = performance.now(), waiting = s.visitors.snails;
       botTick(s, (l) => { const m = l.match(/^([\d.]+)m (?:evolve|door) (\w+)/); if (m && [...UNLOCKS, ...ARRIVALS].includes(m[2])) when[m[2]] = m[1]; });
-      if (s.agents.length > 100) { ms += performance.now() - t0; msN++; }
+      if (s.agents.length > 20) { ms += performance.now() - t0; msN++; }
+      // Snail reach: how far the farthest snail is from where they landed, 15 minutes after adoption.
+      if (landed < 0 && waiting !== undefined && s.visitors.snails === undefined) { landed = waiting; landTick = s.tick; }
+      if (landed >= 0 && reach < 0 && s.tick === landTick + 15 * 600)
+        reach = Math.max(0, ...s.agents.filter((a) => SPECIES[s.species[a.sp].base].id === 'snail').map((a) => Math.hypot(a.x - (landed % s.w), a.y - ((landed / s.w) | 0))));
       const moss = count(s, 'moss');
       mossPeak = Math.max(mossPeak, moss);
-      if (minutes(s) > MIN - 10 && s.tick % 100 === 0) for (const id of ANIMAL_IDS) { const c = count(s, id); lo[id] = Math.min(lo[id] ?? c, c); hi[id] = Math.max(hi[id] ?? 0, c); }
+      if (minutes(s) > MIN - 10 && s.tick % 100 === 0) for (const id of ANIMAL_IDS) { const c = members(s, id); lo[id] = Math.min(lo[id] ?? c, c); hi[id] = Math.max(hi[id] ?? 0, c); }
       if (s.tick % 10 === 0) vs.sample(s);
       if (s.tick % 6000 === 0) { if (minutes(s) === MIN) turn = changed(s, snap, snapshot(s)) / 10; snap = snapshot(s); }
       // Litter swing: the mean change per tile per minute, over the last 10 minutes.
@@ -60,8 +66,9 @@ it.skipIf(!env.SIM)('sim', () => {
       `${N.median.toFixed(2)}/${N.top.toFixed(2)}  ${lively}/${s.landmarks.length} | ${ok ? 'PASS' : 'FAIL'}`);
     out(vs.line(s, MIN));
     out(`     animals: ${ARRIVALS.map((a) => `${a.slice(0, 4)} ${when[a] ?? '-'}`).join(' · ')} | ` +
-      ANIMAL_IDS.map((id) => `${id.slice(0, 5)} ${count(s, id)} (${lo[id] ?? 0}–${hi[id] ?? 0})`).join(' ') +
-      ` | moss ${count(s, 'moss')}/${mossPeak} | ${msN ? (ms / msN).toFixed(2) : '-'} ms/tick`);
+      ANIMAL_IDS.map((id) => `${id.slice(0, 5)} ${members(s, id)} (${lo[id] ?? 0}–${hi[id] ?? 0}) ${Math.round((100 * count(s, id)) / capOf(id))}%`).join(' ') +
+      ` | snail reach ${reach < 0 ? '-' : reach.toFixed(0)} | moss ${count(s, 'moss')}/${mossPeak} | ${s.agents.length} agents ${Math.round((100 * s.agents.filter((a) => a.slow).length) / (s.agents.length || 1))}% slow` +
+      ` | ${msN ? (ms / msN).toFixed(2) : '-'} ms/tick`);
     if (env.LIMITS && seed === 1) {
       const P = profiles(s);
       for (let sp = 0; sp < s.species.length; sp++) {

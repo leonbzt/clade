@@ -20,7 +20,7 @@ export function step(s: State) {
   s.tick++;
   const P = profiles(s);
   flares(s, DT);
-  const gain = lifeStep(s, P, DT) + agentsStep(s, P, DT);
+  const gain = lifeStep(s, P, DT) + agentsStep(s, P);
   sporeRain(s, P, DT);
   recount(s);
   if (s.tick % NUM.fieldsEvery === 0) {

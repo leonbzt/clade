@@ -47,7 +47,7 @@ export const TREE: TreeNode[] = [
     fact: 'Animals and fungi are sister groups: both come from one single-celled ancestor that plants split from long before.' },
   { id: 'hexapods', name: 'Hexapods', parent: 'animals', species: 'springtail', cost: 60,
     reqs: [{ kind: 'layer', layer: 'litter', min: 0.04, tiles: 60 }],
-    arrive: { at: 'vent', n: 3, text: 'A gust dropped a cloud of springtails by {place}.' },
+    arrive: { at: 'vent', n: 300, text: 'A gust dropped a cloud of springtails by {place}.' },
     fact: 'Springtails are not insects but their cousins. On Surtsey, tiny animals like them came on the wind within a year of the eruption.' },
   { id: 'snails', name: 'Land snails', parent: 'animals', species: 'snail', cost: 120,
     reqs: [{ kind: 'cover', species: 'moss', tiles: 90 }],
@@ -58,7 +58,7 @@ export const TREE: TreeNode[] = [
   { id: 'insects', name: 'Insects', parent: 'hexapods', species: 'bristletail', cost: 300, reqs: [{ kind: 'key', gene: 'insectBody' }],
     fact: 'Bristletails look much like the first insects: no wings, a tough skin and three tail bristles. Wings came later, once.' },
   { id: 'beetles', name: 'Ground beetles', parent: 'hexapods', species: 'beetle', cost: 250,
-    reqs: [{ kind: 'cover', species: 'springtail', tiles: 12 }, { kind: 'cover', species: 'snail', tiles: 15 }],
+    reqs: [{ kind: 'cover', species: 'springtail', tiles: 4 }, { kind: 'cover', species: 'snail', tiles: 3 }],
     arrive: { at: 'beach', n: 2, text: 'Two ground beetles crawled off a drift log at {place}.' },
     fact: 'Beetles are the largest order of animals. Ground beetles hunt on the soil surface, and some specialise in cracking snails.' },
 ];

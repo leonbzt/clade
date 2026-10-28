@@ -27,6 +27,7 @@ export type StockDef = Common & {
   diffuse?: number; // per second, toward the neighbours' mean
   capped?: boolean; // can't pass the tile's cap (thin soil on dry ground and sand)
   fall?: boolean; // dead plants drop into it: half on their tile, half on the neighbours
+  into?: Partial<Record<LayerId, number>>; // what decays releases this share into other stocks on its tile
 };
 export type FieldDef = LevelDef | StockDef;
 
@@ -35,7 +36,8 @@ export const FIELDS: Record<LayerId, FieldDef> = {
   water: { kind: 'level', name: 'Water', words: ['dry', 'soaked'], color: '#3a8ae0', from: { soil: 0.3, shade: 0.15 } },
   soil: { kind: 'stock', name: 'Soil', words: ['bare rock', 'deep soil'], color: '#a8703c', rest: 0, decay: 0.002, protect: 0.85, capped: true },
   nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0.01, decay: 0.002, diffuse: 0.005, viewMax: 0.3 },
-  litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: 0.0015, fall: true, hidden: true },
+  litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: 0.0015, fall: true, hidden: true,
+    into: { nitrogen: 0.03 } }, // litter carries nitrogen; animals that eat it release the same share
 };
 
 /** Levels are computed in this order (water needs shade). */

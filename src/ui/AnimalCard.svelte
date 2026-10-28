@@ -4,7 +4,7 @@
   import { TIERS } from '../data/genes';
   import { NUM } from '../data/numbers';
   import { fit, profile } from '../sim/fit';
-  import { tileOf } from '../sim/agents';
+  import { bodyOf, tileOf } from '../sim/agents';
   import { placeName, variantName, geneText } from '../sim/variants';
   import { genomeLook } from '../view/look';
   import Specimen from './Specimen.svelte';
@@ -19,7 +19,7 @@
     if (!a) return { gone: game.obits.find((o) => o.id === ui.follow) ?? null };
     const x = game.variants[a.v], sp = game.species[a.sp], i = tileOf(game, a), p = profile(game, a.v);
     return {
-      a, sp: sp.name, spId: sp.id, look: genomeLook(game, a.sp, x.genome), form: variantName(game, a.v), tier: TIERS[x.tier],
+      a, sp: sp.name, spId: sp.id, kin: bodyOf(game, a.sp).kin, look: genomeLook(game, a.sp, x.genome), form: variantName(game, a.v), tier: TIERS[x.tier],
       genes: geneText(game, a.v), where: placeName(game, i), fit: Math.round(fit(game, p, i) * 100),
       age: Math.round(a.age), life: Math.round(a.life), energy: Math.round(a.e * 100),
       log: [...a.log].reverse().map((l) => ({ ...l, time: clock(l.tick, NUM.ticksPerSec) })),
@@ -31,7 +31,8 @@
   <div class="top">
     <Specimen look={card.look} scale={2} />
     <div>
-      <h2>{card.sp} #{card.a.id}</h2>
+      <h2>{card.kin ? `${card.sp}, ${card.kin}` : card.sp} #{card.a.id}</h2>
+      {#if card.kin}<div class="dim small">{card.a.n} {card.sp.toLowerCase()}{card.a.go ? ', walking off to settle' : ''}</div>{/if}
       <div><b style:color={card.tier.color}>{card.tier.name}</b> {card.form}</div>
       <div class="dim small">{card.genes}</div>
     </div>

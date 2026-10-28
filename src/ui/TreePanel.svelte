@@ -27,7 +27,7 @@
       parent < 0 ? m.x.parent < 0 || game.species[m.x.parent].base !== base : m.x.parent === parent;
     const walk = (parent: number, depth: number) => {
       for (const o of mine.filter(isRoot(parent))) {
-        out.push({ sp: o.sp, id: o.x.id, name: o.x.name, depth, tiles: game.count[o.sp], dead: o.x.at >= 0 && !game.count[o.sp], color: zoneColor(game, o.sp) });
+        out.push({ sp: o.sp, id: o.x.id, name: o.x.name, depth, tiles: game.species[o.sp] && SPECIES[game.species[o.sp].base].animal ? game.members[o.sp] : game.count[o.sp], dead: o.x.at >= 0 && !game.count[o.sp], color: zoneColor(game, o.sp) });
         walk(o.sp, depth + 1);
       }
     };

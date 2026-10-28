@@ -10,21 +10,25 @@ import type { SpeciesDef, Trait } from './species';
 export type BodyStat = 'speed' | 'gain' | 'upkeep' | 'life' | 'young' | 'escape' | 'range';
 
 export type Food =
-  | { stock: LayerId; rate: number; gain: number } // eats a stock: units per member per second, energy per unit
+  | { stock: LayerId; rate: number; gain: number; full?: number } // eats a stock: units per member per second, energy
+  // per unit; it feeds fully where the stock is at `full` (default 0.1), less below. Eaters hold the stock near
+  // full × upkeep ÷ (rate × gain), so a high `full` leaves food for others (fungi need litter too)
   | { plants: StratumId; rate: number; gain: number } // grazes cover (× the plant's palatability), energy per cover
   | { prey: string; rate: number; gain: number }; // hunts agents with this tag: tries per second, energy per member eaten
 
 export type AnimalBody = Record<BodyStat, number> & {
   tag: string; // what others hunt it as
-  group: number; // 1: one animal; more: a swarm that splits in two at this size
+  group: number; // 1: one animal; more: a group (family, swarm) that splits in two at this size
+  kin: string; // what a group is called: family, swarm, troop ('' for single animals)
+  pace: number; // ticks between updates, like a metabolism: fast animals react often, slow ones rarely
   bite: number; // members a hunter takes from a swarm at once
   sight: number; // tiles it looks around for food
   breedAt: number; // energy it needs before it breeds
   diet: Food[]; // the first is its main food; the others give `range` × as much
-  makes: Partial<Record<LayerId, number>>; // per unit of food eaten: dung and frass
+  makes: Partial<Record<LayerId, number>>; // per unit of food eaten (prey: per unit of its body): dung and frass
   corpse: number; // litter left when it dies, per member
   yield: number; // biomass per unit of food eaten
-  cap: number; // a safety net per species; food should be the real limit
+  cap: number; // groups, a safety net per species; food should be the real limit
   size: number; // px on the map
 };
 
@@ -39,17 +43,17 @@ const animal = (d: AnimalEntry): SpeciesDef => ({
 const band = (a: number, b: number, c: number, d: number) => [a, b, c, d] as const;
 
 const snailBody: AnimalBody = {
-  tag: 'snail', group: 1, bite: 1, size: 3, speed: 0.15, life: 700, upkeep: 0.004, gain: 1, young: 2, escape: 1, range: 0.5,
-  sight: 3, breedAt: 0.85, corpse: 0.02, yield: 0.6, cap: 400,
+  tag: 'snail', group: 12, kin: 'family', pace: 4, bite: 1, size: 3, speed: 0.15, life: 700, upkeep: 0.004, gain: 1, young: 2,
+  escape: 1, range: 0.5, sight: 3, breedAt: 0.85, corpse: 0.02, yield: 0.6, cap: 80,
   diet: [{ plants: 'ground', rate: 0.2, gain: 0.075 }, { stock: 'litter', rate: 0.001, gain: 2 }],
-  makes: { nitrogen: 0.05 },
+  makes: { nitrogen: 0.01 }, // about what the grazed cover would give as litter (moss: 0.08 litter × 0.1)
 };
 
 const springtailBody: AnimalBody = {
-  tag: 'tiny-hexapod', group: 24, bite: 4, size: 1, speed: 0.35, life: 400, upkeep: 0.004, gain: 1, young: 4, escape: 1, range: 0.5,
-  sight: 3, breedAt: 0.75, corpse: 0.002, yield: 0.5, cap: 300,
-  diet: [{ stock: 'litter', rate: 0.00012, gain: 55 }, { plants: 'under', rate: 0.0006, gain: 8 }],
-  makes: { nitrogen: 0.4 },
+  tag: 'tiny-hexapod', group: 200, kin: 'swarm', pace: 2, bite: 6, size: 1, speed: 0.35, life: 400, upkeep: 0.004, gain: 1,
+  young: 24, escape: 1, range: 0.5, sight: 3, breedAt: 0.75, corpse: 0.002, yield: 0.5, cap: 120,
+  diet: [{ stock: 'litter', rate: 0.00012, gain: 65, full: 0.3 }, { plants: 'under', rate: 0.0006, gain: 8 }],
+  makes: { nitrogen: 0.03 }, // litter's own share (fields.ts): sooner, not more
 };
 
 export const ANIMALS: SpeciesDef[] = [
@@ -71,7 +75,7 @@ export const ANIMALS: SpeciesDef[] = [
       { id: 'slime', name: 'Sealing slime', up: 'lives 0.1 drier', down: 'costs 10% more to keep', mods: [{ need: 'water', low: -0.1 }, { body: 'upkeep', mul: 1.1 }] },
       { id: 'quick', name: 'Quick breeder', up: '50% more young', down: 'lives 30% shorter', mods: [{ body: 'young', mul: 1.5 }, { body: 'life', mul: 0.7 }] },
     ],
-    body: { ...snailBody, tag: 'snail', speed: 0.22, young: 3, upkeep: 0.0045, escape: 1.3, life: 500 },
+    body: { ...snailBody, tag: 'snail', pace: 3, speed: 0.22, young: 3, upkeep: 0.0045, escape: 1.3, life: 500 },
   }),
   animal({
     id: 'springtail', name: 'Springtails', short: 'Springtail', tolerance: { salty: 0.5 },
@@ -90,8 +94,8 @@ export const ANIMALS: SpeciesDef[] = [
     traits: [
       { id: 'scales', name: 'Slippery scales', up: 'a third harder to catch', down: 'moves 10% slower', mods: [{ body: 'escape', mul: 0.66 }, { body: 'speed', mul: 0.9 }] },
     ],
-    body: { ...springtailBody, group: 1, size: 2, speed: 0.6, young: 2, breedAt: 0.8, cap: 300,
-      diet: [{ stock: 'litter', rate: 0.0012, gain: 3.5 }, { plants: 'ground', rate: 0.05, gain: 0.1 }] },
+    body: { ...springtailBody, group: 10, kin: 'troop', bite: 2, size: 2, speed: 0.6, young: 2, breedAt: 0.8, cap: 60,
+      diet: [{ stock: 'litter', rate: 0.0012, gain: 5, full: 0.3 }, { plants: 'ground', rate: 0.05, gain: 0.15 }] },
   }),
   animal({
     id: 'beetle', name: 'Ground beetles', short: 'Beetle', tolerance: { salty: 0.5 },
@@ -102,11 +106,11 @@ export const ANIMALS: SpeciesDef[] = [
       { id: 'jaws', name: 'Snail jaws', up: 'gets 80% more from snails', down: 'gains 10% less', mods: [{ body: 'range', mul: 1.8 }, { body: 'gain', mul: 0.9 }] },
     ],
     body: {
-      tag: 'beetle', group: 1, bite: 1, size: 3, speed: 0.5, life: 900, upkeep: 0.004, gain: 1, young: 1, escape: 1, range: 0.5,
-      sight: 5, breedAt: 0.85, corpse: 0.02, yield: 2, cap: 120,
+      tag: 'beetle', group: 1, kin: '', pace: 1, bite: 1, size: 3, speed: 0.5, life: 900, upkeep: 0.004, gain: 1, young: 1,
+      escape: 1, range: 0.5, sight: 5, breedAt: 0.85, corpse: 0.02, yield: 2, cap: 40,
       // Ground beetles also scavenge: rot and dead things keep them going between catches.
       diet: [{ prey: 'tiny-hexapod', rate: 0.1, gain: 0.04 }, { prey: 'snail', rate: 0.05, gain: 0.6 }, { stock: 'litter', rate: 0.0008, gain: 4 }],
-      makes: { nitrogen: 0.3 },
+      makes: { nitrogen: 0.03 }, // litter's share, for prey bodies and scavenged litter alike
     },
   }),
 ];
@@ -117,17 +121,25 @@ export const ANIMAL = {
   restAt: 0.95, // energy above which it rests instead of eating
   rest: 0.6, // upkeep while resting
   think: 1.5, // seconds between looking around for a better spot
+  settledSlow: 3, // a settled group (fed, calm, not crowded) updates this many times less often
+  calmAfter: 30, // seconds after a hunter came by before a group counts as calm again
+  merge: 0.5, // two groups of one variant on a tile merge while together under this share of the split size
+  disperse: [4, 10] as [number, number], // tiles the half that splits off walks away before it settles
+  handling: 8, // seconds a hunter rests after a full catch (0.2 energy); less for less
+  refuge: 0.6, // thick ground cover cuts a hunter's chance by up to this share
+  hunters: 2, // a hunter doesn't hunt on a tile with this many of its kind (territory)
   look: 8, // tiles it samples each time
   crowd: 3, // no breeding with this many of its own species on the tile
   adultAt: 0.08, // share of its life before it can breed
-  mutate: 0.05, // chance a newborn (or a split-off swarm) carries a mutation, if its parent's variant is shown
+  mutate: 0.05, // chance a newborn carries a mutation, if its parent's variant is shown (a group: per young)
+  budMax: 0.1, // a group's chance per breeding that its young bud off as a mutant line
   youngEnergy: 0.35, // a newborn's store
   breedCost: 0.2, // per young (a swarm pays it once)
   minGrazed: 0.03, // a plant grazed below this cover dies
   wound: 0.4, // health a plant loses per cover grazed
   repeat: 180, // seconds between repeat arrivals of an adopted species
-  repeatBelow: 2, // they come only while the species has fewer than this × its arrival group
-  founders: 4, // a split's founder group
+  repeatBelow: 2, // they come only while the species has fewer members than this × its arrival
+  founders: 4, // a split's founder group (members; at least half a group)
   log: 5, // events each animal remembers
   obits: 40, // deaths remembered, for the card of an animal you followed
 };

@@ -110,6 +110,7 @@ export function updateFields(s: State, P: Profile[], dt: number) {
       const mean = def.diffuse ? landMean(s, tmp, i) : tmp[i];
       const t = stockTerms(def, tmp[i], F.plus[id][i], F.minus[id][i], F.cover[i], mean, def.fall ? fellLast[i] : 0);
       let x = tmp[i] + dt * (t.made + t.used + t.decay + t.spread + t.fell);
+      for (const to in def.into) { const u = s.layers[to as LayerId]; u[i] = Math.min(1, u[i] - dt * t.decay * def.into[to as LayerId]!); }
       if (def.capped && x > s.soilCap[i]) x = s.soilCap[i];
       v[i] = x < 0 ? 0 : x > 1 ? 1 : x;
     }

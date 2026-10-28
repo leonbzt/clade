@@ -6,6 +6,7 @@
   import { layerInfo, limitText, placeInfo, slotInfo } from '../sim/explain';
   import { profiles } from '../sim/fit';
   import { SEA } from '../sim/state';
+  import { agentsOn } from '../sim/agents';
   import { TIER_COLORS } from '../data/palette';
   import { TIER, TIERS } from '../data/genes';
   import { game, seeVariants, ui } from './game.svelte';
@@ -19,7 +20,13 @@
       const info = slotInfo(game, P, k, i), v = game.occ[k * n + i];
       return { ...info, why: info.fit && v >= 0 ? limitText(P[v], info.fit) : '' };
     }).reverse();
-    return { x: i % game.w, y: (i / game.w) | 0, place: placeInfo(game, i), slots, layers: layerInfo(game, P, i) };
+    // Animals here, per species: groups and members.
+    const herd = new Map<string, { groups: number; members: number }>();
+    for (const a of agentsOn(game, i)) {
+      const h = herd.get(game.species[a.sp].name) ?? { groups: 0, members: 0 };
+      h.groups++; h.members += a.n; herd.set(game.species[a.sp].name, h);
+    }
+    return { x: i % game.w, y: (i / game.w) | 0, place: placeInfo(game, i), slots, layers: layerInfo(game, P, i), animals: [...herd] };
   });
 
   // Looking at a tile counts as looking at its variants: a rare one stops glinting.
@@ -65,6 +72,9 @@
       <div class="small dim">Last: {sl.last ?? '—'}</div>
     </div>
   {/each}
+  {#if card.animals.length}
+    <p class="small">Animals: {#each card.animals as [name, h], k (name)}{k ? ' · ' : ''}<b>{name}</b> {h.members}{h.groups > 1 ? ` in ${h.groups} groups` : ''}{/each}</p>
+  {/if}
   <h3>Layers <span class="dim small">(stocks change per second)</span></h3>
   {#each card.layers as l (l.id)}
     <div class="layer">

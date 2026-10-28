@@ -1,9 +1,13 @@
-// Animals as individuals. Each tick an animal pays its upkeep (more where it fits badly), eats what its diet finds on
-// its tile, or walks toward the best spot it has seen. It breeds when well fed and its tile isn't crowded, and dies
-// of hunger or age. Hunters catch animals by tag; a swarm loses a few members per catch. What animals eat and leave
-// behind goes through plant cover and the stocks (litter, nitrogen), so the layers stay the link between species.
-import { ANIMAL, type AnimalBody } from '../data/animals';
+// Animals as groups: an agent is one animal (beetles) or a group that stands for many (a snail family, a springtail
+// swarm). Every `pace` ticks (its metabolism; less often while settled) it pays its upkeep for the time since its last
+// update (more where it fits badly), eats what its diet finds on its tile, or walks toward the best spot it has seen.
+// Fed and uncrowded, it breeds: young join the group, and a full group splits, the new half walking off to settle
+// elsewhere. It dies of hunger or age. Hunters catch by tag and bite a few members off a group, then rest a while.
+// What animals eat and leave behind goes through plant cover and the stocks (litter, nitrogen), so the layers stay the
+// link between species.
+import { ANIMAL, type AnimalBody, type Food } from '../data/animals';
 import { STRATA } from '../data/fields';
+import { NUM } from '../data/numbers';
 import { rand } from './rng';
 import { EV, SEA, idx, type Agent, type State } from './state';
 import { fit, type Profile } from './fit';
@@ -11,6 +15,7 @@ import { kill, protectedSp } from './life';
 import { defOf, mutation, variantFor } from './variants';
 
 const A = ANIMAL;
+const DT = 1 / NUM.ticksPerSec;
 
 export const tileOf = (s: State, a: Agent) => idx(s, a.x | 0, a.y | 0);
 export const bodyOf = (s: State, sp: number): AnimalBody => defOf(s, sp).animal!;
@@ -57,24 +62,18 @@ function die(s: State, a: Agent, i: number, why: string) {
 
 /** Energy per second the diet could get on tile i: each food's rate × gain × how much of it is there. */
 function foodAt(s: State, P: Profile[], p: Profile, b: AnimalBody, self: Agent, i: number): number {
-  const n = s.w * s.h;
   let f = 0;
   b.diet.forEach((d, k) => {
-    const share = k ? Math.min(1, p.body.range!) : 1;
-    let have = 0;
-    if ('stock' in d) have = Math.min(1, s.layers[d.stock][i] / 0.1);
-    else if ('plants' in d) {
-      const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot];
-      if (v >= 0 && !s.dying[slot]) have = s.cover[slot] * P[v].stats.palatable;
-    } else have = preyOn(s, d.prey, i, self) ? 1 : 0;
-    f += share * d.rate * d.gain * have;
+    const have = 'prey' in d ? (preyOn(s, d.prey, i, self) ? 1 : 0) : quality(s, P, d, i);
+    f += (k ? Math.min(1, p.body.range!) : 1) * d.rate * d.gain * have;
   });
   return f;
 }
 
-/** Looks at a few tiles within sight and heads for the best: food × fit, less where its own kind crowds. */
-function lookAround(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody) {
-  const here = tileOf(s, a), x0 = a.x | 0, y0 = a.y | 0, r = b.sight;
+/** Looks at a few tiles within sight and heads for the best: food × fit, less where its own kind crowds. A hungry
+ * animal looks twice as far, and moves on even when nothing it sees beats where it is. */
+function lookAround(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, hungry: boolean) {
+  const here = tileOf(s, a), x0 = a.x | 0, y0 = a.y | 0, r = hungry ? 2 * b.sight : b.sight;
   const score = (i: number) => (foodAt(s, P, p, b, a, i) * fit(s, p, i)) / (1 + 0.3 * crowd(s, a.sp, i));
   let best = here, top = score(here) * 1.1;
   for (let k = 0; k < A.look; k++) {
@@ -85,56 +84,92 @@ function lookAround(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody)
     const sc = score(i);
     if (sc > top) { top = sc; best = i; }
   }
-  if (best === here && top <= 0) { // nothing to eat in sight: wander
-    const x = Math.max(0, Math.min(s.w - 1, x0 + Math.floor(rand(s) * 5) - 2)), y = Math.max(0, Math.min(s.h - 1, y0 + Math.floor(rand(s) * 5) - 2));
-    if (s.terrain[idx(s, x, y)] !== SEA) best = idx(s, x, y);
+  if (best === here && (top <= 0 || hungry)) { // nothing better in sight: wander, to somewhere it can live
+    const w = hungry ? r : 2;
+    for (let k = 0; k < 4 && best === here; k++) {
+      const x = Math.max(0, Math.min(s.w - 1, x0 + Math.floor(rand(s) * (2 * w + 1)) - w)), y = Math.max(0, Math.min(s.h - 1, y0 + Math.floor(rand(s) * (2 * w + 1)) - w));
+      const i = idx(s, x, y);
+      if (s.terrain[i] !== SEA && fit(s, p, i) > 0) best = i;
+    }
   }
   a.tx = (best % s.w) + 0.15 + rand(s) * 0.7;
   a.ty = ((best / s.w) | 0) + 0.15 + rand(s) * 0.7;
   a.think = A.think * (0.7 + 0.6 * rand(s));
 }
 
-/** Grazes and eats stocks on tile i. Returns the energy gained; dung goes into the stocks. */
-function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, i: number, dt: number): number {
-  const n = s.w * s.h;
+/** The tiles a group feeds on: one animal eats on its tile, a group spreads over the land in the 3×3 around it. */
+function range(s: State, b: AnimalBody, i: number): number[] {
+  if (b.group <= 1) return [i];
+  const x0 = i % s.w, y0 = (i / s.w) | 0, out: number[] = [];
+  for (let y = Math.max(0, y0 - 1); y <= Math.min(s.h - 1, y0 + 1); y++)
+    for (let x = Math.max(0, x0 - 1); x <= Math.min(s.w - 1, x0 + 1); x++) if (s.terrain[y * s.w + x] !== SEA) out.push(y * s.w + x);
+  return out;
+}
+
+/** How well one food source feeds on tile i (0–1): little litter or thin, unpalatable cover feeds less. */
+function quality(s: State, P: Profile[], d: Food, i: number): number {
+  if ('prey' in d) return 0;
+  if ('stock' in d) return Math.min(1, s.layers[d.stock][i] / (d.full ?? 0.1));
+  const slot = STRATA.indexOf(d.plants) * s.w * s.h + i, v = s.occ[slot];
+  return v < 0 || s.dying[slot] ? 0 : P[v].stats.palatable * s.cover[slot];
+}
+
+/** Grazes and eats stocks on its tile; a group eats the richest tiles around it first, as its members would. Returns
+ * the energy gained; dung goes into the stocks on its own tile. */
+function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, here: number, dt: number): number {
+  const n = s.w * s.h, tiles = range(s, b, here);
   let got = 0, eaten = 0, what = '';
   b.diet.forEach((d, k) => {
-    const share = k ? Math.min(1, p.body.range!) : 1, want = d.rate * share * dt * a.n;
+    const share = k ? Math.min(1, p.body.range!) : 1;
     if (share <= 0 || 'prey' in d) return;
-    if ('stock' in d) {
-      const have = s.layers[d.stock][i], take = Math.min(have, want * Math.min(1, have / 0.1)); // less where there's little
-      if (take <= 0) return;
-      s.layers[d.stock][i] -= take;
-      got += (take / a.n) * d.gain; eaten += take; what ||= 'litter';
-      return;
+    let want = d.rate * share * dt * a.n; // what all members would eat where food is good
+    const q = tiles.map((i) => quality(s, P, d, i)), order = tiles.map((_, j) => j).sort((x, y) => q[y] - q[x]);
+    for (const j of order) {
+      const i = tiles[j], f = q[j];
+      if (want <= 0 || f <= 0) break;
+      if ('stock' in d) {
+        const take = Math.min(s.layers[d.stock][i], want * f);
+        s.layers[d.stock][i] -= take; want -= take / f;
+        got += (take / a.n) * d.gain; eaten += take; what ||= 'litter';
+        continue;
+      }
+      const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot], take = Math.min(s.cover[slot], want * f);
+      s.cover[slot] -= take; s.old[slot] = 0; want -= take / f;
+      s.health[slot] = Math.max(0, s.health[slot] - take * A.wound); // lost leaves cost reserves: regrowth slows
+      got += (take / a.n) * d.gain; eaten += take; what ||= s.species[P[v].sp].name;
+      if (s.cover[slot] < A.minGrazed && !protectedSp(s, P[v].sp)) kill(s, slot, EV.grazed);
     }
-    const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot];
-    if (v < 0 || s.dying[slot]) return;
-    const take = Math.min(s.cover[slot], want * P[v].stats.palatable * s.cover[slot]); // thin cover feeds less
-    if (take <= 0) return;
-    s.cover[slot] -= take;
-    s.health[slot] = Math.max(0, s.health[slot] - take * A.wound); // lost leaves cost reserves: regrowth slows
-    got += (take / a.n) * d.gain; eaten += take; what ||= s.species[P[v].sp].name;
-    if (s.cover[slot] < A.minGrazed && !protectedSp(s, P[v].sp)) kill(s, slot, EV.grazed);
   });
-  if (eaten > 0) dung(s, b, i, eaten);
+  if (eaten > 0) dung(s, b, here, eaten);
   if (got > 0 && a.doing !== 'eat') note(s, a, `started eating ${what.toLowerCase()}`);
   return got * p.body.gain!;
 }
 
-/** Tries to catch prey on tile i. Returns the energy gained. */
+/** Ground cover on tile i: prey hide in it. */
+function groundCover(s: State, i: number): number {
+  const slot = STRATA.indexOf('ground') * s.w * s.h + i;
+  return s.occ[slot] >= 0 ? s.cover[slot] : 0;
+}
+
+/** Tries to catch prey on tile i, unless another hunter of its kind is here (territory). Returns the energy gained;
+ * after a catch it rests a while (handling time). */
 function hunt(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, i: number, dt: number): number {
+  if (!b.diet.some((d) => 'prey' in d) || crowd(s, a.sp, i) >= A.hunters) return 0;
   let got = 0;
+  const hide = 1 - A.refuge * groundCover(s, i);
   b.diet.forEach((d, k) => {
     if (!('prey' in d) || got) return;
     const share = k ? Math.min(1, p.body.range!) : 1, prey = preyOn(s, d.prey, i, a);
-    if (!prey || rand(s) >= d.rate * share * dt * P[prey.v].body.escape!) return;
-    const taken = Math.min(prey.n, bodyOf(s, prey.sp).bite), name = s.species[prey.sp].name.toLowerCase();
+    if (!prey) return;
+    prey.woke = s.tick; prey.slow = false;
+    if (rand(s) >= d.rate * share * dt * P[prey.v].body.escape! * hide) return;
+    const pb = bodyOf(s, prey.sp), taken = Math.min(prey.n, pb.bite), name = s.species[prey.sp].name.toLowerCase();
     prey.n -= taken;
     if (prey.n <= 0) { prey.n = 0; die(s, prey, i, `was eaten by a ${defOf(s, a.sp).short.toLowerCase()}`); }
     else note(s, prey, `lost ${taken} to a ${defOf(s, a.sp).short.toLowerCase()}`);
     got = taken * d.gain;
-    dung(s, b, i, got);
+    a.full = A.handling * Math.min(1, got / 0.2);
+    dung(s, b, i, taken * pb.corpse);
     note(s, a, taken > 1 ? `caught ${taken} ${name}` : `caught one of the ${name}`);
   });
   return got * p.body.gain!;
@@ -147,29 +182,54 @@ function dung(s: State, b: AnimalBody, i: number, eaten: number) {
   }
 }
 
-/** A newborn (or a swarm that split off) next to its parent, maybe a mutant if the parent's variant is shown. */
-function child(s: State, P: Profile[], a: Agent, members: number, e: number) {
+/** The best of a few spots 4–10 tiles away (food × fit) where the variant can live, or null. */
+function farSpot(s: State, P: Profile[], p: Profile, a: Agent): [number, number] | null {
+  const b = bodyOf(s, a.sp);
+  let best = -1, top = -1;
+  for (let k = 0; k < 8; k++) {
+    const ang = rand(s) * 2 * Math.PI, d = A.disperse[0] + rand(s) * (A.disperse[1] - A.disperse[0]);
+    const x = Math.floor(a.x + Math.cos(ang) * d), y = Math.floor(a.y + Math.sin(ang) * d);
+    if (x < 0 || y < 0 || x >= s.w || y >= s.h) continue;
+    const i = idx(s, x, y), f = s.terrain[i] === SEA ? 0 : fit(s, p, i);
+    const sc = f > 0 ? f * foodAt(s, P, p, b, a, i) : -1;
+    if (f > 0 && sc > top) { top = sc; best = i; }
+  }
+  return best < 0 ? null : [(best % s.w) + 0.15 + rand(s) * 0.7, ((best / s.w) | 0) + 0.15 + rand(s) * 0.7];
+}
+
+/** A newborn (or the half of a group that split off) next to its parent, maybe a mutant if the parent's variant is
+ * shown. It walks off to settle 4–10 tiles away. */
+function child(s: State, P: Profile[], a: Agent, members: number, e: number, mutant = false) {
   let v = a.v;
-  if (s.variants[v].shown && rand(s) < A.mutate) {
+  if (s.variants[v].shown && (mutant || rand(s) < A.mutate)) {
     const g = mutation(s, a.sp, s.variants[v].genome), m = g ? variantFor(s, a.sp, g, P) : -1;
     if (m >= 0) v = m;
   }
   const life = (P[v]?.body.life ?? bodyOf(s, a.sp).life) * (0.8 + 0.4 * rand(s));
   s.count[a.sp]++; // keeps the cap honest when many breed in one tick
-  s.agents.push({ id: s.nextAgent++, sp: a.sp, v, x: a.x, y: a.y, tx: a.x, ty: a.y, e, age: 0, life, n: members,
-    doing: 'look', think: 0, mom: a.id, kids: 0, ate: 0, log: [{ tick: s.tick, text: `was born, child of #${a.id}` }] });
+  const to = farSpot(s, P, P[v] ?? P[a.v], a);
+  s.agents.push({ id: s.nextAgent++, sp: a.sp, v, x: a.x, y: a.y, tx: to?.[0] ?? a.x, ty: to?.[1] ?? a.y, e, age: 0, life, n: members,
+    doing: to ? 'walk' : 'look', think: to ? A.think : 0, mom: a.id, kids: 0, ate: 0, log: [{ tick: s.tick, text: members > 1 ? `split off from #${a.id}` : `was born, child of #${a.id}` }],
+    last: s.tick - Math.floor(rand(s) * bodyOf(s, a.sp).pace), slow: false, woke: 0, go: !!to, full: 0 });
 }
 
 function breed(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody) {
   const young = Math.max(1, Math.round(p.body.young! * (0.75 + 0.5 * rand(s))));
   a.kids += young;
   if (b.group > 1) {
-    a.n += young; a.e -= A.breedCost;
+    a.e -= A.breedCost;
+    // Each young may carry a mutation: then the young bud off as a small group of their own (a new line).
+    if (s.variants[a.v].shown && rand(s) < Math.min(A.budMax, 1 - (1 - A.mutate) ** young)) {
+      child(s, P, a, young, a.e, true);
+      note(s, a, `${young} young with something new budded off`);
+      return;
+    }
+    a.n += young;
     if (a.n < b.group) return;
     const half = a.n >> 1;
     a.n -= half;
     child(s, P, a, half, a.e);
-    note(s, a, `grew to ${a.n + half} and split in two`);
+    note(s, a, `grew to ${a.n + half} and split in two; half walked off`);
     return;
   }
   a.e -= A.breedCost * young;
@@ -186,8 +246,21 @@ function walk(s: State, a: Agent, p: Profile, dt: number) {
   a.x = nx; a.y = ny;
 }
 
-/** One tick for every animal. Returns the biomass they made. */
-export function agentsStep(s: State, P: Profile[], dt: number): number {
+/** Takes in a small group of the same variant on its tile, while together they stay under the merge size. */
+function merge(s: State, a: Agent, b: AnimalBody, i: number) {
+  for (let k = head[i]; k >= 0; k = next[k]) {
+    const o = s.agents[k];
+    if (o === a || o.v !== a.v || o.n <= 0 || o.go || a.n + o.n > b.group * A.merge) continue;
+    a.e = (a.e * a.n + o.e * o.n) / (a.n + o.n);
+    a.n += o.n; o.n = 0;
+    s.obits.push({ id: o.id, tick: s.tick, text: `joined ${b.kin} #${a.id}` });
+    if (s.obits.length > A.obits) s.obits.shift();
+    note(s, a, `took in ${b.kin} #${o.id}`);
+  }
+}
+
+/** One tick: every animal whose turn it is. Returns the biomass they made. */
+export function agentsStep(s: State, P: Profile[]): number {
   if (!s.agents.length) return 0;
   index(s);
   let biomass = 0;
@@ -195,21 +268,40 @@ export function agentsStep(s: State, P: Profile[], dt: number): number {
   for (let k = 0; k < count; k++) {
     const a = s.agents[k];
     if (a.n <= 0) continue;
-    const p = P[a.v], b = bodyOf(s, a.sp), i = tileOf(s, a), f = s.terrain[i] === SEA ? 0 : fit(s, p, i);
+    const b = bodyOf(s, a.sp);
+    if (s.tick - a.last < b.pace * (a.slow ? A.settledSlow : 1)) continue;
+    const dt = (s.tick - a.last) * DT;
+    a.last = s.tick;
+    const p = P[a.v], i = tileOf(s, a), f = s.terrain[i] === SEA ? 0 : fit(s, p, i);
     a.age += dt;
-    a.e -= dt * p.body.upkeep! * (1 + A.stress * (1 - f)) * (a.doing === 'rest' ? A.rest : 1);
+    a.full = Math.max(0, a.full - dt);
+    const cost = dt * p.body.upkeep! * (1 + A.stress * (1 - f)); // a poor fit costs more
+    a.e -= cost * (a.doing === 'rest' ? A.rest : 1);
     if (a.e <= 0) { die(s, a, i, f <= 0 ? 'died where it could not live' : 'starved'); continue; }
-    if (a.age >= a.life) { die(s, a, i, 'died of old age'); continue; }
+    if (b.group > 1) { // a group renews itself: members die of age now and then, the group goes on
+      const old = a.n * (dt / a.life), lost = Math.floor(old) + (rand(s) < old % 1 ? 1 : 0);
+      if (lost) { a.n -= lost; s.fall[i] += b.corpse * lost; }
+      if (a.n <= 0) { die(s, a, i, 'died out'); continue; }
+    } else if (a.age >= a.life) { die(s, a, i, 'died of old age'); continue; }
+    if (a.go) { // walking off after a split: no eating or breeding on the way
+      walk(s, a, p, dt); // it stops (think 0) when it gets there, or at the sea
+      if (!a.think) { a.go = false; note(s, a, 'settled'); }
+      a.slow = false;
+      continue;
+    }
     // A crowded tile (its own kind) is no place to breed: it moves on even when full.
-    const crowded = crowd(s, a.sp, i) >= A.crowd;
+    const crowded = crowd(s, a.sp, i) >= A.crowd, calm = s.tick - a.woke > A.calmAfter * NUM.ticksPerSec;
+    if (b.group > 1) merge(s, a, b, i);
     if (a.e >= b.breedAt && a.age >= a.life * A.adultAt && !crowded && s.count[a.sp] < b.cap) breed(s, P, a, p, b);
-    if (a.e >= A.restAt && !crowded) { a.doing = 'rest'; continue; }
-    const caught = a.e < A.restAt ? hunt(s, P, a, p, b, i, dt) : 0, got = (a.e < A.restAt ? eat(s, P, a, p, b, i, dt) : 0) + caught;
+    if (a.full > 0 || (a.e >= A.restAt && !crowded)) { a.doing = 'rest'; a.slow = calm && !crowded; continue; }
+    const hungry = a.e < A.restAt, need = cost;
+    const caught = hungry ? hunt(s, P, a, p, b, i, dt) : 0, got = (hungry ? eat(s, P, a, p, b, i, dt) : 0) + caught;
     if (got > 0) { a.e = Math.min(1, a.e + got); a.ate += got; biomass += got * b.yield; a.doing = caught ? 'hunt' : 'eat'; }
+    a.slow = calm && !crowded && got >= need * 1.5;
     // Eating too little to live on, or crowded: keep looking.
-    if (got < dt * p.body.upkeep! * 1.5 || crowded) {
+    if (got < need * 1.5 || crowded) {
       a.think -= dt;
-      if (a.think <= 0) lookAround(s, P, a, p, b);
+      if (a.think <= 0) lookAround(s, P, a, p, b, got < need);
       walk(s, a, p, dt);
       if (!got) a.doing = 'walk';
     }
@@ -218,15 +310,16 @@ export function agentsStep(s: State, P: Profile[], dt: number): number {
   return biomass;
 }
 
-/** Puts `count` new animals of variant v on tile i (arrivals, founder groups). */
-export function spawn(s: State, v: number, i: number, count: number, why: string) {
-  const sp = s.variants[v].sp, b = bodyOf(s, sp), x0 = i % s.w, y0 = (i / s.w) | 0;
-  for (let k = 0; k < count; k++) {
+/** Puts `members` new animals of variant v on tile i (arrivals, founder groups), in groups of up to half a group. */
+export function spawn(s: State, v: number, i: number, members: number, why: string) {
+  const sp = s.variants[v].sp, b = bodyOf(s, sp), x0 = i % s.w, y0 = (i / s.w) | 0, per = Math.max(1, Math.ceil(b.group / 2));
+  for (let left = members; left > 0; left -= per) {
     const x = x0 + 0.15 + rand(s) * 0.7, y = y0 + 0.15 + rand(s) * 0.7;
     s.agents.push({ id: s.nextAgent++, sp, v, x, y, tx: x, ty: y, e: 0.6, age: rand(s) * b.life * 0.2, life: b.life * (0.8 + 0.4 * rand(s)),
-      n: b.group > 1 ? Math.ceil(b.group / 2) : 1, doing: 'look', think: 0, mom: -1, kids: 0, ate: 0, log: [{ tick: s.tick, text: why }] });
+      n: Math.min(per, left), doing: 'look', think: 0, mom: -1, kids: 0, ate: 0, log: [{ tick: s.tick, text: why }],
+      last: s.tick - Math.floor(rand(s) * b.pace), slow: false, woke: 0, go: false, full: 0 });
+    s.variants[v].tiles++;
   }
-  s.variants[v].tiles += count;
 }
 
 /** Animals on tile i, for the tile card and clicks. */

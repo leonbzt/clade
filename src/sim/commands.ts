@@ -100,7 +100,9 @@ export function found(s: State, speciesId: string, i: number): Result {
 }
 
 /** Biomass for founding a variant as a new species; it rises with each one. */
-export const speciesCost = (s: State) => Math.round(GENES.speciate.base * GENES.speciate.growth ** s.made);
+/** A new species' biomass, rising with each species already made in the same clade (on the same template). */
+export const speciesCost = (s: State, base: number) =>
+  Math.round(GENES.speciate.base * GENES.speciate.growth ** s.species.slice(SPECIES.length).filter((o) => o.base === base).length);
 
 /** The door a variant would open by splitting off: the key it carries, while that node isn't reached yet. */
 export function doorOf(s: State, v: number): Key | null {
@@ -117,7 +119,7 @@ function splitInto(s: State, v: number): { base: number; genome: Genome; key: Ke
 }
 
 /** A split's biomass: the door node's cost, or the rising cost of a new species. */
-export const splitCost = (s: State, v: number) => { const k = doorOf(s, v); return k ? doorNode(k).cost : speciesCost(s); };
+export const splitCost = (s: State, v: number) => { const k = doorOf(s, v); return k ? doorNode(k).cost : speciesCost(s, s.species[s.variants[v].sp].base); };
 
 /** A shown variant, Rare or better, can split off as a new species; one with a key opens its door. */
 export function canFoundSpecies(s: State, v: number): Result {
@@ -161,13 +163,13 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   const sp = s.species.length, def = SPECIES[into.base], kin = s.species.filter((o) => o.base === into.base).length;
   const hue = into.key ? 0 : parent.hue + GENES.hueShift * (kin % 2 ? 1 : -1) * Math.ceil(kin / 2);
   s.species.push({ id: `${def.id}-${kin + 1}`, name: nm, base: into.base, genome: into.genome, hue, parent: x.sp, at: -1, form: variantName(s, v) });
-  s.count.push(0); s.prevCount.push(0);
+  s.count.push(0); s.members.push(0); s.prevCount.push(0);
   s.foundings[s.species[sp].id] = 0;
   const nv = variantFor(s, sp, into.genome, P);
   s.variants[nv].shown = s.variants[nv].seen = true;
   if (animal) {
     for (const a of s.agents) if (a.v === v) { a.sp = sp; a.v = nv; }
-    spawn(s, nv, i, ANIMAL.founders, `founded ${nm} here`);
+    spawn(s, nv, i, Math.max(ANIMAL.founders, Math.ceil(def.animal!.group / 2)), `founded ${nm} here`);
     s.foundings[s.species[sp].id] = 1; s.species[sp].at = s.tick;
     const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
     return { ok: true, msg: `${nm} is ${what}. The variant's animals are now ${nm}, and a founder group starts here.` };

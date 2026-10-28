@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../src/data/species';
-import { STRATA } from '../src/data/fields';
+import { FIELDS, STRATA, type StockDef } from '../src/data/fields';
 import { agentsStep, spawn, tileOf } from '../src/sim/agents';
 import { arrivals } from '../src/sim/arrivals';
 import { evolve } from '../src/sim/commands';
@@ -12,6 +12,12 @@ import { recount, speciesIndex, variantFor } from '../src/sim/variants';
 function dampTile(s: State): number {
   const v = s.terrain.findIndex((t) => t === VENT);
   return [v + 2, v - 2, v + 2 * s.w, v - 2 * s.w].find((i) => s.terrain[i] !== SEA && s.terrain[i] !== VENT)!;
+}
+
+/** One tick for the animals (each updates on its own pace). */
+function tick(s: State) {
+  s.tick++;
+  agentsStep(s, profiles(s));
 }
 
 function animal(s: State, id: string, i: number, e = 0.6) {
@@ -31,16 +37,33 @@ function moss(s: State, i: number, bitter = false) {
 }
 
 describe('animals', () => {
-  it('a fed animal breeds and its young copy its genome; a starving one dies and leaves litter', () => {
+  it('a full group splits and the half walks off with its genome; pace changes how often, not how much', () => {
     const s = createState(1), i = dampTile(s), a = animal(s, 'snail', i, 0.9);
+    a.n = 11;
     recount(s);
-    agentsStep(s, profiles(s), 0.1);
-    const young = s.agents.filter((b) => b.mom === a.id);
-    expect(young.length).toBeGreaterThan(0);
-    for (const b of young) expect(s.variants[b.v].genome).toEqual(s.variants[a.v].genome);
+    for (let k = 0; k < 4; k++) tick(s);
+    const half = s.agents.find((b) => b.mom === a.id)!;
+    expect(half.n).toBeGreaterThan(4);
+    expect(half.go).toBe(true);
+    expect(Math.hypot(half.tx - a.x, half.ty - a.y)).toBeGreaterThan(3);
+    expect(s.variants[half.v].genome).toEqual(s.variants[a.v].genome);
+    // A resting snail spends the same energy over 10 s at its own pace (4) as when it updates every tick.
+    const rest = () => {
+      const t = createState(1), b = animal(t, 'snail', dampTile(t), 1);
+      for (let k = 0; k < 100; k++) tick(t);
+      return b.e;
+    };
+    const body = SPECIES[SPECIES_INDEX.snail].animal!, own = rest();
+    body.pace = 1;
+    try { expect(Math.abs(own - rest())).toBeLessThan(0.01); } finally { body.pace = 4; }
+    expect(own).toBeLessThan(1);
+  });
+
+  it('a starving animal dies and leaves litter', () => {
+    const s = createState(1), i = dampTile(s);
     const c = animal(s, 'snail', i, 0.00001);
     s.fall.fill(0);
-    agentsStep(s, profiles(s), 0.1);
+    for (let k = 0; k < 4; k++) tick(s);
     expect(s.agents.find((b) => b.id === c.id)).toBeUndefined();
     expect(s.obits.at(-1)).toMatchObject({ id: c.id, text: 'starved' });
     expect(s.fall[i]).toBeGreaterThan(0);
@@ -56,7 +79,7 @@ describe('animals', () => {
     s.biomass = 1000;
     expect(evolve(s, 'snails').ok).toBe(true);
     const snails = s.agents.filter((a) => s.species[a.sp].id === 'snail');
-    expect(snails.length).toBe(5);
+    expect(snails.reduce((m, a) => m + a.n, 0)).toBe(5);
     for (const a of snails) expect(tileOf(s, a)).toBe(at);
     expect(s.visitors.snails).toBeUndefined();
   });
@@ -65,7 +88,7 @@ describe('animals', () => {
     const graze = (bitter: boolean) => {
       const s = createState(3), i = dampTile(s), slot = moss(s, i, bitter), a = animal(s, 'snail', i, 0.5);
       const n0 = s.layers.nitrogen[i];
-      for (let k = 0; k < 20; k++) { a.e = 0.5; agentsStep(s, profiles(s), 0.1); }
+      for (let k = 0; k < 20; k++) { a.e = 0.5; tick(s); }
       return { lost: 1 - s.cover[slot], n: s.layers.nitrogen[i] - n0 };
     };
     const plain = graze(false), bitter = graze(true);
@@ -83,11 +106,17 @@ describe('animals', () => {
       const s = createState(4), i = dampTile(s);
       for (let k = 0; k < s.layers.litter.length; k++) if (s.terrain[k] !== SEA) s.layers.litter[k] = 0.3;
       const a = animal(s, 'testbug', i, 0.5);
-      for (let k = 0; k < 600; k++) { recount(s); agentsStep(s, profiles(s), 0.1); }
+      for (let k = 0; k < 600; k++) { recount(s); tick(s); }
       expect(a.ate).toBeGreaterThan(0);
       expect(s.agents.filter((b) => s.species[b.sp].id === 'testbug').length).toBeGreaterThan(1);
     } finally {
       SPECIES.pop(); delete SPECIES_INDEX.testbug;
     }
+  });
+
+  it('eaten litter releases no more nitrogen than decaying litter', () => {
+    const share = (FIELDS.litter as StockDef).into!.nitrogen!;
+    for (const d of SPECIES) if (d.animal?.diet.some((f) => 'stock' in f && f.stock === 'litter'))
+      expect(d.animal.makes.nitrogen ?? 0, d.id).toBeLessThanOrEqual(share);
   });
 });

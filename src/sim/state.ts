@@ -31,13 +31,18 @@ export type Agent = {
   e: number; // energy, 0–1
   age: number; // seconds
   life: number; // seconds it will live, set at birth
-  n: number; // members: 1, or a swarm's size
+  n: number; // members: 1, or a group's size (family, swarm)
   doing: 'look' | 'walk' | 'eat' | 'rest' | 'hunt';
   think: number; // seconds until it looks around again
   mom: number; // the id of its parent, or -1
   kids: number;
   ate: number; // food eaten so far, for its card
   log: { tick: number; text: string }[];
+  last: number; // the tick of its last update (it updates every `pace` ticks, less often while settled)
+  slow: boolean; // settled: fed, calm and not crowded
+  woke: number; // the tick a hunter last came by
+  go: boolean; // walking away after a split, before it settles
+  full: number; // seconds of rest left after a catch
 };
 
 export type Landmark = { kind: LandmarkKind; name: string; tiles: number[]; at: number }; // at: where its name goes
@@ -61,6 +66,7 @@ export type State = {
   cover: Float32Array; // per slot: 0–1
   health: Float32Array; // per slot: follows fit with a lag (the plant's reserves)
   dying: Uint8Array; // per slot: 1 while the plant thins out
+  old: Uint8Array; // per slot: 1 while the plant is steady (old growth): it updates less often
   lastTick: Int32Array; // per slot: when something last happened
   lastCode: Uint8Array; // per slot: EV code
   lastSp: Int16Array; // per slot: the species it happened to
@@ -68,7 +74,8 @@ export type State = {
   species: Species[]; // the base species from the data first (same order), then the ones you founded
   variants: Variant[]; // dead ones stay as free entries and are reused
   vkey: Record<string, number>; // "species|genome" → variant
-  count: number[]; // tiles per species, updated every tick
+  count: number[]; // tiles (plants) or groups (animals) per species, updated every tick
+  members: number[]; // animals per species (all members of its groups); 0 for plants
   prevCount: number[]; // at the last trend check
   biomass: number;
   gain: number; // biomass gained in the last tick
@@ -102,16 +109,16 @@ export function createState(seed: number): State {
     statuses: Object.fromEntries(STATUS_IDS.map((id) => [id, new Float32Array(n)])) as Record<StatusId, Float32Array>,
     landmarks: [], mark: new Int16Array(n).fill(-1), vents: [],
     layers: perLayer(n), fall: new Float32Array(n),
-    occ: new Int16Array(slots).fill(-1), cover: new Float32Array(slots), health: new Float32Array(slots), dying: new Uint8Array(slots),
+    occ: new Int16Array(slots).fill(-1), cover: new Float32Array(slots), health: new Float32Array(slots), dying: new Uint8Array(slots), old: new Uint8Array(slots),
     lastTick: new Int32Array(slots), lastCode: new Uint8Array(slots), lastSp: new Int16Array(slots).fill(-1),
     lastLimit: new Int8Array(slots).fill(-1),
-    species: baseSpecies(), variants: [], vkey: {}, count: [], prevCount: [],
+    species: baseSpecies(), variants: [], vkey: {}, count: [], members: [], prevCount: [],
     biomass: 0, gain: 0, rate: 0,
     reached: [...START_REACHED], ready: [],
     foundings: {}, made: 0, combos: [], innovations: {}, keyClock: {}, keyRoll: {}, cands: [], keyFrom: {}, history: [],
     log: [], agents: [], nextAgent: 1, visitors: {}, arriveClock: {}, obits: [],
   };
-  s.count = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);
+  s.count = s.species.map(() => 0); s.members = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);
   for (const sp of s.species) s.foundings[sp.id] = 0;
   buildIsland(s);
   return s;

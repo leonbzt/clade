@@ -1,6 +1,7 @@
 // Animals on the map, drawn every frame in art pixels (one tile = 12 px): snails with a fading slime trail, swarms of
-// hopping springtails, scuttling beetles. Visitors wait at their landmark under a bobbing gold marker; the animal you
-// follow gets a ring. The specimen painters draw the same animals big, for the species card.
+// hopping springtails, scuttling beetles. A group draws up to 3 animals up close and one (its leader) at the fit zoom.
+// They glide between sim updates. Visitors wait at their landmark under a bobbing gold marker; the animal you follow
+// gets a ring. The specimen painters draw the same animals big, for the species card.
 import { NUM } from '../data/numbers';
 import { ANIMAL_PAL, PAL } from '../data/palette';
 import { TREE } from '../data/tree';
@@ -16,6 +17,10 @@ type Ctx = CanvasRenderingContext2D;
 // Slime trails live in the view only: a few recent spots per snail.
 const trails = new Map<number, { x: number; y: number; t: number }[]>();
 const TRAIL_MS = 6000;
+// Where each animal is drawn: it eases toward its sim position, so slow-paced animals glide instead of jumping.
+const shown = new Map<number, { x: number; y: number }>();
+const GLIDE_MS = 150;
+let lastFrame = 0;
 
 function px(ctx: Ctx, x: number, y: number, w: number, h: number, c: string) {
   ctx.fillStyle = c;
@@ -33,8 +38,8 @@ function snail(ctx: Ctx, x: number, y: number, face: number, c: [string, string,
   } else px(ctx, x - 1, y - 1, 3, 1, c[1]);
 }
 
-function swarm(ctx: Ctx, a: Agent, x: number, y: number, time: number, c: [string, string, string]) {
-  const dots = Math.min(6, Math.max(2, Math.ceil(a.n / 4)));
+function swarm(ctx: Ctx, a: Agent, x: number, y: number, time: number, c: [string, string, string], max: number) {
+  const dots = Math.min(max, Math.max(2, Math.ceil(a.n / 40)));
   for (let k = 0; k < dots; k++) {
     const ox = Math.round((hash2(a.id, k) - 0.5) * 7), oy = Math.round((hash2(a.id, k, 1) - 0.5) * 5);
     const hop = (time / 700 + hash2(a.id, k, 2)) % 1 < 0.12 ? -2 : 0;
@@ -55,12 +60,46 @@ function insect(ctx: Ctx, x: number, y: number, face: number, time: number, c: [
   }
 }
 
-/** Every animal, plus visitor markers and the ring around the one you follow. */
-export function drawAnimals(ctx: Ctx, s: State, time: number, follow: number) {
-  const now = performance.now();
+/** Eases the drawn position toward the sim's; jumps when it's far (time skips, fast speeds). */
+function glide(a: Agent, k: number): { x: number; y: number } {
+  let p = shown.get(a.id);
+  if (!p || Math.hypot(p.x - a.x, p.y - a.y) > 1.5) shown.set(a.id, (p = { x: a.x, y: a.y }));
+  p.x += (a.x - p.x) * k; p.y += (a.y - p.y) * k;
+  return p;
+}
+
+/** Every animal, plus visitor markers and the ring around the one you follow. Up close a group draws up to 3. */
+export function drawAnimals(ctx: Ctx, s: State, time: number, follow: number, detail: boolean) {
+  const now = performance.now(), k = 1 - Math.exp(-Math.min(200, now - (lastFrame || now)) / GLIDE_MS);
+  lastFrame = now;
   for (const a of s.agents) {
-    const id = defOf(s, a.sp).id, c = ANIMAL_PAL[id] ?? ANIMAL_PAL.snail, x = a.x * T, y = a.y * T, face = a.tx >= a.x ? 1 : -1;
-    if (id === 'snail' || id === 'slug') {
+    const def = defOf(s, a.sp), id = def.id, c = ANIMAL_PAL[id] ?? ANIMAL_PAL.snail, p = glide(a, k), x = p.x * T, y = p.y * T;
+    const face = a.tx >= a.x ? 1 : -1, many = detail ? Math.min(3, Math.ceil((3 * a.n) / def.animal!.group)) : 1;
+    if (id === 'springtail') swarm(ctx, a, x, y, time, c, detail ? 6 : 2);
+    else for (let m = 0; m < many; m++) {
+      const ox = m ? Math.round((hash2(a.id, m, 3) - 0.5) * 9) : 0, oy = m ? Math.round((hash2(a.id, m, 4) - 0.5) * 6) : 0;
+      draw(ctx, a, id, x + ox, y + oy, m ? -face * (hash2(a.id, m) < 0.5 ? 1 : -1) : face, time, c, now, m === 0);
+    }
+    if (a.id === follow) {
+      ctx.strokeStyle = PAL.gold; ctx.lineWidth = 1;
+      ctx.strokeRect(Math.round(x) - 5.5, Math.round(y) - 5.5, 11, 11);
+    }
+  }
+  if (Math.random() < 0.01) {
+    for (const id of trails.keys()) if (!s.agents.some((a) => a.id === id)) trails.delete(id);
+    for (const id of shown.keys()) if (!s.agents.some((a) => a.id === id)) shown.delete(id);
+  }
+  for (const [node, i] of Object.entries(s.visitors)) {
+    const n = TREE.find((t) => t.id === node)!, x = (i % s.w) * T + T / 2, y = ((i / s.w) | 0) * T, bob = Math.round(Math.sin(time / 250) * 2);
+    if (n.arrive!.at === 'beach') { px(ctx, x - 6, y + 6, 12, 3, '#6a4a30'); px(ctx, x - 6, y + 6, 12, 1, '#8a6a48'); }
+    px(ctx, x - 1, y - 10 + bob, 3, 5, PAL.gold); px(ctx, x - 1, y - 3 + bob, 3, 2, PAL.gold);
+  }
+}
+
+/** One animal of a group; only the leader leaves a slime trail. */
+function draw(ctx: Ctx, a: Agent, id: string, x: number, y: number, face: number, time: number, c: [string, string, string], now: number, lead: boolean) {
+  if (id === 'snail' || id === 'slug') {
+    if (lead) {
       let tr = trails.get(a.id);
       if (!tr) trails.set(a.id, (tr = []));
       const last = tr[tr.length - 1];
@@ -68,20 +107,9 @@ export function drawAnimals(ctx: Ctx, s: State, time: number, follow: number) {
       while (tr.length && now - tr[0].t > TRAIL_MS) tr.shift();
       for (const p of tr) { ctx.globalAlpha = 0.35 * (1 - (now - p.t) / TRAIL_MS); px(ctx, p.x - 1, p.y, 2, 1, '#d8e8ec'); }
       ctx.globalAlpha = 1;
-      snail(ctx, x, y, face, c, id === 'snail');
-    } else if (a.n > 1 || id === 'springtail') swarm(ctx, a, x, y, time, c);
-    else insect(ctx, x, y, face, time, c, id === 'beetle');
-    if (a.id === follow) {
-      ctx.strokeStyle = PAL.gold; ctx.lineWidth = 1;
-      ctx.strokeRect(Math.round(x) - 5.5, Math.round(y) - 5.5, 11, 11);
     }
-  }
-  if (Math.random() < 0.01) for (const id of trails.keys()) if (!s.agents.some((a) => a.id === id)) trails.delete(id);
-  for (const [node, i] of Object.entries(s.visitors)) {
-    const n = TREE.find((t) => t.id === node)!, x = (i % s.w) * T + T / 2, y = ((i / s.w) | 0) * T, bob = Math.round(Math.sin(time / 250) * 2);
-    if (n.arrive!.at === 'beach') { px(ctx, x - 6, y + 6, 12, 3, '#6a4a30'); px(ctx, x - 6, y + 6, 12, 1, '#8a6a48'); }
-    px(ctx, x - 1, y - 10 + bob, 3, 5, PAL.gold); px(ctx, x - 1, y - 3 + bob, 3, 2, PAL.gold);
-  }
+    snail(ctx, x, y, face, c, id === 'snail');
+  } else insect(ctx, x, y, face, time, c, id === 'beetle');
 }
 
 /** The Animals view: a wash, and each tile with animals in its main species' colour, stronger with more of them. */

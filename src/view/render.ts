@@ -68,7 +68,7 @@ export class GardenRenderer {
       else if (o.view !== 'none') layerView(ctx, s, o.view);
       else this.glints(o.time);
       if (o.hoverVariant >= 0) variantHighlight(ctx, s, o.hoverVariant);
-      drawAnimals(ctx, s, o.time, o.follow);
+      drawAnimals(ctx, s, o.time, o.follow, o.detail);
     }
     if (o.placing) this.placingView.draw(ctx, o.placing, o.hover);
     else if (o.hover >= 0) outline(ctx, s, o.hover, PAL.text);

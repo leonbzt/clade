@@ -54,7 +54,7 @@
       const sp = speciesIndex(game, id), x = game.species[sp];
       const vs = poolOf(game, sp).filter((v) => game.variants[v].shown && game.variants[v].tier !== TIER.base);
       for (const v of vs) if (glints(game.variants[v])) fresh.add(v);
-      return { id, sp, name: x.name, animal: !!defOf(game, sp).animal, tiles: coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
+      return { id, sp, name: x.name, animal: !!defOf(game, sp).animal, tiles: defOf(game, sp).animal ? game.members[sp] : coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
         made: x.parent >= 0 ? game.species[x.parent].name : null, depth: depthOf(sp), variants: vs };
     });
   });

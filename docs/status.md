@@ -1,6 +1,6 @@
 # Status
 
-Updated 2026-10-28 (slice 10 played; 10b specced). Git: `slice-09` (eb806c0) is committed and tagged; slice 10 is uncommitted.
+Updated 2026-10-28 (slice 10 committed and tagged; 10b built, uncommitted). Git: `slice-10` (347e289) is committed and tagged; 10b is uncommitted.
 `npm run check` passes; `npm run sim` 5×60: 5/5 pass.
 
 ## Done
@@ -18,16 +18,13 @@ Updated 2026-10-28 (slice 10 played; 10b specced). Git: `slice-09` (eb806c0) is 
   - View: animal sprites, slime trails, an Animals map view; click an animal to follow it and see its card.
 
 ## Next
-1. **You:** check the 10b spec (`docs/slices/10b-groups-and-balance.md`) and P21 b–e in `docs/systems.md`.
-2. Commit slice 10 (played: notes in `docs/playtests/10-first-animals.md`), then build 10b: animals as groups,
-   settled groups on a slow tick, dispersal, food-limited litter eaters, conserved nitrogen, damped predators.
-3. Then **plan the player's part** (P21 e; your priority: an active part soon), and decide on contrast (P21 d: no
-   climate gradient exists today; wind side, height, disturbance, regions). Slice 11 (readability: P17 e, f,
-   tooltips) after that or alongside.
+1. **You:** play 10b (`docs/slices/10b-groups-and-balance.md`, build notes at the end): fewer sprites? snails off
+   the beach? regions still differ? bitter mosses under snails? Dev panel shows members, groups, cap and expected.
+2. Commit 10b when you're happy; then a feel pass on animal numbers (springtails few, snails small, beetles 1–3).
+3. Then **plan the player's part** (P21 e, your leanings recorded there) and contrast, a simple start (P21 f:
+   wind side + moss holds water). Slice 11 (readability: P17 e, f, tooltips) after that or alongside.
 
 ## Open
-- Slice 10 playtest: snails stuck on the beach; litter eaters at their caps and everywhere; litter eaters add
-  nitrogen (moss covers the island); no bitter mosses; beetles boom and crash. All in 10b.
-- Animals tiny at the fit zoom, no smooth movement, none on the tile card: in 10b.
+- 10b: `npm run sim` 4/5 (one seed: clubmoss 64% of its stratum). Tick 3–4.7 ms (target 3). Bitter not measured.
 - Plants as patches (P20), the deep-time road (later), partnership doors (P19 b).
 - Older: Liverworts' timing varies; combos rare; flows (P13), zooms (P15), nitrogen (P11); delete `toys/`?

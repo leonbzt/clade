@@ -15,6 +15,9 @@ export const NUM = {
   },
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
+    oldEvery: 4, // old growth updates every this many ticks
+    oldCover: 0.8, // old growth: cover above this, and health and cover within oldDelta of where they're heading
+    oldDelta: 0.02,
     starve: 20, // seconds a plant lasts once its health is near 0
     dieback: 30, // seconds a dying plant takes to thin out from full cover
     shrink: 0.02, // per second: how fast cover falls toward what health allows
@@ -30,6 +33,6 @@ export const NUM = {
   flare: { every: 150, radius: 4, soilLoss: 0.5 }, // a steam vent flares about every 150 s
   rateSmoothing: 30, // seconds; the shown income is an average
   trendEvery: 60, // seconds between "Mosses retreat" lines in the feed
-  founding: { base: 40, growth: 3, patch: 2, cover: 0.3 }, // patch radius in tiles
+  founding: { base: 40, growth: 2, patch: 2, cover: 0.3 }, // patch radius in tiles
   tiers: [['S', 0.85], ['A', 0.65], ['B', 0.45], ['C', 0.25], ['D', 0]] as const,
 };

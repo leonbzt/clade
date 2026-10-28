@@ -50,7 +50,7 @@ export function arrivals(s: State, dt: number) {
     s.arriveClock[n.id] = (s.arriveClock[n.id] ?? 0) + dt;
     if (s.arriveClock[n.id] < ANIMAL.repeat) continue;
     s.arriveClock[n.id] = 0;
-    if (s.count[sp] >= n.arrive.n * ANIMAL.repeatBelow) continue;
+    if (s.members[sp] >= n.arrive.n * ANIMAL.repeatBelow) continue;
     const i = landing(s, n), v = i >= 0 ? variantFor(s, sp, s.species[sp].genome) : -1;
     if (v < 0) continue;
     spawn(s, v, i, Math.ceil(n.arrive.n / 2), 'arrived on the island');

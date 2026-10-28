@@ -109,7 +109,7 @@ export const GENES = {
   mutate: 0.03, // chance a settling child of a shown variant mutates (hidden mutants must take hold first)
   traitShare: 0.1, // of mutations: a trait gene flips instead of an axis step
   foundFrom: TIER.rare, // a shown variant this rare or better can be founded as a new species
-  speciate: { base: 1500, growth: 2.5 }, // biomass for a new species, rising with each one
+  speciate: { base: 1500, growth: 1.8 }, // biomass for a new species, rising with each one in its clade
   hueShift: 0.05, // a new species' colour moves this far from its parent's
 };
 
