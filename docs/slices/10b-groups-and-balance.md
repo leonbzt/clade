@@ -85,8 +85,8 @@ part (P21 e, a planning thread next).
   - agents 34–75 at 60 min; a tick 3.0–4.7 ms (slice 10: 3.8–5.1). Under 3 ms not met; plants are most of it
 - [x] Tests (kept few): a group splits and the half walks off; a slow-paced snail spends the same energy as a fast
   one; eaten litter (and prey) releases no more nitrogen than decaying litter (it caught the beetles at 0.1).
-- [ ] **You:** few sprites, the island reads calmly; snails leave the beach; regions still differ; bitter mosses
-  show up where snails graze.
+- [x] **You (28 Oct):** the island reads calmer; snails leave the beach; regions differ a lot; bitter mosses appear.
+  Notes: `playtests/10b-groups.md`.
 
 ## Build notes *(28 Oct)*
 - **Groups:** family (snails, slugs, 12), swarm (springtails, 200), troop (bristletails, 10); beetles single.
@@ -111,3 +111,7 @@ part (P21 e, a planning thread next).
 - **Open for your feel pass:** springtails are food-limited now but few (420–710); snails small (13–46); beetles
   1–3; bristletails died out on one seed. Idea: springtails mainly eat fungi (real: they graze hyphae), making a
   chain litter → fungi → springtails → beetles.
+- **After your playtest (28 Oct): springtails eat fungi** as their main food (fungus cover under the ground; litter
+  at half share), and arrive once 40 tiles hold fungi. A chain: litter → fungi → springtails → beetles. `npm run
+  sim` 3×60: 3/3 pass; springtails 5,700–6,500 (53–65% of cap, still rising slowly at 60 min); fungi 656–821
+  tiles; a tick 2.6–2.9 ms.

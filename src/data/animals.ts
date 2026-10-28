@@ -52,7 +52,8 @@ const snailBody: AnimalBody = {
 const springtailBody: AnimalBody = {
   tag: 'tiny-hexapod', group: 200, kin: 'swarm', pace: 2, bite: 6, size: 1, speed: 0.35, life: 400, upkeep: 0.004, gain: 1,
   young: 24, escape: 1, range: 0.5, sight: 3, breedAt: 0.75, corpse: 0.002, yield: 0.5, cap: 120,
-  diet: [{ stock: 'litter', rate: 0.00012, gain: 65, full: 0.3 }, { plants: 'under', rate: 0.0006, gain: 8 }],
+  // Mainly fungus threads (real: springtails graze hyphae), rot as a side dish: litter → fungi → springtails → hunters.
+  diet: [{ plants: 'under', rate: 0.0004, gain: 25 }, { stock: 'litter', rate: 0.00012, gain: 65, full: 0.3 }],
   makes: { nitrogen: 0.03 }, // litter's own share (fields.ts): sooner, not more
 };
 

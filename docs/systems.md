@@ -365,6 +365,34 @@ matter more now.
 - **Tile types change over generations** (succession on the ground itself): a lava field tile that gathers litter,
   soil and water becomes bare ground, later a forest floor on deep soil. Fits "condensing into old growth" (P21 b).
 - **Metabolism as a trait:** the update rate (P21 b) as a gene with a cost: faster reacts and spreads sooner but
-  costs upkeep.
+  costs upkeep. *(AI, 28 Oct)* Update frequency alone is nearly neutral by design (dt scales, and a test checks
+  it); its only real effect is how fast an animal reacts (hunters, food). So make it a **Metabolism** gene with
+  stat effects, and let the pace follow: fast = more young, quicker reactions, higher upkeep, shorter life; slow =
+  lasts longer through hunger, lives longer, reacts late (caught more). Real: small animals live fast (Kleiber).
+  **Dormancy** ties it to compute: in bad times a group goes dormant (very slow pace, little upkeep) instead of
+  dying; real for snails (sealed with slime), springtails (drying out) and spores.
+- **Chains are features** (your call after 10b): let chains like nitrogen → herbs → shade → lichens lose, or
+  litter → fungi → springtails, play out; tune them, don't cut them. They can drive colonisation later.
 - **Old growth:** established, stable patches and groups condense and update slower; a disturbance wakes them up.
 - *(AI)* Founding cost per clade, not per island (in 10b).
+
+## P23. The species screen: stat cards, abilities, tidying the list *(28 Oct, your ideas after 10b; AI notes marked)*
+- **a. The species card on the left** instead of at the bottom, so it sits beside the map while you play.
+- **b. A stat card per species** (TierZoo-style: a few stats plus unique abilities), so you see species differ and
+  get better. *(AI)* Map it onto numbers the sim already has, shown as 1–10 against the clade's template, with an
+  arrow against the parent species:
+  - animals: Speed (speed), Toughness (life, upkeep), Defence (escape), Breeding (young), Appetite (diet breadth),
+    Senses (sight), Metabolism (pace, P22)
+  - plants: Spread (seeds), Hold, Growth, Yield, Hardiness (how wide its need bands are)
+  - **abilities** are the trait genes and keys (Thick shell, Bitter, Heterocysts, Leafy shoot) as chips.
+  - The need bars stay (you like them); the gene pips become the "how it got here" view behind the card.
+- **c. Species that converge merge.** Two species of one clade that end up with the same genes (or go back to
+  being duplicates) merge into one. *(AI)* Real: lines that meet again can hybridise. A feed line ("Dry Moss and
+  Shade Moss have become one species again") and the spindle joins them.
+- **d. Old and extinct species leave the list.** Extinct ones show only on the tree. An ancestor that dies out (the
+  early land plants) becomes a break in the species list, an era marker that organises it.
+- **e. Filters: plants / animals / fungi** in the species list. *(AI, on niches)* Animals can already found species
+  from a variant (splits move their groups; you place a founder group), but their axes are only Dry / Wet and
+  Picky / Broad, so animal species differ little. Real animal niches come from **diet shifts** (a springtail line
+  that eats litter instead of fungi, a snail that eats lichens), **habitat** (bark, rock, litter layer) and
+  **timing** (night, season). A diet-shift gene would make animal founding matter.

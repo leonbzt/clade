@@ -46,7 +46,7 @@ export const TREE: TreeNode[] = [
   { id: 'animals', name: 'Animals', parent: 'life', cost: 40, reqs: [{ kind: 'cover', species: 'moss', tiles: 40 }],
     fact: 'Animals and fungi are sister groups: both come from one single-celled ancestor that plants split from long before.' },
   { id: 'hexapods', name: 'Hexapods', parent: 'animals', species: 'springtail', cost: 60,
-    reqs: [{ kind: 'layer', layer: 'litter', min: 0.04, tiles: 60 }],
+    reqs: [{ kind: 'layer', layer: 'litter', min: 0.04, tiles: 60 }, { kind: 'cover', species: 'fungus', tiles: 40 }],
     arrive: { at: 'vent', n: 300, text: 'A gust dropped a cloud of springtails by {place}.' },
     fact: 'Springtails are not insects but their cousins. On Surtsey, tiny animals like them came on the wind within a year of the eruption.' },
   { id: 'snails', name: 'Land snails', parent: 'animals', species: 'snail', cost: 120,
