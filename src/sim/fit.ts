@@ -1,7 +1,7 @@
 // Profiles (a species with a genome applied, each change tagged with its source), need scores, fit and tiers.
 // One profile per variant: P[v]. The species' own base genome is a profile too (for the panel and founding).
 import { FIELDS, LAYER_IDS, STATUS_IDS, STRATA, type LayerId, type LevelDef, type StatusId } from '../data/fields';
-import { AXES } from '../data/genes';
+import { AXES, KEYS } from '../data/genes';
 import { NUM } from '../data/numbers';
 import { type Band, type Mod, type Scalar } from '../data/species';
 import { SEA, type State } from './state';
@@ -30,6 +30,7 @@ function genomeMods(s: State, sp: number, g: Genome): [string, Mod][] {
     if (v) for (const m of a.steps[v]) out.push([`${a.name} ${v > 0 ? '+' : '−'}${Math.abs(v)}`, m]);
   });
   for (const t of def.traits) if (g.traits.includes(t.id)) for (const m of t.mods) out.push([t.name, m]);
+  for (const k of KEYS) if (g.traits.includes(k.id)) for (const m of k.mods) out.push([k.name, m]);
   const combo = comboOf(g);
   if (combo) for (const m of combo.mods) out.push([combo.name, m]);
   return out;

@@ -6,9 +6,10 @@ import { createState, VENT, type State } from '../src/sim/state';
 import { advance } from '../src/sim/tick';
 import { botTick } from '../src/sim/bot';
 import { canFoundSpecies, coverCount, evolve, found, foundingCost, foundSpecies } from '../src/sim/commands';
-import { buildProfile, fit } from '../src/sim/fit';
-import { comboOf, mutation, poolOf, rarity, ZERO } from '../src/sim/variants';
-import { GENES, KEY, KEYS, TIER } from '../src/data/genes';
+import { buildProfile, fit, profiles } from '../src/sim/fit';
+import { keyCarrier, keyInnovations } from '../src/sim/keys';
+import { comboOf, genomeKey, mutation, poolOf, rarity, recount, variantFor, ZERO } from '../src/sim/variants';
+import { GENES, KEYS, TIER } from '../src/data/genes';
 import { changed, snapshot } from '../src/sim/metrics';
 
 function hash(s: State): number {
@@ -88,7 +89,7 @@ describe('sim', () => {
     expect(Number.isFinite(s.biomass)).toBe(true);
   }, 120_000);
 
-  it('variants: within the cap, no orphan slots, Leafy shoot in its window, and a Rare+ variant founds a species', () => {
+  it('variants: within the cap, no orphan slots, the bot opens Mosses by a split, and a Rare+ variant splits off', () => {
     const s = createState(5);
     for (let k = 0; k < 16 * 600; k++) {
       botTick(s);
@@ -101,12 +102,11 @@ describe('sim', () => {
         for (const v of s.occ) if (v >= 0) expect(s.variants[v].alive).toBe(true);
       }
     }
-    const leafy = KEYS[0], liver = s.species[SPECIES_INDEX[leafy.species]], at = s.innovations[leafy.gene];
-    expect(at).toBeDefined();
-    expect((at - liver.at) / 600).toBeGreaterThanOrEqual(leafy.window[0] / Math.max(...KEY.speed));
-    expect((at - liver.at) / 600).toBeLessThanOrEqual(leafy.window[1] / Math.min(...KEY.speed));
-    expect(s.reached).toContain(leafy.node);
-    expect(s.keyFrom[leafy.gene].form).toMatch(/^Leafy/);
+    expect(s.innovations.leafy).toBeDefined();
+    expect(s.reached).toContain('mosses');
+    const moss = s.species.find((x) => x.base === SPECIES_INDEX.moss && x.parent >= 0)!;
+    expect(moss.form).toMatch(/^Leafy/);
+    expect(moss.genome.traits).toEqual([]);
     // A hand-made Rare: three steps from the base genome; it founds a new species with its genome as the base.
     const g = { axes: [2, 0, 0, -1], traits: [] };
     expect(comboOf(g)?.id).toBe('crust');
@@ -115,13 +115,44 @@ describe('sim', () => {
     Object.assign(s.variants[v], { genome: g, key: '2,0,0,-1|', tier: TIER.rare, shown: true });
     s.biomass = 1e9;
     expect(canFoundSpecies(s, v).ok).toBe(true);
+    const held = s.occ.filter((o) => o === v).length;
     const before = s.species.length, tile = [...s.terrain.keys()].find((i) => foundSpecies(s, v, i, 'Salt Crust').ok);
     expect(tile).toBeDefined();
     expect(s.species.length).toBe(before + 1);
     expect(s.species[before].genome.axes).toEqual([2, 0, 0, -1]);
-    expect(coverCount(s, s.species[before].id)).toBeGreaterThan(0);
+    // A split, not a twin: the variant's tiles went with it.
+    expect(s.occ.some((o) => o === v)).toBe(false);
+    recount(s);
+    expect(coverCount(s, s.species[before].id)).toBeGreaterThanOrEqual(held);
     expect(canFoundSpecies(s, v).ok).toBe(false); // once only
   }, 120_000);
+
+  it('a door: a candidate gets the key, and its split keeps the axis genes and drops the traits', () => {
+    const s = createState(3), th = SPECIES_INDEX.thallus, leafy = KEYS.find((k) => k.id === 'leafy')!;
+    s.reached.push('cyanobacteria', 'land');
+    s.biomass = 1e9;
+    const at = ventTile(s) + 2;
+    expect(found(s, 'thallus', at).ok).toBe(true);
+    recount(s);
+    let P = profiles(s);
+    const g = { axes: [1, 0, 0, 1], traits: ['rhizoids'] }, v0 = poolOf(s, th)[0], v = variantFor(s, th, g, P);
+    for (let k = 0; k < s.occ.length; k++) if (s.occ[k] === v0) s.occ[k] = v;
+    recount(s);
+    expect(s.variants[v].shown).toBe(true);
+    for (let k = 0; k < 4 * 60 && keyCarrier(s, leafy) < 0; k++) { P = profiles(s); keyInnovations(s, P, 1); recount(s); }
+    const c = keyCarrier(s, leafy);
+    expect(c).toBeGreaterThanOrEqual(0);
+    expect(s.variants[c].tier).toBe(TIER.legendary);
+    expect(genomeKey(s.variants[c].genome)).toBe('1,0,0,1|leafy,rhizoids');
+    const tile = [...s.terrain.keys()].find((i) => foundSpecies(s, c, i, 'Vent Moss').ok);
+    expect(tile).toBeDefined();
+    const moss = s.species[s.species.length - 1];
+    expect(moss.base).toBe(SPECIES_INDEX.moss);
+    expect(moss.parent).toBe(th);
+    expect(moss.genome).toEqual({ axes: [1, 0, 0, 1], traits: [] });
+    expect(s.reached).toContain('mosses');
+    expect(s.occ.some((o) => o === c)).toBe(false);
+  });
 
   it('founding helps: a species founded at dry +2 steps to +3 far more often than its parent does', () => {
     const s = createState(2), cy = SPECIES_INDEX.cyano, g = { axes: [2, 0, 0, 0], traits: [] };

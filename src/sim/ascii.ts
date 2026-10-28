@@ -4,7 +4,7 @@ import { FIELDS, LAYER_IDS, STRATA, type LayerId } from '../data/fields';
 import { SPECIES } from '../data/species';
 import { SEA, type State } from './state';
 
-const LETTERS = 'CVMLFKE'; // cyano, liverwort, moss, lichen, fungus, clubmoss, fern (E for fern)
+const LETTERS = 'CTVMLFKE'; // cyano, thallus, liverwort, moss, lichen, fungus, clubmoss, fern (E for fern)
 
 /** One stratum as letters ('.' bare land, ' ' sea). */
 export function strataMap(s: State, stratum: (typeof STRATA)[number]): string {

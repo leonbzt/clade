@@ -17,8 +17,8 @@ import { variantStats, variantSummary, type VariantStats } from './variant-stats
 
 const env = process.env, SEEDS = Number(env.SEEDS || 5), MIN = Number(env.MIN || 60);
 const out = (s: string) => writeSync(1, s + '\n'); // straight to stdout: vitest hides console.log
-const UNLOCKS = ['lichens', 'vascular', 'ferns'];
-const ABBR = ['cy', 'lv', 'mo', 'li', 'fu', 'cl', 'fe'];
+const UNLOCKS = ['mosses', 'lichens', 'vascular', 'ferns'];
+const ABBR = ['cy', 'th', 'lv', 'mo', 'li', 'fu', 'cl', 'fe'];
 
 it.skipIf(!env.SIM)('sim', () => {
   if (env.TABLE) out(interactionTable());
@@ -28,7 +28,7 @@ it.skipIf(!env.SIM)('sim', () => {
     const s = createState(seed), when: Record<string, string> = {}, vs: VariantStats = variantStats();
     let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0;
     for (let k = 0; k < MIN * 600; k++) {
-      botTick(s, (l) => { const m = l.match(/^([\d.]+)m evolve (\w+)/); if (m && UNLOCKS.includes(m[2])) when[m[2]] = m[1]; });
+      botTick(s, (l) => { const m = l.match(/^([\d.]+)m (?:evolve|door) (\w+)/); if (m && UNLOCKS.includes(m[2])) when[m[2]] = m[1]; });
       if (s.tick % 10 === 0) vs.sample(s);
       if (s.tick % 6000 === 0) { if (minutes(s) === MIN) turn = changed(s, snap, snapshot(s)) / 10; snap = snapshot(s); }
       // Litter swing: the mean change per tile per minute, over the last 10 minutes.
@@ -56,6 +56,6 @@ it.skipIf(!env.SIM)('sim', () => {
       out(STRATA.includes(m as never) ? strataMap(s, m as (typeof STRATA)[number]) : layerMap(s, m as LayerId));
     }
   }
-  out(`${pass}/${SEEDS} seeds pass (≥5 of 6 plants alive, none over 60% of its stratum, still changing, ≥4 lively landmarks)`);
+  out(`${pass}/${SEEDS} seeds pass (≥5 of 7 plants alive, none over 60% of its stratum, still changing, ≥4 lively landmarks)`);
   out(variantSummary());
 }, 900_000);

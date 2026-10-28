@@ -21,7 +21,7 @@ export type Mod =
   | { make: LayerId; mul: number }
   | { status: StatusId; tol: number }; // raises the tolerance (the score at full strength)
 
-/** A trait gene: on or off in a variant. A key one never mutates in by chance (see KEYS in genes.ts). */
+/** A trait gene: on or off in a variant. Key genes (KEYS in genes.ts) are traits too, but never mutate in by chance. */
 export type Trait = { id: string; name: string; up: string; down: string; mods: Mod[]; key?: boolean };
 
 export type SpeciesDef = {
@@ -58,6 +58,21 @@ export const SPECIES: SpeciesDef[] = [
     ],
   },
   {
+    id: 'thallus', name: 'Early land plants', short: 'Thallus', stratum: 'ground',
+    seeds: 0.35, hold: 1, yield: 0.08, life: 700, grow: 0.08, reserve: 25, litter: 0.06, tolerance: { salty: 0.3 },
+    needs: { water: from(0.4, 0.7), shade: upTo(0.55, 0.9) },
+    makes: { water: 0.05, soil: 0.0033, nitrogen: -0.0005 },
+    blurb: 'A flat green sheet on damp rock, like the first plants that left the water. Liverworts, mosses and vascular plants all branch from plants like it.',
+    traits: [
+      { id: 'rhizoids', name: 'Rhizoids', up: 'lives 0.1 drier', down: 'spreads 15% slower',
+        mods: [{ need: 'water', low: -0.1 }, { stat: 'seeds', mul: 0.85 }] },
+      { id: 'cuticle', name: 'Waxy cuticle', up: 'lives 0.06 drier', down: 'grows 10% slower',
+        mods: [{ need: 'water', low: -0.06 }, { stat: 'grow', mul: 0.9 }] },
+      { id: 'spores', name: 'Tough spores', up: 'spreads 30% faster', down: 'yields 15% less',
+        mods: [{ stat: 'seeds', mul: 1.3 }, { stat: 'yield', mul: 0.85 }] },
+    ],
+  },
+  {
     id: 'liverwort', name: 'Liverworts', short: 'Liverwort', stratum: 'ground',
     seeds: 0.35, hold: 1.2, yield: 0.08, life: 700, grow: 0.08, reserve: 25, litter: 0.06, tolerance: { salty: 0.3 },
     needs: { water: from(0.45, 0.75), shade: upTo(0.6, 0.95) },
@@ -66,11 +81,8 @@ export const SPECIES: SpeciesDef[] = [
     traits: [
       { id: 'gemmae', name: 'Gemma cups', up: 'spreads 40% faster', down: 'yields 15% less',
         mods: [{ stat: 'seeds', mul: 1.4 }, { stat: 'yield', mul: 0.85 }] },
-      { id: 'oil', name: 'Oil bodies', up: 'lives 0.08 drier', down: 'holds ground 10% worse',
+      { id: 'pores', name: 'Air pores', up: 'lives 0.08 drier', down: 'holds ground 10% worse',
         mods: [{ need: 'water', low: -0.08 }, { stat: 'hold', mul: 0.9 }] },
-      // Close to neutral on purpose: it's the step toward mosses, not a better liverwort.
-      { id: 'leafy', name: 'Leafy shoot', up: 'takes 0.1 more shade', down: 'spreads 5% slower', key: true,
-        mods: [{ need: 'shade', high: 0.1 }, { stat: 'seeds', mul: 0.95 }] },
     ],
   },
   {
@@ -86,9 +98,6 @@ export const SPECIES: SpeciesDef[] = [
         mods: [{ stat: 'hold', mul: 1.3 }, { stat: 'seeds', mul: 0.8 }] },
       { id: 'capsule', name: 'Stalked spore capsule', up: 'spreads 50% faster', down: 'yields 20% less',
         mods: [{ stat: 'seeds', mul: 1.5 }, { stat: 'yield', mul: 0.8 }] },
-      // Close to neutral on purpose, like the leafy shoot: it's the step toward vascular plants.
-      { id: 'hydroids', name: 'Hydroids', up: 'lives 0.05 drier', down: 'grows 5% slower', key: true,
-        mods: [{ need: 'water', low: -0.05 }, { stat: 'grow', mul: 0.95 }] },
     ],
   },
   {

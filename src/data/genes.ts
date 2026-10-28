@@ -1,7 +1,7 @@
 // Genes as data: four shared axes for all plants (steps −4 to +4, each step a list of mods with a cost), the
 // species' traits as on/off trait genes, combos (a pair of axis steps with an extra effect), rarity tiers, and the
 // numbers for mutation and the key innovations. A mod on a band a species doesn't have does nothing.
-import type { Mod } from './species';
+import type { Mod, Trait } from './species';
 
 export type AxisId = 'dry' | 'shade' | 'lean' | 'spread';
 export type Axis = { id: AxisId; name: string; plus: string; minus: string; steps: Record<number, Mod[]> };
@@ -82,7 +82,7 @@ export const GENES = {
   // A step further than 2 from its species' own base takes with odds `out` per extra step; one beyond ±2 from the
   // clade's original genes also needs `extreme` per step. Founding a +2 form makes +3 likelier; +4 stays rare.
   reach: { free: 2, out: 0.3, extreme: 0.5 },
-  cap: 8, // shown variants per species
+  cap: 4, // shown variants per species
   hidden: 8, // unshown mutants per species, on top: room for new ones to try
   showAt: 5, // tiles before a variant is shown
   mutate: 0.03, // chance a settling child of a shown variant mutates (hidden mutants must take hold first)
@@ -92,27 +92,35 @@ export const GENES = {
   hueShift: 0.05, // a new species' colour moves this far from its parent's
 };
 
-/** Key innovations: Legendary trait genes that open a tree node. Each grows out of a variant of its lineage (the
- * base species and the ones founded from it). The pity clock starts when the lineage is first founded and runs at
- * `speed[k]`, k = the precursors the lineage's best shown variant carries; at `window[1]` on that clock it arrives
- * for sure, in that variant. */
-export type Precursor = { axis?: AxisId; min?: number; trait?: string; text: string };
-export type Key = { gene: string; word: string; species: string; node: string; window: [number, number]; precursors: Precursor[] };
+/** Doors: a tree node opens when one of your variants meets its recipe. A shown variant of a species in one of the
+ * `from` clades that carries every precursor is a candidate; the key gene arrives in the biggest candidate within
+ * `KEY.window` minutes. The variant with the key splits off as the clade's first species, on the node's template. */
+export type Precursor = { axis?: AxisId; step?: number; trait?: string; text: string }; // step: at least this far, on its side
+export type Key = Trait & { word: string; node: string; from: string[]; precursors: Precursor[] };
 
+// Close to neutral on purpose: a key is the step into a clade, not a better plant of the old one.
 export const KEYS: Key[] = [
-  { gene: 'leafy', word: 'Leafy', species: 'liverwort', node: 'mosses', window: [5, 15], precursors: [
-    { axis: 'dry', min: 1, text: 'survives drying out (dry +1)' },
-    { axis: 'spread', min: 1, text: 'spores lifted into the wind (wind +1)' },
-  ] },
-  { gene: 'hydroids', word: 'Hydroid', species: 'moss', node: 'vascular', window: [8, 20], precursors: [
-    { trait: 'rhizoids', text: 'Rhizoids anchor it' },
-    { axis: 'dry', min: 1, text: 'lives drier (dry +1)' },
-  ] },
+  { id: 'oil', name: 'Oil bodies', word: 'Oily', up: 'lives 0.04 drier', down: 'grows 5% slower', key: true,
+    mods: [{ need: 'water', low: -0.04 }, { stat: 'grow', mul: 0.95 }], node: 'liverworts', from: ['land'], precursors: [
+      { axis: 'dry', step: -1, text: 'loves it wet (Wet)' },
+      { axis: 'spread', step: -1, text: 'grows as a tight mat (Tight)' },
+    ] },
+  { id: 'leafy', name: 'Leafy shoot', word: 'Leafy', up: 'takes 0.1 more shade', down: 'spreads 5% slower', key: true,
+    mods: [{ need: 'shade', high: 0.1 }, { stat: 'seeds', mul: 0.95 }], node: 'mosses', from: ['land', 'liverworts'], precursors: [
+      { axis: 'dry', step: 1, text: 'survives drying out (Dry)' },
+      { axis: 'spread', step: 1, text: 'spores lifted into the wind (Wind)' },
+    ] },
+  { id: 'tracheids', name: 'Water-carrying cells', word: 'Upright', up: 'lives 0.05 drier', down: 'grows 5% slower', key: true,
+    mods: [{ need: 'water', low: -0.05 }, { stat: 'grow', mul: 0.95 }], node: 'vascular', from: ['land', 'mosses'], precursors: [
+      { trait: 'rhizoids', text: 'Rhizoids anchor it' },
+      { axis: 'dry', step: 1, text: 'lives drier (Dry)' },
+    ] },
 ];
 
 export const KEY = {
-  speed: [1, 1.5, 2.5], // pity clock speed by precursors carried: they only ever bring it sooner
-  rate: 0.07, // per minute², times the population factor: the hazard rises linearly through the window
-  popRef: 150, // tiles; more tiles bring it a little sooner (factor 0.5–2)
-  patch: 1, // radius: the tiles around the first one that take the gene with it
+  window: [0.5, 3] as [number, number], // minutes with a candidate: the hazard rises linearly, and at the end it arrives
+  rate: 1.2, // per minute²
+  nudge: 2, // minutes with the door open and no candidate: the closest variant gains a missing precursor
+  patch: 1, // radius: the tiles around the first one that take the key with it
+  nudgePatch: 2, // radius for a nudge's precursor
 };

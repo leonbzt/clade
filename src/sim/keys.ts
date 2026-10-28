@@ -1,83 +1,132 @@
-// Key innovations: a Legendary trait gene grows out of the best variant of its lineage (the base species and the
-// ones founded from it) and opens a tree node. A pity clock keeps the pacing: it starts when the lineage is first
-// founded and runs faster the more precursor genes the lineage's best shown variant carries.
+// Doors: a tree node opens when one of your variants meets its recipe. A shown variant of a species in one of the
+// door's `from` clades that carries every precursor is a candidate; the key gene arrives in the biggest one within
+// a few minutes. With the door open and no candidate for a while, the closest variant gains a missing precursor
+// (the nudge), so progress never stalls. The variant with the key then splits off as the clade's first species.
 import { AXIS_INDEX, KEY, KEYS, type Key, type Precursor } from '../data/genes';
-import { SPECIES_INDEX } from '../data/species';
 import { TREE } from '../data/tree';
 import { rand } from './rng';
+import { othersMet } from './reqs';
 import { EV, type State } from './state';
 import { type Profile } from './fit';
-import { copyGenome, defOf, show, stratumOf, variantFor, variantName, type Genome } from './variants';
+import { copyGenome, defOf, newKey, roomToShow, show, stratumOf, variantFor, variantName, type Genome } from './variants';
 
-export const hasPrecursor = (g: Genome, p: Precursor) =>
-  p.trait ? g.traits.includes(p.trait) : g.axes[AXIS_INDEX[p.axis!]] >= p.min!;
+export const hasPrecursor = (g: Genome, p: Precursor) => {
+  if (p.trait) return g.traits.includes(p.trait);
+  const a = g.axes[AXIS_INDEX[p.axis!]];
+  return p.step! > 0 ? a >= p.step! : a <= p.step!;
+};
 
-/** The lineage's species: the base species of the key and every species founded from it. */
-export const lineage = (s: State, key: Key) => s.species.flatMap((x, sp) => (x.base === SPECIES_INDEX[key.species] ? [sp] : []));
+export const doorNode = (key: Key) => TREE.find((n) => n.id === key.node)!;
 
-/** The lineage's shown variant with the most precursors (most tiles on a tie), and how many it carries. */
-export function bestCarrier(s: State, key: Key): { v: number; k: number } {
-  const sps = lineage(s, key);
-  let best = { v: -1, k: -1, tiles: -1 };
-  s.variants.forEach((x, v) => {
-    if (!x.alive || !x.shown || !sps.includes(x.sp)) return;
-    const k = key.precursors.filter((p) => hasPrecursor(x.genome, p)).length;
-    if (k > best.k || (k === best.k && x.tiles > best.tiles)) best = { v, k, tiles: x.tiles };
-  });
-  return { v: best.v, k: Math.max(0, best.k) };
+/** The clade (tree node) a species belongs to: the node whose species or template its base is. */
+export const cladeOf = (s: State, sp: number) => TREE.find((n) => n.species === defOf(s, sp).id)?.id ?? null;
+
+/** Your species that can meet this door's recipe: living ones in its `from` clades. */
+export const fromSpecies = (s: State, key: Key) =>
+  s.species.flatMap((_, sp) => (s.count[sp] > 0 && key.from.includes(cladeOf(s, sp) ?? '') ? [sp] : []));
+
+const carried = (g: Genome, key: Key) => key.precursors.filter((p) => hasPrecursor(g, p)).length;
+
+/** Shown variants of the door's species, with how many precursors each carries (key carriers left out). */
+function pool(s: State, key: Key) {
+  const sps = fromSpecies(s, key);
+  return s.variants.flatMap((x, v) => (x.alive && x.shown && sps.includes(x.sp) && !newKey(x.genome, s.species[x.sp].genome)
+    ? [{ v, k: carried(x.genome, key), tiles: x.tiles }] : []));
 }
 
-/** For the tree screen: each precursor, whether the best variant carries it, and that variant's name. */
+/** The door is open: its parent is reached, it isn't, and its other requirements are met. */
+export const doorOpen = (s: State, key: Key) => {
+  const n = doorNode(key);
+  return !s.reached.includes(n.id) && (!n.parent || s.reached.includes(n.parent)) && othersMet(s, n);
+};
+
+/** A living variant that carries this key and can split off, or -1. */
+export const keyCarrier = (s: State, key: Key) =>
+  s.variants.findIndex((x) => x.alive && x.genome.traits.includes(key.id) && !s.species[x.sp].genome.traits.includes(key.id));
+
+/** For the tree screen and the variant rows: the recipe, the closest variant, the candidates and the carrier. */
 export function keyProgress(s: State, key: Key) {
-  const { v } = bestCarrier(s, key), g = v >= 0 ? s.variants[v].genome : null;
-  return { best: v >= 0 ? variantName(s, v) : null, items: key.precursors.map((p) => ({ text: p.text, met: !!g && hasPrecursor(g, p) })) };
+  const all = pool(s, key).sort((a, b) => b.k - a.k || b.tiles - a.tiles), best = all[0], carrier = keyCarrier(s, key);
+  const g = best ? s.variants[best.v].genome : null;
+  return {
+    best: best ? variantName(s, best.v) : null,
+    items: key.precursors.map((p) => ({ text: p.text, met: !!g && hasPrecursor(g, p) })),
+    candidates: all.filter((c) => c.k === key.precursors.length).map((c) => variantName(s, c.v)),
+    carrier, carrierName: carrier >= 0 ? variantName(s, carrier) : null,
+  };
 }
 
-/** Advance each key's pity clock; when it fires, the gene appears in the best carrier and its neighbours. */
+/** The recipe a variant is working toward: open doors its species can meet where it carries a precursor. */
+export function recipesOf(s: State, v: number) {
+  const x = s.variants[v];
+  return KEYS.filter((k) => !s.reached.includes(k.node) && k.from.includes(cladeOf(s, x.sp) ?? '') && carried(x.genome, k) > 0)
+    .map((k) => ({ key: k, items: k.precursors.map((p) => ({ text: p.text, met: hasPrecursor(x.genome, p) })) }));
+}
+
+/** Each check: candidates roll the key; with none, the nudge clock runs. `s.cands` lists every candidate. */
 export function keyInnovations(s: State, P: Profile[], dt: number) {
+  s.cands = [];
   for (const key of KEYS) {
-    const sps = lineage(s, key);
-    if (s.innovations[key.gene] !== undefined || s.species[sps[0]].at < 0) continue;
-    const { v: best, k } = bestCarrier(s, key);
-    if (best < 0) continue;
-    const t = (s.keyClock[key.gene] ?? 0), step = (KEY.speed[k] * dt) / 60, [w0, w1] = key.window;
-    s.keyClock[key.gene] = t + step;
-    if (t < w0) continue;
-    const tiles = sps.reduce((a, sp) => a + s.count[sp], 0), factor = Math.min(2, Math.max(0.5, tiles / KEY.popRef));
-    if (t + step < w1 && rand(s) >= KEY.rate * (t - w0) * factor * step) continue; // the last check before w1 forces it
-    arrive(s, P, key, best);
+    if (!doorOpen(s, key) || keyCarrier(s, key) >= 0 || !fromSpecies(s, key).length) continue;
+    const all = pool(s, key), cands = all.filter((c) => c.k === key.precursors.length).sort((a, b) => b.tiles - a.tiles);
+    const step = dt / 60;
+    if (cands.length) {
+      s.cands.push(...cands.map((c) => c.v));
+      s.keyClock[key.id] = 0;
+      const t = s.keyRoll[key.id] ?? 0, [w0, w1] = KEY.window;
+      s.keyRoll[key.id] = t + step;
+      if (t < w0 || (t + step < w1 && rand(s) >= KEY.rate * (t - w0) * step)) continue; // the last check before w1 forces it
+      const g = copyGenome(s.variants[cands[0].v].genome);
+      g.traits = [...g.traits, key.id].sort();
+      const v = patchInto(s, P, cands[0].v, g);
+      if (v < 0) continue;
+      s.innovations[key.id] = s.tick;
+      s.keyFrom[key.id] = { sp: s.variants[v].sp, form: variantName(s, v) };
+      s.keyRoll[key.id] = 0;
+      continue;
+    }
+    s.keyRoll[key.id] = 0;
+    s.keyClock[key.id] = (s.keyClock[key.id] ?? 0) + step;
+    if (s.keyClock[key.id] < KEY.nudge || !all.length) continue;
+    s.keyClock[key.id] = 0;
+    nudge(s, P, key, all.sort((a, b) => b.k - a.k || b.tiles - a.tiles));
   }
 }
 
-function arrive(s: State, P: Profile[], key: Key, from: number) {
-  const x = s.variants[from], sp = x.sp, n = s.w * s.h, k = stratumOf(s, sp), mine: number[] = [];
+/** The closest variant gains its first missing precursor (one its species can carry) on a small patch. */
+function nudge(s: State, P: Profile[], key: Key, ranked: { v: number }[]) {
+  for (const { v } of ranked) {
+    const x = s.variants[v], p = key.precursors.find((q) => !hasPrecursor(x.genome, q)
+      && (!q.trait || defOf(s, x.sp).traits.some((t) => t.id === q.trait)));
+    if (!p) continue;
+    const g = copyGenome(x.genome);
+    if (p.trait) g.traits = [...g.traits, p.trait].sort();
+    else g.axes[AXIS_INDEX[p.axis!]] = p.step!;
+    if (patchInto(s, P, v, g, KEY.nudgePatch) >= 0) return;
+  }
+}
+
+/** A patch (radius r) of variant `from`'s tiles around one of them takes genome g. Returns the new variant. */
+function patchInto(s: State, P: Profile[], from: number, g: Genome, r = KEY.patch): number {
+  const sp = s.variants[from].sp, n = s.w * s.h, k = stratumOf(s, sp), mine: number[] = [];
   for (let i = 0; i < n; i++) if (s.occ[k * n + i] === from && !s.dying[k * n + i]) mine.push(i);
-  if (!mine.length) return;
-  const g = copyGenome(x.genome);
-  g.traits = [...g.traits, key.gene].sort();
+  if (!mine.length) return -1;
   const v = variantFor(s, sp, g, P);
-  if (v < 0) return;
+  if (v < 0) return -1;
   const i0 = mine[Math.floor(rand(s) * mine.length)], x0 = i0 % s.w, y0 = (i0 / s.w) | 0;
-  for (let dy = -KEY.patch; dy <= KEY.patch; dy++) for (let dx = -KEY.patch; dx <= KEY.patch; dx++) {
+  for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
     const xx = x0 + dx, y = y0 + dy, slot = k * n + y * s.w + xx;
     if (xx < 0 || y < 0 || xx >= s.w || y >= s.h) continue;
-    if (s.occ[slot] >= 0 && s.variants[s.occ[slot]].sp === sp) { s.occ[slot] = v; s.lastCode[slot] = EV.mutated; s.lastTick[slot] = s.tick; }
+    if (s.occ[slot] >= 0 && s.variants[s.occ[slot]].sp === sp) {
+      s.occ[slot] = v; s.lastCode[slot] = EV.mutated; s.lastTick[slot] = s.tick; s.variants[v].tiles++;
+    }
   }
-  s.innovations[key.gene] = s.tick;
-  s.keyFrom[key.gene] = { sp, form: variantName(s, v) };
-  show(s, v);
+  if (!s.variants[v].shown && roomToShow(s, sp, v, true)) show(s, v);
+  return v;
 }
 
-/** Where a species branched off, for the tree: the species it was founded from, or, for a clade's first species,
- * the species whose variant grew the key gene that opened its node (or a node above it). */
+/** Where a species branched off, for the tree: the species it split from and the variant it was. */
 export function stemOf(s: State, sp: number): { sp: number; form: string } | null {
   const x = s.species[sp];
-  if (x.parent >= 0) return { sp: x.parent, form: x.form };
-  let node = TREE.find((n) => n.species === defOf(s, sp).id);
-  while (node) {
-    const key = KEYS.find((k) => k.node === node!.id);
-    if (key && s.keyFrom[key.gene]) return s.keyFrom[key.gene];
-    node = TREE.find((n) => n.id === node!.parent);
-  }
-  return null;
+  return x.parent >= 0 ? { sp: x.parent, form: x.form } : null;
 }

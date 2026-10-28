@@ -37,7 +37,7 @@ export function limitText(p: Profile, info: FitInfo): string {
 const CODE_TEXT: Record<number, string> = {
   [EV.settled]: 'settled from a neighbour', [EV.founded]: 'founded by you', [EV.age]: 'started dying of age',
   [EV.stress]: 'started dying of stress', [EV.taken]: 'lost the tile', [EV.flare]: 'killed by a vent flare',
-  [EV.rain]: 'arrived as spores from elsewhere', [EV.mutated]: 'grew a leafy shoot',
+  [EV.rain]: 'arrived as spores from elsewhere', [EV.mutated]: 'gained a gene on the spot',
 };
 
 export type VariantInfo = { v: number; name: string; tier: number; tierName: string; genes: string; shown: boolean };

@@ -1,30 +1,32 @@
 # Status
 
-Updated 2026-10-27 (slice 07 built). Git: `slice-06` (5f6d8b7); slice 07 code and all doc changes are uncommitted.
-`npm run check` passes.
+Updated 2026-10-28 (slice 09 built). Git: `slice-08` (c1f2473); slice 09 code and all doc changes are uncommitted.
+`npm run check` passes; `npm run sim` 5×60: 5/5 pass.
 
 ## Done
-- **Slice 07 (variants) built**, per `docs/slices/07-variants.md` (results and deviations under "Build notes").
-  - Genes as data: `src/data/genes.ts` (4 axes, 3 combos, tiers, mutation and Leafy numbers). Trait shop removed.
-  - Sim: `src/sim/variants.ts` (variants, rarity, mutation, naming, the Leafy pity timer); slots hold variant ids.
-    Founding a Rare+ variant as a new species in `src/sim/commands.ts`. Mosses unlock through the Leafy gene (`tree.ts`).
-  - UI/view: `src/ui/VariantRow.svelte`, species panel rework, the Variants view (key 7), tints (`src/view/look.ts`),
-    glints, feed lines, a calmer sprite layer.
-  - Tests: invariant test in `tests/sim.test.ts`; variant stats in `tests/variant-stats.ts`.
-- Sim 5×60: 5/5 seeds pass slice 06's checks; 5 of 7 new checks pass. Misses: busy species ≥2 shown variants per
-  10 min (moss, fern low), combos (1/5), first Rare too early on some seeds.
+- Playtest notes: `docs/playtests/08-lineage.md`, `docs/playtests/09-splits.md`.
+- P17 (splits, recipes, gene meters, distance + fit, the ancestor) and P18 (real species) in `docs/systems.md`;
+  rough outline by act in `docs/outline.md` (indexed in README).
+- **Slice 09 (splits) built**, spec and build notes in `docs/slices/09-splits.md`:
+  - The ancestor "Early land plants" (`src/data/species.ts`), founded from the Land plants node.
+  - Doors by recipe (`KEYS`, `KEY` in `src/data/genes.ts`; `src/sim/keys.ts`): Liverworts, Mosses, Vascular.
+    Candidates (gold glint), key roll 0.5–3 min, a nudge every 2 min without a candidate.
+  - Splits (`src/sim/commands.ts`): the variant's tiles move to the new species, plus a founder patch; a clade
+    split keeps axis genes and drops traits. Requirements moved to `src/sim/reqs.ts`.
+  - UI: recipes on the tree screen and on variant rows, split buttons. Map: tint by species, cap 4, half sprites.
+- Sim: Mosses at 4.3–6.5 min, Vascular at 14.5–24.7 min (now also needs 150 moss tiles).
 
 ## Decided
-- Nothing new this session (you asked to build slice 07 as specified).
+- See brief.md, "Direction (27–28 Oct, after playing slice 08)": splits, clades from your variant, authored clades
+  and free species, genes carry, recipes, gene meters with two directions, the ancestor, animals soon.
 
 ## Next
-1. Playtest slice 07: frame rate, does a variant spreading get noticed, does a Rare glint feel like a find, does
-   founding feel like your step, is the map calmer.
-2. Tune by feel: `GENES.mutate`, Dry steps, `KEY.window` (the tree is now 10–20 min later than slice 06).
-3. Commit slice 07 when you're happy; then P13 flows, P14 animals, P15 zooms (rough order, not decided).
+1. New session: research and brainstorm systematics for the early to mid game (which groups and branches, for
+   plants, fungi and animals); use the `researcher` agent. Animals soon.
+2. Commit slice 09 when you're happy (not committed yet).
+3. Then slice 10 (readability: gene meters, edge, "why it's winning"), or P18 (real species).
 
 ## Open
-- Accept the deviations? Shown cap + hidden buffer, only shown variants mutate, near-neutral Leafy, name before spot.
-- Combos are rare (1/5): bigger Dry steps help them but let a dry moss take 61% of the ground.
-- Chunks: does the whole sim always run? The sea line: when? Game identity before the art pass. Nitrogen (P11).
-- Older: the 0.5 s plant-scene hitch; delete `toys/`?; brief Q5, Q6, Q8–Q11; fact-check tree facts and Surtsey animals.
+- Placed organisms lack character ("Early land plants"); P18 is one answer.
+- Liverworts' timing varies (5–45 min); with 4 shown variants, busy species show few new ones.
+- Older: combos rare; stacked names; refunds; flows (P13), zooms (P15), nitrogen (P11); delete `toys/`?

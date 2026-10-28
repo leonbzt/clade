@@ -40,12 +40,32 @@ const liverwort: Paint = (p, r, look, b) => {
       p.set(fx, fy, PAL.liver3);
     }
     if (has(look, 'gemmae')) { const mx = (x + ex) / 2, my = (y + ey) / 2; p.set(mx, my - 1, PAL.liver0); p.set(mx, my, PAL.liver3); }
-    if (has(look, 'oil')) p.set(x + Math.cos(a) * len * 0.3, y + Math.sin(a) * len * 0.15 - 1, PAL.liver3);
-    if (has(look, 'leafy')) { // a small upright shoot with leaves: the first step toward mosses
-      const h = look.big ? 6 : 3;
-      p.line(x, y, x, y - h, PAL.liver1);
-      for (let k = 1; k <= h; k += 2) { p.set(x - 1, y - k, PAL.liver3); p.set(x + 1, y - k - 1, PAL.liver2); }
-    }
+    if (has(look, 'pores')) p.set(x + Math.cos(a) * len * 0.3, y + Math.sin(a) * len * 0.15 - 1, PAL.liver3);
+    if (has(look, 'leafy')) leafyShoot(p, x, y, look);
+  }
+};
+
+/** A small upright shoot with leaves: the key into mosses, on a thallus or a liverwort. */
+function leafyShoot(p: Painter, x: number, y: number, look: Look) {
+  const h = look.big ? 6 : 3;
+  p.line(x, y, x, y - h, PAL.liver1);
+  for (let k = 1; k <= h; k += 2) { p.set(x - 1, y - k, PAL.liver3); p.set(x + 1, y - k - 1, PAL.liver2); }
+}
+
+const thallus: Paint = (p, r, look, b) => {
+  // Small rounded green sheets pressed flat on the rock, a few lobes each.
+  const n = look.big ? 4 : [1, 2, 3][look.stage];
+  for (let k = 0; k < n; k++) {
+    const { x, y } = spot(r, b, 3), rad = look.big ? 4 : 1 + look.stage;
+    p.disc(x, y, rad, PAL.thal1);
+    p.disc(x + rad, y, Math.max(1, rad - 1), PAL.thal2);
+    p.set(x - 1, y - 1, PAL.thal3);
+    if (has(look, 'rhizoids')) { p.set(x, y + rad + 1, PAL.rhizoid); p.set(x + 2, y + rad + 1, PAL.rhizoid); }
+    if (has(look, 'cuticle')) p.set(x + rad, y - 1, PAL.thal3);
+    if (has(look, 'spores')) p.set(x - rad, y - 1, PAL.thal0);
+    if (has(look, 'oil')) p.set(x + 1, y, PAL.liver0);
+    if (has(look, 'leafy')) leafyShoot(p, x, y, look);
+    if (has(look, 'tracheids')) p.line(x, y, x, y - (look.big ? 8 : 4), PAL.thal2);
   }
 };
 
@@ -154,7 +174,7 @@ const fungus: Paint = (p, r, look, b) => {
   }
 };
 
-const PAINTERS: Record<string, Paint> = { cyano, liverwort, moss, lichen, fungus, clubmoss, fern };
+const PAINTERS: Record<string, Paint> = { cyano, thallus, liverwort, moss, lichen, fungus, clubmoss, fern };
 const cache = new Map<string, HTMLCanvasElement>();
 
 /** A map sprite for one tile. Draw it at the tile's corner plus SPRITE.ox / SPRITE.oy. */

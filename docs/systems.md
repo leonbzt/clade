@@ -101,7 +101,7 @@ agree on the core; the points where they differed are marked.
   sprites. Close view: one chunk at ~4× with sprites and animals. Biomes become named chunks instead of a stage.
 - The real compute issue is offline catch-up (8 h ≈ 12 min at today's headless speed): needs a coarse fast-forward.
 
-## P16. Variants in the UI and the tree of life *(27 Oct, after playing slice 07)*
+## P16. Variants in the UI and the tree of life *(27 Oct, after playing slice 07; d, e and the tree built in slice 08)*
 Three questions: how to order species and variants, what founding means, how both sit in the tree.
 
 **Ordering (pick one or mix):**
@@ -136,3 +136,126 @@ Three questions: how to order species and variants, what founding means, how bot
   re-centre: rarity scales up cumulatively the further a form is from its clade's base (refunds can balance cost).
   d + e yes. f later: a few active founded species as your "builds"; release old ones to take a new one. Wanted
   if possible: a time axis, and new clades and species drawn as stemming from the variant you grew.
+- **Still open from P16:** slots and releasing (f, later), refunding founding cost, a "resembles a real species"
+  line on the card (fact-check via researcher), wild splits as leaves you didn't found, the odd stacked names
+  ("Sun Sun-screen Cyano").
+
+## P17. Species split off from variants; clades open by recipe *(27 Oct, after playing slice 08; a–d, g and the map built in slice 09)*
+One rule for both: **a species splits off from a variant you grew**, inside a clade or into a new one.
+- **a. A split.** Founding a Rare+ variant as a species turns *that variant's tiles* into the new species (the
+  parent loses them: no twin populations), plus one founder patch where you choose.
+- **b. Authored clades, free species.** A clade (data) is a template: look, base bands, its trait list, its door
+  recipe. Species are yours: a genome on top of the template. The authored species (e.g. Mosses) are no longer
+  founded; they become the templates (maybe wild species later).
+- **c. Genes carry, the bar resets.** At a split the variant's axis genes become the new species' base (drawn as
+  faint cells); new mutations count from there (bright cells). The cap counts from the **clade template**, so
+  splits can't pile up. At a clade change the old clade's traits drop; the key becomes normal for the new clade.
+- **d. Doors open by recipe.** Each clade has an authored recipe shown on its node ("What makes a moss: dry +1,
+  wind +1, then the leafy shoot"). A variant carrying the whole recipe is a **candidate** (gold outline); only
+  candidates roll the key gene (1–3 min, with a pity clock behind it). Then you split it off as the clade's first
+  species. Three gene layers: axis steps (trade-offs) → combos (a niche) → keys (a recipe plus a roll → a clade).
+- **e. Gene meters.** One meter per axis from the centre, a colour per direction (Dry amber / Wet blue), not good
+  vs bad; cumulative cells, each further one rarer; cap ±3 to ±5 by feel. Tooltips show each cell's gain and cost.
+- **f. Distance and fit.** Tier colour = how unusual (distance). **Edge** = how much better than its parent where it
+  lives, with a "spreads because…" line and a trend arrow. Founding needs Rare or a strong edge.
+- **g. A basal ancestor (open).** Start as an "Early land plant" species in the Land plants node. Liverworts and
+  Mosses are both doors under it, each with its own recipe, so one ancestor can branch into both (real: mosses and
+  liverworts are sister groups, Setaphyta; vascular plants branch from the land-plant stem). Recipes are on clades,
+  so any species in the parent clade can meet one. Changes the first-session bet (liverworts first).
+- **Map (agreed):** the normal view colours by species; variant colours only in the Variants view or on hover;
+  shown variants 8 → 4; half the sprites zoomed in. **Spindle (nice to have):** child bands peel out in a curve,
+  the parent thins at a split, samples every 15 s.
+- **Order (agreed):** slice 09 = flow (a–d, map); slice 10 = readability (e, f, tooltips); later spindle, more
+  combos, wild species.
+- **Your calls (27 Oct):** a yes; b yes (templates); c yes (your reset idea); d yes (recipe + candidate roll); e
+  two directions, no independent bars, cap ±3–5; f both distance and fit; g yes (liverworts first not required).
+- **Still open:** e and f (slice 10), the spindle curves.
+
+## P18. Real species as references *(28 Oct, from your idea after slice 09)*
+- **Placed organisms get character:** clades stay groups; what you place is always a named species (you name the
+  founder, or it takes a place name: "Vent Thallus"). The ancestor gets a "what it was like" fact.
+- **"Resembles…":** an authored list of real species, each a stat combination (axes, traits), a name, one fact and a
+  source. When your species matches, the card shows it ("resembles *Racomitrium lanuginosum*, woolly fringe-moss").
+- **Sources:** birds and mammals from open trait databases (AVONET, PanTHERIA, EltonTraits; check licences) mapped
+  by a script, so cheap at scale. Insects, molluscs, fungi and mosses by hand via the researcher agent (~20–30 per
+  call). Start with 30–50 for the first acts; grow by group as the game reaches it.
+
+## P19. The clade map for acts 1–3, and how animals come in *(28 Oct; facts: [research/tree-of-life-overview.md](research/tree-of-life-overview.md))*
+**One rule for the look: deep tree, modern island.** The nodes are real clades. A line's ancestor is a generic early
+form (like "Early land plants"). Everything you place looks like a recognisable living member: a garden snail, a
+springtail, a gull. **Recommendation on your prehistoric vs current question:** prototype with current species. Why:
+- you want recognisable species
+- real island colonisation (Surtsey, Krakatau) is done by living groups
+- a prehistoric animal chain (sponge → fish → tetrapod) needs the sea and about 8 doors before anything walks on land, which is too slow for "animals soon"
+- the plant line already works this way: an abstract ancestor, then living groups
+
+The sea line stays a later idea (act 4+, maybe a "deep time" mode).
+
+**a. Two ways in: arrival and door.** Plants evolve into new clades through doors (P17). Most animals **arrive**,
+because that is how real islands fill up:
+- An arrival node has habitat requirements (e.g. moss on 100 tiles, litter near a beach).
+- When they're met, a visitor turns up at a landmark: a snail on a drift log on the beach, springtails on the
+  wind, gulls circling the cliffs.
+- You adopt it as your species, or it settles wild (brief: wild species, acknowledged).
+- From then on it uses the same core: variants, recipes, doors, splits.
+
+Arrivals give each kingdom a cheap, story-like start. Doors give the depth.
+
+**b. Partnership doors (cross-kingdom).** A recipe that names two species from different kingdoms, met where they
+overlap on the map:
+- Lichen: fungus + cyanobacteria (already a node; becomes this kind).
+- Mycorrhiza: fungus + vascular plant.
+- Pollination: flowering plant + insect.
+
+Real: these are lifestyles that join lineages, not clades. They put relationships (a pillar) into the tree itself.
+
+**c. The map** (→ = door, ⇢ = arrival, | = sister groups that branch from one ancestor; ★ = suggested first build):
+- **Plants:** Early land plants → Liverworts | Mosses (built) → Vascular / club mosses → Ferns | Seed plants →
+  Conifers | Flowering plants → Grasses (monocots) | Herbs and shrubs (eudicots). ⇢ **Beach seed plants** (sea
+  rocket, lyme grass) drift in at the shore in act 2: the first seeds, before the doors get there (Surtsey's first
+  vascular plant, 1965).
+- **Fungi:** Fungi (moulds on litter) → Sac fungi (Ascomycota) | Mushrooms (Basidiomycota). Partnerships:
+  Lichens (sac fungus + cyanobacteria), Mycorrhiza (+ vascular). Later: white rot (wood).
+- **Snails ★:** ⇢ Land snails (a drift log on the beach) → Snails (shell; needs calcium: beach, shell sand) | Slugs
+  (shell lost; fast but wet only). Real: shells were lost several times. A good two-direction gene: Shell / Bare.
+- **Arthropods ★:**
+  - ⇢ Tiny hexapods (on the wind) → Springtails | Insects. This mirrors liverworts / mosses (sister groups).
+  - ⇢ Spiders: ballooning on silk, the first predator, eating springtails.
+  - Insects → Wings → Dragonflies (aquatic larvae: springs) | Folding wings → Crickets (grass), Cockroaches →
+    Termites (wood) | Metamorphosis → Beetles, Flies, then Bees and Butterflies (these need flowering plants:
+    a partnership).
+- **Worms:** ⇢ Potworms (small, litter) → Earthworms (door: soil mixing, needs soil). Real: earthworms rarely
+  cross the sea, so they arrive late, in mud from the bird colony (fact-check).
+- **Vertebrates (act 3):**
+  - ⇢ Seabirds (gulls): they arrive once seed plants give nesting cover and seeds, as you wanted. The colony is an
+    engineer: a nitrogen hotspot that brings seeds (Surtsey's gull colony, 1985, drove plant growth).
+  - ⇢ Small birds that follow the insects (wagtail, pipit). Then seed-eaters (finch beaks as a gene).
+  - ⇢ Lizards on drift logs (geckos, skinks: Krakatau).
+  - ⇢ Bats: the first mammals on remote islands. Fruit and pollination.
+  - Rodents and bigger mammals much later, or never (real islands rarely get them).
+
+**d. The first animal food web** (all early, no seed plants needed): litter → springtails → spiders; moss and
+liverworts → snails. Snails are the first pressure on your plants, as you wanted: they graze the cover down,
+turn it into litter and nitrogen faster, and shift which variants win (bitter, tough or dry ones). Springtails
+speed up decay and spread fungi. Spiders keep springtails in check.
+
+**e. How animals work in the sim** (as P14: density fields in the sim, individuals only in the view):
+- A species is a density per tile, like plant cover. Diet: a layer or species it eats (litter, moss cover, prey
+  density). Effects: what it lowers and what it releases (nitrogen, litter).
+- Spread: animals move faster than plants and lean toward food (a gradient on neighbours), not only outward.
+- Genes on a few animal axes, two directions each: Dry / Wet, Small / Large, Picky / Broad (diet), Shell / Bare or
+  Hidden / Bold (defence). The same variant core, meters and recipes.
+- View: a few cute individuals walk on high-density tiles, so you can find them (brief: small animals to discover).
+  They have character: a snail leaves a slime trail, springtails jump, a spider sits on a web.
+
+**f. A first animal slice (suggestion):** snails on a log, and tiny hexapods → springtails, with spiders as a
+stretch. One door inside each line (Snails | Slugs; Springtails | Insects). Arrival nodes, a density field, eat and
+release, a few sprites. No birds, no partnerships yet. Order: after slice 10 (readability), or before it if animals
+matter more now.
+
+**Your calls:**
+- Modern forms on a deep tree (recommended), or a prehistoric route?
+- Arrivals as a second way in, alongside doors?
+- Snails + springtails as the first animals?
+- Partnership doors?
+- Earthworms: late (realistic), or early because they're fun with soil?

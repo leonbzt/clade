@@ -1,5 +1,6 @@
-// How a variant looks: its base species' painter, its trait genes, and a tint from its axis genes and its species'
-// hue. Shared by the sprites, the ground cover and the specimen.
+// How a variant looks: its base species' painter, its trait genes, and a tint from its species' base genome and hue
+// (by species, not by variant, so the map doesn't break into patches). Shared by the sprites, the ground cover and
+// the specimen. Variant colours live in the Variants view.
 import { AXIS_INDEX } from '../data/genes';
 import { VARIANT_TINT } from '../data/view';
 import type { State } from '../sim/state';
@@ -14,7 +15,7 @@ export function tintOf(hue: number, g: Genome): Tint {
 }
 
 export function genomeLook(s: State, sp: number, g: Genome): VariantLook {
-  const tint = tintOf(s.species[sp].hue, g), species = defOf(s, sp).id;
+  const tint = tintOf(s.species[sp].hue, s.species[sp].genome), species = defOf(s, sp).id;
   return { species, traits: g.traits, tint, key: `${species}|${g.traits.join(',')}|${tintKey(tint)}` };
 }
 

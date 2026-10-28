@@ -3,7 +3,7 @@
 // and die out when they hold no tiles. Rarity is the distance to the species' base genome.
 import { STRATA } from '../data/fields';
 import { AXES, COMBOS, GENES, KEYS, TIER, TIERS, type Combo } from '../data/genes';
-import { SPECIES, type SpeciesDef } from '../data/species';
+import { SPECIES, type SpeciesDef, type Trait } from '../data/species';
 import { rand } from './rng';
 import { type State } from './state';
 import { type Profile, profile } from './fit';
@@ -41,6 +41,13 @@ export const defOf = (s: State, sp: number): SpeciesDef => SPECIES[s.species[sp]
 export const spOf = (s: State, v: number) => s.variants[v].sp;
 export const speciesIndex = (s: State, id: string) => s.species.findIndex((x) => x.id === id);
 
+/** A trait gene by id: one of the species' own, or a key gene (KEYS). */
+export const traitOf = (s: State, sp: number, id: string): Trait | undefined =>
+  defOf(s, sp).traits.find((t) => t.id === id) ?? KEYS.find((k) => k.id === id);
+
+/** The key gene this genome carries that its species' base doesn't, if any. */
+export const newKey = (g: Genome, base: Genome) => KEYS.find((k) => g.traits.includes(k.id) && !base.traits.includes(k.id));
+
 export function baseSpecies(): Species[] {
   return SPECIES.map((d, i) => ({ id: d.id, name: d.name, base: i, genome: copy(ZERO), hue: 0, parent: -1, at: -1, form: '' }));
 }
@@ -64,8 +71,8 @@ export function distance(g: Genome, base: Genome): number {
 /** Common (1), Uncommon (2), Rare (3–4 or a combo), Epic (5+, or a combo plus a trait gene), Legendary (a key gene);
  * one tier up if a gene sits beyond ±`reach.free` from the clade's original genes. */
 export function rarity(s: State, sp: number, g: Genome): number {
-  const base = s.species[sp].genome, def = defOf(s, sp);
-  if (g.traits.some((t) => !base.traits.includes(t) && def.traits.find((x) => x.id === t)?.key)) return TIER.legendary;
+  const base = s.species[sp].genome;
+  if (newKey(g, base)) return TIER.legendary;
   const d = distance(g, base), combo = comboOf(g) && !comboOf(base), gene = g.traits.some((t) => !base.traits.includes(t));
   const t = d >= 5 || (combo && gene) ? TIER.epic : d >= 3 || combo ? TIER.rare : Math.min(d, TIER.uncommon);
   return d && g.axes.some((a) => Math.abs(a) > GENES.reach.free) ? Math.min(TIER.epic, t + 1) : t;
@@ -97,9 +104,10 @@ export function variantFor(s: State, sp: number, g: Genome, P?: Profile[]): numb
   return v;
 }
 
-/** The smallest of `from` (oldest first, never a glinting one or the largest) joins the largest of `pool`. */
+/** The smallest of `from` (oldest first; never a glinting one, a door candidate, a key carrier or the largest) joins
+ * the largest of `pool`. */
 function swampSmallest(s: State, pool: number[], from: number[]): boolean {
-  const V = s.variants, small = from.filter((v) => v !== pool[0] && !glints(V[v]))
+  const V = s.variants, small = from.filter((v) => v !== pool[0] && !glints(V[v]) && !s.cands.includes(v) && V[v].tier !== TIER.legendary)
     .sort((a, b) => V[a].tiles - V[b].tiles || V[a].born - V[b].born)[0];
   if (small === undefined) return false;
   for (let slot = 0; slot < s.occ.length; slot++) if (s.occ[slot] === small) s.occ[slot] = pool[0];
@@ -117,7 +125,7 @@ function free(s: State, v: number) {
 /** One random step on one axis, or (more rarely) one trait gene flips. Key genes never flip by chance. A step out
  * past `reach.free` from the species' base, or from the clade's original genes, often fails to take (null). */
 export function mutation(s: State, sp: number, g: Genome): Genome | null {
-  const out = copy(g), genes = defOf(s, sp).traits.filter((t) => !t.key);
+  const out = copy(g), genes = defOf(s, sp).traits;
   if (genes.length && rand(s) < GENES.traitShare) {
     const t = genes[Math.floor(rand(s) * genes.length)].id, at = out.traits.indexOf(t);
     if (at >= 0) out.traits.splice(at, 1); else out.traits = [...out.traits, t].sort();
@@ -165,10 +173,11 @@ export function recount(s: State) {
   });
 }
 
-/** Up to `GENES.cap` shown variants per species: a full one makes room by swamping its smallest shown variant. */
-function roomToShow(s: State, sp: number, v: number): boolean {
+/** Up to `GENES.cap` shown variants per species: a full one makes room by swamping its smallest shown variant (one
+ * with fewer tiles, unless `force`: a key or a nudge always gets shown). */
+export function roomToShow(s: State, sp: number, v: number, force = false): boolean {
   const pool = poolOf(s, sp), shown = pool.filter((u) => s.variants[u].shown);
-  return shown.length < GENES.cap || swampSmallest(s, pool, shown.filter((u) => s.variants[u].tiles < s.variants[v].tiles));
+  return shown.length < GENES.cap || swampSmallest(s, pool, shown.filter((u) => force || s.variants[u].tiles < s.variants[v].tiles));
 }
 
 export function show(s: State, v: number) {
@@ -178,7 +187,7 @@ export function show(s: State, v: number) {
   if (x.tier === TIER.base) return;
   let at = -1;
   for (let slot = 0; slot < s.occ.length && at < 0; slot++) if (s.occ[slot] === v) at = slot % (s.w * s.h);
-  const key = x.tier === TIER.legendary ? defOf(s, x.sp).traits.find((t) => t.key && x.genome.traits.includes(t.id)) : null;
+  const key = x.tier === TIER.legendary ? newKey(x.genome, s.species[x.sp].genome) : null;
   const genes = key ? key.name : geneText(s, v);
   s.log.push({ tick: s.tick, kind: 'variant', sp: x.sp, tier: x.tier, name: variantName(s, v), genes, place: placeName(s, at) });
 }
@@ -188,23 +197,28 @@ export function show(s: State, v: number) {
 export function variantName(s: State, v: number): string {
   const x = s.variants[v], def = defOf(s, x.sp), base = s.species[x.sp].genome;
   if (x.combo) return `${x.combo[0].toUpperCase()}${x.combo.slice(1)} ${def.short}`;
-  const key = KEYS.find((k) => x.genome.traits.includes(k.gene) && !base.traits.includes(k.gene));
-  if (key) return `${key.word} ${def.short}`;
-  const words = AXES.map((a, k) => ({ d: x.genome.axes[k] - base.axes[k], a }))
+  const key = newKey(x.genome, base);
+  if (key) return `${[key.word, ...axisWords(x.genome, base)].slice(0, 3).join(' ')} ${def.short}`;
+  const words = axisWords(x.genome, base);
+  const gene = x.genome.traits.find((t) => !base.traits.includes(t));
+  if (words.length < 2 && gene) words.push(traitOf(s, x.sp, gene)!.name.split(' ')[0]);
+  return `${words.length ? words.join(' ') : x.tier === TIER.base ? 'Wild' : 'Plain'} ${def.short}`;
+}
+
+/** Up to two words for how a genome differs from a base: "Dry Wind", "Very Dry". */
+export function axisWords(g: Genome, base: Genome): string[] {
+  return AXES.map((a, k) => ({ d: g.axes[k] - base.axes[k], a }))
     .filter((w) => w.d).sort((p, q) => Math.abs(q.d) - Math.abs(p.d)).slice(0, 2)
     .map((w, _, all) => (all.length === 1 && Math.abs(w.d) > 1 ? 'Very ' : '') + (w.d > 0 ? w.a.plus : w.a.minus));
-  const gene = x.genome.traits.find((t) => !base.traits.includes(t));
-  if (words.length < 2 && gene) words.push(def.traits.find((t) => t.id === gene)!.name.split(' ')[0]);
-  return `${words.length ? words.join(' ') : x.tier === TIER.base ? 'Wild' : 'Plain'} ${def.short}`;
 }
 
 /** "dry +1, spread −1, Gemma cups": the differences from the species' base genome. */
 export function geneText(s: State, v: number): string {
-  const x = s.variants[v], def = defOf(s, x.sp), base = s.species[x.sp].genome;
+  const x = s.variants[v], base = s.species[x.sp].genome;
   const parts = AXES.map((a, k) => ({ a, d: x.genome.axes[k] - base.axes[k] })).filter((p) => p.d)
     .map((p) => `${p.a.id} ${p.d > 0 ? '+' : '−'}${Math.abs(p.d)}`);
-  for (const t of x.genome.traits) if (!base.traits.includes(t)) parts.push(def.traits.find((d) => d.id === t)!.name);
-  for (const t of base.traits) if (!x.genome.traits.includes(t)) parts.push(`no ${def.traits.find((d) => d.id === t)!.name.toLowerCase()}`);
+  for (const t of x.genome.traits) if (!base.traits.includes(t)) parts.push(traitOf(s, x.sp, t)!.name);
+  for (const t of base.traits) if (!x.genome.traits.includes(t)) parts.push(`no ${traitOf(s, x.sp, t)!.name.toLowerCase()}`);
   return parts.join(', ') || 'base form';
 }
 

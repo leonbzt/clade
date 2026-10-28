@@ -15,6 +15,8 @@ export const PAL = {
   // cyanobacteria and liverworts
   cyano0: '#142a2a', cyano1: '#22463f', cyano2: '#3a7262', cyano3: '#5aa088',
   liver0: '#1d4422', liver1: '#2c6a2e', liver2: '#47933a', liver3: '#7cc05a',
+  // early land plants
+  thal0: '#24452c', thal1: '#3a6e3e', thal2: '#5a9a52', thal3: '#94c878',
   // mosses
   moss0: '#2c4a18', moss1: '#467622', moss2: '#6aa330', moss3: '#a4d650', capsule: '#c86a32', rhizoid: '#6a4428',
   // club mosses
@@ -35,10 +37,10 @@ export const TIER_COLORS: Record<string, string> = {
 
 /** The colour each species dyes the ground it holds. */
 export const GROUND: Record<string, string> = {
-  cyano: '#1a3633', liverwort: '#28502a', moss: '#38581f', lichen: '#5c604e', fungus: '#3a3026', clubmoss: '#2c4521', fern: '#183424',
+  cyano: '#1a3633', thallus: '#2e4a30', liverwort: '#28502a', moss: '#38581f', lichen: '#5c604e', fungus: '#3a3026', clubmoss: '#2c4521', fern: '#183424',
 };
 
 /** Flat colours for the Zones view: one clear colour per species. */
 export const ZONE: Record<string, string> = {
-  cyano: '#3aa8a0', liverwort: '#7ad06a', moss: '#d0d850', lichen: '#e0a050', fungus: '#efe4c8', clubmoss: '#a070d0', fern: '#4a7ad8',
+  cyano: '#3aa8a0', thallus: '#b0e0a0', liverwort: '#7ad06a', moss: '#d0d850', lichen: '#e0a050', fungus: '#efe4c8', clubmoss: '#a070d0', fern: '#4a7ad8',
 };

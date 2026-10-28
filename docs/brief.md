@@ -64,6 +64,35 @@ What's **decided**. Only the user moves things into this file. AI proposals live
 - **Fixed flows of water, soil and nutrients across the map: yes, wanted.** Chunks: good for an overview long term;
   whether the whole sim always runs is still open. The clutter fix (fewer plant sprites) is agreed.
 
+### Direction *(27 Oct, after playing slice 07)*
+- **Variants are a direction you like a lot**: watching them, the gene pips (like a chromosome arm), the calmer map
+  with zoom stages, and the soil → mossy tiles → leafy shoot progression. Balancing comes a little later.
+- **Two screens:** a tree-of-life screen for the overview and milestones, and an info panel to play with. Variants
+  on the map should be clearly visible while playing. Species list with population bars (P16: b inside a).
+- **Founding has to help noticeably; extremes stay rare.** No fixed re-centre: rarity scales up cumulatively the
+  further a form is from its clade's base.
+- **Precursor genes lead to the next clade** (P16 d + e), and new clades and species stem from a variant you grew.
+- **Time axis as a spindle diagram.**
+- **Later: a few active founded species as your "builds"** (slots); release old ones to take a new one.
+
+### Direction *(27–28 Oct, after playing slice 08)*
+- **Species split off from variants.** Founding a variant moves its tiles into the new species (no twin
+  populations), plus a founder patch you place.
+- **A new clade grows out of your variant**, keeping its genes and identity. **Clades are authored** (templates and
+  recipes); **species are free**. The authored species become templates.
+- **Genes carry, the bar resets** at a split; the cap counts from the clade, so genes don't pile up.
+- **Keys as authored recipes:** a variant with the whole recipe is a candidate and can roll the key. Three gene
+  layers: axis steps → combos → keys (a recipe plus a roll opens a clade).
+- **Gene display:** two directions (e.g. Dry / Wet), not good vs bad; cumulative cells, cap ±3 to ±5; no
+  independent bars. Rarity shows both distance and fit; show why a variant is winning.
+- **A basal ancestor:** start as an early land plant that branches into liverworts and mosses. Liverworts first is
+  not required (replaces that part of the first-session bet).
+- Map: colour by species, fewer shown variants and sprites. The spindle curves are nice to have.
+- Order: slice 09 = flow, slice 10 = readability. The big-picture outline (`outline.md`) stays a rough outline.
+- *(28 Oct, after slice 09)* The split system works and is close to intended. **Animals should come soon.** A placed
+  organism needs character, not just a group name. **Idea:** many real species, referenced by stat combinations;
+  authored but expandable. **Idea:** traits could all have a downside or upkeep.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.

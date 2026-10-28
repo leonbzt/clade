@@ -17,7 +17,7 @@ class UI {
   speed = $state(1);
   placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
   foundName = $state(''); // the name for that new species
-  focus = $state('moss');
+  focus = $state('thallus');
   tab = $state<'species' | 'tile'>('species');
   tree = $state(false); // the tree of life screen is open
   hoverVariant = $state(-1); // a variant whose tiles light up on the map
@@ -131,6 +131,6 @@ export function addBiomass(n: number) {
 
 export function reset() {
   game = createState(Math.floor(Math.random() * 1e9));
-  ui.placing = null; ui.focus = 'moss'; ui.tab = 'species'; ui.tree = false; ui.selected = -1;
+  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1;
   ui.gen++; ui.v++;
 }

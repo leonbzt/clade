@@ -101,15 +101,19 @@ export class GardenRenderer {
     }
   }
 
-  /** Rare and better variants you haven't looked at yet sparkle on some of their tiles, in their tier's colour. */
+  /** Rare and better variants you haven't looked at yet sparkle on some of their tiles, in their tier's colour;
+   * candidates for a door (a whole recipe) sparkle gold. */
   private glints(time: number) {
     const s = this.s, ctx = this.ctx, n = s.w * s.h;
     if (s.tick !== this.glintTick) {
       this.glintTick = s.tick;
       this.glint = [];
-      if (s.variants.some(glints)) for (let slot = 0; slot < s.occ.length; slot++) {
+      const cand = new Set(s.cands);
+      if (cand.size || s.variants.some(glints)) for (let slot = 0; slot < s.occ.length; slot++) {
         const v = s.occ[slot], i = slot % n;
-        if (v >= 0 && glints(s.variants[v]) && hash2(i, 77) < 0.5) this.glint.push({ i, color: TIERS[s.variants[v].tier].color });
+        if (v < 0 || hash2(i, 77) >= 0.5) continue;
+        if (cand.has(v)) this.glint.push({ i, color: PAL.gold });
+        else if (glints(s.variants[v])) this.glint.push({ i, color: TIERS[s.variants[v].tier].color });
       }
     }
     for (const { i, color } of this.glint) {
