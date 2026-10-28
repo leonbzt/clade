@@ -1,6 +1,6 @@
 # Status
 
-Updated 2026-10-28 (10b played, committed and tagged; springtails on fungi uncommitted). Git: `slice-10b` (ed3e423) is committed and tagged; springtails eating fungi is uncommitted.
+Updated 2026-10-28 (10b done; springtails on fungi committed; planning session prepared). Git: `slice-10b` (ed3e423) tagged; springtails on fungi committed (d8a6293). Working tree clean after this.
 `npm run check` passes; `npm run sim` 5×60: 5/5 pass.
 
 ## Done
@@ -18,10 +18,12 @@ Updated 2026-10-28 (10b played, committed and tagged; springtails on fungi uncom
   - View: animal sprites, slime trails, an Animals map view; click an animal to follow it and see its card.
 
 ## Next
-1. **You:** try springtails on fungi (10b build notes, last line); commit if it feels right.
-2. A small feel pass on animals: snails do poorly (11–102), beetles 0–1, springtails still rising at 60 min.
-3. Then **plan the player's part** (P21 e). Candidates to fold in: the species screen and stat cards (P23),
-   contrast as a simple start (P21 f), slice 11 readability (P17 e, f, tooltips).
+1. **A planning session with fresh eyes** (separate session, extra-high effort): read only
+   `docs/session-fresh-eyes.md` (self-contained: vision, state, tensions, agenda). Output: proposals in
+   `systems.md` for the user to decide. No code.
+2. Afterwards: the next slice that tests the player's part fastest (from the session).
+3. Parked: a small feel pass on animals (beetles 0–1, springtails still rising at 60 min), contrast (P21 f), slice
+   11 readability (P17 e, f), the species screen (P23).
 
 ## Open
 - Clubmoss sometimes holds just over 60% of its stratum (a dev check; one seed in five). A chain, so tune, don't cut.

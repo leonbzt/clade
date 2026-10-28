@@ -371,6 +371,16 @@ matter more now.
   lasts longer through hunger, lives longer, reacts late (caught more). Real: small animals live fast (Kleiber).
   **Dormancy** ties it to compute: in bad times a group goes dormant (very slow pace, little upkeep) instead of
   dying; real for snails (sealed with slime), springtails (drying out) and spores.
+- *(Your notes, 28 Oct, after 10b)* **Tick saving is a separate issue** from the Metabolism gene; scaling update
+  times makes sense in many places. **Update what changes:** tiles that change update often, stable ones rarely
+  (as in many sims). Dormancy is cool, but watch the complexity. For snails, prefer an **emergent edge** over a
+  special rule.
+- **Diet shifts, generalised** *(your wish; AI sketch in [session-fresh-eyes.md](session-fresh-eyes.md) §4.4)*:
+  food tags on everything edible, diets as weights, a gene that moves weight along a food-neighbours graph.
+- **Evolution points** *(your idea)*: a currency you put into an archetype, or spend when random mutation doesn't
+  bring the combination you want.
+- **Absolute vs relative** *(your note)*: after a split you can't see the cumulative genes or how two species from
+  one ancestor compare. Wanted: a cumulative view and a way to see similarity.
 - **Chains are features** (your call after 10b): let chains like nitrogen → herbs → shade → lichens lose, or
   litter → fungi → springtails, play out; tune them, don't cut them. They can drive colonisation later.
 - **Old growth:** established, stable patches and groups condense and update slower; a disturbance wakes them up.

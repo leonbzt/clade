@@ -22,3 +22,11 @@ Your notes from chat, condensed.
 
 **Questions you asked:** pace as metabolism (P22, answered in chat 28 Oct), and whether animals can still found
 new niches (yes, but they differ little so far: P23 e).
+
+**Later (after springtails on fungi)**
+- Fungi feel okay; the ecosystem looks good. Snails are doing okay now. Balance is okay for now.
+- Metabolism gene: yes; tick saving is separate. Dormancy: careful with complexity. Diet-shift genes: really cool.
+- Stat and scale cards, abilities and skills: yes. Evolution points as a currency. The relative vs absolute
+  problem (see P22).
+- **"Overall stats and sim need some rethinking."** Next: a planning session with fresh eyes
+  ([session-fresh-eyes.md](../session-fresh-eyes.md)).

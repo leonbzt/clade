@@ -11,6 +11,7 @@ Read this index first, then open only what the task needs.
 | [species-models.md](species-models.md) | Species models compared (individuals, species, variants, mix); the variant proposal (27 Oct) | Species and evolution design |
 | [review-layer-sim.md](review-layer-sim.md) | Fresh-eyes proposal for the layered sim: model, rules, tools, stages (27 Oct) | Sim design and build |
 | [minigames.md](minigames.md)         | Brainstorm: hands-on play, one grid with four verbs, classic approaches | Minigame and kingdom design |
+| [session-fresh-eyes.md](session-fresh-eyes.md) | Brief for the 28 Oct planning session: vision, state, tensions, agenda | That session |
 | [review-fresh-eyes.md](review-fresh-eyes.md) | An outside designer's view: the core, cuts, build order, tech (26 Oct) | Before big decisions |
 | [references.md](references.md)       | What to take from other games, and the look                        | Design sessions                |
 | [tech-art.md](tech-art.md)           | Stack, art direction, art spikes                                   | Setup and art work             |
