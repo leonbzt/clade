@@ -1,9 +1,12 @@
 // Everything the player can do. The UI only changes the game through these.
+import { ANIMAL } from '../data/animals';
 import { STRATA } from '../data/fields';
-import { GENES, KEYS, type Key } from '../data/genes';
+import { axesOf, GENES, KEYS, type Key } from '../data/genes';
 import { NUM } from '../data/numbers';
 import { SPECIES, SPECIES_INDEX } from '../data/species';
 import { TREE, doorKey } from '../data/tree';
+import { spawn } from './agents';
+import { adopt } from './arrivals';
 import { EV, type State } from './state';
 import { buildProfile, fit, profiles, type Profile } from './fit';
 import { doorNode } from './keys';
@@ -84,6 +87,7 @@ function plant(s: State, P: Profile[], v: number, i: number) {
 export function found(s: State, speciesId: string, i: number): Result {
   const sp = speciesIndex(s, speciesId), P = profiles(s);
   if (!unlockedSpecies(s).includes(speciesId)) return fail('Evolve it first.');
+  if (defOf(s, sp).animal) return fail('Animals arrive by themselves, or split off from a variant.');
   const cost = foundingCost(s, speciesId);
   if (s.biomass < cost) return fail(`Needs ${cost} biomass.`);
   const why = plantCheck(s, P, founderProfile(s, speciesId, P), i);
@@ -134,7 +138,7 @@ export function canFoundSpecies(s: State, v: number): Result {
  * Wind Moss"). Numbered if a species already has it. */
 export function suggestName(s: State, v: number): string {
   const into = splitInto(s, v), short = SPECIES[into.base].short;
-  const base = into.key ? `${axisWords(into.genome, { axes: [0, 0, 0, 0], traits: [] }).join(' ') || 'First'} ${short}` : variantName(s, v);
+  const base = into.key ? `${axisWords(into.genome, { axes: [0, 0, 0, 0], traits: [] }, axesOf(SPECIES[into.base])).join(' ') || 'First'} ${short}` : variantName(s, v);
   const taken = (n: string) => s.species.some((o) => o.name.toLowerCase() === n.toLowerCase());
   for (const suffix of ['', ' II', ' III', ' IV', ' V']) if (!taken(base + suffix)) return base + suffix;
   return `${base} ${s.species.length}`;
@@ -148,9 +152,9 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   const x = s.variants[v], parent = s.species[x.sp], into = splitInto(s, v), P = profiles(s);
   const nm = name.trim().slice(0, 32) || suggestName(s, v);
   if (s.species.some((o) => o.name.toLowerCase() === nm.toLowerCase())) return fail('That name is taken.');
-  const tmp = buildProfile(s, into.base, into.genome), at = slotFor(s, into.base, i), occ = s.occ[at];
+  const tmp = buildProfile(s, into.base, into.genome), at = slotFor(s, into.base, i), occ = s.occ[at], animal = !!SPECIES[into.base].animal;
   if (fit(s, tmp, i) <= 0) return fail(`${nm} can't live here.`);
-  if (occ >= 0 && s.variants[occ].sp !== x.sp && !canTake(s, P, tmp, at)) return fail(`${s.species[s.variants[occ].sp].name} hold this tile too well.`);
+  if (!animal && occ >= 0 && s.variants[occ].sp !== x.sp && !canTake(s, P, tmp, at)) return fail(`${s.species[s.variants[occ].sp].name} hold this tile too well.`);
   s.biomass -= splitCost(s, v);
   if (into.key) s.reached.push(into.key.node);
   else s.made++;
@@ -161,6 +165,13 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   s.foundings[s.species[sp].id] = 0;
   const nv = variantFor(s, sp, into.genome, P);
   s.variants[nv].shown = s.variants[nv].seen = true;
+  if (animal) {
+    for (const a of s.agents) if (a.v === v) { a.sp = sp; a.v = nv; }
+    spawn(s, nv, i, ANIMAL.founders, `founded ${nm} here`);
+    s.foundings[s.species[sp].id] = 1; s.species[sp].at = s.tick;
+    const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
+    return { ok: true, msg: `${nm} is ${what}. The variant's animals are now ${nm}, and a founder group starts here.` };
+  }
   moveTiles(s, P, v, nv);
   plant(s, P, nv, i);
   const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
@@ -189,6 +200,7 @@ export function placement(s: State, placing: string, P: Profile[] = profiles(s))
     const v = Number(placing.slice(2)), x = s.variants[v];
     if (!x?.alive) return null;
     const into = splitInto(s, v), p = buildProfile(s, into.base, into.genome);
+    if (SPECIES[into.base].animal) return { p, name: variantName(s, v), cost: splitCost(s, v), ok: (i) => fit(s, p, i) > 0 };
     const ok = (i: number) => { const sl = slotFor(s, into.base, i), o = s.occ[sl]; return fit(s, p, i) > 0 && (o < 0 || s.variants[o].sp === x.sp || canTake(s, P, p, sl)); };
     return { p, name: variantName(s, v), cost: splitCost(s, v), ok };
   }
@@ -208,6 +220,7 @@ export function canEvolve(s: State, nodeId: string): Result {
   if (!node) return fail('No such node.');
   if (s.reached.includes(nodeId)) return fail('Already reached.');
   if (node.parent && !s.reached.includes(node.parent)) return fail('Reach its parent first.');
+  if (node.arrive && s.visitors[nodeId] === undefined) return fail('It hasn\u2019t arrived yet.');
   if (doorKey(node)) return fail(`Split off a variant that carries the ${KEYS.find((k) => k.id === doorKey(node))!.name.toLowerCase()}.`);
   if (!s.ready.includes(nodeId) && !node.reqs.every((r) => reqStatus(s, r).met)) return fail('Requirements not met.');
   if (s.biomass < node.cost) return fail(`Needs ${node.cost} biomass.`);
@@ -218,6 +231,7 @@ export function evolve(s: State, nodeId: string): Result {
   const can = canEvolve(s, nodeId);
   if (!can.ok) return can;
   const node = TREE.find((n) => n.id === nodeId)!;
+  if (node.arrive) { const why = adopt(s, node); if (why) return fail(why); }
   s.biomass -= node.cost;
   s.reached.push(nodeId);
   return { ok: true, msg: node.fact };

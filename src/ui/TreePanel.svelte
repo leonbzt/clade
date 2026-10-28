@@ -54,6 +54,7 @@
         speciesName: n.species ? SPECIES[SPECIES_INDEX[n.species]].name : null,
         short: n.species ? SPECIES[SPECIES_INDEX[n.species]].short.toLowerCase() : null,
         placed: n.species ? game.foundings[n.species] > 0 : false,
+        visitor: game.visitors[n.id] !== undefined,
       };
     });
   });
@@ -68,7 +69,7 @@
       </div>
       {#if n.reached}
         <p class="dim fact">{n.fact}</p>
-        {#if n.species && !n.placed && !n.key}
+        {#if n.species && !n.placed && !n.key && !n.arrive}
           <button class="go" onclick={() => { startPlacing(n.species!); ui.tab = 'species'; ui.tree = false; }}>Found {n.speciesName} on the island</button>
         {/if}
         {#each n.leaves.filter((l) => l.tiles || l.dead) as l (l.sp)}
@@ -101,8 +102,9 @@
             </button>
           {/if}
         {:else}
+          {#if n.arrive}<p class="dim">{n.visitor ? 'They are here, waiting at the landmark.' : 'Arrives by itself once its habitat is here.'}</p>{/if}
           <button class="go" disabled={!n.can} onclick={() => doEvolve(n.id)}>
-            Evolve{n.cost ? ` · ${fmt(n.cost)} biomass` : ''}
+            {n.arrive ? 'Adopt them' : 'Evolve'}{n.cost ? ` · ${fmt(n.cost)} biomass` : ''}
           </button>
         {/if}
       {/if}

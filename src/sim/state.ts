@@ -11,12 +11,34 @@ export { SEA, BEACH, LAVA, CRACK, VENT, SPRING, STREAM, CAVE } from './island';
 export const TERRAIN_NAMES = ['Sea', 'Beach', 'Lava field', 'Crack', 'Steam vent', 'Spring', 'Stream', 'Lava tube'];
 
 /** What last happened in a slot, for the tile card. */
-export const EV = { none: 0, settled: 1, founded: 2, age: 3, stress: 4, taken: 5, flare: 6, rain: 7, mutated: 8 } as const;
+export const EV = { none: 0, settled: 1, founded: 2, age: 3, stress: 4, taken: 5, flare: 6, rain: 7, mutated: 8, grazed: 9 } as const;
 
 export type LogLine =
   | { tick: number; kind: 'flare'; x: number; y: number; n: number; name: string }
   | { tick: number; kind: 'trend'; sp: number; delta: number; limit: number }
-  | { tick: number; kind: 'variant'; sp: number; tier: number; name: string; genes: string; place: string };
+  | { tick: number; kind: 'variant'; sp: number; tier: number; name: string; genes: string; place: string }
+  | { tick: number; kind: 'arrival'; sp: number; text: string };
+
+/** One animal (or, for swarms, a small group). Position in tiles; the tile is (x | 0, y | 0). */
+export type Agent = {
+  id: number;
+  sp: number;
+  v: number; // its variant (its genome)
+  x: number;
+  y: number;
+  tx: number; // where it's heading
+  ty: number;
+  e: number; // energy, 0–1
+  age: number; // seconds
+  life: number; // seconds it will live, set at birth
+  n: number; // members: 1, or a swarm's size
+  doing: 'look' | 'walk' | 'eat' | 'rest' | 'hunt';
+  think: number; // seconds until it looks around again
+  mom: number; // the id of its parent, or -1
+  kids: number;
+  ate: number; // food eaten so far, for its card
+  log: { tick: number; text: string }[];
+};
 
 export type Landmark = { kind: LandmarkKind; name: string; tiles: number[]; at: number }; // at: where its name goes
 
@@ -63,6 +85,11 @@ export type State = {
   keyFrom: Record<string, { sp: number; form: string }>; // key gene → the species and variant it grew in
   history: { tick: number; counts: number[] }[]; // tiles per species, once a minute, for the spindle diagram
   log: LogLine[];
+  agents: Agent[]; // the animals, in id order
+  nextAgent: number;
+  visitors: Record<string, number>; // arrival node → the tile where its animals wait to be adopted
+  arriveClock: Record<string, number>; // arrival node → seconds since the last repeat arrival
+  obits: { id: number; tick: number; text: string }[]; // the last deaths, for the card of an animal you followed
 };
 
 const perLayer = (n: number) => Object.fromEntries(LAYER_IDS.map((id) => [id, new Float32Array(n)])) as Record<LayerId, Float32Array>;
@@ -82,7 +109,7 @@ export function createState(seed: number): State {
     biomass: 0, gain: 0, rate: 0,
     reached: [...START_REACHED], ready: [],
     foundings: {}, made: 0, combos: [], innovations: {}, keyClock: {}, keyRoll: {}, cands: [], keyFrom: {}, history: [],
-    log: [],
+    log: [], agents: [], nextAgent: 1, visitors: {}, arriveClock: {}, obits: [],
   };
   s.count = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);
   for (const sp of s.species) s.foundings[sp.id] = 0;

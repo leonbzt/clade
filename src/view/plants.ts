@@ -2,6 +2,7 @@
 // map and on the specimen. Map sprites overhang their tile (4 px to the sides, 12 px up), so the garden reads as one growth, not a grid.
 import { NUM } from '../data/numbers';
 import { PAL } from '../data/palette';
+import { animalSpecimen } from './animals';
 import { NO_TINT, Painter, seeded, tintKey, type Tint } from './pixels';
 
 export type Look = { stage: number; traits: string[]; big?: boolean; tint?: Tint };
@@ -192,6 +193,7 @@ export function sprite(species: string, variant: number, look: Look): HTMLCanvas
 
 /** The type specimen: a bigger drawing on a strip of soil. */
 export function specimen(species: string, traits: string[], size = 48, tint: Tint = NO_TINT): HTMLCanvasElement {
+  if (!PAINTERS[species]) return animalSpecimen(species, traits, size, tint);
   const p = new Painter(size, size);
   for (let x = 0; x < size; x++) for (let y = size - 3; y < size; y++) p.set(x, y, (x * 3 + y) % 4 ? PAL.soil1 : PAL.soil0);
   p.setTint(tint);

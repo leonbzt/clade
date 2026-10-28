@@ -3,7 +3,7 @@ import { LIMIT_COUNT, STRATA } from '../data/fields';
 import { NUM } from '../data/numbers';
 import { fit, limitOf, type Profile } from './fit';
 import { SEA, type State } from './state';
-import { stratumOf } from './variants';
+import { defOf, stratumOf } from './variants';
 
 /** For one species: how many of its tiles each limit holds back (index = limit; one more = not held back).
  * Each tile is judged with its own variant's profile. */
@@ -22,7 +22,7 @@ export function limitShare(s: State, P: Profile[], sp: number): number[] {
 export function trends(s: State, P: Profile[]) {
   for (let sp = 0; sp < s.species.length; sp++) {
     const before = s.prevCount[sp], now = s.count[sp], delta = now - before;
-    if (!s.foundings[s.species[sp].id] || Math.abs(delta) < Math.max(8, 0.25 * before)) continue;
+    if (!s.foundings[s.species[sp].id] || defOf(s, sp).animal || Math.abs(delta) < Math.max(8, 0.25 * before)) continue;
     const share = limitShare(s, P, sp).slice(0, LIMIT_COUNT);
     const limit = share.indexOf(Math.max(...share));
     s.log.push({ tick: s.tick, kind: 'trend', sp, delta, limit: share[limit] > 0 ? limit : -1 });
@@ -38,10 +38,10 @@ export function landTiles(s: State): number {
 
 /** Hill number of order 1 (exp of Shannon entropy) over tile counts: "how many equally common species". */
 export function hill1(s: State): number {
-  const total = s.count.reduce((a, b) => a + b, 0);
+  const plants = s.count.filter((_, sp) => !defOf(s, sp).animal), total = plants.reduce((a, b) => a + b, 0);
   if (!total) return 0;
   let h = 0;
-  for (const c of s.count) if (c) { const p = c / total; h -= p * Math.log(p); }
+  for (const c of plants) if (c) { const p = c / total; h -= p * Math.log(p); }
   return Math.exp(h);
 }
 
@@ -50,7 +50,7 @@ export function dominance(s: State): { sp: number; share: number } {
   const land = landTiles(s);
   let best = { sp: -1, share: 0 };
   for (let sp = 0; sp < s.species.length; sp++) {
-    if (STRATA[stratumOf(s, sp)] === 'under') continue;
+    if (STRATA[stratumOf(s, sp)] === 'under' || defOf(s, sp).animal) continue;
     const share = s.count[sp] / land;
     if (share > best.share) best = { sp, share };
   }

@@ -1,32 +1,33 @@
 # Status
 
-Updated 2026-10-28 (slice 09 built). Git: `slice-08` (c1f2473); slice 09 code and all doc changes are uncommitted.
+Updated 2026-10-28 (slice 10 played; 10b specced). Git: `slice-09` (eb806c0) is committed and tagged; slice 10 is uncommitted.
 `npm run check` passes; `npm run sim` 5×60: 5/5 pass.
 
 ## Done
-- Playtest notes: `docs/playtests/08-lineage.md`, `docs/playtests/09-splits.md`.
-- P17 (splits, recipes, gene meters, distance + fit, the ancestor) and P18 (real species) in `docs/systems.md`;
-  rough outline by act in `docs/outline.md` (indexed in README).
-- **Slice 09 (splits) built**, spec and build notes in `docs/slices/09-splits.md`:
-  - The ancestor "Early land plants" (`src/data/species.ts`), founded from the Land plants node.
-  - Doors by recipe (`KEYS`, `KEY` in `src/data/genes.ts`; `src/sim/keys.ts`): Liverworts, Mosses, Vascular.
-    Candidates (gold glint), key roll 0.5–3 min, a nudge every 2 min without a candidate.
-  - Splits (`src/sim/commands.ts`): the variant's tiles move to the new species, plus a founder patch; a clade
-    split keeps axis genes and drops traits. Requirements moved to `src/sim/reqs.ts`.
-  - UI: recipes on the tree screen and on variant rows, split buttons. Map: tint by species, cap 4, half sprites.
-- Sim: Mosses at 4.3–6.5 min, Vascular at 14.5–24.7 min (now also needs 150 moss tiles).
-
-## Decided
-- See brief.md, "Direction (27–28 Oct, after playing slice 08)": splits, clades from your variant, authored clades
-  and free species, genes carry, recipes, gene meters with two directions, the ancestor, animals soon.
+- Research: `docs/research/tree-of-life-overview.md` (big structure of plants, fungi, animals; insects, birds,
+  mammals, snails; island colonisation; good doors and sister groups).
+- P19 (clade map for acts 1–3, arrivals, partnership doors) and P20 (animals as individuals, plants as patches)
+  in `docs/systems.md`, with your calls.
+- **Slice 10 (first animals, as individuals) built**, spec and build notes in `docs/slices/10-first-animals.md`:
+  - Animals are agents (`src/sim/agents.ts`), data in `src/data/animals.ts`: diets by stock, plant cover or prey tag.
+  - Arrivals (`src/sim/arrivals.ts`): springtails on the wind (~6–14 min), snails on a drift log (~7–15 min),
+    ground beetles later (~31–40 min). Adopt on the tree; repeat arrivals while a species is small.
+  - Doors: Slugs (Shell lost), Insects (Insect body → bristletails). Animal variants, splits and recipes use the
+    plant core.
+  - Plants: Bitter gene; palatability per plant; grazing takes cover and some health.
+  - View: animal sprites, slime trails, an Animals map view; click an animal to follow it and see its card.
 
 ## Next
-1. New session: research and brainstorm systematics for the early to mid game (which groups and branches, for
-   plants, fungi and animals); use the `researcher` agent. Animals soon.
-2. Commit slice 09 when you're happy (not committed yet).
-3. Then slice 10 (readability: gene meters, edge, "why it's winning"), or P18 (real species).
+1. **You:** check the 10b spec (`docs/slices/10b-groups-and-balance.md`) and P21 b–e in `docs/systems.md`.
+2. Commit slice 10 (played: notes in `docs/playtests/10-first-animals.md`), then build 10b: animals as groups,
+   settled groups on a slow tick, dispersal, food-limited litter eaters, conserved nitrogen, damped predators.
+3. Then **plan the player's part** (P21 e; your priority: an active part soon), and decide on contrast (P21 d: no
+   climate gradient exists today; wind side, height, disturbance, regions). Slice 11 (readability: P17 e, f,
+   tooltips) after that or alongside.
 
 ## Open
-- Placed organisms lack character ("Early land plants"); P18 is one answer.
-- Liverworts' timing varies (5–45 min); with 4 shown variants, busy species show few new ones.
-- Older: combos rare; stacked names; refunds; flows (P13), zooms (P15), nitrogen (P11); delete `toys/`?
+- Slice 10 playtest: snails stuck on the beach; litter eaters at their caps and everywhere; litter eaters add
+  nitrogen (moss covers the island); no bitter mosses; beetles boom and crash. All in 10b.
+- Animals tiny at the fit zoom, no smooth movement, none on the tile card: in 10b.
+- Plants as patches (P20), the deep-time road (later), partnership doors (P19 b).
+- Older: Liverworts' timing varies; combos rare; flows (P13), zooms (P15), nitrogen (P11); delete `toys/`?

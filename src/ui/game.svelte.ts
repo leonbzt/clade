@@ -18,7 +18,8 @@ class UI {
   placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
   foundName = $state(''); // the name for that new species
   focus = $state('thallus');
-  tab = $state<'species' | 'tile'>('species');
+  tab = $state<'species' | 'tile' | 'animal'>('species');
+  follow = $state(-1); // the id of the animal whose card is open; the camera follows it
   tree = $state(false); // the tree of life screen is open
   hoverVariant = $state(-1); // a variant whose tiles light up on the map
   view = $state<View>('none');
@@ -117,6 +118,11 @@ export function autoplay(seconds: number) {
   ui.v++;
 }
 
+/** Opens an animal's card and follows it. */
+export function followAnimal(id: number) {
+  ui.follow = id; ui.tab = 'animal';
+}
+
 export function selectTile(i: number) {
   ui.selected = i; ui.tab = 'tile';
 }
@@ -131,6 +137,6 @@ export function addBiomass(n: number) {
 
 export function reset() {
   game = createState(Math.floor(Math.random() * 1e9));
-  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1;
+  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1; ui.follow = -1;
   ui.gen++; ui.v++;
 }

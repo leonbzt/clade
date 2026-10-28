@@ -5,6 +5,7 @@
   import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATUM_NAMES, limitName, type LayerId } from '../data/fields';
   import { COMBOS, TIER } from '../data/genes';
   import { type Scalar } from '../data/species';
+  import type { BodyStat, Food } from '../data/animals';
   import { coverCount, foundingCost, unlockedSpecies } from '../sim/commands';
   import { buildProfile, profiles } from '../sim/fit';
   import { limitShare } from '../sim/metrics';
@@ -24,6 +25,18 @@
     ['reserve', 'Reserves', (v) => `${Math.round(v)} s`],
   ];
 
+  const BODY: [BodyStat, string, (v: number) => string][] = [
+    ['speed', 'Speed', (v) => `${v.toFixed(2)} tiles/s`],
+    ['upkeep', 'Upkeep', (v) => `${(v * 100).toFixed(2)}% energy/s`],
+    ['young', 'Young per brood', (v) => v.toFixed(1)],
+    ['life', 'Lifespan', (v) => `${Math.round(v)} s`],
+    ['escape', 'Easy to catch', (v) => `×${v.toFixed(2)}`],
+    ['range', 'Side foods', (v) => `${Math.round(Math.min(1, v) * 100)}%`],
+  ];
+
+  /** "grazes ground plants", "eats litter", "hunts tiny-hexapod": a diet line. */
+  const foodText = (d: Food) => ('stock' in d ? `eats ${d.stock}` : 'plants' in d ? `grazes ${d.plants === 'under' ? 'fungus threads' : `${d.plants} plants`}` : `hunts ${d.prey.replace('-', ' ')}s`);
+
   // Variants that were glinting when you opened this tab keep a "new" mark while it stays open.
   const fresh = new Set<number>();
 
@@ -41,7 +54,7 @@
       const sp = speciesIndex(game, id), x = game.species[sp];
       const vs = poolOf(game, sp).filter((v) => game.variants[v].shown && game.variants[v].tier !== TIER.base);
       for (const v of vs) if (glints(game.variants[v])) fresh.add(v);
-      return { id, sp, name: x.name, tiles: coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
+      return { id, sp, name: x.name, animal: !!defOf(game, sp).animal, tiles: coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
         made: x.parent >= 0 ? game.species[x.parent].name : null, depth: depthOf(sp), variants: vs };
     });
   });
@@ -61,8 +74,11 @@
     const limits = share.map((c, j) => ({ name: j < LIMIT_COUNT ? limitName(j).toLowerCase() : 'nothing', pct: total ? Math.round((100 * c) / total) : 0 }))
       .filter((l) => l.pct > 0).sort((a, b) => b.pct - a.pct);
     const pool = poolOf(game, sp).filter((v) => game.variants[v].shown);
+    const animal = def.animal;
     return {
-      name: x.name, def, look: speciesLook(game, sp), stratum: STRATUM_NAMES[def.stratum], limits,
+      name: x.name, def, look: speciesLook(game, sp), stratum: animal ? 'Animal' : STRATUM_NAMES[def.stratum], limits: animal ? [] : limits, animal: !!animal,
+      diet: animal ? animal.diet.map((d, k) => `${foodText(d)}${k ? ' (side food)' : ''}`) : [],
+      dung: animal ? Object.keys(animal.makes).join(', ') : '',
       needs: p.needs.map((n) => {
         const id = LAYER_IDS[n.layer], b = n.band;
         return { id, name: FIELDS[id].name, color: FIELDS[id].color, lo: clip(b[0]), a: clip(b[1]), z: clip(b[2]), hi: clip(b[3]),
@@ -73,23 +89,24 @@
         text: FIELDS[id].kind === 'level' ? `${FIELDS[id].name.toLowerCase()} +${+r.toFixed(4)}` : r > 0 ? `${FIELDS[id].name.toLowerCase()} +${+r.toFixed(4)}/s` : `uses ${FIELDS[id].name.toLowerCase()} ${+(-r).toFixed(4)}/s`,
         color: FIELDS[id].color, why: p.parts[`make:${id}`].join('\n'),
       })),
-      stats: STATS.map(([k, label, show]) => ({ label, value: show(p.stats[k]), why: p.parts[k].join('\n') })),
+      stats: animal ? BODY.map(([k, label, show]) => ({ label, value: show(p.body[k]!), why: p.parts[`body:${k}`].join('\n') }))
+        : STATS.map(([k, label, show]) => ({ label, value: show(p.stats[k]), why: p.parts[k].join('\n') })),
       genes: def.traits.map((t) => ({ ...t, carried: pool.filter((v) => game.variants[v].genome.traits.includes(t.id)).length, inBase: x.genome.traits.includes(t.id) })),
     };
   });
 </script>
 
-<p class="small dim">Plants mutate by themselves as they spread. A new form shows once it holds 5 tiles. Combos found: {game.combos.length} / {COMBOS.length}</p>
+<p class="small dim">Plants mutate as they spread, animals when they're born. A new form shows once it holds 5 tiles. Combos found: {game.combos.length} / {COMBOS.length}</p>
 <div class="list">
   {#each list as s (s.id)}
     <div class="row" class:on={ui.focus === s.id} style:margin-left="{s.depth * 14}px" onclick={() => (ui.focus = s.id)} role="button" tabindex="0"
       onkeydown={(e) => e.key === 'Enter' && (ui.focus = s.id)}>
       <Specimen look={s.look} scale={1} size={40} />
-      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} tiles · {s.variants.length} form{s.variants.length === 1 ? '' : 's'}{s.made ? ` · from ${s.made}` : ''}</span>
+      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} {s.animal ? 'animals' : 'tiles'} · {s.variants.length} form{s.variants.length === 1 ? '' : 's'}{s.made ? ` · from ${s.made}` : ''}</span>
         {#if s.tiles}<PopBar sp={s.sp} />{/if}</div>
-      <button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
+      {#if !s.animal}<button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
         Found {s.cost ? fmt(s.cost) : 'free'}
-      </button>
+      </button>{/if}
     </div>
     {#if ui.focus === s.id}
       <div class="forms" role="presentation" onmouseleave={() => (ui.hoverVariant = -1)}>
@@ -120,10 +137,16 @@
     {#if card.tolerance.length}
       <div class="makes dim">{#each card.tolerance as t (t)}<span>{t}</span>{/each}</div>
     {/if}
+    {#if card.animal}
+      <h3>Eats</h3>
+      <div class="makes">{#each card.diet as d (d)}<span>{d}</span>{/each}</div>
+      <p class="dim small">Its dung goes into the {card.dung}. Click one on the map to follow it.</p>
+    {:else}
     <h3>Makes</h3>
     <div class="makes">
       {#each card.makes as m (m.text)}<span title={m.why}><span class="swatch" style:background={m.color}></span>{m.text}</span>{/each}
     </div>
+    {/if}
     {#if card.limits.length}
       <h3>Its tiles are held back by</h3>
       <div class="makes">{#each card.limits as l (l.name)}<span>{l.name} {l.pct}%</span>{/each}</div>
@@ -139,8 +162,10 @@
         <span class="dim small">{t.inBase ? 'in the base form' : t.carried ? `in ${t.carried} form${t.carried > 1 ? 's' : ''}` : 'not seen yet'}</span>
       </div>
     {/each}
+    {#if !card.animal}
     <h3>Combos <span class="dim small">(two genes together open a niche)</span></h3>
-    {#each COMBOS as c (c.id)}
+    {/if}
+    {#each card.animal ? [] : COMBOS as c (c.id)}
       <div class="stat" class:gold={game.combos.includes(c.id)} title={c.text}>
         <span>{c.name}</span><span class="small">{Object.entries(c.needs).map(([a, n]) => `${a} ${n! > 0 ? '+' : ''}${n}`).join(', ')}</span>
       </div>

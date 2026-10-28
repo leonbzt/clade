@@ -2,6 +2,7 @@
   import { addBiomass, autoplay, game, reset, skip, ui, unlockAll } from './game.svelte';
 
   const speeds = [0, 1, 10, 100];
+  const animals = $derived.by(() => { ui.v; return game.agents.length; });
 </script>
 
 <div class="panel dev">
@@ -11,7 +12,7 @@
   <div>Bot plays <button onclick={() => autoplay(300)}>5 min</button><button onclick={() => autoplay(900)}>15 min</button></div>
   <div><button onclick={() => addBiomass(1000)}>+1k biomass</button><button onclick={() => addBiomass(10000)}>+10k</button><button onclick={unlockAll}>Unlock all</button></div>
   <div><button onclick={reset}>New island</button><button onclick={() => console.log(game)}>Log state</button></div>
-  <p class="dim">window.dev.dump() in the console</p>
+  <p class="dim">{animals} animals · window.dev.dump() in the console</p>
 </div>
 
 <style>

@@ -108,6 +108,7 @@ function nudge(s: State, P: Profile[], key: Key, ranked: { v: number }[]) {
 
 /** A patch (radius r) of variant `from`'s tiles around one of them takes genome g. Returns the new variant. */
 function patchInto(s: State, P: Profile[], from: number, g: Genome, r = KEY.patch): number {
+  if (defOf(s, s.variants[from].sp).animal) return groupInto(s, P, from, g, r);
   const sp = s.variants[from].sp, n = s.w * s.h, k = stratumOf(s, sp), mine: number[] = [];
   for (let i = 0; i < n; i++) if (s.occ[k * n + i] === from && !s.dying[k * n + i]) mine.push(i);
   if (!mine.length) return -1;
@@ -120,6 +121,21 @@ function patchInto(s: State, P: Profile[], from: number, g: Genome, r = KEY.patc
     if (s.occ[slot] >= 0 && s.variants[s.occ[slot]].sp === sp) {
       s.occ[slot] = v; s.lastCode[slot] = EV.mutated; s.lastTick[slot] = s.tick; s.variants[v].tiles++;
     }
+  }
+  if (!s.variants[v].shown && roomToShow(s, sp, v, true)) show(s, v);
+  return v;
+}
+
+/** Animals: the variant's animals within r tiles of one of them take genome g. */
+function groupInto(s: State, P: Profile[], from: number, g: Genome, r: number): number {
+  const mine = s.agents.filter((a) => a.v === from);
+  if (!mine.length) return -1;
+  const sp = s.variants[from].sp, v = variantFor(s, sp, g, P);
+  if (v < 0) return -1;
+  const one = mine[Math.floor(rand(s) * mine.length)];
+  for (const a of mine) if (Math.abs(a.x - one.x) <= r + 0.5 && Math.abs(a.y - one.y) <= r + 0.5) {
+    a.v = v; s.variants[v].tiles++;
+    a.log.push({ tick: s.tick, text: 'gained a gene on the spot' });
   }
   if (!s.variants[v].shown && roomToShow(s, sp, v, true)) show(s, v);
   return v;

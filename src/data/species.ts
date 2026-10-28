@@ -7,6 +7,7 @@
 // Makes into a level (shade, water) are a contribution × cover.
 // Health follows fit with a lag of `reserve` seconds, so big plants switch on and off slowly. A status (salt)
 // counts like a need: at full strength it scores the species' tolerance (1 = doesn't mind).
+import { ANIMALS, type AnimalBody, type BodyStat } from './animals';
 import type { LayerId, StatusId, StratumId } from './fields';
 
 export type Band = readonly [number, number, number, number];
@@ -14,9 +15,10 @@ const band = (a: number, b: number, c: number, d: number): Band => [a, b, c, d];
 const upTo = (ok: number, max: number): Band => [-1, -1, ok, max];
 const from = (min: number, ok: number): Band => [min, ok, 2, 2];
 
-export type Scalar = 'seeds' | 'hold' | 'yield' | 'life' | 'grow' | 'reserve';
+export type Scalar = 'seeds' | 'hold' | 'yield' | 'life' | 'grow' | 'reserve' | 'palatable';
 export type Mod =
   | { stat: Scalar; mul: number }
+  | { body: BodyStat; mul: number } // animals only (animals.ts)
   | { need: LayerId; low?: number; high?: number } // moves the lower or upper edge of a band
   | { make: LayerId; mul: number }
   | { status: StatusId; tol: number }; // raises the tolerance (the score at full strength)
@@ -36,6 +38,8 @@ export type SpeciesDef = {
   grow: number; // cover gained per second at fit 1
   reserve: number; // seconds for health to follow fit
   litter: number; // litter left when it dies, × cover
+  palatable?: number; // how much grazers get from it (default 1)
+  animal?: AnimalBody; // set for animals: the sim runs them as individuals (src/sim/agents.ts)
   needs: Partial<Record<LayerId, Band>>;
   tolerance: Partial<Record<StatusId, number>>;
   makes: Partial<Record<LayerId, number>>;
@@ -43,10 +47,10 @@ export type SpeciesDef = {
   blurb: string;
 };
 
-export const SPECIES: SpeciesDef[] = [
+const PLANTS: SpeciesDef[] = [
   {
     id: 'cyano', name: 'Cyanobacteria', short: 'Cyano', stratum: 'ground',
-    seeds: 0.4, hold: 0.6, yield: 0.04, life: 400, grow: 0.1, reserve: 15, litter: 0.02, tolerance: {},
+    seeds: 0.4, hold: 0.6, yield: 0.04, life: 400, grow: 0.1, reserve: 15, litter: 0.02, palatable: 0.6, tolerance: {},
     needs: { water: band(0.22, 0.45, 0.85, 1.3), soil: upTo(0.35, 0.55), shade: upTo(0.2, 0.5) },
     makes: { nitrogen: 0.005, soil: 0.0017 },
     blurb: 'A dark living crust on damp rock and salty sand. Fixes nitrogen from the air. Quick to spread, easy to push aside, needs open sky.',
@@ -68,19 +72,23 @@ export const SPECIES: SpeciesDef[] = [
         mods: [{ need: 'water', low: -0.1 }, { stat: 'seeds', mul: 0.85 }] },
       { id: 'cuticle', name: 'Waxy cuticle', up: 'lives 0.06 drier', down: 'grows 10% slower',
         mods: [{ need: 'water', low: -0.06 }, { stat: 'grow', mul: 0.9 }] },
+      { id: 'bitter', name: 'Bitter', up: 'grazers get 60% less from it', down: 'grows 15% slower',
+        mods: [{ stat: 'palatable', mul: 0.4 }, { stat: 'grow', mul: 0.85 }] },
       { id: 'spores', name: 'Tough spores', up: 'spreads 30% faster', down: 'yields 15% less',
         mods: [{ stat: 'seeds', mul: 1.3 }, { stat: 'yield', mul: 0.85 }] },
     ],
   },
   {
     id: 'liverwort', name: 'Liverworts', short: 'Liverwort', stratum: 'ground',
-    seeds: 0.35, hold: 1.2, yield: 0.08, life: 700, grow: 0.08, reserve: 25, litter: 0.06, tolerance: { salty: 0.3 },
+    seeds: 0.35, hold: 1.2, yield: 0.08, life: 700, grow: 0.08, reserve: 25, litter: 0.06, palatable: 0.7, tolerance: { salty: 0.3 },
     needs: { water: from(0.45, 0.75), shade: upTo(0.6, 0.95) },
     makes: { water: 0.05, soil: 0.0033, nitrogen: -0.0005 },
     blurb: 'Flat green ribbons that need it very wet. They own the steam vents and put up with shade.',
     traits: [
       { id: 'gemmae', name: 'Gemma cups', up: 'spreads 40% faster', down: 'yields 15% less',
         mods: [{ stat: 'seeds', mul: 1.4 }, { stat: 'yield', mul: 0.85 }] },
+      { id: 'bitter', name: 'Bitter', up: 'grazers get 60% less from it', down: 'grows 15% slower',
+        mods: [{ stat: 'palatable', mul: 0.4 }, { stat: 'grow', mul: 0.85 }] },
       { id: 'pores', name: 'Air pores', up: 'lives 0.08 drier', down: 'holds ground 10% worse',
         mods: [{ need: 'water', low: -0.08 }, { stat: 'hold', mul: 0.9 }] },
     ],
@@ -96,13 +104,15 @@ export const SPECIES: SpeciesDef[] = [
         mods: [{ need: 'water', low: -0.1 }, { stat: 'seeds', mul: 0.85 }] },
       { id: 'cushion', name: 'Cushion growth', up: 'holds ground 30% better', down: 'spreads 20% slower',
         mods: [{ stat: 'hold', mul: 1.3 }, { stat: 'seeds', mul: 0.8 }] },
+      { id: 'bitter', name: 'Bitter', up: 'grazers get 60% less from it', down: 'grows 15% slower',
+        mods: [{ stat: 'palatable', mul: 0.4 }, { stat: 'grow', mul: 0.85 }] },
       { id: 'capsule', name: 'Stalked spore capsule', up: 'spreads 50% faster', down: 'yields 20% less',
         mods: [{ stat: 'seeds', mul: 1.5 }, { stat: 'yield', mul: 0.8 }] },
     ],
   },
   {
     id: 'lichen', name: 'Lichens', short: 'Lichen', stratum: 'ground',
-    seeds: 0.12, hold: 0.8, yield: 0.05, life: 2400, grow: 0.03, reserve: 60, litter: 0.04, tolerance: { salty: 0.4 },
+    seeds: 0.12, hold: 0.8, yield: 0.05, life: 2400, grow: 0.03, reserve: 60, litter: 0.04, palatable: 0.3, tolerance: { salty: 0.4 },
     needs: { water: upTo(0.2, 0.65), soil: upTo(0.25, 0.55), shade: upTo(0.15, 0.4) },
     makes: { soil: 0.0027, nitrogen: 0.0003 },
     blurb: 'A fungus living with cyanobacteria. The pioneer of dry bare lava: it weathers rock into soil, then fades once the soil gets deep.',
@@ -115,7 +125,7 @@ export const SPECIES: SpeciesDef[] = [
   },
   {
     id: 'fungus', name: 'Soil fungi', short: 'Fungus', stratum: 'under',
-    seeds: 0.25, hold: 1, yield: 0.08, life: 600, grow: 0.08, reserve: 30, litter: 0.02, tolerance: { salty: 0.35 },
+    seeds: 0.25, hold: 1, yield: 0.08, life: 600, grow: 0.08, reserve: 30, litter: 0.02, palatable: 0.8, tolerance: { salty: 0.35 },
     needs: { litter: from(0.03, 0.2), water: band(0.25, 0.4, 0.9, 1.2), soil: from(0.05, 0.15) },
     makes: { litter: -0.004, nitrogen: 0.006 },
     blurb: 'Threads under the ground that rot dead plants. They turn litter back into nitrogen that plants can use.',
@@ -157,5 +167,8 @@ export const SPECIES: SpeciesDef[] = [
     ],
   },
 ];
+
+/** Plants first, then animals: species indices of plants don't move when animals are added. */
+export const SPECIES: SpeciesDef[] = [...PLANTS, ...ANIMALS];
 
 export const SPECIES_INDEX: Record<string, number> = Object.fromEntries(SPECIES.map((s, i) => [s.id, i]));

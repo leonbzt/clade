@@ -239,7 +239,7 @@ liverworts → snails. Snails are the first pressure on your plants, as you want
 turn it into litter and nitrogen faster, and shift which variants win (bitter, tough or dry ones). Springtails
 speed up decay and spread fungi. Spiders keep springtails in check.
 
-**e. How animals work in the sim** (as P14: density fields in the sim, individuals only in the view):
+**e. How animals work in the sim** *(replaced 28 Oct by P20: animals as agents)* (as P14: density fields in the sim, individuals only in the view):
 - A species is a density per tile, like plant cover. Diet: a layer or species it eats (litter, moss cover, prey
   density). Effects: what it lowers and what it releases (nitrogen, litter).
 - Spread: animals move faster than plants and lean toward food (a gradient on neighbours), not only outward.
@@ -253,9 +253,118 @@ stretch. One door inside each line (Snails | Slugs; Springtails | Insects). Arri
 release, a few sprites. No birds, no partnerships yet. Order: after slice 10 (readability), or before it if animals
 matter more now.
 
-**Your calls:**
-- Modern forms on a deep tree (recommended), or a prehistoric route?
-- Arrivals as a second way in, alongside doors?
-- Snails + springtails as the first animals?
-- Partnership doors?
-- Earthworms: late (realistic), or early because they're fun with soil?
+**Your calls (28 Oct):**
+- **Modern forms for the first version.** The full deep-time road (playing the whole chains) is wanted later.
+- **Arrivals: yes**, as a second way in, with habitat requirements, for now.
+- **Partnership doors: yes.**
+- **The map is good, with more plants (a tree).** Fungi by role: saprotrophs, lichen-forming, mycorrhiza.
+- **Animals to focus on:** snails, springtails, spiders, later beetles, bees, maybe seabirds and lizards.
+- **Earthworms: probably clutter.** Leave them out for now.
+- **The first food web, the sim section and the first animal slice: good.** Spec: [slices/10-first-animals.md](slices/10-first-animals.md).
+
+## P20. Individuals: animals as agents, plants as patches *(28 Oct, from your wish for individual drama)*
+- **Animals are individuals in the sim** (an individual-based model, standard in ecology), not density fields.
+  Each one has a place, energy, an age, a genome (its variant) and a state (foraging, resting, fleeing).
+  - You can follow one.
+  - A spider picks a springtail and eats it, and you see it.
+  - Too many snails in one spot draws the predators there.
+  - An island has room for only a few birds, because each one needs a territory.
+- **The cost is low:** the map is 96×56 and ticks 10 times a second. A few thousand agents in a grid by tile is
+  easy in JS. Birds and lizards come in tens, snails in hundreds.
+- **Swarms for tiny animals:** an agent can stand for a small group (springtails as a swarm that grows, splits and
+  gets bitten down). That keeps the numbers small while each one still looks like an individual. Ecology calls this
+  "super-individuals".
+- **Variants = genomes of individuals.** A child copies its parent's genome, with a mutation chance. The variant UI
+  counts individuals instead of tiles, and the same recipes, doors and splits apply.
+- **Effects go through stocks** (your call): dung goes into nitrogen, grazing takes cover, deaths become litter.
+  Who eats whom is data (food tags), not species names, so new animals and food cycles are data only.
+- **No zoom-level sim.** Running individuals only where you look makes results depend on the camera. Instead the
+  zoom is a view: zoom in, follow one animal, open its card (name, age, what it ate, its children).
+- **Risks:**
+  - Noise: small populations can die out by chance. That's real, and arrivals can repeat now and then, as on
+    real islands.
+  - Harder balance, and slower time skip or offline catch-up (offline may need a coarse step).
+- **Plants get identity as patches.** A connected group of one variant's tiles is an individual: a moss cushion
+  really is one genetic individual (a genet). It gets a name, an age, a size and a history.
+  - Battles happen at patch borders. Events go in a feed: "Dry Moss pushed the Wet Liverwort off the ridge."
+  - "Why it won" (slice 11) explains each battle.
+  - Big plants (trees, later) are individuals outright: few per island, so they can be agents too.
+
+## P21. Groups, settled populations, balance and contrast *(28 Oct, after playing slice 10; notes in [playtests/10-first-animals.md](playtests/10-first-animals.md))*
+- **a. Groups (your call: yes).** Every small animal's agent stands for a group: snails as a family (~12),
+  springtails as a swarm (~200), bristletails as a troop (~10). Big, rare animals (beetles, later birds) stay close
+  to one agent per animal. Rule: the bigger and rarer, the closer to 1:1. Aim for 20–60 agents per species while
+  the real counts run into the thousands (real springtails live at tens of thousands per m²).
+  - A group grows by breeding and splits at its size. The half that splits off walks 4–10 tiles away before it
+    settles: young dispersing, which also gets snails off their beach.
+  - Hunters bite members off a group. A mutation happens at a split, so a group carries one genome.
+  - You still follow one: "Snail family #14, 12 snails, Wet variant".
+- **b. Settled populations, behind the scenes (feasible).** Not by camera (P20: results mustn't depend on where
+  you look), but by state:
+  - **Slow tick:** a settled group (fed, not hunted lately, not moving) updates every ~10 ticks with 10× the time
+    step. Groups at the frontier, hungry or hunted stay on the fast tick.
+  - **Merging:** small groups of one variant on one tile merge, so a population stays a few groups after a crash.
+  - **Visuals:** the overview zoom draws no animal sprites, only the Animals view tint; up close a group draws 1–3
+    sprites. Compute is fine today (3–5.5 ms a tick with plants); the gain is time skip and offline catch-up.
+  - Later, if needed: a fully established population becomes a density field per tile that only spawns groups
+    at its edges. Only worth it once agent counts really hurt.
+- **c. Balance the structure now, the numbers later.** Your question: wait until the food web is full? Two kinds:
+  - **Structure** (what limits each population, nothing made from nothing, contrast kept) has to be right for
+    each layer before the next comes. Otherwise every new species lands on a broken base and you can't see what it
+    does. Slice 10 shows it: one number reshaped the island.
+  - **Numbers** (exact sizes and timings) wait until producers, grazers, predators and partners are all in.
+  - Rule: each species has an expected size from a small curve model (food supply ÷ what one needs); no species
+    sits at its cap. Caps stay a safety net.
+  - **Nitrogen is conserved:** decaying litter releases nitrogen; animals only speed that flow up.
+  - **Predation as top-down control:** a hunter is full for a while after a catch (handling time), prey hide
+    better in thick cover (refuges), and hunters keep apart (territory). These damp the boom and crash. Later,
+    predators (mites, spiders, beetles) become the main control on springtails, which is real.
+- **d. Contrast between regions.** Today there's **no climate gradient**: base water is the same everywhere
+  (`lavaWet`); only landmarks and cracks change it. No sun, wind or height. Natural ways to get it, strongest
+  first:
+  1. **A wind side:** the prevailing wind gives a wet windward side with salt spray on its coast, and a dry lee
+     (rain shadow, real on most volcanic islands). One gradient across the map, set by seed.
+  2. **Height:** the volcano cone. Higher is cooler and wetter (cloud); steep slopes hold less soil; the sunny
+     side is drier. That gives a summit, slopes and lowlands.
+  3. **Disturbance:** storms on the windward coast, vent flares, rockfalls. Succession restarts locally, which
+     keeps a mosaic (patch dynamics in ecology).
+  4. **Patches that reinforce themselves:** plants that change their tile in their own favour (moss holds water,
+     so the tile gets wetter) make patches with sharp edges.
+  5. **Stores that don't spread:** soil depth and age stay where they formed.
+  - **Regions from the gradients:** name the areas they make (Windward slope, Lee shore, Summit, Lava field). The
+    overview is a strategic map of regions; click one for its close view (P15). The sim stays one level; the
+    view does the regions. This ties contrast, named regions and readable placement together.
+- **e. The player's part next.** After 10b, a planning thread rather than a slice: what does a 20-minute session
+  and a day ask of you, and where are the goals and stakes? Seeds from the sim: the ecosystem asks for things
+  (beetles need cover on the lee shore), placement across contrasting regions, your species as a build you level
+  up, and a family you follow as the RPG hero.
+- **Your calls (28 Oct):**
+  - a yes.
+  - **b yes, and more:** the **update rate is a species trait, like metabolism** (fast animals update often, slow
+    ones rarely; a gene can change it later). **Condense established groups and patches into slower "old growth"**;
+    look into reducing by state, so unused or established systems progress or are calculated slower. Batching too.
+  - **c yes, rigorous for the structure.** **Animals releasing nitrogen is important: keep it**, just balanced
+    (they release what's in their food, sooner and in hotspots).
+  - **d: all ideas sound good** (plants that improve their own tile, sharp edges like territories, establishing,
+    height, wind, disturbance, regions) and match the flows idea (P13), but **start simple** to keep complexity down.
+  - **e: species as a build you level up, a family you follow as the hero, maybe build slots.** More significant
+    placements, and importantly an activity or minigame, or a part in selection. Reward and progress that are easy
+    to measure.
+  - **Founding gets very expensive and seems to scale across the board.** Cause: a split costs 1500 × 2.5ⁿ with n
+    counting every species made on the island, plants and animals; re-founding is 40 × 3ⁿ per species.
+- **f. Contrast, a simple start (proposal for after 10b).** One climate gradient plus one feedback:
+  - a **wind side** by seed: base water +0.15 on the windward half, −0.1 in the lee, salt spray on the windward
+    coast;
+  - **moss holds water:** ground cover raises its tile's water a little (shade already does), so wet patches
+    reinforce themselves and get sharp edges.
+  - Height, disturbance and named regions come after, once this reads.
+
+## P22. Ideas list *(28 Oct, yours unless marked)*
+- **A tile side view:** a cut-through picture of one tile with all its layers and nutrients (rock, soil, litter,
+  water, plants, animals).
+- **Tile types change over generations** (succession on the ground itself): a lava field tile that gathers litter,
+  soil and water becomes bare ground, later a forest floor on deep soil. Fits "condensing into old growth" (P21 b).
+- **Metabolism as a trait:** the update rate (P21 b) as a gene with a cost: faster reacts and spreads sooner but
+  costs upkeep.
+- **Old growth:** established, stable patches and groups condense and update slower; a disturbance wakes them up.
+- *(AI)* Founding cost per clade, not per island (in 10b).

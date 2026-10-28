@@ -75,6 +75,10 @@ export function variantsView(ctx: Ctx, s: State, speciesId: string) {
     ctx.fillStyle = s.variants[v].shown ? colors.get(v)! : PAL.textDim;
     ctx.fillRect((i % s.w) * T + 1, ((i / s.w) | 0) * T + 1, T - 2, T - 2);
   }
+  for (const a of s.agents) if (a.sp === sp) { // animals: a dot each
+    ctx.fillStyle = s.variants[a.v].shown ? colors.get(a.v)! : PAL.textDim;
+    ctx.fillRect(Math.round(a.x * T) - 2, Math.round(a.y * T) - 2, 4, 4);
+  }
 }
 
 /** One variant's tiles light up in its Variants-view colour, over a light wash: hovering it in the panel. */
@@ -88,6 +92,7 @@ export function variantHighlight(ctx: Ctx, s: State, v: number) {
     if (s.occ[k * n + i] !== v) continue;
     ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
   }
+  for (const a of s.agents) if (a.v === v) ctx.fillRect(Math.round(a.x * T) - 3, Math.round(a.y * T) - 3, 6, 6);
 }
 
 /** One layer: a single colour, stronger where the value is higher. */

@@ -5,7 +5,8 @@
   import { FIELDS, type LayerId } from '../data/fields';
   import { GardenRenderer, VIEWS, type View } from '../view/render';
   import MapReadout from './MapReadout.svelte';
-  import { doFound, game, selectTile, ui } from './game.svelte';
+  import { animalAt } from '../view/animals';
+  import { doFound, followAnimal, game, selectTile, ui } from './game.svelte';
   import EventFeed from './EventFeed.svelte';
 
   const T = NUM.map.tile, W = NUM.map.w * T, H = NUM.map.h * T;
@@ -34,7 +35,9 @@
   onMount(() => {
     let raf = 0;
     const loop = (t: number) => {
-      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus, hoverVariant: ui.hoverVariant });
+      const follow = ui.tab === 'animal' ? ui.follow : -1;
+      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus, hoverVariant: ui.hoverVariant, follow });
+      if (follow >= 0 && zi > 0 && !press) centreOn(follow);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
@@ -50,6 +53,15 @@
     const rows = wrap.scrollHeight - viewport.offsetHeight, room = (wrap.parentElement!.clientHeight || window.innerHeight) - rows - 4;
     const s = Math.max(0.5, Math.min(wrap.clientWidth / W, room / H));
     fitScale = s >= 2 ? Math.floor(s) : s;
+    clampPan();
+  }
+
+  /** Keeps the followed animal in the middle of the view (when zoomed in). */
+  function centreOn(id: number) {
+    const a = game.agents.find((x) => x.id === id);
+    if (!a) return;
+    const want = { x: (W * fitScale) / 2 - a.x * T * scale, y: (H * fitScale) / 2 - a.y * T * scale };
+    pan = { x: pan.x + (want.x - pan.x) * 0.1, y: pan.y + (want.y - pan.y) * 0.1 };
     clampPan();
   }
 
@@ -99,17 +111,20 @@
   }
 
   function up(e: PointerEvent) {
-    if (press && !press.moved) click(tileAt(e));
+    if (press && !press.moved) click(tileAt(e), e);
     press = null;
   }
 
-  function click(i: number) {
+  function click(i: number, e: PointerEvent) {
     if (i < 0) return;
     if (ui.placing) { doFound(i); return; }
+    const r = canvas.getBoundingClientRect();
+    const a = animalAt(game, (((e.clientX - r.left) / r.width) * W) / T, (((e.clientY - r.top) / r.height) * H) / T, Math.max(0.5, 1.2 / ZOOM_STEPS[zi]));
+    if (a) { followAnimal(a.id); return; }
     selectTile(i);
   }
 
-  const label = (v: View) => (v === 'none' ? 'Garden' : v === 'zones' ? 'Zones' : v === 'variants' ? 'Variants' : FIELDS[v as LayerId].name);
+  const label = (v: View) => (v === 'none' ? 'Garden' : v === 'zones' ? 'Zones' : v === 'variants' ? 'Variants' : v === 'animals' ? 'Animals' : FIELDS[v as LayerId].name);
 </script>
 
 <section class="map" bind:this={wrap}>

@@ -1,9 +1,9 @@
-// Genes as data: four shared axes for all plants (steps −4 to +4, each step a list of mods with a cost), the
-// species' traits as on/off trait genes, combos (a pair of axis steps with an extra effect), rarity tiers, and the
-// numbers for mutation and the key innovations. A mod on a band a species doesn't have does nothing.
-import type { Mod, Trait } from './species';
+// Genes as data: four shared axes for all plants and two for animals (steps −4 to +4, each step a list of mods with
+// a cost), the species' traits as on/off trait genes, combos (a pair of axis steps with an extra effect), rarity
+// tiers, and the numbers for mutation and the key innovations. A mod on a band a species doesn't have does nothing.
+import type { Mod, SpeciesDef, Trait } from './species';
 
-export type AxisId = 'dry' | 'shade' | 'lean' | 'spread';
+export type AxisId = 'dry' | 'shade' | 'lean' | 'spread' | 'diet';
 export type Axis = { id: AxisId; name: string; plus: string; minus: string; steps: Record<number, Mod[]> };
 
 /** Steps 3 and 4 extend step 2 by step 1 each: band shifts and gains (×>1) at the same rate, costs (×<1) steeply. */
@@ -51,7 +51,28 @@ export const AXES: Axis[] = [
   }),
 ];
 
-export const AXIS_INDEX: Record<AxisId, number> = { dry: 0, shade: 1, lean: 2, spread: 3 };
+/** Animals: Dry / Wet as for plants, and Picky / Broad (diet). Picky gains more from its main food and less from
+ * the rest of its diet (`range`); Broad eats everything on its list, at a lower gain. */
+export const ANIMAL_AXES: Axis[] = [
+  ramp('dry', 'Dry', 'Dry', 'Wet', {
+    1: [{ need: 'water', low: -0.06, high: -0.06 }, { body: 'upkeep', mul: 1.06 }],
+    2: [{ need: 'water', low: -0.12, high: -0.12 }, { body: 'upkeep', mul: 1.12 }],
+    [-1]: [{ need: 'water', low: 0.06, high: 0.06 }, { body: 'young', mul: 1.1 }],
+    [-2]: [{ need: 'water', low: 0.12, high: 0.12 }, { body: 'young', mul: 1.2 }],
+  }),
+  ramp('diet', 'Diet', 'Picky', 'Broad', {
+    1: [{ body: 'gain', mul: 1.12 }, { body: 'range', mul: 0.6 }],
+    2: [{ body: 'gain', mul: 1.25 }, { body: 'range', mul: 0.35 }],
+    [-1]: [{ body: 'gain', mul: 0.92 }, { body: 'range', mul: 1.5 }],
+    [-2]: [{ body: 'gain', mul: 0.85 }, { body: 'range', mul: 2 }],
+  }),
+];
+
+/** Where each axis sits in a genome. Animals use slots 0 (dry) and 1 (diet); their other slots stay 0. */
+export const AXIS_INDEX: Record<AxisId, number> = { dry: 0, shade: 1, lean: 2, spread: 3, diet: 1 };
+
+/** The axes a species' genes move along. */
+export const axesOf = (def: SpeciesDef): Axis[] => (def.animal ? ANIMAL_AXES : AXES);
 
 /** A pair of axis steps (at least these) with an extra effect that opens a niche. */
 export type Combo = { id: string; name: string; needs: Partial<Record<AxisId, number>>; text: string; mods: Mod[] };
@@ -114,6 +135,16 @@ export const KEYS: Key[] = [
     mods: [{ need: 'water', low: -0.05 }, { stat: 'grow', mul: 0.95 }], node: 'vascular', from: ['land', 'mosses'], precursors: [
       { trait: 'rhizoids', text: 'Rhizoids anchor it' },
       { axis: 'dry', step: 1, text: 'lives drier (Dry)' },
+    ] },
+  { id: 'shellLost', name: 'Shell lost', word: 'Bare', up: 'moves 30% faster', down: 'needs it 0.08 wetter, easier to catch', key: true,
+    mods: [{ body: 'speed', mul: 1.3 }, { need: 'water', low: 0.08 }, { body: 'escape', mul: 1.2 }], node: 'slugs', from: ['snails'], precursors: [
+      { axis: 'dry', step: -1, text: 'loves it wet (Wet)' },
+      { axis: 'diet', step: -1, text: 'eats almost anything (Broad)' },
+    ] },
+  { id: 'insectBody', name: 'Insect body', word: 'Insect', up: 'lives 0.08 drier, moves 20% faster', down: 'costs 5% more to keep', key: true,
+    mods: [{ need: 'water', low: -0.08 }, { body: 'speed', mul: 1.2 }, { body: 'upkeep', mul: 1.05 }], node: 'insects', from: ['hexapods'], precursors: [
+      { axis: 'dry', step: 1, text: 'survives drying out (Dry)' },
+      { trait: 'cuticle', text: 'a hard skin (Hard skin)' },
     ] },
 ];
 

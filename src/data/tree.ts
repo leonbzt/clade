@@ -1,7 +1,9 @@
 // The tree of life for this slice: real nodes, each with a visible list of requirements. A node with a key
 // requirement is a door: one of your variants opens it by meeting its recipe (KEYS) and splitting off.
 // Quick, cheap unlocks first; Vascular plants is the gate into the midgame. Requirements stay met once reached.
+// An arrival is a node whose species turns up by itself at a landmark once its habitat is there; you adopt it.
 import type { LayerId } from './fields';
+import type { LandmarkKind } from './landmarks';
 
 export type Req =
   | { kind: 'layer'; layer: LayerId; min: number; tiles: number }
@@ -16,6 +18,7 @@ export type TreeNode = {
   cost: number; // biomass
   reqs: Req[];
   fact: string;
+  arrive?: { at: LandmarkKind; n: number; text: string }; // an arrival: n individuals show up at a landmark of this kind
 };
 
 export const TREE: TreeNode[] = [
@@ -40,6 +43,24 @@ export const TREE: TreeNode[] = [
   { id: 'ferns', name: 'Ferns', parent: 'vascular', species: 'fern', cost: 5000,
     reqs: [{ kind: 'layer', layer: 'soil', min: 0.55, tiles: 400 }],
     fact: 'Ferns spread by spores made in sori, the brown dots under their fronds.' },
+  { id: 'animals', name: 'Animals', parent: 'life', cost: 40, reqs: [{ kind: 'cover', species: 'moss', tiles: 40 }],
+    fact: 'Animals and fungi are sister groups: both come from one single-celled ancestor that plants split from long before.' },
+  { id: 'hexapods', name: 'Hexapods', parent: 'animals', species: 'springtail', cost: 60,
+    reqs: [{ kind: 'layer', layer: 'litter', min: 0.04, tiles: 60 }],
+    arrive: { at: 'vent', n: 3, text: 'A gust dropped a cloud of springtails by {place}.' },
+    fact: 'Springtails are not insects but their cousins. On Surtsey, tiny animals like them came on the wind within a year of the eruption.' },
+  { id: 'snails', name: 'Land snails', parent: 'animals', species: 'snail', cost: 120,
+    reqs: [{ kind: 'cover', species: 'moss', tiles: 90 }],
+    arrive: { at: 'beach', n: 5, text: 'A drift log washed up at {place}. Five snails are riding on it.' },
+    fact: 'Snails reach islands on floating logs and even on the feet of birds. Their lung is the old gill cavity, turned into an air sac.' },
+  { id: 'slugs', name: 'Slugs', parent: 'snails', species: 'slug', cost: 200, reqs: [{ kind: 'key', gene: 'shellLost' }],
+    fact: 'Slugs are snails that lost their shell. It happened many times, in lines that are not close kin.' },
+  { id: 'insects', name: 'Insects', parent: 'hexapods', species: 'bristletail', cost: 300, reqs: [{ kind: 'key', gene: 'insectBody' }],
+    fact: 'Bristletails look much like the first insects: no wings, a tough skin and three tail bristles. Wings came later, once.' },
+  { id: 'beetles', name: 'Ground beetles', parent: 'hexapods', species: 'beetle', cost: 250,
+    reqs: [{ kind: 'cover', species: 'springtail', tiles: 12 }, { kind: 'cover', species: 'snail', tiles: 15 }],
+    arrive: { at: 'beach', n: 2, text: 'Two ground beetles crawled off a drift log at {place}.' },
+    fact: 'Beetles are the largest order of animals. Ground beetles hunt on the soil surface, and some specialise in cracking snails.' },
 ];
 
 export const START_REACHED = ['life'];

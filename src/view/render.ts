@@ -1,6 +1,7 @@
 // Draws the garden: ground and plants (back to front, ground then herbs) go into a cached scene that is redrawn
 // only when the sim has moved; each frame adds sparkles, steam, the glint of rare variants and the current view on
-// top (zones, one layer, the variants of one species, or the placement view).
+// top (zones, one layer, the variants of one species, or the placement view). Animals move, so they're drawn every
+// frame on top of the scene.
 import { FIELDS, LAYER_IDS, STRATA, type LayerId } from '../data/fields';
 import { TIERS } from '../data/genes';
 import { NUM } from '../data/numbers';
@@ -8,6 +9,7 @@ import { PAL } from '../data/palette';
 import { CALM_MIN_GROWTH, SPRITE_DENSITY } from '../data/view';
 import { SEA, VENT, type State } from '../sim/state';
 import { defOf, glints } from '../sim/variants';
+import { animalsView, drawAnimals } from './animals';
 import { lookOf } from './look';
 import { hash2, makeCanvas } from './pixels';
 import { SPRITE, sprite } from './plants';
@@ -15,9 +17,9 @@ import { TerrainLayer } from './terrain';
 import { layerView, outline, PlacingView, variantHighlight, variantsView, zonesView } from './overlays';
 
 const T = NUM.map.tile;
-export type View = 'none' | 'zones' | LayerId | 'variants';
-export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants'];
-export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number };
+export type View = 'none' | 'zones' | LayerId | 'variants' | 'animals';
+export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants', 'animals'];
+export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number; follow: number };
 
 export class GardenRenderer {
   readonly canvas: HTMLCanvasElement;
@@ -62,9 +64,11 @@ export class GardenRenderer {
       this.sparkles(o.time);
       this.steam(o.time);
       if (o.view === 'variants') variantsView(ctx, s, o.focus);
+      else if (o.view === 'animals') animalsView(ctx, s);
       else if (o.view !== 'none') layerView(ctx, s, o.view);
       else this.glints(o.time);
       if (o.hoverVariant >= 0) variantHighlight(ctx, s, o.hoverVariant);
+      drawAnimals(ctx, s, o.time, o.follow);
     }
     if (o.placing) this.placingView.draw(ctx, o.placing, o.hover);
     else if (o.hover >= 0) outline(ctx, s, o.hover, PAL.text);

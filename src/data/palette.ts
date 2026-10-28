@@ -43,4 +43,11 @@ export const GROUND: Record<string, string> = {
 /** Flat colours for the Zones view: one clear colour per species. */
 export const ZONE: Record<string, string> = {
   cyano: '#3aa8a0', thallus: '#b0e0a0', liverwort: '#7ad06a', moss: '#d0d850', lichen: '#e0a050', fungus: '#efe4c8', clubmoss: '#a070d0', fern: '#4a7ad8',
+  snail: '#d89060', slug: '#e06848', springtail: '#c8b8f0', bristletail: '#a8c0d0', beetle: '#6890e0',
+};
+
+/** Animal colours on the map: [main, shade, highlight]. */
+export const ANIMAL_PAL: Record<string, [string, string, string]> = {
+  snail: ['#a8683c', '#6a3c22', '#e8b878'], slug: ['#c86a3a', '#8a4024', '#f0a070'], springtail: ['#e4dcf4', '#9a90b8', '#ffffff'],
+  bristletail: ['#b4bcc8', '#6c7480', '#e8eef4'], beetle: ['#262a36', '#12141a', '#7aa0e0'],
 };

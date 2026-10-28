@@ -1,7 +1,8 @@
 // Profiles (a species with a genome applied, each change tagged with its source), need scores, fit and tiers.
 // One profile per variant: P[v]. The species' own base genome is a profile too (for the panel and founding).
 import { FIELDS, LAYER_IDS, STATUS_IDS, STRATA, type LayerId, type LevelDef, type StatusId } from '../data/fields';
-import { AXES, KEYS } from '../data/genes';
+import type { BodyStat } from '../data/animals';
+import { axesOf, KEYS } from '../data/genes';
 import { NUM } from '../data/numbers';
 import { type Band, type Mod, type Scalar } from '../data/species';
 import { SEA, type State } from './state';
@@ -17,21 +18,23 @@ export type Profile = {
   tolerance: Tolerance[];
   makes: Partial<Record<LayerId, number>>;
   stats: Record<Scalar, number>;
+  body: Partial<Record<BodyStat, number>>; // animals: the body numbers after genes; empty for plants
   parts: Record<string, string[]>; // why each number is what it is: 'seeds', 'need:water', 'make:nitrogen', ...
 };
 
-const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'reserve'];
+const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'reserve', 'palatable'];
+const BODY: BodyStat[] = ['speed', 'gain', 'upkeep', 'life', 'young', 'escape', 'range'];
 
 /** The mods a genome brings, each with its source's name. */
 function genomeMods(s: State, sp: number, g: Genome): [string, Mod][] {
   const out: [string, Mod][] = [], def = defOf(s, sp);
-  AXES.forEach((a, k) => {
+  axesOf(def).forEach((a, k) => {
     const v = g.axes[k];
     if (v) for (const m of a.steps[v]) out.push([`${a.name} ${v > 0 ? '+' : '−'}${Math.abs(v)}`, m]);
   });
   for (const t of def.traits) if (g.traits.includes(t.id)) for (const m of t.mods) out.push([t.name, m]);
   for (const k of KEYS) if (g.traits.includes(k.id)) for (const m of k.mods) out.push([k.name, m]);
-  const combo = comboOf(g);
+  const combo = def.animal ? null : comboOf(g);
   if (combo) for (const m of combo.mods) out.push([combo.name, m]);
   return out;
 }
@@ -39,7 +42,9 @@ function genomeMods(s: State, sp: number, g: Genome): [string, Mod][] {
 export function buildProfile(s: State, sp: number, g: Genome, v = -1): Profile {
   const def = defOf(s, sp);
   const stats = {} as Record<Scalar, number>, parts: Record<string, string[]> = {};
-  for (const k of SCALARS) { stats[k] = def[k]; parts[k] = [`base ${fmt(def[k])}`]; }
+  for (const k of SCALARS) { stats[k] = k === 'palatable' ? def.palatable ?? 1 : def[k]; parts[k] = [`base ${fmt(stats[k])}`]; }
+  const body: Partial<Record<BodyStat, number>> = {};
+  if (def.animal) for (const k of BODY) { body[k] = def.animal[k]; parts[`body:${k}`] = [`base ${fmt(body[k]!)}`]; }
   const bands: Partial<Record<LayerId, number[]>> = {};
   for (const [id, b] of Object.entries(def.needs)) { bands[id as LayerId] = [...b]; parts[`need:${id}`] = []; }
   const makes = { ...def.makes };
@@ -47,6 +52,7 @@ export function buildProfile(s: State, sp: number, g: Genome, v = -1): Profile {
   const tol: Partial<Record<StatusId, number>> = { ...def.tolerance };
   for (const [src, m] of genomeMods(s, sp, g)) {
     if ('stat' in m) { stats[m.stat] *= m.mul; parts[m.stat].push(`${src} ×${m.mul}`); }
+    else if ('body' in m) { if (body[m.body] !== undefined) { body[m.body]! *= m.mul; parts[`body:${m.body}`].push(`${src} ×${m.mul}`); } }
     else if ('make' in m) { makes[m.make] = (makes[m.make] ?? 0) * m.mul; parts[`make:${m.make}`]?.push(`${src} ×${m.mul}`); }
     else if ('status' in m) { if (tol[m.status] !== undefined) tol[m.status] = Math.min(1, tol[m.status]! + m.tol); }
     else {
@@ -61,7 +67,7 @@ export function buildProfile(s: State, sp: number, g: Genome, v = -1): Profile {
   }));
   // Statuses not listed are tolerated fully.
   const tolerance = (Object.entries(tol) as [StatusId, number][]).map(([id, t]) => ({ status: STATUS_IDS.indexOf(id), tol: t }));
-  return { v, sp, stratum: STRATA.indexOf(def.stratum), needs, tolerance, makes, stats, parts };
+  return { v, sp, stratum: STRATA.indexOf(def.stratum), needs, tolerance, makes, stats, body, parts };
 }
 
 export function profile(s: State, v: number): Profile {

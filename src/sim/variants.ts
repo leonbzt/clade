@@ -1,11 +1,12 @@
 // Species and their variants in play. A slot holds a variant; the variant belongs to a species; the species to a
 // base species in the data. Variants mutate when a plant settles a new tile, win or lose by fit like species do,
-// and die out when they hold no tiles. Rarity is the distance to the species' base genome.
+// and die out when they hold no tiles. Rarity is the distance to the species' base genome. Animals use the same
+// variants: an animal's variant is its genome, and a variant's "tiles" count its animals (a swarm counts once).
 import { STRATA } from '../data/fields';
-import { AXES, COMBOS, GENES, KEYS, TIER, TIERS, type Combo } from '../data/genes';
+import { AXES, axesOf, COMBOS, GENES, KEYS, TIER, TIERS, type Axis, type Combo } from '../data/genes';
 import { SPECIES, type SpeciesDef, type Trait } from '../data/species';
 import { rand } from './rng';
-import { type State } from './state';
+import { idx, type State } from './state';
 import { type Profile, profile } from './fit';
 
 export type Genome = { axes: number[]; traits: string[] }; // axes in AXES order, traits sorted
@@ -73,7 +74,7 @@ export function distance(g: Genome, base: Genome): number {
 export function rarity(s: State, sp: number, g: Genome): number {
   const base = s.species[sp].genome;
   if (newKey(g, base)) return TIER.legendary;
-  const d = distance(g, base), combo = comboOf(g) && !comboOf(base), gene = g.traits.some((t) => !base.traits.includes(t));
+  const plant = !defOf(s, sp).animal, d = distance(g, base), combo = plant && comboOf(g) && !comboOf(base), gene = g.traits.some((t) => !base.traits.includes(t));
   const t = d >= 5 || (combo && gene) ? TIER.epic : d >= 3 || combo ? TIER.rare : Math.min(d, TIER.uncommon);
   return d && g.axes.some((a) => Math.abs(a) > GENES.reach.free) ? Math.min(TIER.epic, t + 1) : t;
 }
@@ -98,7 +99,7 @@ export function variantFor(s: State, sp: number, g: Genome, P?: Profile[]): numb
   if (v < 0) v = s.variants.length;
   const tier = rarity(s, sp, g);
   s.variants[v] = { sp, genome: copy(g), key, alive: true, tiles: 0, shown: false, seen: false, tier,
-    combo: comboOf(g)?.id ?? null, born: s.tick };
+    combo: defOf(s, sp).animal ? null : comboOf(g)?.id ?? null, born: s.tick };
   s.vkey[`${sp}|${key}`] = v;
   if (P) P[v] = profile(s, v);
   return v;
@@ -111,6 +112,7 @@ function swampSmallest(s: State, pool: number[], from: number[]): boolean {
     .sort((a, b) => V[a].tiles - V[b].tiles || V[a].born - V[b].born)[0];
   if (small === undefined) return false;
   for (let slot = 0; slot < s.occ.length; slot++) if (s.occ[slot] === small) s.occ[slot] = pool[0];
+  for (const a of s.agents) if (a.v === small) a.v = pool[0];
   V[pool[0]].tiles += V[small].tiles;
   free(s, small);
   return true;
@@ -125,13 +127,13 @@ function free(s: State, v: number) {
 /** One random step on one axis, or (more rarely) one trait gene flips. Key genes never flip by chance. A step out
  * past `reach.free` from the species' base, or from the clade's original genes, often fails to take (null). */
 export function mutation(s: State, sp: number, g: Genome): Genome | null {
-  const out = copy(g), genes = defOf(s, sp).traits;
+  const out = copy(g), def = defOf(s, sp), genes = def.traits, axes = axesOf(def);
   if (genes.length && rand(s) < GENES.traitShare) {
     const t = genes[Math.floor(rand(s) * genes.length)].id, at = out.traits.indexOf(t);
     if (at >= 0) out.traits.splice(at, 1); else out.traits = [...out.traits, t].sort();
     return out;
   }
-  const a = Math.floor(rand(s) * AXES.length), dir = rand(s) < 0.5 ? -1 : 1, m = GENES.maxStep;
+  const a = Math.floor(rand(s) * axes.length), dir = rand(s) < 0.5 ? -1 : 1, m = GENES.maxStep;
   const was = out.axes[a], now = Math.abs(was + dir) > m ? was - dir : was + dir, R = GENES.reach;
   const home = s.species[sp].genome.axes[a], over = (x: number) => Math.max(0, x - R.free);
   if (Math.abs(now - home) > Math.abs(was - home) && rand(s) >= R.out ** over(Math.abs(now - home))) return null;
@@ -165,6 +167,7 @@ export function recount(s: State) {
     const v = s.occ[slot];
     if (v >= 0) s.variants[v].tiles++;
   }
+  for (const a of s.agents) s.variants[a.v].tiles++;
   s.variants.forEach((x, v) => {
     if (!x.alive) return;
     if (!x.tiles) { free(s, v); return; }
@@ -187,6 +190,8 @@ export function show(s: State, v: number) {
   if (x.tier === TIER.base) return;
   let at = -1;
   for (let slot = 0; slot < s.occ.length && at < 0; slot++) if (s.occ[slot] === v) at = slot % (s.w * s.h);
+  const one = at < 0 ? s.agents.find((a) => a.v === v) : undefined;
+  if (one) at = idx(s, one.x | 0, one.y | 0);
   const key = x.tier === TIER.legendary ? newKey(x.genome, s.species[x.sp].genome) : null;
   const genes = key ? key.name : geneText(s, v);
   s.log.push({ tick: s.tick, kind: 'variant', sp: x.sp, tier: x.tier, name: variantName(s, v), genes, place: placeName(s, at) });
@@ -195,19 +200,19 @@ export function show(s: State, v: number) {
 /** "Dry Shade Moss", "Very Dry Moss" (two steps), "Dry Gemma Liverwort" (a trait gene), or the combo's name:
  * "Crust Moss". The base form is "Wild Moss". */
 export function variantName(s: State, v: number): string {
-  const x = s.variants[v], def = defOf(s, x.sp), base = s.species[x.sp].genome;
+  const x = s.variants[v], def = defOf(s, x.sp), base = s.species[x.sp].genome, axes = axesOf(def);
   if (x.combo) return `${x.combo[0].toUpperCase()}${x.combo.slice(1)} ${def.short}`;
   const key = newKey(x.genome, base);
-  if (key) return `${[key.word, ...axisWords(x.genome, base)].slice(0, 3).join(' ')} ${def.short}`;
-  const words = axisWords(x.genome, base);
+  if (key) return `${[key.word, ...axisWords(x.genome, base, axes)].slice(0, 3).join(' ')} ${def.short}`;
+  const words = axisWords(x.genome, base, axes);
   const gene = x.genome.traits.find((t) => !base.traits.includes(t));
   if (words.length < 2 && gene) words.push(traitOf(s, x.sp, gene)!.name.split(' ')[0]);
   return `${words.length ? words.join(' ') : x.tier === TIER.base ? 'Wild' : 'Plain'} ${def.short}`;
 }
 
 /** Up to two words for how a genome differs from a base: "Dry Wind", "Very Dry". */
-export function axisWords(g: Genome, base: Genome): string[] {
-  return AXES.map((a, k) => ({ d: g.axes[k] - base.axes[k], a }))
+export function axisWords(g: Genome, base: Genome, axes: Axis[]): string[] {
+  return axes.map((a, k) => ({ d: g.axes[k] - base.axes[k], a }))
     .filter((w) => w.d).sort((p, q) => Math.abs(q.d) - Math.abs(p.d)).slice(0, 2)
     .map((w, _, all) => (all.length === 1 && Math.abs(w.d) > 1 ? 'Very ' : '') + (w.d > 0 ? w.a.plus : w.a.minus));
 }
@@ -215,7 +220,7 @@ export function axisWords(g: Genome, base: Genome): string[] {
 /** "dry +1, spread −1, Gemma cups": the differences from the species' base genome. */
 export function geneText(s: State, v: number): string {
   const x = s.variants[v], base = s.species[x.sp].genome;
-  const parts = AXES.map((a, k) => ({ a, d: x.genome.axes[k] - base.axes[k] })).filter((p) => p.d)
+  const parts = axesOf(defOf(s, x.sp)).map((a, k) => ({ a, d: x.genome.axes[k] - base.axes[k] })).filter((p) => p.d)
     .map((p) => `${p.a.id} ${p.d > 0 ? '+' : '−'}${Math.abs(p.d)}`);
   for (const t of x.genome.traits) if (!base.traits.includes(t)) parts.push(traitOf(s, x.sp, t)!.name);
   for (const t of base.traits) if (!x.genome.traits.includes(t)) parts.push(`no ${traitOf(s, x.sp, t)!.name.toLowerCase()}`);

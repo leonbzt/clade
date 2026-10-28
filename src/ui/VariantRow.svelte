@@ -2,7 +2,7 @@
   // One shown variant under its species: tier colour, name, tiles, gene pips (4 axes, then trait genes), a combo
   // badge, the recipe it's working toward, and "Split off" when it's Rare or better (with a key: into a new clade).
   // Splitting asks for a name, then a spot for the founder patch. Hovering lights its tiles up.
-  import { AXES, COMBOS, GENES, TIERS } from '../data/genes';
+  import { axesOf, COMBOS, GENES, TIERS } from '../data/genes';
   import { SPECIES, SPECIES_INDEX } from '../data/species';
   import { TREE } from '../data/tree';
   import { canFoundSpecies, doorOf, splitCost, suggestName } from '../sim/commands';
@@ -23,7 +23,8 @@
     const can = canFoundSpecies(game, v), door = doorOf(game, v), node = door ? TREE.find((n) => n.id === door.node)! : null;
     return {
       tier: TIERS[x.tier], color: variantColors(game, x.sp).get(v), name: variantName(game, v), tiles: x.tiles, genes: geneText(game, v),
-      axes: AXES.map((a, k) => ({ id: a.id, d: x.genome.axes[k] - base.axes[k], word: a.name })),
+      animal: !!def.animal,
+      axes: axesOf(def).map((a, k) => ({ id: a.id, d: x.genome.axes[k] - base.axes[k], word: a.name })),
       traits: def.traits.map((t) => ({ id: t.id, name: t.name, on: x.genome.traits.includes(t.id) })),
       combo: COMBOS.find((c) => c.id === x.combo) ?? null,
       canFound: can.ok, why: can.ok ? '' : can.reason, rareEnough: x.tier >= GENES.foundFrom, cost: splitCost(game, v),
@@ -43,7 +44,7 @@
 <div class="variant" title={row.genes} role="presentation" onmouseenter={() => (ui.hoverVariant = v)}>
   <span class="dot" style:background={row.color} style:outline="2px solid {row.tier.color}"></span>
   <span class="name"><b style:color={row.tier.color}>{row.name}</b>{#if fresh}<span class="new"> ✦ new</span>{/if}
-    <span class="dim small">{row.tier.name} · {row.tiles} tiles</span></span>
+    <span class="dim small">{row.tier.name} · {row.tiles} {row.animal ? 'animals' : 'tiles'}</span></span>
   <span class="pips">
     {#each row.axes as a (a.id)}
       <span class="axis" title="{a.word} {a.d > 0 ? '+' : ''}{a.d}">

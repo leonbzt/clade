@@ -15,7 +15,7 @@ export function tintOf(hue: number, g: Genome): Tint {
 }
 
 export function genomeLook(s: State, sp: number, g: Genome): VariantLook {
-  const tint = tintOf(s.species[sp].hue, s.species[sp].genome), species = defOf(s, sp).id;
+  const def = defOf(s, sp), tint = def.animal ? { hue: s.species[sp].hue, light: 0, sat: 0 } : tintOf(s.species[sp].hue, s.species[sp].genome), species = def.id;
   return { species, traits: g.traits, tint, key: `${species}|${g.traits.join(',')}|${tintKey(tint)}` };
 }
 

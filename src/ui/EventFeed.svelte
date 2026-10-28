@@ -9,6 +9,7 @@
 
   function text(l: LogLine): string {
     if (l.kind === 'flare') return `${l.name} flared: ${l.n} plants cleared. Pioneers will move back in.`;
+    if (l.kind === 'arrival') return l.text;
     const name = game.species[l.sp].name;
     if (l.kind === 'variant') {
       return l.tier === TIER.legendary ? ` ${l.place}: ${l.genes} in ${name}. A new clade can evolve.` : ` form ${l.place}: ${name}, ${l.genes}.`;

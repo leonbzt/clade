@@ -26,7 +26,8 @@ export function reqStatus(s: State, req: Req): ReqStatus {
     return { text: `${key.name} appears in one of your variants`, have, need: 1, met: have >= 1 };
   }
   have = baseCount(s, req.species);
-  return { text: `${SPECIES[SPECIES_INDEX[req.species]].name} tiles`, have, need: req.tiles, met: have >= req.tiles };
+  const def = SPECIES[SPECIES_INDEX[req.species]];
+  return { text: def.animal ? `${def.name} on the island` : `${def.name} tiles`, have, need: req.tiles, met: have >= req.tiles };
 }
 
 /** A door's requirements other than its key: met (or latched). */

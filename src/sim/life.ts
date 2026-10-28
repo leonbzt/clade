@@ -36,7 +36,7 @@ export function settle(s: State, slot: number, v: number, cover: number, code: n
 }
 
 /** Your species' last few tiles don't die and can't be taken. */
-const protectedSp = (s: State, sp: number) => s.foundings[s.species[sp].id] > 0 && s.count[sp] <= L.floor;
+export const protectedSp = (s: State, sp: number) => s.foundings[s.species[sp].id] > 0 && s.count[sp] <= L.floor;
 const protectedAt = (s: State, slot: number) => protectedSp(s, s.variants[s.occ[slot]].sp);
 
 /** The occupant's strength: its health × hold; young and dying plants hold on less well. */
@@ -112,7 +112,7 @@ function spread(s: State, P: Profile[], v: number, k: number, from: number) {
 export function sporeRain(s: State, P: Profile[], dt: number) {
   const n = s.w * s.h;
   for (let sp = 0; sp < s.species.length; sp++) {
-    if (!s.foundings[s.species[sp].id] || !s.count[sp] || rand(s) >= dt * L.rain) continue;
+    if (!s.foundings[s.species[sp].id] || !s.count[sp] || defOf(s, sp).animal || rand(s) >= dt * L.rain) continue;
     const v = pickVariant(s, sp), i = Math.floor(rand(s) * n), slot = P[v].stratum * n + i;
     if (s.terrain[i] === SEA || s.occ[slot] >= 0) continue;
     const f = fit(s, P[v], i);
