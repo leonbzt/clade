@@ -91,7 +91,7 @@ design (`brief.md`); AI ideas go to `systems.md` as proposals. Be critical and l
 | File | Lines | For |
 | --- | --- | --- |
 | `docs/brief.md` | 192 | All decisions, with dates |
-| `docs/systems.md` | ~340 | Proposals P1–P23 (P16–P23 are the recent ones) |
+| `docs/systems.md` | ~410 | Proposals P1–P23 (P16–P23 are the recent ones) |
 | `docs/review-fresh-eyes.md` | — | The 26 Oct outside view (placement is the decision, growth is the reward) |
 | `docs/outline.md` | — | Rough acts outline |
 | `docs/playtests/*.md` | short | The user's notes per slice |
