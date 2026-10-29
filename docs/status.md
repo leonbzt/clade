@@ -1,7 +1,7 @@
 # Status
 
-Updated 2026-10-30: slice 11 part B built and committed (`acd4889`). Your feedback is in P26 (loadouts, real
-biomass, headlines).
+Updated 2026-10-30: slice 11 part B built and committed (`acd4889`). Part C spec rewritten from P26 (30 Oct):
+habitats as six-slot loadouts, grams on top (d3), headlines.
 
 ## Done
 - **Slice 11 part B** (build notes in [slices/11-slot-board.md](slices/11-slot-board.md)): roles from the data
@@ -25,11 +25,18 @@ biomass, headlines).
 - The wind's contrast is good; lichens should lead only on the barest ground. Region names only in Regions view.
 
 ## Next
-1. **Your calls on P26** (`docs/systems.md`): the six-slot loadout (a), and biomass d1, d2 or d3 plus a tile size.
-2. **Part C, reshaped:** habitats as the main places, the loadout board (P26 a) with all three plant layers,
-   habitats highlighted on the map with a loadout card (b), headlines in the feed (e). The spec needs rewriting first.
-3. **Real biomass** (P26 d) as its own slice if d2; it changes slot sizes, so before 12a (the first run) judges slots.
-4. Then 12a (the first run) and 12b (coming home). Pictures (P26 c) with an art pass.
+1. **Build part C** (spec in [slices/11-slot-board.md](slices/11-slot-board.md)): habitats as the board's places,
+   the six-slot loadout with pictures, sizes in grams (P26 d1), a bar showing how full, a Habitats view with cards,
+   headlines and chatter.
+2. **Your check of part C.** Then **think through d2** (real biomass in the sim; downsides and gains in P26). Remind
+   the user before the 12a spec.
+3. 12a (the first run) and 12b (coming home); d2 as its own slice before 12a if you choose it.
+
+## Your notes for another session (30 Oct)
+- Improve the names of items. More animals. More and larger plants: trees and fruits.
+- Bigger tiles (larger scale) with sprites about the same size.
+- **Bug:** refounding a springtail with insect traits keeps the springtail picture and name (should become a
+  bristletail, or just insects).
 
 ## Open
 - "Best" = the biggest share (assumed) or the most efficient? "3 slots" read as lead, eater and hunter.

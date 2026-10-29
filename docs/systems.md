@@ -510,3 +510,24 @@ matter more now.
   the top, and chatter (per-place slot changes), small and collapsible.
 - **Open:** a1 now, or the habitat-kind loadouts straight away? d1, d2 or d3? Tile size? Does "best" mean the
   biggest share or the most efficient (now easier to measure with d2: grams kept per gram eaten)?
+- **Your calls (30 Oct):** a yes, if the menu doesn't get cluttered; b, c and e yes. d: you like d2 a lot but want
+  time to think it through, so **d3**: grams on top in part C, and d2 as its own slice once you've decided. For the
+  bar you want something clear and absolute that still allows comparing (the part C answer: the bar shows how full
+  the slot is, the size is in grams with a size word). Part C spec written.
+- **d2 for when you think it through (AI):**
+  - *What it would improve:* everything has to add up, so the flows the sim fakes today become real. Animals starve
+    when they eat less than they burn, plants regrow from what's left (no more hand-tuned recovery), and litter,
+    soil and nitrogen follow from dead mass. Chains (P21, chains-are-features) get stronger and easier to explain
+    ("the beetles ate 30 g of slugs a minute"). Slot sizes, "best" (grams kept per gram eaten) and later gains all
+    come from one number. Big and small animals become comparable, and gram → kg → t gives a sense of growth.
+  - *Downsides:*
+    - Most of life.ts, agents.ts and fields.ts change, and all the balance work since slice 05 has to be redone.
+      This is the biggest risk.
+    - Real ratios are extreme: a springtail is ~10 000× lighter than a slug, and real food chains lose ~90 % per
+      step. Hunters may become rare unless the efficiencies are tuned away from reality.
+    - Cover (what the art and the fit use) has to come from mass, so a fast-growing plant could look full while
+      holding little.
+    - Real numbers invite real-world checks (players and you will notice wrong ones).
+    - Slower ticks if every member tracks mass (mitigated by groups and the current pacing).
+  - *When:* after you've played part C, before the 12a spec, because the run judges slots in whatever units we
+    have then.

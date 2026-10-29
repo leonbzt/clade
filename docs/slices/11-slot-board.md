@@ -5,7 +5,8 @@
 Builds on slice 10b and springtails on fungi (d8a6293). From P24 b and P25 (your calls, 29 Oct): the sim makes
 the slots, the board lives on the map as well as in a panel, and the wind side comes first. **Read-only:** nothing
 you do changes yet, and the economy stays as it is. Three parts, with a check after each: **A** the wind side and
-the regions (built), **B** slots and the board, **C** habitats, the places the sim makes.
+the regions (built), **B** slots and the board (built), **C** habitats as six-slot loadouts, sizes in grams,
+headlines (P26).
 
 ## Part A: the wind side and the regions *(built; see the build notes)*
 - **Wind:** a prevailing wind by seed. Its rain ramps from about +0.12 on the windward edge to −0.05 in the lee,
@@ -55,23 +56,108 @@ snails and slugs are separate, and a slug species you made still counts as a slu
 - Per slot: raw size and use, the window values, and a **worth** preview (size × share × fit, scaled per place) to
   test the gains formula without touching the economy. The time the slot update takes.
 
-## Part C: habitats, the places the sim makes
-- **Kinds (data):** a test per tile, checked every window, with a little hysteresis: Dark floor (shade ≥ ~0.35: tube
-  roofs, under ferns), Wet seep (water ≥ ~0.6; a stream on stream tiles), Spray coast (salty ≥ ~0.2), Bare rock
-  (soil < ~0.08), Deep soil (soil ≥ ~0.55), Vent scar (cleared by a flare in the last few minutes). One kind per
-  tile, by priority.
-- **A habitat is a region × a kind** with at least ~15 tiles. Its tiles move with the sim; it keeps its identity, so
-  it doesn't flicker.
-- **Names from what holds it:** the kind's noun with the leading plant: "Fern forest", "Mossy stream", "Lichen
-  barrens", "Windy cliff", "Ash scar"; the region tells twins apart. A new lead renames it, as news.
-- Each habitat is a place with its own 3 slots, listed under its region. A **Habitats** map view (key 0): habitat
-  tiles tinted by kind, names when zoomed in.
-- **Feed lines:** "A Fern forest grew on Echo Tube mouth"; "The barrens on the Lee lava, south are gone".
+## Part C: habitats, loadouts and grams *(spec 30 Oct, from P26 and your calls)*
+**Question for this part:** does each habitat read at a glance like a loadout: what fills it, what's missing, and
+how big it is?
+
+### Habitats, the places the sim makes *(kinds in `src/data/habitats.ts`, logic in `src/sim/habitats.ts`)*
+- **Kinds (data):** a test per tile, checked every window, one kind per tile by priority. A tile changes kind only
+  when the new test passes clearly (a small margin), so edges don't flicker:
+  - Vent scar: cleared by a flare in the last ~5 minutes.
+  - Spray coast: salty ≥ ~0.2.
+  - Wet seep: water ≥ ~0.6, or a stream.
+  - Dark floor: shade ≥ ~0.35 (tube roofs, under ferns).
+  - Bare rock: soil < ~0.08.
+  - Deep soil: soil ≥ ~0.55.
+  - Open ground: everything else.
+- **A habitat is a region × a kind** (a counter bucket, so part B's hooks stay as they are). It shows on the board
+  from ~15 tiles and hides below ~8. Its id is its bucket, so it keeps its identity while its tiles move.
+- **Names** come from the kind and what leads it: "Fern forest", "Mossy stream", "Lichen barrens", "Windy cliff",
+  "Ash scar". Twins are told apart by the region ("Fern forest, Echo Tube mouth"). A new lead renames it, as news.
+- **The board's places are the habitats.** Regions stay, but only for naming, twins, the Regions view and the
+  island's best (all buckets count there).
+
+### The loadout: six slots per habitat (P26 a)
+- **The same six slots everywhere, always in the same order,** like gear slots:
+  - plants: **Under ground ✱, Ground ▲, Herb layer ♠** (the lead of each stratum);
+  - animals: **Grazer, Recycler** (litter eater and decomposer), **Hunter**.
+- **What fills an animal slot:** the role under it with the most food made here, and its holder. The plant slots use
+  the leads as they are.
+- **A slot has three looks:**
+  - Filled: the holder's picture (`Specimen`, the leading species' sprite and tint), its name, tier chip and "yours".
+  - Open: an empty frame with the slot's glyph, glowing when big.
+  - Locked: greyed. Nothing of that kind exists here (no plant of the stratum could live here, or no such food is
+    made).
+- **Against clutter:**
+  - The panel shows the six as a 3 × 2 grid of cards: plants on top, animals below.
+  - Click a card to unfold the full roles under it (Moss grazer, Fern grazer …), with what feeds each.
+  - The island's best becomes a collapsed list.
+  - Part B's three rows go.
+
+### Grams, on top of the sim (P26 d1; d2 is its own slice later)
+- **Masses (data, rough, checked with the researcher during the build):**
+  - Plants: grams per m² at full cover (e.g. a cyano crust ~20, a moss mat ~300, ferns ~500).
+  - Animals: grams per member (springtail ~0.1 mg, bristletail ~5 mg, snail ~2 g, slug ~5 g, ground beetle ~0.3 g).
+  - Litter: grams per unit.
+  - A tile is `NUM.mass.tile` m², 1 for now. It's one number, ready for larger tiles later.
+- **Sizes in grams:**
+  - Plant slots: the standing mass of the layer here, plus how much of the could-live ground it covers.
+  - Grazer: the regrowth capacity in g/min.
+  - Recycler: the litter fall in g/min.
+  - Hunter: the young born × their mass, in g/min.
+- **Format:** mg → g → kg → t, two significant digits ("1.2 kg", "40 g/min").
+- Nothing in the sim reads grams back. The top bar's Biomass currency stays as it is until d2.
+
+### The bar: how full, plus an absolute size (your question)
+- **The bar shows how full the slot is:**
+  - the holder's share in its colour;
+  - other eaters in grey;
+  - the rest left empty, as room to fill.
+
+  That's what "used %" meant; the percent goes away.
+- **Size is a number and a word:** "40 g/min · large". The word comes from fixed steps (tiny, small, medium, large,
+  huge; a factor of ~10 apart). The steps are the same everywhere, so two habitats compare directly.
+- The comparison to the island survives in the card's detail ("2nd largest grazer slot on the island").
+
+### On the map
+- **A Habitats view (key 0):** tiles tinted by kind, the chosen habitat outlined, and the holder lit as in part B.
+- **A loadout card on each habitat:**
+  - At the fit zoom: just the six mini icons (two rows of three) at the habitat's middle.
+  - Zoomed in: the name as well.
+  - Click a card or a tile to choose the habitat.
+- The Regions view and its labels stay.
+
+### Headlines and chatter (P26 e)
+- **Headlines:**
+  - the island's best changing;
+  - a new species or an arrival;
+  - a species dying out on the island;
+  - a big slot opening;
+  - a habitat appearing or vanishing ("A Fern forest grew on Echo Tube mouth"; "The barrens on the Lee lava, south
+    are gone").
+
+  Each shows as a banner over the map for ~4 s (one at a time, queued) and stays pinned at the top of the feed (the
+  last 3).
+- **Chatter:** per-habitat slot changes, rare variants and trends. Small and dim, and collapsible (collapsed by
+  default).
+
+### Runner and tests
+- **`npm run sim`:** habitats shown per seed, renames per hour, headlines per hour, the slot update's cost.
+- **Tests:**
+  - a tile at the edge of a kind doesn't flip back and forth;
+  - a habitat keeps its id while its tiles move;
+  - the six slots exist for every habitat, locked where nothing could live.
 
 ## Out of scope
-Gains changing biomass, lineages, runs, releases and forecasts, seasons and new events, moss holding water, height,
-lazy regions, winning wild holders, genome changes, the species screen (P23), guilds (habitat × food, later),
-hiding (shade and caves making prey harder to catch: a later sim change, P25 e).
+- Real biomass in the sim (P26 d2, its own slice next).
+- Loadouts per habitat kind; regions from geology.
+- Real portraits (an art pass).
+- Gains changing biomass; lineages, runs, releases and forecasts.
+- Seasons and new events, moss holding water, height, winning wild holders, genome changes, the species screen
+  (P23), guilds.
+- Hiding (P25 e).
+- Your 30 Oct notes for another session (names, more animals, trees and fruits, bigger tiles, the springtail refound
+  bug).
 
 ## Done when
 - [x] A: `npm run check` and `npm run sim` 5×60 pass with the wind side; shifts noted. Open lava: windward water
@@ -81,7 +167,9 @@ hiding (shade and caves making prey harder to catch: a later sim change, P25 e).
   0.3 ms per tick on average.
 - [x] B tests (few): roles from data (Fern grazer exists with no fern eater); hysteresis keeps a holder at a
   near-equal share.
-- [ ] C: 3–10 habitats per seed at 30–60 min, unique names; a habitat keeps its id while its tiles move.
+- [ ] C: 3–10 habitats shown per seed at 30–60 min, unique names; a habitat keeps its id while its tiles move.
+- [ ] C: every habitat shows its six slots (all three plant layers where they live). Every size on the board is in
+  grams. Headlines average ≤ ~10 an hour. The slot update stays under 0.3 ms per tick.
 - [ ] **You:** can you tell at a glance what each place has and lacks? Does a slot opening or changing hands feel
   like news? Do you want to fill one, and which? Do habitats feel like places the island grew?
 
