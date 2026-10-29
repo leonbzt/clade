@@ -406,3 +406,50 @@ matter more now.
   Picky / Broad, so animal species differ little. Real animal niches come from **diet shifts** (a springtail line
   that eats litter instead of fungi, a snail that eats lichens), **habitat** (bark, rock, litter layer) and
   **timing** (night, season). A diet-shift gene would make animal founding matter.
+
+## P24. The game's shape: lineages, island runs and a slot board *(28–29 Oct, the fresh-eyes planning chat; the plan is [review-game-shape.md](review-game-shape.md))*
+- **a. Principles:** the sim decides and the game names it; you grow one thing the whole time; runs change the
+  line, home pays for it; everything helps something else; pick from offers, designing is scarce; simple first,
+  depth as progress; the world moves; rare means rare in the data; fair to the clock; smallest version first.
+- **b. Home and the slot board:** a slot is a region plus a role (roles mostly from data). The sim gives size, use,
+  holder, tier, trend and "fed by". Gains = size × share × fit, scaled per region. Shown on the map too.
+- **c. Lineages as characters:** class (clade), stats, abilities, a level from runs; 1 → 3–4; each run starts
+  from one of its descendants.
+- **d. Runs on young islands:** choose island, lineage, target and 1–2 helpers; land; broods and the heir's spot;
+  seasons, blooms, locals; ends by the clock, your call or the line dying. The adapted line comes home and has to
+  take a slot (the forecast is its reasons). Finished islands stay as outposts.
+- **e. The nursery:** breeding that costs seeds, kept scarce.
+- **f. The moving world:** seasons with a forecast, succession opening roles, events.
+- **g. Discovery:** forms, keys, morphs, locals, the codex; tiers from the odds; island seeds and genome codes.
+- **h. What you see first:** a simple surface; lenses unlock as progress.
+- **i. Time:** a clock per island; live and coarse; sleeping regions; banked away time for fast-forward; saves.
+- **j. Genome v2, later:** niche genes, stats with upkeep, abilities, forms, morphs.
+- **k. The long target:** the island's climax closes an era with a capstone clade.
+- **l. Order:** 11 the slot board (with the wind side) · 12a the first run · 12b coming home · 13 time and a
+  second lineage · 14 the moving world · 15 genome v2. Spec: [slices/11-slot-board.md](slices/11-slot-board.md).
+- **Your calls (28–29 Oct):**
+  - From five roles and three mixes: **mix 2, built cheaply, with curated slots the sim makes** ("really close to
+    my fantasy and still sounds doable"). Hold its principles; don't overengineer.
+  - The species as a build is the core. Terra Nil is a main reference. Breeding yes, but scarce (a limited
+    resource). Shaping the land as a feeling. The naturalist is a role the game fits (readable animals, distinct
+    species), not the core.
+  - Lineages and island runs: yes. The slot board early: yes. The sim should make the slots and decide the holders.
+  - From the lineage draft you liked growing one thing the whole time, broods, keys, generations, measurable
+    progress, kingdom stats and RPG identity. Missing: a big discovery moment, a purpose for growing better, and
+    lineages boosting each other.
+  - Runs: a separate young island; one session up to a few days of idling; random or small authored islands to
+    start; finished islands give the new species and maybe produce by their resources; going back isn't important.
+    The whole adapted line comes home; lineages level up from runs. Helpers: yes.
+  - Slots: a team or loadout position that is also what the ecosystem needs; mostly build fit, somewhat balanced.
+    Gains: higher tiers, the island growing, bigger numbers, unlocks.
+  - Time: banked away time for fast-forward; chunks computed when you go in (an idea); a larger home island.
+  - World: seasons, slow succession and sudden events, some foreseen. Timers: the payoff of a method you chose
+    (catching blooms, collecting food, timing a release to a wet window).
+  - Discovery: rare genes and combinations people could talk about online; show little at first over deep
+    mechanics; a place to rework stats, genes and combinations.
+  - Stakes: species die out and the game goes on; a line can end, but you can restart or carry on. Wild holders:
+    maybe win them over; not sure yet. A long target: yes.
+  - *(29 Oct, after the written plan)* **Keep genes appearing and spreading by themselves**; you really like it.
+    The other notes and the long target are good. A home board that grows into a big table is fine long term, but
+    it must live on the map as well. Split slice 12. Slice 11 as proposed. The game starts at home. Helpers are full
+    species, sometimes other boosts too. Locals: not sure. The wind side first (in slice 11).

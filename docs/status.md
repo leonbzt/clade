@@ -1,9 +1,12 @@
 # Status
 
-Updated 2026-10-28 (10b done; springtails on fungi committed; planning session prepared). Git: `slice-10b` (ed3e423) tagged; springtails on fungi committed (d8a6293). Working tree clean after this.
+Updated 2026-10-29 (planning done: the game's shape; slice 11 spec written). Git: `slice-10b` (ed3e423) tagged; springtails on fungi committed (d8a6293); the planning docs are not committed yet.
 `npm run check` passes; `npm run sim` 5×60: 5/5 pass.
 
 ## Done
+- **The planning session (28–29 Oct):** the game's shape is lineages (your characters), runs on young islands, and a
+  home slot board the sim makes. The plan, principles and order are in `docs/review-game-shape.md`; your calls
+  are in P24 (`docs/systems.md`).
 - Research: `docs/research/tree-of-life-overview.md` (big structure of plants, fungi, animals; insects, birds,
   mammals, snails; island colonisation; good doors and sister groups).
 - P19 (clade map for acts 1–3, arrivals, partnership doors) and P20 (animals as individuals, plants as patches)
@@ -18,12 +21,12 @@ Updated 2026-10-28 (10b done; springtails on fungi committed; planning session p
   - View: animal sprites, slime trails, an Animals map view; click an animal to follow it and see its card.
 
 ## Next
-1. **A planning session with fresh eyes** (separate session, extra-high effort): read only
-   `docs/session-fresh-eyes.md` (self-contained: vision, state, tensions, agenda). Output: proposals in
-   `systems.md` for the user to decide. No code.
-2. Afterwards: the next slice that tests the player's part fastest (from the session).
-3. Parked: a small feel pass on animals (beetles 0–1, springtails still rising at 60 min), contrast (P21 f), slice
-   11 readability (P17 e, f), the species screen (P23).
+1. **Build slice 11: the slot board** ([slices/11-slot-board.md](slices/11-slot-board.md)): the wind side, named
+   regions, roles from data, slots read from the sim (size, use, holder, trend, fed by), on the map and in a Regions
+   tab. Read-only; the economy doesn't change.
+2. Then 12a (the first run) and 12b (coming home), as in [review-game-shape.md](review-game-shape.md) §8.
+3. Parked: a small feel pass on animals (beetles 0–1, springtails still rising at 60 min), readability (P17 e, f),
+   the species screen (P23), moss holding water (P21 f).
 
 ## Open
 - Clubmoss sometimes holds just over 60% of its stratum (a dev check; one seed in five). A chain, so tune, don't cut.
