@@ -471,3 +471,42 @@ matter more now.
   Groups: named groups (b, c). 3 slots per region and habitat, with an island-wide best of. Hiding: very
   interesting, fits the feeling of discovering things and animals. Region names only in the Regions view.
 - **Open:** "best" = the biggest share (assumed for now) or the most efficient?
+
+## P26. Habitats as loadouts, real biomass, and headlines *(30 Oct, after part B of slice 11)*
+- **Your notes (30 Oct):** part B is a step toward it but not what you pictured. Habitats developing on the map should
+  be highlighted and be the slots to fill, filled by fitting species **like an RPG equipment loadout**. The board
+  should show a **picture of the current best species** (and maybe of the habitat). Regions are fine but weren't
+  needed; later they should grow organically (maybe from geology). Fewer iconic slots alongside the full system.
+  Open slots are good (many more species will come). The feed is fine, but important news must stand out. You want
+  **real biomass**: weight per animal (or group), metabolism and growth potential, in numbers that add up, shown
+  g → kg → t; a niche should be big when much lives there or it matters, and regrowth should count.
+- **a. The loadout (AI):** every place shows the same six iconic slots, always in the same order, like gear slots:
+  **Under ground ✱, Ground ▲, Herb layer ♠** (who leads each plant layer), **Grazer, Recycler** (litter eater and
+  decomposer), **Hunter**. Each one is filled by the best of the full roles under it (Moss grazer, Fern grazer… stay
+  as the detail behind it, and in the island's best). An empty frame means open; a greyed frame means nothing could
+  live here (no herb layer on bare rock). This fixes "only ground cover". *Option:* later, the habitat kind changes
+  the loadout (a spray coast gets no herb slot; a stream gets a water slot).
+- **b. Habitats on the map (AI):** in part C the habitats become the main places. Their tiles get a tint or outline
+  and a small loadout card floats on them, while regions recede to naming and telling twins apart. Regions grown
+  from geology (lava flows, ash, tubes): parked.
+- **c. Pictures (AI):** a filled slot shows the holder's portrait. First the species' map sprite drawn large, with
+  real portraits in an art pass. The habitat card can show a swatch of its kind's ground.
+- **d. Real biomass, three options (AI):**
+  - d1. **Units on top:** a mass per species (grams per full tile of cover, grams per animal) turns cover and members
+    into grams, for display and slot sizes only. The sim stays as it is. Cheap, but numbers still don't truly add up.
+  - d2. **Biomass as the sim's stock:** plants hold grams per tile and grow by a rate × mass (filling up to a
+    maximum, so regrowth is built in); animals have a body mass per member, eat grams, burn mass^0.75 × rate
+    (metabolism), and keep ~10–20 % of what they eat. Dead mass becomes litter in grams, and decomposers turn it
+    into soil and nitrogen. Everything is conserved (sun in, breathing out). A slot's size = food made per minute in
+    grams, shown beside the standing mass ("moss 1.2 kg, makes 40 g/min, 5 % eaten"). Honest and what you
+    described, but it reworks life, agents and fields, and needs a balance pass.
+  - d3. d1 now, d2 later together with plants as patches (P20).
+  - Rough real masses (to check with the researcher): springtail ~0.1 mg, bristletail ~5 mg, snail ~1–3 g, slug
+    ~3–8 g, ground beetle ~0.1–0.5 g; a moss mat ~100–500 g dry per m². This needs a tile size (1 m? 5 m?).
+  - The top bar's "Biomass" is a currency today (plant yield + food eaten × yield), not a mass. With d2 it either
+    becomes a real share of your species' production or gets a new name (open).
+- **e. Headlines (AI):** the feed splits into headlines (the island's best changes, a new species or arrival, a
+  big slot opening, a species dying out), which show as a banner on the map for a few seconds and stay pinned at
+  the top, and chatter (per-place slot changes), small and collapsible.
+- **Open:** a1 now, or the habitat-kind loadouts straight away? d1, d2 or d3? Tile size? Does "best" mean the
+  biggest share or the most efficient (now easier to measure with d2: grams kept per gram eaten)?
