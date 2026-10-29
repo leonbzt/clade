@@ -1,34 +1,30 @@
 # Status
 
-Updated 2026-10-29 (planning done: the game's shape; slice 11 spec written). Git: `slice-10b` (ed3e423) tagged; springtails on fungi committed (d8a6293); the planning docs are not committed yet.
-`npm run check` passes; `npm run sim` 5×60: 5/5 pass.
+Updated 2026-10-29: slice 11 part A committed, slots redesigned (P25). Check passes; sim 5×60: 5/5.
 
 ## Done
-- **The planning session (28–29 Oct):** the game's shape is lineages (your characters), runs on young islands, and a
-  home slot board the sim makes. The plan, principles and order are in `docs/review-game-shape.md`; your calls
-  are in P24 (`docs/systems.md`).
-- Research: `docs/research/tree-of-life-overview.md` (big structure of plants, fungi, animals; insects, birds,
-  mammals, snails; island colonisation; good doors and sister groups).
-- P19 (clade map for acts 1–3, arrivals, partnership doors) and P20 (animals as individuals, plants as patches)
-  in `docs/systems.md`, with your calls.
-- **Slice 10 (first animals, as individuals) built**, spec and build notes in `docs/slices/10-first-animals.md`:
-  - Animals are agents (`src/sim/agents.ts`), data in `src/data/animals.ts`: diets by stock, plant cover or prey tag.
-  - Arrivals (`src/sim/arrivals.ts`): springtails on the wind (~6–14 min), snails on a drift log (~7–15 min),
-    ground beetles later (~31–40 min). Adopt on the tree; repeat arrivals while a species is small.
-  - Doors: Slugs (Shell lost), Insects (Insect body → bristletails). Animal variants, splits and recipes use the
-    plant core.
-  - Plants: Bitter gene; palatability per plant; grazing takes cover and some health.
-  - View: animal sprites, slime trails, an Animals map view; click an animal to follow it and see its card.
+- **Slice 11 part A** (spec and build notes: [slices/11-slot-board.md](slices/11-slot-board.md)):
+  - Wind side (`src/sim/island.ts`, `NUM.island.wind`): direction by seed, a rain ramp added on top of base water,
+    salt spray on the windward coast. Open lava at 60 min: windward 0.44–0.47 water, lee 0.20–0.25.
+  - Regions (`src/sim/regions.ts`; `s.region`, `s.regions`): landmark surroundings plus wind-side lava pieces;
+    11–14 per seed, 60–900 tiles, unique names. Made once; the sim doesn't read them.
+  - Regions map view (key 9), region and side on the tile card, a land line in `npm run sim`, tests.
+  - Fix (`src/sim/keys.ts`): door patches no longer paint over other doors' candidates (seed 1 never got mosses).
+  - Sim shift: wetter and more mixed; club moss leads, lichens drop, moss and fungi roughly double.
+- P25 in `docs/systems.md` (slots from food links and habitats); the spec rewritten into parts A, B and C.
+
+## Decided (29 Oct, in brief.md)
+- Slots = leads, food links and habitats the sim detects, beside the fixed regions. Guilds later.
+- Groups are named base species. 3 slots per region and habitat, plus an island-wide best of.
+- The wind's contrast is good; lichens should lead only on the barest ground. Region names only in Regions view.
 
 ## Next
-1. **Build slice 11: the slot board** ([slices/11-slot-board.md](slices/11-slot-board.md)): the wind side, named
-   regions, roles from data, slots read from the sim (size, use, holder, trend, fed by), on the map and in a Regions
-   tab. Read-only; the economy doesn't change.
-2. Then 12a (the first run) and 12b (coming home), as in [review-game-shape.md](review-game-shape.md) §8.
-3. Parked: a small feel pass on animals (beetles 0–1, springtails still rising at 60 min), readability (P17 e, f),
-   the species screen (P23), moss holding water (P21 f).
+1. **Build slice 11 part B** (slots and the board): roles from data, counters where animals eat, plants grow and
+   litter falls, `src/sim/slots.ts`, the Regions tab, slot icons on the map, feed lines, dev panel. Then a check.
+2. Then part C (habitats), then 12a (the first run) and 12b (coming home).
 
 ## Open
-- Clubmoss sometimes holds just over 60% of its stratum (a dev check; one seed in five). A chain, so tune, don't cut.
-- Plants as patches (P20), the deep-time road (later), partnership doors (P19 b).
-- Older: Liverworts' timing varies; combos rare; flows (P13), zooms (P15), nitrogen (P11); delete `toys/`?
+- "Best" = the biggest share (assumed) or the most efficient? "3 slots" read as lead, eater and hunter.
+- Hiding (P25 e), later. Tube mouths often merge into a vent field. Slugs die out on seed 4.
+- Parked: animal feel (beetles 0–1), readability (P17 e, f), species screen (P23), moss holding water (P21 f),
+  plants as patches (P20), partnership doors (P19 b); flows, zooms, nitrogen; delete `toys/`?

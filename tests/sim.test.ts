@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readdirSync, readFileSync } from 'node:fs';
 import { LAYER_IDS } from '../src/data/fields';
 import { SPECIES_INDEX } from '../src/data/species';
-import { createState, VENT, type State } from '../src/sim/state';
+import { createState, SEA, VENT, type State } from '../src/sim/state';
 import { advance } from '../src/sim/tick';
 import { botTick } from '../src/sim/bot';
 import { canFoundSpecies, coverCount, evolve, found, foundingCost, foundSpecies } from '../src/sim/commands';
@@ -45,7 +45,26 @@ describe('sim', () => {
     expect(hash(play(7))).not.toBe(hash(play(8)));
   }, 60_000);
 
-  it('makes every kind of landmark, and salt only near beaches', () => {
+  it('regions: 8–14 per seed, each of at least 60 tiles, every land tile in one, unique names', () => {
+    for (let seed = 1; seed <= 6; seed++) {
+      const s = createState(seed), sizes = s.regions.map(() => 0);
+      s.terrain.forEach((t, i) => { if (t !== SEA) { expect(s.region[i]).toBeGreaterThanOrEqual(0); sizes[s.region[i]]++; } else expect(s.region[i]).toBe(-1); });
+      expect(s.regions.length).toBeGreaterThanOrEqual(8);
+      expect(s.regions.length).toBeLessThanOrEqual(14);
+      expect(Math.min(...sizes)).toBeGreaterThanOrEqual(60);
+      expect(new Set(s.regions.map((g) => g.name)).size).toBe(s.regions.length);
+    }
+  });
+
+  it('the wind: open lava on the windward side starts wetter than in the lee', () => {
+    const s = createState(5), med = (ww: boolean) => {
+      const v = [...s.base.water].filter((_, i) => s.region[i] >= 0 && s.regions[s.region[i]].kind === 'lava' && (s.windward[i] >= 0.5) === ww).sort((a, b) => a - b);
+      return v[v.length >> 1];
+    };
+    expect(med(true) - med(false)).toBeGreaterThan(0.06);
+  });
+
+  it('makes every kind of landmark, and strong salt only on beaches', () => {
     const s = createState(4), kinds = new Set(s.landmarks.map((m) => m.kind));
     expect([...kinds].sort()).toEqual(['beach', 'cave', 'spring', 'vent']);
     const beach = new Set(s.landmarks.filter((m) => m.kind === 'beach').flatMap((m) => m.tiles));

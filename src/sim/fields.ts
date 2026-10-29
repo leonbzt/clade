@@ -51,7 +51,7 @@ export function stockTerms(def: StockDef, v: number, plus: number, minus: number
 /** The parts of one level on one tile. */
 export function levelTerms(s: State, id: LayerId, def: LevelDef, add: number, i: number) {
   const out: { label: string; value: number }[] = [];
-  if (s.base[id][i]) out.push({ label: 'ground and landmarks', value: s.base[id][i] });
+  if (s.base[id][i]) out.push({ label: 'ground, landmarks and wind', value: s.base[id][i] });
   for (const [l, w] of Object.entries(def.from ?? {})) out.push({ label: FIELDS[l as LayerId].name, value: w * s.layers[l as LayerId][i] });
   if (add) out.push({ label: 'plants here', value: add });
   return out;

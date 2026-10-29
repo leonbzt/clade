@@ -93,6 +93,16 @@ What's **decided**. Only the user moves things into this file. AI proposals live
   organism needs character, not just a group name. **Idea:** many real species, referenced by stat combinations;
   authored but expandable. **Idea:** traits could all have a downside or upkeep.
 
+### Direction *(29 Oct, after slice 11 part A: the wind side and regions)*
+- **Slots come from food links and habitats the sim detects** (P25). Regions exist so you look for a good slot
+  somewhere and fill it, so **sim-made places that depend on what's there** sit beside the fixed ones ("windy cliff,
+  fern forest, mossy river"). Some difficulties are acceptable for this. **Guilds** (habitat × food) unlock later.
+- **Groups are named base species:** snails aren't slugs, but a slug species you found is still a slug.
+- **3 slots per region and habitat, with an island-wide best of.**
+- **Regional contrast from the wind is good;** lichens should lead only on the barest ground. Region names show
+  only in the Regions view (or on zoom).
+- **Idea:** hiding in shade and caves (prey harder to catch) fits the feeling of discovering things and animals.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.

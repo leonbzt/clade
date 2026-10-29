@@ -1,5 +1,5 @@
-// Island making: the coast, then the landmarks by seed, then the base values and statuses they leave behind.
-// Only the shapes are code (a point, a stream line, a stretch of coast, a tube); the effects are data.
+// Island making: the coast, then the landmarks by seed, then the wind and the base values and statuses they leave
+// behind. Only the shapes are code (a point, a stream line, a stretch of coast, a tube); the effects are data.
 import { type LayerId, type StatusId } from '../data/fields';
 import { LANDMARKS, type LandmarkKind } from '../data/landmarks';
 import { NUM } from '../data/numbers';
@@ -12,7 +12,8 @@ const between = (s: State, [a, b]: readonly [number, number]) => a + Math.floor(
 const dist = (s: State, i: number, j: number) => Math.hypot((i % s.w) - (j % s.w), ((i / s.w) | 0) - ((j / s.w) | 0));
 const isRock = (t: number) => t === LAVA || t === CRACK;
 
-export function buildIsland(s: State) {
+/** Makes the island. Returns the roughness field, so regions can follow the same ragged edges. */
+export function buildIsland(s: State): Float32Array {
   const I = NUM.island, { w, h } = s, n = w * h;
   // A wobbly ellipse: a few waves around the coast make bays and points.
   const wob = [0, 1, 2, 3].map(() => rand(s) * 6.28);
@@ -79,7 +80,7 @@ export function buildIsland(s: State) {
   }
 
   nameLandmarks(s);
-  applyEffects(s);
+  return applyEffects(s, toSea);
 }
 
 /** Tiles to the nearest sea tile (8 neighbours). */
@@ -154,9 +155,29 @@ function roughness(s: State): Float32Array {
   return a.map((v) => 0.7 + (0.6 * (v - lo)) / (hi - lo || 1));
 }
 
-/** Base values and statuses: each landmark's effects, fading with distance; the strongest source wins. */
-function applyEffects(s: State) {
-  const I = NUM.island, n = s.w * s.h, caps = new Map<number, number>(), rough = roughness(s);
+/** The prevailing wind, by seed. Rain falls on the windward side and the lee stays drier (returned per tile, added
+ * on top of everything else), and salt spray reaches a little way into the windward coast. */
+function wind(s: State, toSea: Int32Array): Float32Array {
+  const W = NUM.island.wind, n = s.w * s.h, a = rand(s) * 6.28, rain = new Float32Array(n);
+  s.windFrom = a;
+  const along = (i: number) => ((i % s.w) + 0.5 - s.w / 2) * Math.cos(a) + (((i / s.w) | 0) + 0.5 - s.h / 2) * Math.sin(a);
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < n; i++) if (s.terrain[i] !== SEA) { lo = Math.min(lo, along(i)); hi = Math.max(hi, along(i)); }
+  for (let i = 0; i < n; i++) {
+    if (s.terrain[i] === SEA) continue;
+    const t = (along(i) - lo) / (hi - lo || 1);
+    s.windward[i] = t;
+    rain[i] = W.lee + (W.windward - W.lee) * t * t * (3 - 2 * t); // smoothstep: each side mostly near its own value
+    // Spray: on the coast that faces the wind (fading in from the island's middle), 1 then 2 tiles in.
+    s.statuses.salty[i] = W.spray * Math.min(1, Math.max(0, (t - 0.55) / 0.25)) * Math.max(0, 1 - (toSea[i] - 1) / W.sprayIn);
+  }
+  return rain;
+}
+
+/** Base values and statuses: each landmark's effects, fading with distance (the strongest source wins), then the
+ * wind's rain on top. */
+function applyEffects(s: State, toSea: Int32Array): Float32Array {
+  const I = NUM.island, n = s.w * s.h, caps = new Map<number, number>(), rough = roughness(s), rain = wind(s, toSea);
   for (let i = 0; i < n; i++) if (s.terrain[i] !== SEA) s.base.water[i] = I.lavaWet;
   for (const m of s.landmarks) {
     const def = LANDMARKS[m.kind];
@@ -177,8 +198,10 @@ function applyEffects(s: State) {
   }
   for (let i = 0; i < n; i++) {
     if (s.terrain[i] === SEA) continue;
+    s.base.water[i] = Math.min(1, Math.max(0, s.base.water[i] + rain[i]));
     if (s.terrain[i] === CRACK) s.base.water[i] = Math.min(1, s.base.water[i] + I.crackWet);
     s.soilCap[i] = caps.get(i) ?? Math.min(1, I.soilCapBase + s.base.water[i]);
     s.layers.water[i] = s.base.water[i];
   }
+  return rough;
 }

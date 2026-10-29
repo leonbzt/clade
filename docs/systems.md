@@ -453,3 +453,21 @@ matter more now.
     The other notes and the long target are good. A home board that grows into a big table is fine long term, but
     it must live on the map as well. Split slice 12. Slice 11 as proposed. The game starts at home. Helpers are full
     species, sometimes other boosts too. Locals: not sure. The wind side first (in slice 11).
+
+## P25. Slots from food links and habitats *(29 Oct, after part A of slice 11)*
+- **a. Two kinds of place:** the fixed regions (geography: landmarks and wind side, made once) and **habitats** the
+  sim makes from what grows: a region × a kind (dark floor, wet seep, spray coast, bare rock, deep soil, vent scar),
+  tested per tile every check. Tiles move; the habitat keeps its identity. Named by kind and what holds it
+  ("Fern forest", "Mossy stream", "Lichen barrens", "Windy cliff").
+- **b. Roles:** leads (the major per layer), food links (one per thing eaten: Slug eater, Moss grazer, Litter eater,
+  Decomposer; they open when their food appears), later guilds (habitat × food: "dark-floor grazer").
+- **c. Groups are base species:** snails ≠ slugs, and a slug species you made still counts as a slug.
+- **d. The board:** each place shows 3 slots (its lead, its biggest eating link, its biggest hunting link); on top,
+  the island's best of each role ("Best slug eater: Ground beetles").
+- **e. Later, hiding:** shade and caves make prey harder to catch, so dark places matter to animals. A sim change.
+- **Your calls (29 Oct):** food links and detected habitats are "what I had in mind"; you'll accept some difficulties
+  for them. Sim-made places that depend on what's there, alongside the fixed ones ("windy cliff, fern forest, mossy
+  river"): the reason for regions was to look for a good slot somewhere and fill it. Guilds: great, unlock later.
+  Groups: named groups (b, c). 3 slots per region and habitat, with an island-wide best of. Hiding: very
+  interesting, fits the feeling of discovering things and animals. Region names only in the Regions view.
+- **Open:** "best" = the biggest share (assumed for now) or the most efficient?

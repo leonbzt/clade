@@ -5,6 +5,7 @@ import type { LandmarkKind } from '../data/landmarks';
 import { NUM } from '../data/numbers';
 import { START_REACHED } from '../data/tree';
 import { buildIsland } from './island';
+import { buildRegions, type Region } from './regions';
 import { baseSpecies, type Species, type Variant } from './variants';
 
 export { SEA, BEACH, LAVA, CRACK, VENT, SPRING, STREAM, CAVE } from './island';
@@ -60,6 +61,10 @@ export type State = {
   landmarks: Landmark[];
   mark: Int16Array; // per tile: the landmark it belongs to, or -1
   vents: number[];
+  windFrom: number; // the wind's direction, in radians: from the island's centre toward where it comes from
+  windward: Float32Array; // per tile: 1 on the windward edge, 0 on the lee edge
+  region: Int16Array; // per tile: its region, or -1 at sea
+  regions: Region[];
   layers: Record<LayerId, Float32Array>;
   fall: Float32Array; // litter from dying plants since the last layer update, per tile
   occ: Int16Array; // per slot: variant index, or -1
@@ -108,6 +113,7 @@ export function createState(seed: number): State {
     terrain: new Uint8Array(n), base: perLayer(n), soilCap: new Float32Array(n),
     statuses: Object.fromEntries(STATUS_IDS.map((id) => [id, new Float32Array(n)])) as Record<StatusId, Float32Array>,
     landmarks: [], mark: new Int16Array(n).fill(-1), vents: [],
+    windFrom: 0, windward: new Float32Array(n), region: new Int16Array(n).fill(-1), regions: [],
     layers: perLayer(n), fall: new Float32Array(n),
     occ: new Int16Array(slots).fill(-1), cover: new Float32Array(slots), health: new Float32Array(slots), dying: new Uint8Array(slots), old: new Uint8Array(slots),
     lastTick: new Int32Array(slots), lastCode: new Uint8Array(slots), lastSp: new Int16Array(slots).fill(-1),
@@ -120,7 +126,7 @@ export function createState(seed: number): State {
   };
   s.count = s.species.map(() => 0); s.members = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);
   for (const sp of s.species) s.foundings[sp.id] = 0;
-  buildIsland(s);
+  buildRegions(s, buildIsland(s));
   return s;
 }
 

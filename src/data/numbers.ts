@@ -12,7 +12,11 @@ export const NUM = {
     crackShare: 0.1,
     crackWet: 0.18,
     soilCapBase: 0.27, // soil cap on dry ground; plus the wetness
+    // The prevailing wind (direction by seed): its rain adds to the base water everywhere, from `windward` on the
+    // windward edge to `lee` on the far edge; its coast gets salt spray, fading over `sprayIn` tiles.
+    wind: { windward: 0.12, lee: -0.05, spray: 0.3, sprayIn: 2 },
   },
+  regions: { min: 60, piece: 550, most: 14 }, // tiles; open lava is cut into pieces of about `piece` tiles
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
     oldEvery: 4, // old growth updates every this many ticks

@@ -63,15 +63,16 @@ export function recipesOf(s: State, v: number) {
     .map((k) => ({ key: k, items: k.precursors.map((p) => ({ text: p.text, met: hasPrecursor(x.genome, p) })) }));
 }
 
-/** Each check: candidates roll the key; with none, the nudge clock runs. `s.cands` lists every candidate. */
+/** Each check: candidates roll the key; with none, the nudge clock runs. `s.cands` lists every candidate, found for
+ * all doors first, so one door's patch never paints over another door's candidate. */
 export function keyInnovations(s: State, P: Profile[], dt: number) {
-  s.cands = [];
-  for (const key of KEYS) {
-    if (!doorOpen(s, key) || keyCarrier(s, key) >= 0 || !fromSpecies(s, key).length) continue;
-    const all = pool(s, key), cands = all.filter((c) => c.k === key.precursors.length).sort((a, b) => b.tiles - a.tiles);
+  const open = KEYS.filter((key) => doorOpen(s, key) && keyCarrier(s, key) < 0 && fromSpecies(s, key).length);
+  const pools = open.map((key) => pool(s, key));
+  s.cands = open.flatMap((key, k) => pools[k].filter((c) => c.k === key.precursors.length).map((c) => c.v));
+  for (const [k, key] of open.entries()) {
+    const all = pools[k], cands = all.filter((c) => c.k === key.precursors.length).sort((a, b) => b.tiles - a.tiles);
     const step = dt / 60;
     if (cands.length) {
-      s.cands.push(...cands.map((c) => c.v));
       s.keyClock[key.id] = 0;
       const t = s.keyRoll[key.id] ?? 0, [w0, w1] = KEY.window;
       s.keyRoll[key.id] = t + step;
@@ -106,7 +107,8 @@ function nudge(s: State, P: Profile[], key: Key, ranked: { v: number }[]) {
   }
 }
 
-/** A patch (radius r) of variant `from`'s tiles around one of them takes genome g. Returns the new variant. */
+/** A patch (radius r) around one of variant `from`'s tiles takes genome g: its species' tiles there, except door
+ * candidates and key carriers. Returns the new variant. */
 function patchInto(s: State, P: Profile[], from: number, g: Genome, r = KEY.patch): number {
   if (defOf(s, s.variants[from].sp).animal) return groupInto(s, P, from, g, r);
   const sp = s.variants[from].sp, n = s.w * s.h, k = stratumOf(s, sp), mine: number[] = [];
@@ -118,7 +120,8 @@ function patchInto(s: State, P: Profile[], from: number, g: Genome, r = KEY.patc
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
     const xx = x0 + dx, y = y0 + dy, slot = k * n + y * s.w + xx;
     if (xx < 0 || y < 0 || xx >= s.w || y >= s.h) continue;
-    if (s.occ[slot] >= 0 && s.variants[s.occ[slot]].sp === sp) {
+    const o = s.occ[slot];
+    if (o >= 0 && s.variants[o].sp === sp && (o === from || (!s.cands.includes(o) && !newKey(s.variants[o].genome, s.species[sp].genome)))) {
       s.occ[slot] = v; s.lastCode[slot] = EV.mutated; s.lastTick[slot] = s.tick; s.variants[v].tiles++;
     }
   }

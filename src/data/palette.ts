@@ -46,6 +46,11 @@ export const ZONE: Record<string, string> = {
   snail: '#d89060', slug: '#e06848', springtail: '#c8b8f0', bristletail: '#a8c0d0', beetle: '#6890e0',
 };
 
+/** The Regions view: a tint per kind of region; open lava by wind side. */
+export const REGION_TINT: Record<string, string> = {
+  vent: '#e07848', spring: '#48a8e0', beach: '#e0c878', cave: '#a070d0', windward: '#58c0a0', lee: '#b09068',
+};
+
 /** Animal colours on the map: [main, shade, highlight]. */
 export const ANIMAL_PAL: Record<string, [string, string, string]> = {
   snail: ['#a8683c', '#6a3c22', '#e8b878'], slug: ['#c86a3a', '#8a4024', '#f0a070'], springtail: ['#e4dcf4', '#9a90b8', '#ffffff'],

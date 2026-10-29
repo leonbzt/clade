@@ -5,6 +5,7 @@
 // reached, sorting (water on Dry + tiles minus the rest of the species), first Rare, combos, Leafy shoot, species made.
 // A third line: animals. When each arrived (adopted by the bot), how many live at the end (members, min–max over the
 // last 10 minutes, and groups as a share of the cap), moss now vs its peak, agents (share settled), and the tick's cost.
+// A fourth line: the land. Median water on the open lava, windward vs lee (all land in brackets), and the regions.
 // A measuring tool, not a balance bot. Skipped in `npm run check`.
 import { it } from 'vitest';
 import { writeSync } from 'node:fs';
@@ -69,6 +70,13 @@ it.skipIf(!env.SIM)('sim', () => {
       ANIMAL_IDS.map((id) => `${id.slice(0, 5)} ${members(s, id)} (${lo[id] ?? 0}–${hi[id] ?? 0}) ${Math.round((100 * count(s, id)) / capOf(id))}%`).join(' ') +
       ` | snail reach ${reach < 0 ? '-' : reach.toFixed(0)} | moss ${count(s, 'moss')}/${mossPeak} | ${s.agents.length} agents ${Math.round((100 * s.agents.filter((a) => a.slow).length) / (s.agents.length || 1))}% slow` +
       ` | ${msN ? (ms / msN).toFixed(2) : '-'} ms/tick`);
+    const med = (ww: boolean, lava: boolean) => {
+      const v = [...s.layers.water].filter((_, i) => s.region[i] >= 0 && (s.windward[i] >= 0.5) === ww && (!lava || s.regions[s.region[i]].kind === 'lava')).sort((a, b) => a - b);
+      return v[v.length >> 1];
+    };
+    const sizes = s.regions.map((g) => g.tiles), wet = med(true, true) - med(false, true);
+    out(`     land: water on lava windward ${med(true, true).toFixed(2)} lee ${med(false, true).toFixed(2)} (all land ${med(true, false).toFixed(2)}/${med(false, false).toFixed(2)})` +
+      ` ${wet >= 0.08 ? 'ok' : 'LOW'} | ${s.regions.length} regions, ${Math.min(...sizes)}–${Math.max(...sizes)} tiles`);
     if (env.LIMITS && seed === 1) {
       const P = profiles(s);
       for (let sp = 0; sp < s.species.length; sp++) {

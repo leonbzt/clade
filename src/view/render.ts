@@ -1,7 +1,7 @@
 // Draws the garden: ground and plants (back to front, ground then herbs) go into a cached scene that is redrawn
 // only when the sim has moved; each frame adds sparkles, steam, the glint of rare variants and the current view on
-// top (zones, one layer, the variants of one species, or the placement view). Animals move, so they're drawn every
-// frame on top of the scene.
+// top (zones, one layer, the variants of one species, the regions, or the placement view). Animals move, so they're
+// drawn every frame on top of the scene.
 import { FIELDS, LAYER_IDS, STRATA, type LayerId } from '../data/fields';
 import { TIERS } from '../data/genes';
 import { NUM } from '../data/numbers';
@@ -14,11 +14,11 @@ import { lookOf } from './look';
 import { hash2, makeCanvas } from './pixels';
 import { SPRITE, sprite } from './plants';
 import { TerrainLayer } from './terrain';
-import { layerView, outline, PlacingView, variantHighlight, variantsView, zonesView } from './overlays';
+import { layerView, outline, PlacingView, regionsView, variantHighlight, variantsView, zonesView } from './overlays';
 
 const T = NUM.map.tile;
-export type View = 'none' | 'zones' | LayerId | 'variants' | 'animals';
-export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants', 'animals'];
+export type View = 'none' | 'zones' | LayerId | 'variants' | 'animals' | 'regions';
+export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants', 'animals', 'regions'];
 export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number; follow: number };
 
 export class GardenRenderer {
@@ -65,6 +65,7 @@ export class GardenRenderer {
       this.steam(o.time);
       if (o.view === 'variants') variantsView(ctx, s, o.focus);
       else if (o.view === 'animals') animalsView(ctx, s);
+      else if (o.view === 'regions') regionsView(ctx, s, o.hover);
       else if (o.view !== 'none') layerView(ctx, s, o.view);
       else this.glints(o.time);
       if (o.hoverVariant >= 0) variantHighlight(ctx, s, o.hoverVariant);

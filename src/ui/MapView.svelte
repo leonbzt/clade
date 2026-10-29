@@ -20,10 +20,14 @@
   let zi = $state(Number(new URLSearchParams(location.search).get('zoom')) || 0); // index into ZOOM_STEPS (dev: ?zoom=3)
   let pan = $state({ x: 0, y: 0 });
   const scale = $derived(fitScale * ZOOM_STEPS[zi]);
-  // Landmark names show once you zoom in.
+  // Region names show in the Regions view; elsewhere landmark names show once you zoom in.
   const labels = $derived.by(() => {
     ui.gen;
     return game.landmarks.map((m) => ({ name: m.name, x: ((m.at % game.w) + 0.5) * T, y: Math.floor(m.at / game.w) * T }));
+  });
+  const regionLabels = $derived.by(() => {
+    ui.gen;
+    return game.regions.map((g) => ({ name: g.name, x: ((g.at % game.w) + 0.5) * T, y: (Math.floor(g.at / game.w) + 0.5) * T }));
   });
 
   $effect(() => {
@@ -124,7 +128,8 @@
     selectTile(i);
   }
 
-  const label = (v: View) => (v === 'none' ? 'Garden' : v === 'zones' ? 'Zones' : v === 'variants' ? 'Variants' : v === 'animals' ? 'Animals' : FIELDS[v as LayerId].name);
+  const NAMES: Partial<Record<View, string>> = { none: 'Garden', zones: 'Zones', variants: 'Variants', animals: 'Animals', regions: 'Regions' };
+  const label = (v: View) => NAMES[v] ?? FIELDS[v as LayerId].name;
 </script>
 
 <section class="map" bind:this={wrap}>
@@ -148,7 +153,11 @@
       style:height="{H * scale}px"
       style:transform="translate({pan.x}px, {pan.y}px)"
     ></canvas>
-    {#if zi > 0}
+    {#if ui.view === 'regions'}
+      {#each regionLabels as l (l.name)}
+        <span class="label region" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
+      {/each}
+    {:else if zi > 0}
       {#each labels as l (l.name)}
         <span class="label" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
       {/each}
@@ -180,6 +189,7 @@
   canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; display: block; transform-origin: 0 0; }
   .label { position: absolute; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap; font-size: 14px;
     color: var(--text); text-shadow: 1px 1px 0 var(--ink), -1px 1px 0 var(--ink), 1px -1px 0 var(--ink), -1px -1px 0 var(--ink); }
+  .label.region { transform: translate(-50%, -50%); font-size: 13px; }
   .tools { display: flex; gap: 14px; align-items: center; justify-content: space-between; width: 100%; height: 44px; padding: 2px 10px; }
   .readout { width: 100%; height: 56px; padding: 4px 10px; overflow: hidden; }
   .group { display: flex; gap: 2px; }
