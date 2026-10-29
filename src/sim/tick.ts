@@ -11,6 +11,7 @@ import { trends } from './metrics';
 import { type State } from './state';
 import { keyInnovations } from './keys';
 import { recount } from './variants';
+import { updateSlots } from './slots';
 
 const DT = 1 / NUM.ticksPerSec;
 const LOG_KEEP = 30;
@@ -30,6 +31,7 @@ export function step(s: State) {
     arrivals(s, NUM.fieldsEvery * DT);
   }
   if (s.tick % (NUM.trendEvery * NUM.ticksPerSec) === 0) trends(s, P);
+  if (s.tick % (NUM.slots.window * NUM.ticksPerSec) === 0) updateSlots(s, P);
   if (s.tick % HISTORY_EVERY === 0) s.history.push({ tick: s.tick, counts: [...s.count] });
   if (s.log.length > LOG_KEEP) s.log.splice(0, s.log.length - LOG_KEEP);
   s.biomass += gain;

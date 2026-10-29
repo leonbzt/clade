@@ -15,7 +15,7 @@ the regions (built), **B** slots and the board, **C** habitats, the places the s
   banks, beach shore, tube mouth), then the rest of the lava by wind side, cut into pieces. 8–14 regions of at
   least ~60 tiles, named from the landmarks and the wind. A Regions map view; names only show there.
 
-## Part B: slots and the board
+## Part B: slots and the board *(built; see the build notes)*
 A slot is a place plus a role. Places are the regions now and the habitats in part C.
 
 ### Roles *(data: `src/data/roles.ts`)*
@@ -76,10 +76,10 @@ hiding (shade and caves making prey harder to catch: a later sim change, P25 e).
 ## Done when
 - [x] A: `npm run check` and `npm run sim` 5×60 pass with the wind side; shifts noted. Open lava: windward water
   ≥ 0.08 above the lee's. 8–14 regions per seed, each ≥ ~60 tiles, every land tile in one, unique names.
-- [ ] B: counters add up (taken ≤ produced + stored); at 30–60 min every seed shows at least one open food link
+- [x] B: counters add up (taken ≤ produced + stored); at 30–60 min every seed shows at least one open food link
   (Slug eater, Fern grazer or similar), and holders change only a few times an hour. The slot update costs under
   0.3 ms per tick on average.
-- [ ] B tests (few): roles from data (Fern grazer exists with no fern eater); hysteresis keeps a holder at a
+- [x] B tests (few): roles from data (Fern grazer exists with no fern eater); hysteresis keeps a holder at a
   near-equal share.
 - [ ] C: 3–10 habitats per seed at 30–60 min, unique names; a habitat keeps its id while its tiles move.
 - [ ] **You:** can you tell at a glance what each place has and lacks? Does a slot opening or changing hands feel
@@ -111,3 +111,34 @@ hiding (shade and caves making prey harder to catch: a later sim change, P25 e).
   (were 46–54% of their stratum, now club moss leads at 32–46%); moss ×2 (850–1560 tiles), fungi ×2, Hill 11–16
   (was 7–9). Open-lava water at 60 min: windward 0.44–0.47, lee 0.20–0.25. Slugs vanish on seed 4; springtails hit
   their cap on seed 5. Tick 3.3–3.9 ms (was 2.7–3.4).
+
+### Part B: slots and the board (29 Oct)
+- **Roles** (`src/data/roles.ts`, 17 now): 3 leads, a grazer per plant (8, "Crust grazer" for cyanobacteria), Litter
+  eater, Decomposer, a hunter per animal (5: Snail eater, Slug eater, Springtail/Bristletail/Beetle hunter). Groups
+  = base species. Icons: a glyph per kind; on the map a square (lead), a circle (eating) or a diamond (hunting).
+- **Counters** (`src/sim/tally.ts`): per bucket (= region now; part C changes only `bucketOf` and the place sums) ×
+  food (a group or litter) × made / taken by each group. Hooks: plant growth and seedlings (life.ts), grazing,
+  litter eaten, catches, young born (agents.ts), litter falling via `drop()` (every old `s.fall +=`), litter plants
+  make or fungi break down (fields.ts). Read-only: nothing reads them back into the sim.
+- **One change from the spec (my call, easy to undo): a grazer's size is the regrowth capacity**, not the cover
+  actually grown. A full, ungrazed moss mat grows ~0, so "cover grown" made untouched plants look like no food and
+  Fern grazer never opened. Capacity = cover × palatability × grow × 0.25 per second (the curve model `expected()`
+  uses). Cover grown is still counted (dev panel "made", the add-up test). Litter roles use litter fallen; hunters
+  use young born; leads use the tiles a living plant of the stratum could live on (its leading variant, fit > 0).
+- **Slots** (`src/sim/slots.ts`): every 30 s, smoothed over ~3 min. Open below 15% (a holder keeps it down to 10%),
+  a challenger needs +10%; exists from 3% of the role's largest; big open = among the 3 largest and ≥ 25% of the
+  largest. Trend over the last 3 min (±15%). Fed by: grazers ← the plants' lead; litter roles ← the group that drops
+  most; hunters ← the slot the prey eats in. "Yours" = a species you made (everything placed or adopted would
+  otherwise count). Rows: a big open slot wins; else the lead with the most cover, and the eating and hunting links
+  with the biggest share of their role's island food; a row only switches for one 25% better.
+- **Feed** (after 2 min): a board row that opens or changes holder; the island's best changing; a role newly open
+  across the island. Timing uses an injected clock (`timer`), since `src/sim` may not read the time.
+- **UI:** a Regions tab (the chosen place's 3 rows, the island's best, all places with their icons), slot icons
+  under each region name in the Regions view (click a name, or a tile in that view, to choose the place), click a
+  row to light up the holder's tiles and animals there. Dev panel: the place's slots (size/min, use, the last window
+  made and taken, worth = size against the role's largest × share × the holder's mean fit over the place × 100) and
+  the update's cost.
+- **Numbers** (`npm run sim` 5×60, 5/5 pass; `NUM.slots`): open food links on the board at 30–60 min ≥ 13–19 per
+  seed (beetles stay at 1–2, so hunters are always open; most grazers too); 0.36–0.56 holder changes per board row
+  per hour; **47–74 feed lines an hour** (a lot next to the other news); window update 0.011–0.016 ms/tick. Whole
+  tick on seed 1, 30 min, idle machine: 3.44 ms vs 3.19 without the slot code (+0.25 ms, mostly the hooks).

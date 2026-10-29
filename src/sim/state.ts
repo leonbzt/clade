@@ -6,6 +6,7 @@ import { NUM } from '../data/numbers';
 import { START_REACHED } from '../data/tree';
 import { buildIsland } from './island';
 import { buildRegions, type Region } from './regions';
+import { newBoard, type Board } from './tally';
 import { baseSpecies, type Species, type Variant } from './variants';
 
 export { SEA, BEACH, LAVA, CRACK, VENT, SPRING, STREAM, CAVE } from './island';
@@ -18,7 +19,8 @@ export type LogLine =
   | { tick: number; kind: 'flare'; x: number; y: number; n: number; name: string }
   | { tick: number; kind: 'trend'; sp: number; delta: number; limit: number }
   | { tick: number; kind: 'variant'; sp: number; tier: number; name: string; genes: string; place: string }
-  | { tick: number; kind: 'arrival'; sp: number; text: string };
+  | { tick: number; kind: 'arrival'; sp: number; text: string }
+  | { tick: number; kind: 'slot'; text: string };
 
 /** One animal (or, for swarms, a small group). Position in tiles; the tile is (x | 0, y | 0). */
 export type Agent = {
@@ -65,6 +67,7 @@ export type State = {
   windward: Float32Array; // per tile: 1 on the windward edge, 0 on the lee edge
   region: Int16Array; // per tile: its region, or -1 at sea
   regions: Region[];
+  board: Board; // the slot board: counters and slots per region (slots.ts)
   layers: Record<LayerId, Float32Array>;
   fall: Float32Array; // litter from dying plants since the last layer update, per tile
   occ: Int16Array; // per slot: variant index, or -1
@@ -113,7 +116,7 @@ export function createState(seed: number): State {
     terrain: new Uint8Array(n), base: perLayer(n), soilCap: new Float32Array(n),
     statuses: Object.fromEntries(STATUS_IDS.map((id) => [id, new Float32Array(n)])) as Record<StatusId, Float32Array>,
     landmarks: [], mark: new Int16Array(n).fill(-1), vents: [],
-    windFrom: 0, windward: new Float32Array(n), region: new Int16Array(n).fill(-1), regions: [],
+    windFrom: 0, windward: new Float32Array(n), region: new Int16Array(n).fill(-1), regions: [], board: newBoard(0),
     layers: perLayer(n), fall: new Float32Array(n),
     occ: new Int16Array(slots).fill(-1), cover: new Float32Array(slots), health: new Float32Array(slots), dying: new Uint8Array(slots), old: new Uint8Array(slots),
     lastTick: new Int32Array(slots), lastCode: new Uint8Array(slots), lastSp: new Int16Array(slots).fill(-1),
@@ -127,6 +130,7 @@ export function createState(seed: number): State {
   s.count = s.species.map(() => 0); s.members = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);
   for (const sp of s.species) s.foundings[sp.id] = 0;
   buildRegions(s, buildIsland(s));
+  s.board = newBoard(s.regions.length);
   return s;
 }
 

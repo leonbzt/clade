@@ -1,8 +1,13 @@
 # Status
 
-Updated 2026-10-29: slice 11 part A committed, slots redesigned (P25). Check passes; sim 5×60: 5/5.
+Updated 2026-10-29: slice 11 part B built (not committed yet). Check passes; sim 5×60: 5/5.
 
 ## Done
+- **Slice 11 part B** (build notes in [slices/11-slot-board.md](slices/11-slot-board.md)): roles from the data
+  (`src/data/roles.ts`), counters (`src/sim/tally.ts`), slots (`src/sim/slots.ts`), a Regions tab, slot icons under
+  region names (Regions view), holder highlight, feed lines, a dev panel slot table, tests (`tests/slots.test.ts`).
+  - My call: a grazer's size = regrowth capacity (the curve model), not cover grown (ungrazed plants grow ~0).
+  - "Yours" = a species you made. Most food links are open (beetles stay at 1–2); 47–74 feed lines an hour.
 - **Slice 11 part A** (spec and build notes: [slices/11-slot-board.md](slices/11-slot-board.md)):
   - Wind side (`src/sim/island.ts`, `NUM.island.wind`): direction by seed, a rain ramp added on top of base water,
     salt spray on the windward coast. Open lava at 60 min: windward 0.44–0.47 water, lee 0.20–0.25.
@@ -19,8 +24,8 @@ Updated 2026-10-29: slice 11 part A committed, slots redesigned (P25). Check pas
 - The wind's contrast is good; lichens should lead only on the barest ground. Region names only in Regions view.
 
 ## Next
-1. **Build slice 11 part B** (slots and the board): roles from data, counters where animals eat, plants grow and
-   litter falls, `src/sim/slots.ts`, the Regions tab, slot icons on the map, feed lines, dev panel. Then a check.
+1. **Your check of part B** (`npm run dev`, Regions view key 9 + the Regions tab): can you tell what each place has
+   and lacks? Do the openings feel like news, or too many? Commit after.
 2. Then part C (habitats), then 12a (the first run) and 12b (coming home).
 
 ## Open

@@ -17,6 +17,12 @@ export const NUM = {
     wind: { windward: 0.12, lee: -0.05, spray: 0.3, sprayIn: 2 },
   },
   regions: { min: 60, piece: 550, most: 14 }, // tiles; open lava is cut into pieces of about `piece` tiles
+  // The slot board (slots.ts): counters over windows of `window` s, smoothed over about `smooth` s. A slot is open
+  // when no group takes `open` of its size (a holder keeps it down to `keep`); a challenger needs `hyst` more than
+  // the holder. Big open: among the `bigTop` largest of its role, and at least `bigShare` of the largest. A slot
+  // exists from `exists` of its role's largest. A board row changes only for one `sticky` × bigger.
+  slots: { window: 30, smooth: 180, open: 0.15, keep: 0.1, hyst: 0.1, bigTop: 3, bigShare: 0.25, exists: 0.03,
+    sticky: 1.25, trend: 0.15, trendWindows: 6, warmup: 4, regrow: 0.25 },
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
     oldEvery: 4, // old growth updates every this many ticks

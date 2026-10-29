@@ -9,6 +9,7 @@ import { rand } from './rng';
 import { EV, SEA, type State } from './state';
 import { fit, limitOf, type Profile } from './fit';
 import { defOf, maybeMutate, pickVariant } from './variants';
+import { drop, groupOf, made } from './tally';
 
 const L = NUM.life;
 
@@ -25,7 +26,7 @@ const litterOf = (s: State, v: number) => defOf(s, s.variants[v].sp).litter;
 /** Empties a slot at once (taken over, or a flare); the dead plant becomes litter. */
 export function kill(s: State, slot: number, code: number, limit = -1) {
   const v = s.occ[slot];
-  s.fall[slot % (s.w * s.h)] += s.cover[slot] * litterOf(s, v);
+  drop(s, slot % (s.w * s.h), groupOf(s, s.variants[v].sp), s.cover[slot] * litterOf(s, v));
   record(s, slot, code, s.variants[v].sp, limit);
   clear(s, slot);
 }
@@ -33,6 +34,7 @@ export function kill(s: State, slot: number, code: number, limit = -1) {
 export function settle(s: State, slot: number, v: number, cover: number, code: number, health: number) {
   s.occ[slot] = v; s.cover[slot] = cover; s.health[slot] = health; s.dying[slot] = 0; s.old[slot] = 0;
   record(s, slot, code, s.variants[v].sp);
+  made(s, slot % (s.w * s.h), groupOf(s, s.variants[v].sp), cover);
 }
 
 /** Your species' last few tiles don't die and can't be taken. */
@@ -64,10 +66,10 @@ export function lifeStep(s: State, P: Profile[], tickDt: number) {
       if (s.old[slot] && (s.tick + slot) % L.oldEvery) continue;
       const p = P[v], sp = p.sp, dt = s.old[slot] ? tickDt * L.oldEvery : tickDt;
       if (s.dying[slot]) {
-        const loss = Math.min(s.cover[slot], dt / L.dieback), litter = litterOf(s, v);
+        const loss = Math.min(s.cover[slot], dt / L.dieback), litter = litterOf(s, v), g = groupOf(s, sp);
         s.cover[slot] -= loss;
-        s.fall[i] += loss * litter;
-        if (s.cover[slot] < 0.03) { s.fall[i] += s.cover[slot] * litter; clear(s, slot); }
+        drop(s, i, g, loss * litter);
+        if (s.cover[slot] < 0.03) { drop(s, i, g, s.cover[slot] * litter); clear(s, slot); }
         continue;
       }
       const f = fit(s, p, i), limit = limitOf();
@@ -75,6 +77,7 @@ export function lifeStep(s: State, P: Profile[], tickDt: number) {
       // Cover grows toward what health allows, and shrinks slowly when health falls.
       const target = Math.sqrt(Math.max(0, h)), c0 = s.cover[slot];
       const c = (s.cover[slot] = c0 + dt * (target > c0 ? p.stats.grow * (target - c0) * 2 : L.shrink * (target - c0)));
+      if (c > c0) made(s, i, groupOf(s, sp), c - c0);
       s.old[slot] = c > L.oldCover && Math.abs(f - h) < L.oldDelta && Math.abs(target - c) < L.oldDelta ? 1 : 0;
       const strain = L.stress * (1 - h);
       const death = (dt / p.stats.life) * (1 + strain) + (h < 0.05 ? dt / L.starve : 0);

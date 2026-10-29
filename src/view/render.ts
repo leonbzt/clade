@@ -14,12 +14,13 @@ import { lookOf } from './look';
 import { hash2, makeCanvas } from './pixels';
 import { SPRITE, sprite } from './plants';
 import { TerrainLayer } from './terrain';
-import { layerView, outline, PlacingView, regionsView, variantHighlight, variantsView, zonesView } from './overlays';
+import { holderHighlight, layerView, outline, PlacingView, regionsView, variantHighlight, variantsView, zonesView } from './overlays';
 
 const T = NUM.map.tile;
 export type View = 'none' | 'zones' | LayerId | 'variants' | 'animals' | 'regions';
 export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants', 'animals', 'regions'];
-export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number; follow: number };
+export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number; follow: number;
+  lit: { place: number; group: number } | null };
 
 export class GardenRenderer {
   readonly canvas: HTMLCanvasElement;
@@ -69,6 +70,7 @@ export class GardenRenderer {
       else if (o.view !== 'none') layerView(ctx, s, o.view);
       else this.glints(o.time);
       if (o.hoverVariant >= 0) variantHighlight(ctx, s, o.hoverVariant);
+      else if (o.lit) holderHighlight(ctx, s, o.lit.place, o.lit.group);
       drawAnimals(ctx, s, o.time, o.follow, o.detail);
     }
     if (o.placing) this.placingView.draw(ctx, o.placing, o.hover);

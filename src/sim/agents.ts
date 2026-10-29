@@ -13,6 +13,8 @@ import { EV, SEA, idx, type Agent, type State } from './state';
 import { fit, type Profile } from './fit';
 import { kill, protectedSp } from './life';
 import { defOf, mutation, variantFor } from './variants';
+import { drop, groupOf, made, took } from './tally';
+import { LITTER } from '../data/roles';
 
 const A = ANIMAL;
 const DT = 1 / NUM.ticksPerSec;
@@ -54,7 +56,7 @@ export function note(s: State, a: Agent, text: string) {
 }
 
 function die(s: State, a: Agent, i: number, why: string) {
-  s.fall[i] += bodyOf(s, a.sp).corpse * a.n;
+  drop(s, i, groupOf(s, a.sp), bodyOf(s, a.sp).corpse * a.n);
   a.n = 0;
   s.obits.push({ id: a.id, tick: s.tick, text: why });
   if (s.obits.length > A.obits) s.obits.shift();
@@ -130,17 +132,19 @@ function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, here: 
       if ('stock' in d) {
         const take = Math.min(s.layers[d.stock][i], want * f);
         s.layers[d.stock][i] -= take; want -= take / f;
+        if (d.stock === 'litter') took(s, i, LITTER, groupOf(s, a.sp), take);
         got += (take / a.n) * d.gain; eaten += take; what ||= 'litter';
         continue;
       }
       const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot], take = Math.min(s.cover[slot], want * f);
       s.cover[slot] -= take; s.old[slot] = 0; want -= take / f;
+      took(s, i, groupOf(s, P[v].sp), groupOf(s, a.sp), take);
       s.health[slot] = Math.max(0, s.health[slot] - take * A.wound); // lost leaves cost reserves: regrowth slows
       got += (take / a.n) * d.gain; eaten += take; what ||= s.species[P[v].sp].name;
       if (s.cover[slot] < A.minGrazed && !protectedSp(s, P[v].sp)) kill(s, slot, EV.grazed);
     }
   });
-  if (eaten > 0) dung(s, b, here, eaten);
+  if (eaten > 0) dung(s, a, b, here, eaten);
   if (got > 0 && a.doing !== 'eat') note(s, a, `started eating ${what.toLowerCase()}`);
   return got * p.body.gain!;
 }
@@ -169,15 +173,16 @@ function hunt(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, i: nu
     else note(s, prey, `lost ${taken} to a ${defOf(s, a.sp).short.toLowerCase()}`);
     got = taken * d.gain;
     a.full = A.handling * Math.min(1, got / 0.2);
-    dung(s, b, i, taken * pb.corpse);
+    dung(s, a, b, i, taken * pb.corpse);
+    took(s, i, groupOf(s, prey.sp), groupOf(s, a.sp), taken);
     note(s, a, taken > 1 ? `caught ${taken} ${name}` : `caught one of the ${name}`);
   });
   return got * p.body.gain!;
 }
 
-function dung(s: State, b: AnimalBody, i: number, eaten: number) {
+function dung(s: State, a: Agent, b: AnimalBody, i: number, eaten: number) {
   for (const [layer, r] of Object.entries(b.makes)) {
-    if (layer === 'litter') s.fall[i] += eaten * r!;
+    if (layer === 'litter') drop(s, i, groupOf(s, a.sp), eaten * r!);
     else { const v = s.layers[layer as 'nitrogen']; v[i] = Math.min(1, v[i] + eaten * r!); }
   }
 }
@@ -216,6 +221,7 @@ function child(s: State, P: Profile[], a: Agent, members: number, e: number, mut
 function breed(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody) {
   const young = Math.max(1, Math.round(p.body.young! * (0.75 + 0.5 * rand(s))));
   a.kids += young;
+  made(s, tileOf(s, a), groupOf(s, a.sp), young);
   if (b.group > 1) {
     a.e -= A.breedCost;
     // Each young may carry a mutation: then the young bud off as a small group of their own (a new line).
@@ -280,7 +286,7 @@ export function agentsStep(s: State, P: Profile[]): number {
     if (a.e <= 0) { die(s, a, i, f <= 0 ? 'died where it could not live' : 'starved'); continue; }
     if (b.group > 1) { // a group renews itself: members die of age now and then, the group goes on
       const old = a.n * (dt / a.life), lost = Math.floor(old) + (rand(s) < old % 1 ? 1 : 0);
-      if (lost) { a.n -= lost; s.fall[i] += b.corpse * lost; }
+      if (lost) { a.n -= lost; drop(s, i, groupOf(s, a.sp), b.corpse * lost); }
       if (a.n <= 0) { die(s, a, i, 'died out'); continue; }
     } else if (a.age >= a.life) { die(s, a, i, 'died of old age'); continue; }
     if (a.go) { // walking off after a split: no eating or breeding on the way

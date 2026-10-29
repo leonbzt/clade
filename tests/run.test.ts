@@ -6,6 +6,8 @@
 // A third line: animals. When each arrived (adopted by the bot), how many live at the end (members, min–max over the
 // last 10 minutes, and groups as a share of the cap), moss now vs its peak, agents (share settled), and the tick's cost.
 // A fourth line: the land. Median water on the open lava, windward vs lee (all land in brackets), and the regions.
+// A fifth line: the slot board. The fewest open food links on the board rows over 30–60 min, the roles open across the
+// island at the end, holder changes per board row per hour, feed lines per hour, and the slot update's cost per tick.
 // A measuring tool, not a balance bot. Skipped in `npm run check`.
 import { it } from 'vitest';
 import { writeSync } from 'node:fs';
@@ -17,6 +19,8 @@ import { profiles } from '../src/sim/fit';
 import { LIMIT_COUNT, STRATA, limitName, type LayerId } from '../src/data/fields';
 import { interactionTable, layerMap, strataMap } from '../src/sim/ascii';
 import { variantStats, variantSummary, type VariantStats } from './variant-stats';
+import { ROLES } from '../src/data/roles';
+import { timer } from '../src/sim/slots';
 
 const env = process.env, SEEDS = Number(env.SEEDS || 5), MIN = Number(env.MIN || 60);
 const out = (s: string) => writeSync(1, s + '\n'); // straight to stdout: vitest hides console.log
@@ -31,12 +35,13 @@ const members = (s: ReturnType<typeof createState>, id: string) => s.species.red
 const capOf = (id: string) => SPECIES.find((d) => d.id === id)!.animal!.cap;
 
 it.skipIf(!env.SIM)('sim', () => {
+  timer.now = () => performance.now();
   if (env.TABLE) out(interactionTable());
   out(`seed | ${UNLOCKS.map((u) => u.slice(0, 4)).join(' ')} | ${ABBR.map((a) => a.padStart(5)).join('')} | hill  dom  turn%/min litter/min N med/top lively | ok`);
   let pass = 0;
   for (let seed = 1; seed <= SEEDS; seed++) {
     const s = createState(seed), when: Record<string, string> = {}, vs: VariantStats = variantStats();
-    let ms = 0, msN = 0, mossPeak = 0, landed = -1, landTick = 0, reach = -1;
+    let ms = 0, msN = 0, mossPeak = 0, landed = -1, landTick = 0, reach = -1, fewestOpen = Infinity, slotMs = 0, windows = 0;
     const lo: Record<string, number> = {}, hi: Record<string, number> = {};
     let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0;
     for (let k = 0; k < MIN * 600; k++) {
@@ -51,6 +56,10 @@ it.skipIf(!env.SIM)('sim', () => {
       mossPeak = Math.max(mossPeak, moss);
       if (minutes(s) > MIN - 10 && s.tick % 100 === 0) for (const id of ANIMAL_IDS) { const c = members(s, id); lo[id] = Math.min(lo[id] ?? c, c); hi[id] = Math.max(hi[id] ?? 0, c); }
       if (s.tick % 10 === 0) vs.sample(s);
+      if (s.tick % 300 === 0) {
+        slotMs += s.board.ms; windows++;
+        if (minutes(s) >= 30) fewestOpen = Math.min(fewestOpen, s.board.rows.flat().filter((r, k) => r >= 0 && ROLES[r].row !== 'lead' && s.board.slots[Math.floor(k / 3) * ROLES.length + r].open).length);
+      }
       if (s.tick % 6000 === 0) { if (minutes(s) === MIN) turn = changed(s, snap, snapshot(s)) / 10; snap = snapshot(s); }
       // Litter swing: the mean change per tile per minute, over the last 10 minutes.
       if (s.tick % 600 === 0) { if (minutes(s) > MIN - 10) litSwing += swing(s, lit, s.layers.litter) / 10; lit = Float32Array.from(s.layers.litter); }
@@ -77,6 +86,10 @@ it.skipIf(!env.SIM)('sim', () => {
     const sizes = s.regions.map((g) => g.tiles), wet = med(true, true) - med(false, true);
     out(`     land: water on lava windward ${med(true, true).toFixed(2)} lee ${med(false, true).toFixed(2)} (all land ${med(true, false).toFixed(2)}/${med(false, false).toFixed(2)})` +
       ` ${wet >= 0.08 ? 'ok' : 'LOW'} | ${s.regions.length} regions, ${Math.min(...sizes)}–${Math.max(...sizes)} tiles`);
+    const B = s.board, open = ROLES.filter((r, k) => r.row !== 'lead' && B.best[k].exists && B.best[k].holder < 0).map((r) => r.name);
+    const perTick = slotMs / windows / 300, hours = MIN / 60;
+    out(`     slots: open on the board (30–${MIN}m) ≥ ${fewestOpen} ${fewestOpen >= 1 ? 'ok' : 'NONE'} | open on the island: ${open.join(', ') || '-'} |` +
+      ` ${(B.changes / B.rows.length / 3 / hours).toFixed(2)} changes/row/h, ${Math.round(B.lines / hours)} lines/h | ${perTick.toFixed(3)} ms/tick ${perTick < 0.3 ? 'ok' : 'SLOW'}`);
     if (env.LIMITS && seed === 1) {
       const P = profiles(s);
       for (let sp = 0; sp < s.species.length; sp++) {

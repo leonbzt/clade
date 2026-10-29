@@ -7,6 +7,7 @@
   import Toasts from './Toasts.svelte';
   import TilePanel from './TilePanel.svelte';
   import AnimalCard from './AnimalCard.svelte';
+  import RegionsPanel from './RegionsPanel.svelte';
   import { ui } from './game.svelte';
   import { VIEWS } from '../view/render';
 
@@ -33,9 +34,10 @@
         <button class="treebtn" onclick={() => (ui.tree = true)} title="The tree of life (T)">Tree of life</button>
         <button class:on={ui.tab === 'species'} onclick={() => (ui.tab = 'species')}>Species</button>
         <button class:on={ui.tab === 'tile'} onclick={() => (ui.tab = 'tile')}>Tile</button>
+        <button class:on={ui.tab === 'regions'} onclick={() => (ui.tab = 'regions')}>Regions</button>
         {#if ui.follow >= 0}<button class:on={ui.tab === 'animal'} onclick={() => (ui.tab = 'animal')}>Animal</button>{/if}
       </nav>
-      {#if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'animal'}<AnimalCard />{:else}<TilePanel />{/if}
+      {#if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'animal'}<AnimalCard />{:else if ui.tab === 'regions'}<RegionsPanel />{:else}<TilePanel />{/if}
     </aside>
   </main>
   {#if ui.tree}<TreeScreen />{/if}

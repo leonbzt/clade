@@ -5,6 +5,7 @@ import * as cmd from '../sim/commands';
 import { createState, type State } from '../sim/state';
 import { step } from '../sim/tick';
 import { botTick } from '../sim/bot';
+import { timer } from '../sim/slots';
 import { VIEWS, type View } from '../view/render';
 
 export let game: State = createState(1);
@@ -18,7 +19,9 @@ class UI {
   placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
   foundName = $state(''); // the name for that new species
   focus = $state('thallus');
-  tab = $state<'species' | 'tile' | 'animal'>('species');
+  tab = $state<'species' | 'tile' | 'animal' | 'regions'>('species');
+  place = $state(-1); // the place shown in the Regions tab (a region)
+  lit = $state<{ place: number; group: number } | null>(null); // a holder lit up on the map
   follow = $state(-1); // the id of the animal whose card is open; the camera follows it
   tree = $state(false); // the tree of life screen is open
   hoverVariant = $state(-1); // a variant whose tiles light up on the map
@@ -47,6 +50,7 @@ function frame(now: number) {
 }
 
 export function start() {
+  timer.now = () => performance.now();
   requestAnimationFrame(frame);
   (window as unknown as { dev: unknown }).dev = {
     dump: () => ({ tick: game.tick, biomass: game.biomass, reached: game.reached, combos: game.combos,
@@ -59,7 +63,8 @@ export function start() {
   // ?place=moss, ?view=zones|water|soil|nitrogen|shade, ?zoom=3 (read in MapView).
   const q = new URLSearchParams(location.search), bot = Number(q.get('bot'));
   if (bot > 0) autoplay(bot);
-  if (q.get('tab') === 'species' || q.get('tab') === 'tile') ui.tab = q.get('tab') as 'species' | 'tile';
+  if (q.get('tab') === 'species' || q.get('tab') === 'tile' || q.get('tab') === 'regions') ui.tab = q.get('tab') as 'species' | 'tile' | 'regions';
+  if (q.get('place')) ui.place = Number(q.get('place'));
   if (q.get('tab') === 'tree') ui.tree = true;
   if (q.get('tile')) ui.selected = Number(q.get('tile'));
   if (VIEWS.includes(q.get('view') as View)) ui.view = q.get('view') as View;
@@ -130,6 +135,12 @@ export function selectTile(i: number) {
   ui.selected = i; ui.tab = 'tile';
 }
 
+/** Shows a place on the slot board (the Regions tab). */
+export function selectPlace(p: number) {
+  if (ui.place !== p) ui.lit = null;
+  ui.place = p; ui.tab = 'regions';
+}
+
 export function unlockAll() {
   cmd.unlockAll(game); ui.v++;
 }
@@ -140,6 +151,6 @@ export function addBiomass(n: number) {
 
 export function reset() {
   game = createState(Math.floor(Math.random() * 1e9));
-  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1; ui.follow = -1;
+  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1; ui.follow = -1; ui.place = -1; ui.lit = null;
   ui.gen++; ui.v++;
 }

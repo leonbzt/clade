@@ -10,6 +10,7 @@ import { fit, limitOf, tierOf } from '../sim/fit';
 import { SEA, type State } from '../sim/state';
 import { defOf, poolOf, speciesIndex, stratumOf } from '../sim/variants';
 import { tinted } from './pixels';
+import { SPECIES } from '../data/species';
 
 const T = NUM.map.tile;
 type Ctx = CanvasRenderingContext2D;
@@ -93,6 +94,23 @@ export function variantHighlight(ctx: Ctx, s: State, v: number) {
     ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
   }
   for (const a of s.agents) if (a.v === v) ctx.fillRect(Math.round(a.x * T) - 3, Math.round(a.y * T) - 3, 6, 6);
+}
+
+/** A slot's holder in one place (Regions tab): its plants' tiles and its animals there, in its colour. */
+export function holderHighlight(ctx: Ctx, s: State, place: number, group: number) {
+  const n = s.w * s.h, groupAt = (v: number) => s.species[s.variants[v].sp].base;
+  wash(ctx, 0.35);
+  ctx.fillStyle = ZONE[SPECIES[group].id] ?? PAL.text;
+  for (let i = 0; i < n; i++) {
+    if (s.region[i] !== place) continue;
+    for (let k = 0; k < STRATA.length; k++) {
+      const v = s.occ[k * n + i];
+      if (v >= 0 && groupAt(v) === group) { ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T); break; }
+    }
+  }
+  for (const a of s.agents) {
+    if (groupAt(a.v) === group && s.region[(a.y | 0) * s.w + (a.x | 0)] === place) ctx.fillRect(Math.round(a.x * T) - 3, Math.round(a.y * T) - 3, 6, 6);
+  }
 }
 
 /** One layer: a single colour, stronger where the value is higher. */
