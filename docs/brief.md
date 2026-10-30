@@ -121,6 +121,14 @@ What's **decided**. Only the user moves things into this file. AI proposals live
   **Name and give slots to fewer of them** (maybe only the big parts), while still displaying all the small ones.
 - **Regions and habitats feel doubled up** now, a little confusing.
 
+### Direction *(31 Oct, P28 and the 11d spec)*
+- **Regions go** (P28 c3): a habitat is a connected piece of one kind; twins get a compass word.
+- **Small patches are hover only** (kind and top holders); their slots still count for the island's best. The name
+  and card go on the big piece. Borders (ecotones) are parked.
+- **Tiles are 10 m** (100 m²). **The currency stays Biomass**, in real grams. **"Best" means the biggest share**,
+  with efficiency shown beside it.
+- **Hectares and productivity per area** ride with slice 11d.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.

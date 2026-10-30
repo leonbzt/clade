@@ -1,30 +1,28 @@
 # Status
 
-Updated 2026-10-31: **slice 11 part C is built and played** (not committed). `npm run check` passed and
-`npm run sim` 5×60 is 5/5 (one later runner tweak wasn't re-checked). Build notes and numbers:
-[slices/11-slot-board.md](slices/11-slot-board.md).
+Updated 2026-10-31: **slice 11d is specced** ([slices/11d-real-biomass.md](slices/11d-real-biomass.md)); no code
+changed this session. Slice 11 part C is committed (`1ea4861`, `npm run check` passed).
 
 ## Done
-- **Part C:** habitats (`src/data/habitats.ts`, `src/sim/habitats.ts`; bucket = region × kind), six-slot loadouts
-  (`B.gear` in `src/sim/slots.ts`), grams (`src/data/masses.ts`, `docs/research/masses.md`), headlines and chatter
-  (`src/sim/news.ts`), the Habitats tab (`src/ui/HabitatsPanel.svelte`, `board.ts`) and view (key 0),
-  `tests/habitats.test.ts`. A fix: plant layers exist wherever a plant could live.
-- **Your playtest:** it feels as imagined; slots look great; habitat detection loved. Notes in brief.md (31 Oct) and
-  the AI options in P28 (systems.md).
+- Committed part C with the 30–31 Oct doc edits (`1ea4861`).
+- P28 settled (your calls in `docs/systems.md`); P29 added (growth curve, real units, currencies).
+- Spec `docs/slices/11d-real-biomass.md`: A = one map of places (no regions, connected pieces, majors and
+  hover-only patches); B = plants and litter in grams (production peaks at full size, turnover to litter, a ledger);
+  C = animals in grams (body mass, mass^0.75 burn, keep), Biomass as real grams, real units, hectares, productivity.
 
 ## Decided (31 Oct, in brief.md)
-- Show all the small, interesting habitats on the map; name and give slots to fewer (maybe only the big parts).
-- Regions and habitats feel doubled up. (Earlier: d2, real biomass, as soon as possible.)
+- P28: regions go (c3); patches are hover only; the name goes on the big piece; borders parked.
+- 10 m tiles; the currency stays Biomass (real grams); "best" = share, with efficiency shown beside it.
+- Hectares and productivity per area ride with 11d.
 
 ## Next
-1. Commit part C (with the doc edits from 30–31 Oct), if you want.
-2. Pick from P28 (two tiers, naming the big piece, regions vs habitats, borders), then a small slice 11d or fold it
-   into the d2 spec.
-3. **Spec d2** (real biomass as the sim's stock, P26 d, with P27 b–f), then 12a and 12b.
+1. Build 11d part A (`/kickoff build slice 11d part A`), check, play.
+2. Then parts B and C, each checked before the next. Then 12a and 12b.
 
 ## Open
-- P28: patches clickable or map-only? Which regions option? Habitats shown now: 13–18 at 60/40 tiles.
-- Headlines 4–14/h after 30 min, 34–42/h over the first hour. Grams per minute look huge until d2.
-- Tile size (1 m² for now). Which P27 items ride with d2? "Best" = share or efficiency?
-- Your 30 Oct notes: names, more animals, trees and fruits, bigger tiles; the springtail refound bug.
+- Part B's growth curve (production = grow × C × (2x − x²), turnover to litter) is an AI change: you asked, haven't
+  confirmed (P29 a).
+- Rest of P29 b (turnover times, home range, C:N food quality) and c (guild currencies): later.
+- Headlines 4–14/h after 30 min, 34–42/h over the first hour.
+- Your 30 Oct notes: names, more animals, trees and fruits; the springtail refound bug.
 - Hiding (P25 e). Slugs die out on seed 4. Parked: P17 e/f, P23, P21 f, P20, P19 b; delete `toys/`?

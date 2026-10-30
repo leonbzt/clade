@@ -562,4 +562,27 @@ Ranked by how much they'd help reading the island, cheapest first:
 - **d. Borders (ecotones):** tiles where two kinds meet as their own small places, with both sides' slots.
   Real ecology: edges are often the richest spots.
 - **Open:** are patches clickable with a loadout, or map-only? Which of c?
+- **Your calls (31 Oct):** **c3**: drop the k-means regions; habitats are connected pieces of one kind, and twins
+  get a compass suffix ("Fern stream, west"). **a:** two tiers; patches are **hover only** (tint, kind and top holders
+  on hover, no card or board entry) and their slots still count for the island's best. **b yes:** the name and card go
+  on the largest piece, and a patch growing into a major habitat is a headline. **d parked** until d2. Folds into the
+  d2 spec.
 
+
+## P29. Growth curves, more real units, and currencies *(31 Oct, AI, from your questions on the 11d spec)*
+- **a. Growth (in 11d part B):** plain logistic growth peaks at half size and stops at full size, so a mature carpet
+  would make nothing for grazers. Real stands make the most when full (a closed canopy) and shed it as litter. The
+  spec splits it: production = grow × C × (2x − x²), turnover = grow × C × x; the net is still logistic.
+- **b. Units worth adding, best first:**
+  - Habitat area in hectares ("Fern forest, 0.8 ha"); cheap with 10 m tiles.
+  - Productivity as g/m² per minute, the ecologist's NPP, so places compare per area, not only in total.
+  - Turnover and residence time ("the moss renews every 3 min", "litter lasts 5 min").
+  - Home range in metres ("roams 30 m").
+  - Food quality as C:N: nitrogen-poor food is worth less to eaters, and nitrogen-poor litter rots slower. Real,
+    strong hidden depth, a link to the nitrogen layer. Its own slice.
+  - Years and seasons (P27 d), later.
+  - Skip: joules (grams carry it), temperature (no gradient yet), pH.
+- **c. Currencies, later:** Biomass stays (grams your species make). The brief already wants horizontal resources
+  from guilds; real candidates are nitrogen fixed, litter recycled, spores or seeds spread, and prey caught. Not
+  before 12a.
+- **Your calls (31 Oct):** a yes; hectares and productivity ride with 11d; the rest of b and c later.
