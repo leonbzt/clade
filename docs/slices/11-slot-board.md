@@ -168,8 +168,11 @@ how big it is?
 - [x] B tests (few): roles from data (Fern grazer exists with no fern eater); hysteresis keeps a holder at a
   near-equal share.
 - [ ] C: 3–10 habitats shown per seed at 30–60 min, unique names; a habitat keeps its id while its tiles move.
-- [ ] C: every habitat shows its six slots (all three plant layers where they live). Every size on the board is in
+  *Ids and unique names pass; the count is 13–18 at show 60 / hide 40 tiles (the spec's 15/8 gives 19–31; 100/60
+  gives 7–10 but loses the cliffs, scars and spring banks). Your call.*
+- [x] C: every habitat shows its six slots (all three plant layers where they live). Every size on the board is in
   grams. Headlines average ≤ ~10 an hour. The slot update stays under 0.3 ms per tick.
+  *Headlines: 4–14 an hour after 30 min, 34–42 over the whole hour (the first half hour is the island settling).*
 - [ ] **You:** can you tell at a glance what each place has and lacks? Does a slot opening or changing hands feel
   like news? Do you want to fill one, and which? Do habitats feel like places the island grew?
 
@@ -230,3 +233,35 @@ how big it is?
   seed (beetles stay at 1–2, so hunters are always open; most grazers too); 0.36–0.56 holder changes per board row
   per hour; **47–74 feed lines an hour** (a lot next to the other news); window update 0.011–0.016 ms/tick. Whole
   tick on seed 1, 30 min, idle machine: 3.44 ms vs 3.19 without the slot code (+0.25 ms, mostly the hooks).
+
+### Part C: habitats, loadouts and grams (30–31 Oct)
+- **Habitats** (`src/data/habitats.ts` kinds and the six slots, `src/sim/habitats.ts`): `s.hab` per tile, set at the
+  start of each window by the first test that passes, with a margin per test (a tile's own kind passes by the margin
+  less, others need it more). A vent scar is 5 min after a flare (`s.scar`, set in `flares()`). The bucket is now
+  region × kind (`bucketOf`), so the habitat's id is its bucket; nothing else in the hooks changed.
+- **Names:** the herb layer's holder names it, else the ground's ("Club moss heath", "Fern stream", "Lichen barrens");
+  bare names per kind ("Ash scar", "Windy cliff", "Wet seep" …). A new lead renames it only after leading 10 windows
+  (5 min). Twins get ", <region>".
+- **Loadout:** `B.gear` per habitat × 6. Plant slots are the leads; an animal slot is the role under it with the most
+  grams (sticky ×1.25). Locked = no role under it exists. **Fix from the spec:** a lead now exists wherever a plant of
+  its layer could live (part B's "3% of the largest" rule locked the plant layers of every small habitat).
+- **Grams** (`src/data/masses.ts`, `docs/research/masses.md`): plants dry g/m² (cyano 50, moss 150, fern 200 …),
+  animals live g (springtail 0.1 mg, beetle **0.1 g**, corrected from 0.3), litter 1000 g per unit. `sl.grams` per
+  slot: plant slots the standing mass; grazer regrowth capacity, recycler litter fall, hunter young × mass, per min.
+  Words: tiny…huge, ×10 steps from 100 g (mass) and 10 g/min (flows). Flows come out big (a heath "regrows" ~45
+  kg/min of club moss): the sim's growth is fast; d2 fixes that.
+- **News** (`src/sim/news.ts`): headlines (`s.heads`; banner 4 s, queued, max 3; the last 3 pinned in the feed) and
+  chatter (`kind: 'chat'` log lines, folded under the feed with flares, trends and rare variants). To keep headlines
+  rare: a habitat growing is a headline only the first time, its vanishing only after it stood 10 min; vent scars are
+  chatter (the flare is news already); a role's island's best is a headline at most every 20 min; the same text not
+  again within 10 min; a big slot only when it newly opens. First arrivals and legendary forms are headlines;
+  repeat arrivals are chatter.
+- **UI:** a Habitats tab (replaces Regions: the 3 × 2 cards with picture, holder, tier, size and the bar; click to
+  unfold the roles under it and light up the holder; the island's best folded; all habitats with mini icons), a
+  Habitats view (key 0: tinted by kind, borders, the chosen one outlined gold, loadout cards with names when zoomed
+  in), the habitat kind on the tile card. Region labels in the Regions view are names only now.
+- **Numbers** (`npm run sim` 5×60, 5/5 pass; `NUM.habitats`): 13–18 habitats shown at 30–60 min, names unique, 0
+  plant layers locked where they live; most tiles are open ground (~1900) and wet seep (700–1100), spray coast
+  200–430; bare rock is gone by 60 min, deep soil and dark floor stay small (10–90). Renames 23–35/h, headlines 34–42/h
+  over the hour (4–14/h after 30 min), chatter 102–117/h, 0.26–0.45 holder changes per loadout slot per hour. Slot
+  update 0.022–0.031 ms/tick (it was 0.011–0.016 with 11–14 regions; now ~100 buckets).

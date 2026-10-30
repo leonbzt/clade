@@ -23,6 +23,13 @@ export const NUM = {
   // exists from `exists` of its role's largest. A board row changes only for one `sticky` × bigger.
   slots: { window: 30, smooth: 180, open: 0.15, keep: 0.1, hyst: 0.1, bigTop: 3, bigShare: 0.25, exists: 0.03,
     sticky: 1.25, trend: 0.15, trendWindows: 6, warmup: 4, regrow: 0.25 },
+  // Habitats (habitats.ts): one shows on the board from `show` tiles and hides below `hide`. A vent scar lasts `scar`
+  // seconds after a flare. A new lead renames a habitat once it has led for `rename` windows. Headlines: the last
+  // `pinned` stay at the top of the feed; the same one isn't repeated within `repeat` seconds. A habitat growing is a
+  // headline the first time only, its vanishing only after it stood `stood` seconds. A role's island's best is a
+  // headline at most once per `bestEvery` seconds; the rest is chatter.
+  habitats: { show: 60, hide: 40, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
+  mass: { tile: 1 }, // m² per tile (masses.ts)
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
     oldEvery: 4, // old growth updates every this many ticks

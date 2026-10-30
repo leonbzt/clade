@@ -7,7 +7,7 @@
   import Toasts from './Toasts.svelte';
   import TilePanel from './TilePanel.svelte';
   import AnimalCard from './AnimalCard.svelte';
-  import RegionsPanel from './RegionsPanel.svelte';
+  import HabitatsPanel from './HabitatsPanel.svelte';
   import { ui } from './game.svelte';
   import { VIEWS } from '../view/render';
 
@@ -17,8 +17,8 @@
     if (e.target instanceof HTMLInputElement) return;
     if (e.key === 'Escape') { ui.placing = null; ui.tree = false; }
     if (e.key === 't' || e.key === 'T') ui.tree = !ui.tree;
-    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 7 Variants
-    const k = Number(e.key);
+    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 9 Regions, 0 Habitats
+    const k = e.key === '0' ? 10 : Number(e.key);
     if (k >= 1 && k <= VIEWS.length) ui.view = VIEWS[k - 1];
   }
 </script>
@@ -34,10 +34,10 @@
         <button class="treebtn" onclick={() => (ui.tree = true)} title="The tree of life (T)">Tree of life</button>
         <button class:on={ui.tab === 'species'} onclick={() => (ui.tab = 'species')}>Species</button>
         <button class:on={ui.tab === 'tile'} onclick={() => (ui.tab = 'tile')}>Tile</button>
-        <button class:on={ui.tab === 'regions'} onclick={() => (ui.tab = 'regions')}>Regions</button>
+        <button class:on={ui.tab === 'habitats'} onclick={() => (ui.tab = 'habitats')}>Habitats</button>
         {#if ui.follow >= 0}<button class:on={ui.tab === 'animal'} onclick={() => (ui.tab = 'animal')}>Animal</button>{/if}
       </nav>
-      {#if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'animal'}<AnimalCard />{:else if ui.tab === 'regions'}<RegionsPanel />{:else}<TilePanel />{/if}
+      {#if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'animal'}<AnimalCard />{:else if ui.tab === 'habitats'}<HabitatsPanel />{:else}<TilePanel />{/if}
     </aside>
   </main>
   {#if ui.tree}<TreeScreen />{/if}

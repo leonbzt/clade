@@ -4,7 +4,8 @@
   import { fit, profiles } from '../sim/fit';
   import { expected } from '../sim/metrics';
   import { slotAt } from '../sim/slots';
-  import { at } from '../sim/tally';
+  import { at, bucketOf } from '../sim/tally';
+  import { grams } from './format';
   import { defOf } from '../sim/variants';
   import { addBiomass, autoplay, game, perf, reset, skip, ui, unlockAll } from './game.svelte';
 
@@ -26,21 +27,21 @@
   const slots = $derived.by(() => {
     ui.v;
     const p = ui.place, B = game.board;
-    if (p < 0 || p >= game.regions.length) return null;
+    if (p < 0 || p >= game.habitats.length) return null;
     const P = profiles(game), tiles: number[] = [];
-    for (let i = 0; i < game.region.length; i++) if (game.region[i] === p) tiles.push(i);
+    for (let i = 0; i < game.region.length; i++) if (bucketOf(game, i) === p) tiles.push(i);
     const rows = ROLES.flatMap((r, k) => {
       const sl = slotAt(game, p, k);
       if (!sl.exists) return [];
       let max = 0;
-      for (let q = 0; q < game.regions.length; q++) max = Math.max(max, slotAt(game, q, k).size);
+      for (let q = 0; q < game.habitats.length; q++) max = Math.max(max, slotAt(game, q, k).size);
       const f = sl.v >= 0 ? tiles.reduce((a, i) => a + fit(game, P[sl.v], i), 0) / tiles.length : 0;
       let took = 0;
       if (r.food >= 0) for (let g = 0; g < GROUPS; g++) took += B.last[at(p, r.food, 1 + g)];
-      return [{ name: r.name, size: sl.size, use: sl.use, made: r.food >= 0 ? B.last[at(p, r.food, 0)] : NaN, took: r.food >= 0 ? took : NaN,
+      return [{ name: r.name, g: sl.grams, size: sl.size, use: sl.use, made: r.food >= 0 ? B.last[at(p, r.food, 0)] : NaN, took: r.food >= 0 ? took : NaN,
         worth: Math.round(100 * (sl.size / (max || 1)) * Math.min(1, sl.share) * f) }];
     });
-    return { name: game.regions[p].name, rows, perTick: (B.ms / (NUM.slots.window * NUM.ticksPerSec)).toFixed(4), ms: B.ms.toFixed(2) };
+    return { name: game.habitats[p].name, rows, perTick: (B.ms / (NUM.slots.window * NUM.ticksPerSec)).toFixed(4), ms: B.ms.toFixed(2) };
   });
   const num = (v: number) => (Number.isNaN(v) ? '–' : v >= 100 ? v.toFixed(0) : v >= 1 ? v.toFixed(1) : v.toPrecision(2));
 </script>
@@ -63,12 +64,13 @@
   {#if slots}
     <table class="small">
       <tbody>
-        <tr class="dim"><td>{slots.name}</td><td>size/min</td><td>use</td><td>made</td><td>taken</td><td>worth</td></tr>
-        {#each slots.rows as r (r.name)}<tr><td>{r.name}</td><td>{num(r.size)}</td><td>{Math.round(r.use * 100)}%</td><td>{num(r.made)}</td><td>{num(r.took)}</td><td>{r.worth}</td></tr>{/each}
+        <tr class="dim"><td>{slots.name}</td><td>grams</td><td>size/min</td><td>use</td><td>made</td><td>taken</td><td>worth</td></tr>
+        {#each slots.rows as r (r.name)}<tr><td>{r.name}</td><td>{grams(r.g)}</td><td>{num(r.size)}</td><td>{Math.round(r.use * 100)}%</td><td>{num(r.made)}</td><td>{num(r.took)}</td><td>{r.worth}</td></tr>{/each}
       </tbody>
     </table>
     <p class="dim">slot update {slots.ms} ms a window · {slots.perTick} ms/tick</p>
   {/if}
+  <p class="dim">{game.habitats.filter((h) => h.shown).length} habitats · {game.board.heads} headlines · {game.board.lines} chatter · {game.board.renames} renames</p>
   <p class="dim">{stats.agents} agents · {stats.slow}% settled · {stats.ms} ms/tick · window.dev.dump()</p>
 </div>
 

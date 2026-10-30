@@ -19,8 +19,10 @@ class UI {
   placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
   foundName = $state(''); // the name for that new species
   focus = $state('thallus');
-  tab = $state<'species' | 'tile' | 'animal' | 'regions'>('species');
-  place = $state(-1); // the place shown in the Regions tab (a region)
+  tab = $state<'species' | 'tile' | 'animal' | 'habitats'>('species');
+  place = $state(-1); // the habitat shown in the Habitats tab (its bucket)
+  gear = $state(-1); // the loadout card unfolded there
+  banner = $state<{ id: number; text: string } | null>(null); // the headline over the map
   lit = $state<{ place: number; group: number } | null>(null); // a holder lit up on the map
   follow = $state(-1); // the id of the animal whose card is open; the camera follows it
   tree = $state(false); // the tree of life screen is open
@@ -45,7 +47,7 @@ function frame(now: number) {
   while (acc >= TICK_MS && n < 5000) { step(game); acc -= TICK_MS; n++; }
   if (n) perf.ms += ((performance.now() - t0) / n - perf.ms) * 0.05;
   if (n >= 5000) acc = 0;
-  if (now - lastBump > 500) { ui.v++; lastBump = now; }
+  if (now - lastBump > 500) { ui.v++; lastBump = now; banners(now); }
   requestAnimationFrame(frame);
 }
 
@@ -63,12 +65,22 @@ export function start() {
   // ?place=moss, ?view=zones|water|soil|nitrogen|shade, ?zoom=3 (read in MapView).
   const q = new URLSearchParams(location.search), bot = Number(q.get('bot'));
   if (bot > 0) autoplay(bot);
-  if (q.get('tab') === 'species' || q.get('tab') === 'tile' || q.get('tab') === 'regions') ui.tab = q.get('tab') as 'species' | 'tile' | 'regions';
-  if (q.get('place')) ui.place = Number(q.get('place'));
+  if (q.get('tab') === 'species' || q.get('tab') === 'tile' || q.get('tab') === 'habitats') ui.tab = q.get('tab') as 'species' | 'tile' | 'habitats';
   if (q.get('tab') === 'tree') ui.tree = true;
   if (q.get('tile')) ui.selected = Number(q.get('tile'));
   if (VIEWS.includes(q.get('view') as View)) ui.view = q.get('view') as View;
   if (q.get('place')) startPlacing(q.get('place')!);
+}
+
+// Headlines show one at a time over the map, queued (a few at most, so a skip doesn't bury the map).
+let queue: string[] = [], seenHead = 0, bannerUntil = 0, bannerId = 0;
+function banners(now: number) {
+  const fresh = game.heads.filter((h) => h.tick > seenHead);
+  if (fresh.length) { seenHead = fresh[fresh.length - 1].tick; queue = [...queue, ...fresh.map((h) => h.text)].slice(-3); }
+  if (ui.banner && now < bannerUntil) return;
+  const next = queue.shift();
+  ui.banner = next ? { id: ++bannerId, text: next } : null;
+  bannerUntil = now + 4000;
 }
 
 export function toast(text: string, kind: Toast['kind'] = 'info') {
@@ -135,10 +147,10 @@ export function selectTile(i: number) {
   ui.selected = i; ui.tab = 'tile';
 }
 
-/** Shows a place on the slot board (the Regions tab). */
+/** Shows a habitat's loadout (the Habitats tab). */
 export function selectPlace(p: number) {
-  if (ui.place !== p) ui.lit = null;
-  ui.place = p; ui.tab = 'regions';
+  if (ui.place !== p) { ui.lit = null; ui.gear = -1; }
+  ui.place = p; ui.tab = 'habitats';
 }
 
 export function unlockAll() {
@@ -151,6 +163,7 @@ export function addBiomass(n: number) {
 
 export function reset() {
   game = createState(Math.floor(Math.random() * 1e9));
-  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1; ui.follow = -1; ui.place = -1; ui.lit = null;
+  ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1; ui.follow = -1; ui.place = -1; ui.lit = null; ui.gear = -1;
+  queue = []; seenHead = 0; ui.banner = null;
   ui.gen++; ui.v++;
 }

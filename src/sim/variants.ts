@@ -5,6 +5,7 @@
 import { STRATA } from '../data/fields';
 import { AXES, axesOf, COMBOS, GENES, KEYS, TIER, TIERS, type Axis, type Combo } from '../data/genes';
 import { SPECIES, type SpeciesDef, type Trait } from '../data/species';
+import { headline } from './news';
 import { rand } from './rng';
 import { idx, type State } from './state';
 import { type Profile, profile } from './fit';
@@ -197,7 +198,8 @@ export function show(s: State, v: number) {
   if (one) at = idx(s, one.x | 0, one.y | 0);
   const key = x.tier === TIER.legendary ? newKey(x.genome, s.species[x.sp].genome) : null;
   const genes = key ? key.name : geneText(s, v);
-  s.log.push({ tick: s.tick, kind: 'variant', sp: x.sp, tier: x.tier, name: variantName(s, v), genes, place: placeName(s, at) });
+  if (key) headline(s, `${placeName(s, at)}: ${genes} in ${s.species[x.sp].name}. A new clade can evolve.`);
+  else s.log.push({ tick: s.tick, kind: 'variant', sp: x.sp, tier: x.tier, name: variantName(s, v), genes, place: placeName(s, at) });
 }
 
 /** "Dry Shade Moss", "Very Dry Moss" (two steps), "Dry Gemma Liverwort" (a trait gene), or the combo's name:

@@ -103,6 +103,24 @@ What's **decided**. Only the user moves things into this file. AI proposals live
   only in the Regions view (or on zoom).
 - **Idea:** hiding in shade and caves (prey harder to catch) fits the feeling of discovering things and animals.
 
+### Direction *(30 Oct, after slice 11 part B)*
+- **Habitats on the map are the slots to fill,** filled by fitting species **like an RPG equipment loadout**: a
+  **six-slot loadout** per habitat (not too cluttered), and the board shows a **picture of the holder** (maybe of the
+  habitat too). Habitats are highlighted on the map. Fewer iconic slots sit alongside the full system.
+- **Regions weren't needed;** keep them for now. Later they should grow organically (maybe from geology).
+- **Open slots are good:** many more species will come to fill them.
+- **Important news must stand out** (headlines); the rest of the feed is fine.
+- **Real biomass in the sim (P26 d2), as soon as possible:** weights per animal or group, metabolism and growth
+  potential, in numbers that add up, shown g → kg → t. A niche is big when much lives there, and regrowth counts.
+  The slot bar should be clear and absolute, yet still allow comparing.
+
+### Direction *(31 Oct, after playing slice 11 part C)*
+- **Part C feels as imagined:** the slots look great, and the habitat detection is loved (scattered, but that makes
+  sense).
+- **Show all the small, interesting habitats on the map,** and border areas between them could be really interesting.
+  **Name and give slots to fewer of them** (maybe only the big parts), while still displaying all the small ones.
+- **Regions and habitats feel doubled up** now, a little confusing.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.

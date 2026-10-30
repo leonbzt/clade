@@ -1,13 +1,15 @@
 // The map's reading views: zones (who holds each stratum), one layer as a single-colour ramp, the variants of one
-// species, the regions, and the placement view (fit tier, the limiting layer, an outline around where you can place, and the
-// best spots).
+// species, the regions, the habitats, and the placement view (fit tier, the limiting layer, an outline around where
+// you can place, and the best spots).
 import { FIELDS, STRATA, limitColor, type LayerId } from '../data/fields';
 import { NUM } from '../data/numbers';
-import { PAL, REGION_TINT, TIER_COLORS, ZONE } from '../data/palette';
+import { HABITAT_TINT, PAL, REGION_TINT, TIER_COLORS, ZONE } from '../data/palette';
+import { HABITAT_KINDS } from '../data/habitats';
 import { VARIANT_COLORS } from '../data/view';
 import { placement } from '../sim/commands';
 import { fit, limitOf, tierOf } from '../sim/fit';
 import { SEA, type State } from '../sim/state';
+import { bucketOf } from '../sim/tally';
 import { defOf, poolOf, speciesIndex, stratumOf } from '../sim/variants';
 import { tinted } from './pixels';
 import { SPECIES } from '../data/species';
@@ -96,20 +98,20 @@ export function variantHighlight(ctx: Ctx, s: State, v: number) {
   for (const a of s.agents) if (a.v === v) ctx.fillRect(Math.round(a.x * T) - 3, Math.round(a.y * T) - 3, 6, 6);
 }
 
-/** A slot's holder in one place (Regions tab): its plants' tiles and its animals there, in its colour. */
+/** A slot's holder in one habitat (Habitats tab): its plants' tiles and its animals there, in its colour. */
 export function holderHighlight(ctx: Ctx, s: State, place: number, group: number) {
   const n = s.w * s.h, groupAt = (v: number) => s.species[s.variants[v].sp].base;
   wash(ctx, 0.35);
   ctx.fillStyle = ZONE[SPECIES[group].id] ?? PAL.text;
   for (let i = 0; i < n; i++) {
-    if (s.region[i] !== place) continue;
+    if (bucketOf(s, i) !== place) continue;
     for (let k = 0; k < STRATA.length; k++) {
       const v = s.occ[k * n + i];
       if (v >= 0 && groupAt(v) === group) { ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T); break; }
     }
   }
   for (const a of s.agents) {
-    if (groupAt(a.v) === group && s.region[(a.y | 0) * s.w + (a.x | 0)] === place) ctx.fillRect(Math.round(a.x * T) - 3, Math.round(a.y * T) - 3, 6, 6);
+    if (groupAt(a.v) === group && bucketOf(s, (a.y | 0) * s.w + (a.x | 0)) === place) ctx.fillRect(Math.round(a.x * T) - 3, Math.round(a.y * T) - 3, 6, 6);
   }
 }
 
@@ -169,6 +171,32 @@ export function regionsView(ctx: Ctx, s: State, hover: number) {
     if (r < 0) continue;
     if (i % s.w < s.w - 1 && s.region[i + 1] >= 0 && s.region[i + 1] !== r) ctx.fillRect(x + T - 1, y, 2, T);
     if (i + s.w < n && s.region[i + s.w] >= 0 && s.region[i + s.w] !== r) ctx.fillRect(x, y + T - 1, T, 2);
+  }
+  ctx.globalAlpha = 1;
+}
+
+/** The habitats, tinted by kind, with faint borders; the one under the mouse is brighter, the chosen one outlined. */
+export function habitatsView(ctx: Ctx, s: State, chosen: number, hover: number) {
+  const n = s.w * s.h, lit = hover >= 0 ? bucketOf(s, hover) : -1;
+  wash(ctx, 0.5);
+  for (let i = 0; i < n; i++) {
+    const b = bucketOf(s, i);
+    if (b < 0) continue;
+    ctx.globalAlpha = b === lit || b === chosen ? 0.72 : s.habitats[b].shown ? 0.45 : 0.22;
+    ctx.fillStyle = HABITAT_TINT[HABITAT_KINDS[s.hab[i]].id];
+    ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
+  }
+  for (let i = 0; i < n; i++) {
+    const b = bucketOf(s, i), x = (i % s.w) * T, y = ((i / s.w) | 0) * T;
+    if (b < 0) continue;
+    const right = i % s.w < s.w - 1 ? bucketOf(s, i + 1) : -1, down = i + s.w < n ? bucketOf(s, i + s.w) : -1;
+    for (const [o, w, h, dx, dy] of [[right, 2, T, T - 1, 0], [down, T, 2, 0, T - 1]] as const) {
+      if (o < 0 || o === b) continue;
+      const edge = b === chosen || o === chosen;
+      ctx.globalAlpha = edge ? 1 : 0.35;
+      ctx.fillStyle = edge ? PAL.gold : PAL.text;
+      ctx.fillRect(x + dx, y + dy, w, h);
+    }
   }
   ctx.globalAlpha = 1;
 }

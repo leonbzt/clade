@@ -531,3 +531,35 @@ matter more now.
     - Slower ticks if every member tracks mass (mitigated by groups and the current pacing).
   - *When:* after you've played part C, before the 12a spec, because the run judges slots in whatever units we
     have then.
+- **Your call (30 Oct, handoff):** part C as specced is great; **d2 as soon as possible**, right after part C.
+
+## P27. Real-world units for readability *(30 Oct, AI, from your question; goes well with d2)*
+Ranked by how much they'd help reading the island, cheapest first:
+- **a. Layers in real units on the tile card:** soil as cm deep, shade as % light, water as % moisture (and mm of
+  rain), nitrogen as g/m², salt as a word. "Soil 3 cm, 40 % light, moist" reads faster than 0.42 bars. Display only.
+- **b. A map scale bar and real distances** ("this fern forest is 60 m across"). It needs the tile size from d2 and
+  your bigger-tiles note.
+- **c. Counts as individuals and densities:** "≈ 40 000 springtails (2 000 per m²)" beside the few shown. That's
+  real, it fits groups with high numbers and few shown, and it makes small animals feel numerous.
+- **d. Island time in years and seasons:** primary succession on lava takes decades, so a game minute could be a
+  year. "Year 34: the first fern forest" turns the run into a story with eras. Seasons later.
+- **e. Body size you can see:** sprite size and how many are drawn scale with the log of the body mass (from d2),
+  so a beetle reads as bigger than a springtail at a glance.
+- **f. Flows in grams on a food-web view:** arrows sized by g/min between the groups (moss → slugs → beetles,
+  litter → fungi). It shows the chains (chains-are-features) and needs d2.
+- **Skip for now:** real temperature or a climate gradient (no gradient yet, your call), and exact real
+  physiology. Rough real ratios are enough to read; tune by feel.
+
+## P28. Big and small habitats, and regions vs habitats *(31 Oct, AI, from your part C playtest)*
+- **a. Two tiers:** *major* habitats (today's 60+ tiles: a name, a loadout card, on the board) and *patches* (from
+  ~8 tiles: tinted on the map, the kind on hover, their slots still count for the island's best). A patch can grow
+  into a major one, which is the headline.
+- **b. Name the big piece:** a habitat's name and card go on its largest connected piece; scattered bits read as
+  "patches of the Fern stream". Optionally split a habitat by connected pieces instead of by region.
+- **c. Regions vs habitats:** (1) regions only as the twin suffix, with the Regions view dropped; (2) regions become
+  large "areas" that group habitats in the panel ("Windward lava: Club moss heath, Fern stream, 3 patches"); (3)
+  regions replaced by connected pieces of a kind (no k-means cuts at all).
+- **d. Borders (ecotones):** tiles where two kinds meet as their own small places, with both sides' slots.
+  Real ecology: edges are often the richest spots.
+- **Open:** are patches clickable with a loadout, or map-only? Which of c?
+

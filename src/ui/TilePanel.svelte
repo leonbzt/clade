@@ -40,7 +40,7 @@
   <p class="dim">Click a tile on the map to see what lives there and why.</p>
 {:else}
   <h2>{card.place.landmark ?? card.place.terrain} <span class="dim small">{card.place.landmark ? card.place.terrain.toLowerCase() + ' · ' : ''}({card.x}, {card.y})</span></h2>
-  <p class="small">{card.place.region} <span class="dim">· {card.place.side} side</span></p>
+  <p class="small">{card.place.region} <span class="dim">· {card.place.side} side · {card.place.habitat.toLowerCase()}</span></p>
   {#if card.place.blurb}<p class="small dim blurb">{card.place.blurb}</p>{/if}
   {#if card.place.statuses.length}
     <p class="small">{#each card.place.statuses as st (st.name)}<span class="status">{st.name} {st.value.toFixed(2)}</span>{/each}</p>

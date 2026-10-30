@@ -51,6 +51,11 @@ export const REGION_TINT: Record<string, string> = {
   vent: '#e07848', spring: '#48a8e0', beach: '#e0c878', cave: '#a070d0', windward: '#58c0a0', lee: '#b09068',
 };
 
+/** Habitat kinds in the Habitats view. */
+export const HABITAT_TINT: Record<string, string> = {
+  scar: '#e07848', spray: '#e8eef4', wet: '#48a8e0', dark: '#8a5ad8', bare: '#8a8478', deep: '#a8703c', open: '#7cc05a',
+};
+
 /** Animal colours on the map: [main, shade, highlight]. */
 export const ANIMAL_PAL: Record<string, [string, string, string]> = {
   snail: ['#a8683c', '#6a3c22', '#e8b878'], slug: ['#c86a3a', '#8a4024', '#f0a070'], springtail: ['#e4dcf4', '#9a90b8', '#ffffff'],

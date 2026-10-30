@@ -14,13 +14,13 @@ import { lookOf } from './look';
 import { hash2, makeCanvas } from './pixels';
 import { SPRITE, sprite } from './plants';
 import { TerrainLayer } from './terrain';
-import { holderHighlight, layerView, outline, PlacingView, regionsView, variantHighlight, variantsView, zonesView } from './overlays';
+import { habitatsView, holderHighlight, layerView, outline, PlacingView, regionsView, variantHighlight, variantsView, zonesView } from './overlays';
 
 const T = NUM.map.tile;
-export type View = 'none' | 'zones' | LayerId | 'variants' | 'animals' | 'regions';
-export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants', 'animals', 'regions'];
+export type View = 'none' | 'zones' | LayerId | 'variants' | 'animals' | 'regions' | 'habitats';
+export const VIEWS: View[] = ['none', 'zones', ...LAYER_IDS.filter((l) => !FIELDS[l].hidden), 'variants', 'animals', 'regions', 'habitats'];
 export type ViewOpts = { placing: string | null; hover: number; view: View; time: number; detail: boolean; selected: number; focus: string; hoverVariant: number; follow: number;
-  lit: { place: number; group: number } | null };
+  lit: { place: number; group: number } | null; place: number };
 
 export class GardenRenderer {
   readonly canvas: HTMLCanvasElement;
@@ -67,6 +67,7 @@ export class GardenRenderer {
       if (o.view === 'variants') variantsView(ctx, s, o.focus);
       else if (o.view === 'animals') animalsView(ctx, s);
       else if (o.view === 'regions') regionsView(ctx, s, o.hover);
+      else if (o.view === 'habitats') habitatsView(ctx, s, o.place, o.hover);
       else if (o.view !== 'none') layerView(ctx, s, o.view);
       else this.glints(o.time);
       if (o.hoverVariant >= 0) variantHighlight(ctx, s, o.hoverVariant);

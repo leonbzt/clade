@@ -138,6 +138,7 @@ export function flares(s: State, dt: number) {
     const i = y * s.w + x;
     if (s.terrain[i] === SEA) continue;
     s.layers.soil[i] *= 1 - F.soilLoss;
+    s.scar[i] = s.tick;
     for (let k = 0; k < STRATA.length; k++) {
       const slot = k * n + i, v = s.occ[slot];
       if (v < 0 || protectedAt(s, slot)) continue;

@@ -9,7 +9,8 @@
   import { doFound, followAnimal, game, selectPlace, selectTile, ui } from './game.svelte';
   import EventFeed from './EventFeed.svelte';
   import SlotIcon from './SlotIcon.svelte';
-  import { rowsOf } from './board';
+  import { loadout } from './board';
+  import { bucketOf } from '../sim/tally';
 
   const T = NUM.map.tile, W = NUM.map.w * T, H = NUM.map.h * T;
 
@@ -27,10 +28,14 @@
     ui.gen;
     return game.landmarks.map((m) => ({ name: m.name, x: ((m.at % game.w) + 0.5) * T, y: Math.floor(m.at / game.w) * T }));
   });
-  // Each region's name with its three slot icons (they change with the sim, so they follow ui.v).
   const regionLabels = $derived.by(() => {
+    ui.gen;
+    return game.regions.map((g, p) => ({ p, name: g.name, x: ((g.at % game.w) + 0.5) * T, y: (Math.floor(g.at / game.w) + 0.5) * T }));
+  });
+  // A loadout card on each habitat shown: its six mini icons, and its name when zoomed in (they follow ui.v).
+  const habitatCards = $derived.by(() => {
     ui.gen; ui.v;
-    return game.regions.map((g, p) => ({ p, name: g.name, rows: rowsOf(game, p), x: ((g.at % game.w) + 0.5) * T, y: (Math.floor(g.at / game.w) + 0.5) * T }));
+    return game.habitats.filter((h) => h.shown && h.at >= 0).map((h) => ({ p: h.id, name: h.name, cards: loadout(game, h.id), x: ((h.at % game.w) + 0.5) * T, y: (Math.floor(h.at / game.w) + 0.5) * T }));
   });
 
   $effect(() => {
@@ -43,7 +48,7 @@
     let raf = 0;
     const loop = (t: number) => {
       const follow = ui.tab === 'animal' ? ui.follow : -1;
-      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus, hoverVariant: ui.hoverVariant, follow, lit: ui.tab === 'regions' ? ui.lit : null });
+      renderer?.draw({ placing: ui.placing, hover: ui.hover, view: ui.view, time: t, detail: scale >= DETAIL_FROM, selected: ui.tab === 'tile' ? ui.selected : -1, focus: ui.focus, hoverVariant: ui.hoverVariant, follow, lit: ui.tab === 'habitats' ? ui.lit : null, place: ui.tab === 'habitats' ? ui.place : -1 });
       if (follow >= 0 && zi > 0 && !press) centreOn(follow);
       raf = requestAnimationFrame(loop);
     };
@@ -128,11 +133,11 @@
     const r = canvas.getBoundingClientRect();
     const a = animalAt(game, (((e.clientX - r.left) / r.width) * W) / T, (((e.clientY - r.top) / r.height) * H) / T, Math.max(0.5, 1.2 / ZOOM_STEPS[zi]));
     if (a) { followAnimal(a.id); return; }
-    if (ui.view === 'regions' && game.region[i] >= 0) { selectPlace(game.region[i]); ui.selected = i; return; }
+    if (ui.view === 'habitats' && bucketOf(game, i) >= 0) { selectPlace(bucketOf(game, i)); ui.selected = i; return; }
     selectTile(i);
   }
 
-  const NAMES: Partial<Record<View, string>> = { none: 'Garden', zones: 'Zones', variants: 'Variants', animals: 'Animals', regions: 'Regions' };
+  const NAMES: Partial<Record<View, string>> = { none: 'Garden', zones: 'Zones', variants: 'Variants', animals: 'Animals', regions: 'Regions', habitats: 'Habitats' };
   const label = (v: View) => NAMES[v] ?? FIELDS[v as LayerId].name;
 </script>
 
@@ -159,10 +164,14 @@
     ></canvas>
     {#if ui.view === 'regions'}
       {#each regionLabels as l (l.p)}
-        <button class="label region" class:on={l.p === ui.place} style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px"
-          onpointerdown={(e) => e.stopPropagation()} onclick={() => selectPlace(l.p)}>
-          <span>{l.name}</span>
-          <span class="icons">{#each l.rows as sl (sl.role)}<SlotIcon slot={sl} size={10} />{/each}</span>
+        <span class="label region" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
+      {/each}
+    {:else if ui.view === 'habitats'}
+      {#each habitatCards as l (l.p)}
+        <button class="label card" class:on={l.p === ui.place} style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px"
+          onpointerdown={(e) => e.stopPropagation()} onclick={() => selectPlace(l.p)} title={l.name}>
+          {#if zi > 0}<span>{l.name}</span>{/if}
+          <span class="icons">{#each l.cards as c (c.k)}<SlotIcon slot={c} size={8} />{/each}</span>
         </button>
       {/each}
     {:else if zi > 0}
@@ -170,6 +179,7 @@
         <span class="label" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
       {/each}
     {/if}
+    {#if ui.banner}{#key ui.banner.id}<div class="banner panel">{ui.banner.text}</div>{/key}{/if}
   </div>
 
   <div class="panel tools">
@@ -197,10 +207,14 @@
   canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; display: block; transform-origin: 0 0; }
   .label { position: absolute; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap; font-size: 14px;
     color: var(--text); text-shadow: 1px 1px 0 var(--ink), -1px 1px 0 var(--ink), 1px -1px 0 var(--ink), -1px -1px 0 var(--ink); }
-  .label.region { transform: translate(-50%, -50%); font-size: 13px; pointer-events: auto; cursor: pointer; display: flex; flex-direction: column;
-    align-items: center; gap: 2px; padding: 0; margin: 0; background: none; border: none; box-shadow: none; }
-  .label.region:hover, .label.region.on { color: var(--gold); background: none; }
-  .icons { display: flex; gap: 4px; }
+  .label.region { transform: translate(-50%, -50%); font-size: 13px; }
+  .label.card { transform: translate(-50%, -50%); font-size: 13px; pointer-events: auto; cursor: pointer; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; padding: 2px; margin: 0; background: #140f0b99; border: 1px solid transparent; box-shadow: none; }
+  .label.card:hover, .label.card.on { color: var(--gold); background: #140f0bcc; border-color: var(--gold); }
+  .icons { display: grid; grid-template-columns: repeat(3, auto); gap: 3px; }
+  .banner { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); max-width: 80%; padding: 6px 14px; text-align: center;
+    color: var(--gold); border-color: var(--gold); pointer-events: none; animation: drop 4s steps(8) forwards; }
+  @keyframes drop { 0% { opacity: 0; } 8%, 88% { opacity: 1; } 100% { opacity: 0; } }
   .tools { display: flex; gap: 14px; align-items: center; justify-content: space-between; width: 100%; height: 44px; padding: 2px 10px; }
   .readout { width: 100%; height: 56px; padding: 4px 10px; overflow: hidden; }
   .group { display: flex; gap: 2px; }

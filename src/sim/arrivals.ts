@@ -5,6 +5,7 @@ import { ANIMAL } from '../data/animals';
 import { TREE, type TreeNode } from '../data/tree';
 import { spawn } from './agents';
 import { buildProfile, fit, profiles, type Profile } from './fit';
+import { chatter, headline } from './news';
 import { rand } from './rng';
 import { type State } from './state';
 import { speciesIndex, variantFor } from './variants';
@@ -44,7 +45,7 @@ export function arrivals(s: State, dt: number) {
       const i = landing(s, n);
       if (i < 0) continue;
       s.visitors[n.id] = i;
-      s.log.push({ tick: s.tick, kind: 'arrival', sp, text: `${n.arrive.text.replace('{place}', placeOf(s, i))} Adopt them on the tree.` });
+      headline(s, `${n.arrive.text.replace('{place}', placeOf(s, i))} Adopt them on the tree.`);
       continue;
     }
     s.arriveClock[n.id] = (s.arriveClock[n.id] ?? 0) + dt;
@@ -54,7 +55,7 @@ export function arrivals(s: State, dt: number) {
     const i = landing(s, n), v = i >= 0 ? variantFor(s, sp, s.species[sp].genome) : -1;
     if (v < 0) continue;
     spawn(s, v, i, Math.ceil(n.arrive.n / 2), 'arrived on the island');
-    s.log.push({ tick: s.tick, kind: 'arrival', sp, text: `More ${s.species[sp].name.toLowerCase()} arrived at ${placeOf(s, i)}.` });
+    chatter(s, `More ${s.species[sp].name.toLowerCase()} arrived at ${placeOf(s, i)}.`);
   }
 }
 

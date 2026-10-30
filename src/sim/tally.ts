@@ -1,7 +1,8 @@
-// The counters behind the slot board: what each place makes and who takes it, per bucket (a region now; part C adds
-// the habitat kind, so no new hooks are needed). The sim calls these where plants grow, animals eat and breed, hunters
+// The counters behind the slot board: what each place makes and who takes it, per bucket (a region × a habitat kind:
+// one habitat). The sim calls these where plants grow, animals eat and breed, hunters
 // catch and litter falls; slots.ts reads them once a window. Food is a group (a base species: its cover, or its
 // young) or LITTER; takers are groups.
+import { GEAR, HABITAT_KINDS } from '../data/habitats';
 import { GROUPS, LITTER, ROLES } from '../data/roles';
 import { type Profile } from './fit';
 import type { State } from './state';
@@ -14,6 +15,7 @@ export type Slot = {
   role: number; // index into ROLES
   place: number;
   size: number; // food made per minute (leads: tiles where a plant of the stratum could live)
+  grams: number; // the size in real grams (leads: standing mass, g; the rest g/min); masses.ts
   use: number; // the share of the size taken, all groups together (leads: cover)
   takes: number[]; // per group, per minute (leads: cover)
   holder: number; // the group with the biggest share, or -1: open
@@ -40,12 +42,17 @@ export type Board = {
   dropRate: Float32Array;
   last: Float32Array; // the last window, per minute, unsmoothed (dev panel)
   cap: Float32Array; // smoothed regrowth capacity, [bucket][group], cover per minute
+  cover: Float32Array; // cover now, [bucket][group]
+  gear: Int16Array; // per bucket × GEAR: the role in that loadout slot, or -1: locked
   windows: number;
   slots: Slot[]; // place × ROLES.length + role
-  rows: number[][]; // per place: the roles on its three board rows (lead, eat, hunt), -1 for none
   best: Best[]; // per role, over the whole island
-  changes: number; // holder changes on board rows so far
-  lines: number; // feed lines so far
+  changes: number; // holder changes in shown loadout slots so far
+  lines: number; // chatter lines so far
+  heads: number; // headlines so far
+  renames: number; // habitats renamed so far
+  alive: number[]; // per species: 1 if it lived on the island at the last window
+  bestAt: number[]; // per role: the tick of its last island's-best headline
   ms: number; // what the last window update took
 };
 
@@ -53,19 +60,19 @@ export function newBoard(places: number): Board {
   const m = places * PER_BUCKET, d = places * GROUPS;
   return {
     cnt: new Float32Array(m), drops: new Float32Array(d), rate: new Float32Array(m), dropRate: new Float32Array(d),
-    last: new Float32Array(m), cap: new Float32Array(d), windows: 0,
+    last: new Float32Array(m), cap: new Float32Array(d), cover: new Float32Array(d), gear: new Int16Array(places * GEAR.length).fill(-1), windows: 0,
     slots: Array.from({ length: places * ROLES.length }, (_, k) => ({
-      role: k % ROLES.length, place: Math.floor(k / ROLES.length), size: 0, use: 0, takes: new Array(GROUPS).fill(0),
+      role: k % ROLES.length, place: Math.floor(k / ROLES.length), size: 0, grams: 0, use: 0, takes: new Array(GROUPS).fill(0),
       holder: -1, share: 0, sp: -1, v: -1, tier: 0, yours: false, trend: 0, feeder: -1, fedBy: -1,
       exists: false, open: false, big: false, hist: [],
     })),
-    rows: Array.from({ length: places }, () => [-1, -1, -1]), best: ROLES.map(() => ({ holder: -1, share: 0, size: 0, exists: false })),
-    changes: 0, lines: 0, ms: 0,
+    best: ROLES.map(() => ({ holder: -1, share: 0, size: 0, exists: false })),
+    changes: 0, lines: 0, heads: 0, renames: 0, alive: [], bestAt: [], ms: 0,
   };
 }
 
-/** The bucket a tile counts into, or -1 at sea. */
-export const bucketOf = (s: State, i: number) => s.region[i];
+/** The bucket a tile counts into (its habitat), or -1 at sea. */
+export const bucketOf = (s: State, i: number) => (s.region[i] < 0 ? -1 : s.region[i] * HABITAT_KINDS.length + s.hab[i]);
 export const groupOf = (s: State, sp: number) => s.species[sp].base;
 export const at = (b: number, food: number, col: number) => b * PER_BUCKET + food * COLS + col;
 
