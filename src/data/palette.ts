@@ -46,11 +46,6 @@ export const ZONE: Record<string, string> = {
   snail: '#d89060', slug: '#e06848', springtail: '#c8b8f0', bristletail: '#a8c0d0', beetle: '#6890e0',
 };
 
-/** The Regions view: a tint per kind of region; open lava by wind side. */
-export const REGION_TINT: Record<string, string> = {
-  vent: '#e07848', spring: '#48a8e0', beach: '#e0c878', cave: '#a070d0', windward: '#58c0a0', lee: '#b09068',
-};
-
 /** Habitat kinds in the Habitats view. */
 export const HABITAT_TINT: Record<string, string> = {
   scar: '#e07848', spray: '#e8eef4', wet: '#48a8e0', dark: '#8a5ad8', bare: '#8a8478', deep: '#a8703c', open: '#7cc05a',

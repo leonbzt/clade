@@ -17,7 +17,7 @@
     if (e.target instanceof HTMLInputElement) return;
     if (e.key === 'Escape') { ui.placing = null; ui.tree = false; }
     if (e.key === 't' || e.key === 'T') ui.tree = !ui.tree;
-    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 9 Regions, 0 Habitats
+    // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 9 Habitats
     const k = e.key === '0' ? 10 : Number(e.key);
     if (k >= 1 && k <= VIEWS.length) ui.view = VIEWS[k - 1];
   }

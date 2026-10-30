@@ -16,20 +16,21 @@ export const NUM = {
     // windward edge to `lee` on the far edge; its coast gets salt spray, fading over `sprayIn` tiles.
     wind: { windward: 0.12, lee: -0.05, spray: 0.3, sprayIn: 2 },
   },
-  regions: { min: 60, piece: 550, most: 14 }, // tiles; open lava is cut into pieces of about `piece` tiles
   // The slot board (slots.ts): counters over windows of `window` s, smoothed over about `smooth` s. A slot is open
   // when no group takes `open` of its size (a holder keeps it down to `keep`); a challenger needs `hyst` more than
   // the holder. Big open: among the `bigTop` largest of its role, and at least `bigShare` of the largest. A slot
   // exists from `exists` of its role's largest. A board row changes only for one `sticky` × bigger.
   slots: { window: 30, smooth: 180, open: 0.15, keep: 0.1, hyst: 0.1, bigTop: 3, bigShare: 0.25, exists: 0.03,
-    sticky: 1.25, trend: 0.15, trendWindows: 6, warmup: 4, regrow: 0.25 },
-  // Habitats (habitats.ts): one shows on the board from `show` tiles and hides below `hide`. A vent scar lasts `scar`
+    sticky: 1.25, trend: 0.15, trendWindows: 6, warmup: 4 },
+  // Habitats (habitats.ts): connected pieces of one kind, gaps of `gap` tiles bridged. A major one (named, on the
+  // board) from `show` tiles, hidden below `hide`; a patch (hover only) from `patch`, a scrap below `scrap`. A vent scar lasts `scar`
   // seconds after a flare. A new lead renames a habitat once it has led for `rename` windows. Headlines: the last
   // `pinned` stay at the top of the feed; the same one isn't repeated within `repeat` seconds. A habitat growing is a
   // headline the first time only, its vanishing only after it stood `stood` seconds. A role's island's best is a
   // headline at most once per `bestEvery` seconds; the rest is chatter.
-  habitats: { show: 60, hide: 40, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
-  mass: { tile: 1 }, // m² per tile (masses.ts)
+  habitats: { show: 60, hide: 40, patch: 8, scrap: 5, gap: 1, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
+  // m² per tile (masses.ts); the shares of each gram of litter that decays into nitrogen and soil
+  mass: { tile: 1, litterN: 0.01, litterSoil: 0.05 },
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
     oldEvery: 4, // old growth updates every this many ticks
@@ -37,9 +38,8 @@ export const NUM = {
     oldDelta: 0.02,
     starve: 20, // seconds a plant lasts once its health is near 0
     dieback: 30, // seconds a dying plant takes to thin out from full cover
-    shrink: 0.02, // per second: how fast cover falls toward what health allows
     dyingHold: 0.3, // a dying plant keeps this share of its hold on the tile
-    settleCover: 0.05, // cover of a new seedling
+    settleCover: 0.05, // a new seedling's mass, as a share of what health allows
     reach: 2, // tiles a spore can travel from its parent
     incumbentEdge: 0.4, // a challenger must be this much stronger to take a living plant's tile
     takeover: 0.3, // chance it then does

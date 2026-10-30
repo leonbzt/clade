@@ -114,15 +114,15 @@ export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
 
 export type PlaceInfo = {
   terrain: string; landmark: string | null; blurb: string | null; statuses: { name: string; value: number }[];
-  region: string | null; side: 'windward' | 'lee'; habitat: string; // its kind ("Wet seep")
+  named: string | null; side: 'windward' | 'lee'; habitat: string; // named: its major habitat; habitat: its kind ("Wet seep")
 };
 
-/** What the ground is: terrain, the landmark it belongs to, its statuses, its region and its side of the wind. */
+/** What the ground is: terrain, the landmark it belongs to, its statuses, its habitat and its side of the wind. */
 export function placeInfo(s: State, i: number): PlaceInfo {
   const m = s.landmarks[s.mark[i]];
   const statuses = STATUS_IDS.filter((id) => s.statuses[id][i] > 0).map((id) => ({ name: STATUSES[id].name, value: s.statuses[id][i] }));
   return { terrain: TERRAIN_NAMES[s.terrain[i]], landmark: m ? m.name : null, blurb: m ? LANDMARKS[m.kind].blurb : null, statuses,
-    region: s.regions[s.region[i]]?.name ?? null, side: s.windward[i] >= 0.5 ? 'windward' : 'lee', habitat: HABITAT_KINDS[s.hab[i]].name };
+    named: s.habitats[s.place[i]]?.shown ? s.habitats[s.place[i]].name : null, side: s.windward[i] >= 0.5 ? 'windward' : 'lee', habitat: HABITAT_KINDS[s.hab[i]].name };
 }
 
 const r2 = (v: number) => String(+v.toFixed(2));

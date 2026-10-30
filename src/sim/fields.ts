@@ -1,9 +1,10 @@
 // The one generic kernel for every layer. Levels are recomputed; stocks get inflow, use, decay and diffusion.
-// No layer has its own update code: it's all driven by FIELDS and the species' makes.
+// No layer has its own update code: it's all driven by FIELDS and the species' makes. Litter is grams: what falls is
+// shared out without loss, and what leaves it is counted as decay in the ledger.
 import { FIELDS, LAYER_IDS, LEVEL_ORDER, STOCK_ORDER, STRATA, type LayerId, type LevelDef, type StockDef } from '../data/fields';
 import { SEA, type State } from './state';
 import { type Profile } from './fit';
-import { litterFlow } from './tally';
+import { litterFlow, LITTER_G } from './tally';
 
 /** Per tile: what the occupants put into or take from each layer this second. */
 export type Flows = {
@@ -60,11 +61,6 @@ export function levelTerms(s: State, id: LayerId, def: LevelDef, add: number, i:
 
 const scratch = { a: new Float32Array(0) };
 
-/** Litter from dying plants per second on a tile: half stays, half goes to the neighbours. */
-export function fellAt(s: State, fall: Float32Array, i: number, dt: number): number {
-  return (0.5 * fall[i] + 0.5 * landMean(s, fall, i)) / dt;
-}
-
 export function landMean(s: State, v: Float32Array, i: number): number {
   const x = i % s.w, y = (i / s.w) | 0;
   let sum = 0, c = 0;
@@ -76,6 +72,17 @@ export function landMean(s: State, v: Float32Array, i: number): number {
     sum += v[j]; c++;
   }
   return c ? sum / c : v[i];
+}
+
+/** Litter falling on tile i (per second): half stays, half goes to its land neighbours (all of it, if it has none). */
+function share(s: State, i: number, f: number) {
+  const x = i % s.w, y = (i / s.w) | 0, near: number[] = [];
+  for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+    const nx = x + dx, ny = y + dy;
+    if ((dx || dy) && nx >= 0 && ny >= 0 && nx < s.w && ny < s.h && s.terrain[ny * s.w + nx] !== SEA) near.push(ny * s.w + nx);
+  }
+  fellLast[i] += near.length ? f / 2 : f;
+  for (const j of near) fellLast[j] += f / 2 / near.length;
 }
 
 /** Litter that fell per second at the last update, for the tile card. */
@@ -101,7 +108,8 @@ export function updateFields(s: State, P: Profile[], dt: number) {
     }
   }
   if (fellLast.length !== n) fellLast = new Float32Array(n);
-  for (let i = 0; i < n; i++) fellLast[i] = s.terrain[i] === SEA ? 0 : fellAt(s, s.fall, i, dt);
+  fellLast.fill(0);
+  for (let i = 0; i < n; i++) if (s.fall[i]) share(s, i, s.fall[i] / dt);
   s.fall.fill(0);
   for (const id of STOCK_ORDER) {
     const def = FIELDS[id] as StockDef, v = s.layers[id];
@@ -114,7 +122,8 @@ export function updateFields(s: State, P: Profile[], dt: number) {
       if (id === 'litter' && (t.made || t.used)) litterFlow(s, P, i, t.made * dt, Math.min(tmp[i], -t.used * dt));
       for (const to in def.into) { const u = s.layers[to as LayerId]; u[i] = Math.min(1, u[i] - dt * t.decay * def.into[to as LayerId]!); }
       if (def.capped && x > s.soilCap[i]) x = s.soilCap[i];
-      v[i] = x < 0 ? 0 : x > 1 ? 1 : x;
+      v[i] = x < 0 ? 0 : x > 1 && !def.open ? 1 : x;
+      if (def.open) { s.ledger.decay += (tmp[i] + dt * (t.fell + t.made) - v[i]) * LITTER_G; s.ledger.prod += dt * t.made * LITTER_G; }
     }
   }
 }

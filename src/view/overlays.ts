@@ -1,14 +1,15 @@
 // The map's reading views: zones (who holds each stratum), one layer as a single-colour ramp, the variants of one
-// species, the regions, the habitats, and the placement view (fit tier, the limiting layer, an outline around where
+// species, the habitats, and the placement view (fit tier, the limiting layer, an outline around where
 // you can place, and the best spots).
 import { FIELDS, STRATA, limitColor, type LayerId } from '../data/fields';
 import { NUM } from '../data/numbers';
-import { HABITAT_TINT, PAL, REGION_TINT, TIER_COLORS, ZONE } from '../data/palette';
+import { HABITAT_TINT, PAL, TIER_COLORS, ZONE } from '../data/palette';
 import { HABITAT_KINDS } from '../data/habitats';
 import { VARIANT_COLORS } from '../data/view';
 import { placement } from '../sim/commands';
 import { fit, limitOf, tierOf } from '../sim/fit';
 import { SEA, type State } from '../sim/state';
+import { SCRAP } from '../sim/habitats';
 import { bucketOf } from '../sim/tally';
 import { defOf, poolOf, speciesIndex, stratumOf } from '../sim/variants';
 import { tinted } from './pixels';
@@ -128,61 +129,15 @@ export function layerView(ctx: Ctx, s: State, id: LayerId) {
   ctx.globalAlpha = 1;
 }
 
-const tintCache = new WeakMap<State, string[]>();
-/** Each region's tint: its kind's colour (open lava by wind side), a shade lighter or darker than a neighbour of the
- * same kind. */
-export function regionTints(s: State): string[] {
-  let out = tintCache.get(s);
-  if (out) return out;
-  const key = s.regions.map((g) => (g.kind === 'lava' ? (g.windward ? 'windward' : 'lee') : g.kind));
-  const next = s.regions.map(() => new Set<number>());
-  for (let i = 0; i < s.region.length; i++) {
-    const a = s.region[i];
-    for (const j of [i + 1, i + s.w]) {
-      const b = s.region[j];
-      if (a >= 0 && b >= 0 && a !== b && j < s.region.length && (j !== i + 1 || j % s.w)) { next[a].add(b); next[b].add(a); }
-    }
-  }
-  const shade = s.regions.map(() => -1);
-  s.regions.forEach((_, r) => {
-    const taken = new Set([...next[r]].filter((o) => key[o] === key[r]).map((o) => shade[o]));
-    shade[r] = [0, 1, 2, 3].find((k) => !taken.has(k)) ?? 0;
-  });
-  out = s.regions.map((_, r) => tinted(REGION_TINT[key[r]], { hue: 0, light: [0, 0.1, -0.1, 0.18][shade[r]], sat: 0 }));
-  tintCache.set(s, out);
-  return out;
-}
-
-/** The regions, tinted by kind, with faint borders; the one under the mouse stands out. */
-export function regionsView(ctx: Ctx, s: State, hover: number) {
-  const tints = regionTints(s), n = s.w * s.h, lit = hover >= 0 ? s.region[hover] : -1;
-  wash(ctx, 0.5);
-  for (let i = 0; i < n; i++) {
-    const r = s.region[i];
-    if (r < 0) continue;
-    ctx.globalAlpha = r === lit ? 0.7 : 0.42;
-    ctx.fillStyle = tints[r];
-    ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
-  }
-  ctx.globalAlpha = 0.55;
-  ctx.fillStyle = PAL.text;
-  for (let i = 0; i < n; i++) {
-    const r = s.region[i], x = (i % s.w) * T, y = ((i / s.w) | 0) * T;
-    if (r < 0) continue;
-    if (i % s.w < s.w - 1 && s.region[i + 1] >= 0 && s.region[i + 1] !== r) ctx.fillRect(x + T - 1, y, 2, T);
-    if (i + s.w < n && s.region[i + s.w] >= 0 && s.region[i + s.w] !== r) ctx.fillRect(x, y + T - 1, T, 2);
-  }
-  ctx.globalAlpha = 1;
-}
-
-/** The habitats, tinted by kind, with faint borders; the one under the mouse is brighter, the chosen one outlined. */
+/** The habitats, tinted by kind: majors and patches outlined, scraps just tinted. The one under the mouse is brighter,
+ * the chosen one outlined in gold. */
 export function habitatsView(ctx: Ctx, s: State, chosen: number, hover: number) {
-  const n = s.w * s.h, lit = hover >= 0 ? bucketOf(s, hover) : -1;
+  const n = s.w * s.h, tier = (b: number) => (b < 0 ? SCRAP : s.habitats[b].tier), hov = hover >= 0 ? bucketOf(s, hover) : -1, lit = tier(hov) > SCRAP ? hov : -1;
   wash(ctx, 0.5);
   for (let i = 0; i < n; i++) {
     const b = bucketOf(s, i);
     if (b < 0) continue;
-    ctx.globalAlpha = b === lit || b === chosen ? 0.72 : s.habitats[b].shown ? 0.45 : 0.22;
+    ctx.globalAlpha = b === lit || b === chosen ? 0.72 : [0.22, 0.34, 0.45][tier(b)];
     ctx.fillStyle = HABITAT_TINT[HABITAT_KINDS[s.hab[i]].id];
     ctx.fillRect((i % s.w) * T, ((i / s.w) | 0) * T, T, T);
   }
@@ -191,7 +146,7 @@ export function habitatsView(ctx: Ctx, s: State, chosen: number, hover: number) 
     if (b < 0) continue;
     const right = i % s.w < s.w - 1 ? bucketOf(s, i + 1) : -1, down = i + s.w < n ? bucketOf(s, i + s.w) : -1;
     for (const [o, w, h, dx, dy] of [[right, 2, T, T - 1, 0], [down, T, 2, 0, T - 1]] as const) {
-      if (o < 0 || o === b) continue;
+      if (o < 0 || o === b || (tier(o) === SCRAP && tier(b) === SCRAP)) continue;
       const edge = b === chosen || o === chosen;
       ctx.globalAlpha = edge ? 1 : 0.35;
       ctx.fillStyle = edge ? PAL.gold : PAL.text;

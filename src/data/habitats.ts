@@ -1,6 +1,6 @@
 // Habitats: the places the sim makes. Every tile gets one kind, by a test per kind checked in this order (the first
 // that passes wins; open ground takes the rest). A tile changes kind only when the new test passes by `margin`, and it
-// keeps its kind until its own test fails by `margin`, so edges don't flicker. A habitat is a region × a kind.
+// keeps its kind until its own test fails by `margin`, so edges don't flicker. A habitat is a connected piece of one kind.
 // Also here: the six loadout slots every habitat shows, and the words for sizes.
 import type { RoleKind } from './roles';
 

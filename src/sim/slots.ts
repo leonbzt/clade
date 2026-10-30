@@ -1,21 +1,22 @@
 // The slot board: every window (NUM.slots.window seconds) the counters (tally.ts) become smoothed rates, and each
 // place × role becomes a slot with a size, the share taken, a holder, a trend and what feeds it. Places are the
-// habitats (habitats.ts). Sizes: leads count the tiles where a plant of the stratum on the island could live;
-// grazers the cover the plants could regrow (the curve model in metrics.ts: a quarter of their growth rate); litter
-// roles the litter that fell; hunters the young born. Each size is also in grams (masses.ts). Holders change only for
+// habitats (habitats.ts): majors, patches and the scrap buckets, all of which count for the island's best. Sizes:
+// leads count the tiles where a plant of the stratum on the island could live; grazers the grams the plants made
+// (their production); litter roles the grams of litter that fell; hunters the young born. Each size is also in grams
+// (masses.ts). Holders change only for
 // a clearly bigger share. Each habitat shows six of its slots as a loadout (GEAR). Read-only: nothing here changes
 // the sim.
 import { STRATA, type StratumId } from '../data/fields';
 import { GEAR } from '../data/habitats';
-import { LITTER_MASS, MASS } from '../data/masses';
+import { MASS } from '../data/masses';
 import { NUM } from '../data/numbers';
 import { bestName, canHold, GROUPS, LITTER, ROLES, type Role } from '../data/roles';
 import { SPECIES } from '../data/species';
 import { fit, type Profile } from './fit';
 import { SEA, type State } from './state';
-import { classify, placeName, updateHabitats } from './habitats';
+import { classify, MAJOR, placeName, remap, updateHabitats } from './habitats';
 import { chatter, headline } from './news';
-import { at, bucketOf, groupOf, type Best, type Slot } from './tally';
+import { at, bucketOf, groupOf, PER_BUCKET, type Best, type Slot } from './tally';
 import { poolOf } from './variants';
 
 const S = NUM.slots;
@@ -25,8 +26,10 @@ const R = ROLES.length;
 const LEADS = STRATA.map((_, k) => ROLES.findIndex((r) => r.kind === 'lead' && r.stratum === k));
 /** The roles under each animal loadout slot. */
 const UNDER = GEAR.map((g) => ROLES.flatMap((r, k) => (g.kinds?.includes(r.kind) ? [k] : [])));
-/** Grams per unit of each food: a plant's cover on a tile, an animal member, litter on a tile. */
-const GRAMS = [...SPECIES.map((d) => (MASS[d.id] ?? 0) * (d.animal ? 1 : NUM.mass.tile)), LITTER_MASS * NUM.mass.tile];
+/** Grams per unit of each food made: an animal member; plants and litter are counted in grams. And a plant's grams at
+ * full cover on a tile, for the leads. */
+const GRAMS = [...SPECIES.map((d) => (d.animal ? MASS[d.id] ?? 0 : 1)), 1];
+const FULL = SPECIES.map((d) => (MASS[d.id] ?? 0) * NUM.mass.tile);
 
 export const groupName = (g: number) => SPECIES[g].name;
 export const slotAt = (s: State, place: number, role: number) => s.board.slots[place * R + role];
@@ -42,21 +45,29 @@ export function pickHolder(r: Role, takes: number[], size: number, prev: number)
   return share >= (best === prev ? S.keep : S.open) ? [best, share] : [-1, 0];
 }
 
+/** How fast a place's rates follow: its first window jumps to the value. */
+const follow = (s: State, p: number) => (s.board.age[p] ? S.window / S.smooth : 1);
+
 /** Smooths this window's counters into per-minute rates and clears them. */
 function smooth(s: State) {
-  const B = s.board, a = B.windows ? S.window / S.smooth : 1, perMin = 60 / S.window;
-  for (let k = 0; k < B.cnt.length; k++) { const x = B.cnt[k] * perMin; B.last[k] = x; B.rate[k] += (x - B.rate[k]) * a; }
-  for (let k = 0; k < B.drops.length; k++) B.dropRate[k] += (B.drops[k] * perMin - B.dropRate[k]) * a;
+  const B = s.board, perMin = 60 / S.window;
+  for (let p = 0; p < s.habitats.length; p++) {
+    if (!s.habitats[p].alive) continue;
+    const a = follow(s, p);
+    for (let k = p * PER_BUCKET; k < (p + 1) * PER_BUCKET; k++) { const x = B.cnt[k] * perMin; B.last[k] = x; B.rate[k] += (x - B.rate[k]) * a; }
+    for (let k = p * GROUPS; k < (p + 1) * GROUPS; k++) B.dropRate[k] += (B.drops[k] * perMin - B.dropRate[k]) * a;
+    B.age[p]++;
+  }
   B.cnt.fill(0); B.drops.fill(0);
 }
 
 type Census = { cover: Float32Array; could: Float32Array; held: Float32Array; V: number };
 
-/** One pass over the map: cover per group, regrowth capacity, tiles a plant of each stratum could live on, and plants
+/** One pass over the map: cover per group, tiles a plant of each stratum could live on, and plants
  * and animals per variant (for the holder's leading species and variant). */
 function census(s: State, P: Profile[]): Census {
-  const n = s.w * s.h, places = s.habitats.length, V = s.variants.length, B = s.board, a = B.windows ? S.window / S.smooth : 1;
-  const cover = new Float32Array(places * GROUPS), cap = new Float32Array(places * GROUPS);
+  const n = s.w * s.h, places = s.habitats.length, V = s.variants.length, B = s.board;
+  const cover = new Float32Array(places * GROUPS);
   const could = new Float32Array(places * STRATA.length), held = new Float32Array(places * V);
   // Who could live in each stratum: the leading variant of each plant species on the island.
   const live = STRATA.map((_, k) => s.species.flatMap((x, sp) => {
@@ -72,7 +83,6 @@ function census(s: State, P: Profile[]): Census {
       const p = P[v], g = groupOf(s, p.sp), c = s.cover[slot];
       could[b * STRATA.length + k]++;
       cover[b * GROUPS + g] += c;
-      cap[b * GROUPS + g] += c * p.stats.palatable * p.stats.grow * S.regrow * 60;
       held[b * V + v]++;
     }
   }
@@ -80,7 +90,6 @@ function census(s: State, P: Profile[]): Census {
     const b = bucketOf(s, (ag.y | 0) * s.w + (ag.x | 0));
     if (b >= 0) held[b * V + ag.v] += ag.n;
   }
-  for (let k = 0; k < cap.length; k++) B.cap[k] += (cap[k] - B.cap[k]) * a;
   B.cover.set(cover);
   return { cover, could, held, V };
 }
@@ -95,10 +104,10 @@ function measure(s: State, C: Census, p: number) {
       sl.grams = 0;
       for (let g = 0; g < GROUPS; g++) {
         sl.takes[g] = canHold(role, g) ? C.cover[p * GROUPS + g] : 0;
-        sl.grams += sl.takes[g] * GRAMS[g];
+        sl.grams += sl.takes[g] * FULL[g];
       }
     } else {
-      sl.size = role.kind === 'graze' ? B.cap[p * GROUPS + role.food] : B.rate[at(p, role.food, 0)];
+      sl.size = B.rate[at(p, role.food, 0)];
       sl.grams = sl.size * GRAMS[role.food];
       for (let g = 0; g < GROUPS; g++) sl.takes[g] = canHold(role, g) ? B.rate[at(p, role.food, 1 + g)] : 0;
     }
@@ -189,17 +198,19 @@ function dieOut(s: State, news: boolean) {
 
 /** Once a window: habitat kinds, rates, sizes, holders, the loadouts, the island's best and news. */
 export function updateSlots(s: State, P: Profile[]) {
-  const t0 = timer.now(), B = s.board, places = s.habitats.length, news = B.windows >= S.warmup;
+  const t0 = timer.now(), B = s.board, news = B.windows >= S.warmup;
   classify(s);
-  smooth(s);
+  smooth(s); // the window's counters belong to the old pieces
+  const gone = remap(s), places = s.habitats.length, live = (p: number) => s.habitats[p].alive;
   const C = census(s, P);
-  for (let p = 0; p < places; p++) measure(s, C, p);
+  for (let p = 0; p < places; p++) if (live(p)) measure(s, C, p);
   // A slot exists where its food is made, at least `exists` of its role's largest; big ones are among the largest.
   const totals = ROLES.map(() => 0), tops: number[][] = ROLES.map(() => []);
   for (const sl of B.slots) { totals[sl.role] += sl.size; tops[sl.role].push(sl.size); }
   tops.forEach((t) => t.sort((a, b) => b - a));
   const before: Before[] = B.slots.map((sl) => ({ holder: sl.holder, exists: sl.exists, big: sl.big })), old = B.gear.slice();
   for (const sl of B.slots) {
+    if (!live(sl.place)) continue;
     const role = ROLES[sl.role], max = tops[sl.role][0];
     // A lead exists wherever a plant of its stratum could live; a food link once its food is made in some amount.
     sl.exists = sl.size > 0 && (role.kind === 'lead' || sl.size >= S.exists * max);
@@ -210,11 +221,10 @@ export function updateSlots(s: State, P: Profile[]) {
     sl.sp = who.sp; sl.v = who.v; sl.tier = who.v >= 0 ? s.variants[who.v].tier : 0;
     sl.yours = who.sp >= 0 && s.species[who.sp].parent >= 0;
   }
-  for (const sl of B.slots) feed(s, sl.place, sl);
-  for (let p = 0; p < places; p++) pickGear(s, p);
-  const wasShown = s.habitats.map((h) => h.shown);
-  updateHabitats(s, news);
-  for (let p = 0; p < places; p++) if (news && wasShown[p] && s.habitats[p].shown) gearNews(s, p, before, old);
+  for (const sl of B.slots) if (live(sl.place)) feed(s, sl.place, sl);
+  for (let p = 0; p < places; p++) if (live(p)) pickGear(s, p);
+  updateHabitats(s, news, gone);
+  for (let p = 0; p < places; p++) if (news && live(p) && s.habitats[p].was === MAJOR && s.habitats[p].shown) gearNews(s, p, before, old);
   bestOf(s, totals, news);
   dieOut(s, news);
   B.windows++;

@@ -1,10 +1,14 @@
-// Life in every slot. Health follows fit slowly (the plant's reserves); cover follows health; growth, spores, yield
-// and death follow health too, so plants switch on and off slowly. A dying plant thins out over time and drops its
-// litter as it goes. Open slots go to whichever seed arrives and fits, so fast spreaders win gaps and strong holders
+// Life in every slot. Health follows fit slowly (the plant's reserves); a slot's state is its mass in grams, and its
+// ceiling is what health allows. Production peaks at full size and turnover sheds a share of the mass as litter, so a
+// mature plant makes food all the time and a grazed one regrows by itself. Cover is mass ÷ the full mass. Spores,
+// yield and death follow health too, so plants switch on and off slowly. A dying plant thins out over time and drops
+// its grams as litter as it goes. Open slots go to whichever seed arrives and fits, so fast spreaders win gaps and strong holders
 // keep their tiles. A slot holds a variant: variants of one species compete like species do, and a settling child
 // may be a mutant.
 import { STRATA } from '../data/fields';
+import { MASS } from '../data/masses';
 import { NUM } from '../data/numbers';
+import { SPECIES } from '../data/species';
 import { rand } from './rng';
 import { EV, SEA, type State } from './state';
 import { fit, limitOf, type Profile } from './fit';
@@ -18,23 +22,43 @@ export function record(s: State, slot: number, code: number, sp: number, limit =
 }
 
 function clear(s: State, slot: number) {
-  s.occ[slot] = -1; s.cover[slot] = 0; s.health[slot] = 0; s.dying[slot] = 0; s.old[slot] = 0;
+  s.occ[slot] = -1; s.mass[slot] = 0; s.cover[slot] = 0; s.health[slot] = 0; s.dying[slot] = 0; s.old[slot] = 0;
 }
 
-const litterOf = (s: State, v: number) => defOf(s, s.variants[v].sp).litter;
+/** Grams in a slot at full cover, per base species. */
+const FULL = SPECIES.map((d) => (MASS[d.id] ?? 0) * NUM.mass.tile);
+export const fullOf = (s: State, v: number) => FULL[s.species[s.variants[v].sp].base];
+/** What health allows in a slot, in grams. */
+export const ceilingOf = (s: State, v: number, health: number) => fullOf(s, v) * Math.sqrt(Math.max(0, health));
 
-/** Empties a slot at once (taken over, or a flare); the dead plant becomes litter. */
+/** Sets a slot's mass, and its cover with it. */
+export function setMass(s: State, slot: number, g: number) {
+  const f = fullOf(s, s.occ[slot]);
+  s.mass[slot] = g; s.cover[slot] = f > 0 ? g / f : 0;
+}
+
+/** A plant's grams per second, with x = mass ÷ ceiling: production grow × ceiling × (2x − x²), highest at full size;
+ * turnover grow × mass, shed as litter. Net growth is grow × ceiling × (x − x²). */
+export function growth(mass: number, ceiling: number, grow: number): { made: number; shed: number } {
+  const x = ceiling > 0 ? mass / ceiling : 0;
+  return { made: ceiling > 0 ? grow * ceiling * Math.max(0, 2 * x - x * x) : 0, shed: grow * mass };
+}
+
+/** Empties a slot at once (taken over, or a flare); the dead plant's grams become litter. */
 export function kill(s: State, slot: number, code: number, limit = -1) {
   const v = s.occ[slot];
-  drop(s, slot % (s.w * s.h), groupOf(s, s.variants[v].sp), s.cover[slot] * litterOf(s, v));
+  drop(s, slot % (s.w * s.h), groupOf(s, s.variants[v].sp), s.mass[slot]);
   record(s, slot, code, s.variants[v].sp, limit);
   clear(s, slot);
 }
 
-export function settle(s: State, slot: number, v: number, cover: number, code: number, health: number) {
-  s.occ[slot] = v; s.cover[slot] = cover; s.health[slot] = health; s.dying[slot] = 0; s.old[slot] = 0;
+/** A plant settles with `grams`; they count as made. */
+export function settle(s: State, slot: number, v: number, grams: number, code: number, health: number) {
+  s.occ[slot] = v; s.health[slot] = health; s.dying[slot] = 0; s.old[slot] = 0;
+  setMass(s, slot, grams);
   record(s, slot, code, s.variants[v].sp);
-  made(s, slot % (s.w * s.h), groupOf(s, s.variants[v].sp), cover);
+  made(s, slot % (s.w * s.h), groupOf(s, s.variants[v].sp), grams);
+  s.ledger.prod += grams;
 }
 
 /** Your species' last few tiles don't die and can't be taken. */
@@ -65,19 +89,22 @@ export function lifeStep(s: State, P: Profile[], tickDt: number) {
       // Old growth (steady health, nearly full cover) updates every few ticks, with that much time at once.
       if (s.old[slot] && (s.tick + slot) % L.oldEvery) continue;
       const p = P[v], sp = p.sp, dt = s.old[slot] ? tickDt * L.oldEvery : tickDt;
+      const g = groupOf(s, sp);
       if (s.dying[slot]) {
-        const loss = Math.min(s.cover[slot], dt / L.dieback), litter = litterOf(s, v), g = groupOf(s, sp);
-        s.cover[slot] -= loss;
-        drop(s, i, g, loss * litter);
-        if (s.cover[slot] < 0.03) { drop(s, i, g, s.cover[slot] * litter); clear(s, slot); }
+        const loss = Math.min(s.mass[slot], (fullOf(s, v) * dt) / L.dieback);
+        setMass(s, slot, s.mass[slot] - loss);
+        drop(s, i, g, loss);
+        if (s.cover[slot] < 0.03) { drop(s, i, g, s.mass[slot]); clear(s, slot); }
         continue;
       }
       const f = fit(s, p, i), limit = limitOf();
       const h = (s.health[slot] += (f - s.health[slot]) * Math.min(1, dt / p.stats.reserve));
-      // Cover grows toward what health allows, and shrinks slowly when health falls.
-      const target = Math.sqrt(Math.max(0, h)), c0 = s.cover[slot];
-      const c = (s.cover[slot] = c0 + dt * (target > c0 ? p.stats.grow * (target - c0) * 2 : L.shrink * (target - c0)));
-      if (c > c0) made(s, i, groupOf(s, sp), c - c0);
+      // Grams: production toward what health allows, turnover to litter.
+      const grown = growth(s.mass[slot], ceilingOf(s, v, h), p.stats.grow);
+      setMass(s, slot, s.mass[slot] + dt * (grown.made - grown.shed));
+      if (grown.made > 0) { made(s, i, g, grown.made * dt); s.ledger.prod += grown.made * dt; }
+      if (grown.shed > 0) drop(s, i, g, grown.shed * dt);
+      const c = s.cover[slot], target = Math.sqrt(Math.max(0, h));
       s.old[slot] = c > L.oldCover && Math.abs(f - h) < L.oldDelta && Math.abs(target - c) < L.oldDelta ? 1 : 0;
       const strain = L.stress * (1 - h);
       const death = (dt / p.stats.life) * (1 + strain) + (h < 0.05 ? dt / L.starve : 0);
@@ -103,12 +130,12 @@ function spread(s: State, P: Profile[], v: number, k: number, from: number) {
   const f = fit(s, P[v], j);
   if (f <= 0) return;
   if (occ < 0) { // seedlings rarely take on poor tiles
-    if (rand(s) < f * f * f) { settle(s, slot, v, L.settleCover, EV.settled, f); maybeMutate(s, P, slot); }
+    if (rand(s) < f * f * f) { settle(s, slot, v, L.settleCover * ceilingOf(s, v, f), EV.settled, f); maybeMutate(s, P, slot); }
     return;
   }
   if (canTake(s, P, P[v], slot) && rand(s) < L.takeover) {
     kill(s, slot, EV.taken);
-    settle(s, slot, v, L.settleCover, EV.settled, f);
+    settle(s, slot, v, L.settleCover * ceilingOf(s, v, f), EV.settled, f);
     maybeMutate(s, P, slot);
   }
 }
@@ -122,7 +149,7 @@ export function sporeRain(s: State, P: Profile[], dt: number) {
     const v = pickVariant(s, sp), i = Math.floor(rand(s) * n), slot = P[v].stratum * n + i;
     if (s.terrain[i] === SEA || s.occ[slot] >= 0) continue;
     const f = fit(s, P[v], i);
-    if (f >= L.rainMinFit) settle(s, slot, v, L.settleCover, EV.rain, f);
+    if (f >= L.rainMinFit) settle(s, slot, v, L.settleCover * ceilingOf(s, v, f), EV.rain, f);
   }
 }
 

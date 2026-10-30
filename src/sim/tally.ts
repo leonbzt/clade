@@ -1,8 +1,11 @@
-// The counters behind the slot board: what each place makes and who takes it, per bucket (a region × a habitat kind:
-// one habitat). The sim calls these where plants grow, animals eat and breed, hunters
-// catch and litter falls; slots.ts reads them once a window. Food is a group (a base species: its cover, or its
-// young) or LITTER; takers are groups.
-import { GEAR, HABITAT_KINDS } from '../data/habitats';
+// The counters behind the slot board: what each place makes and who takes it, per bucket (a habitat's id; the board
+// grows as new ids are made, and a freed id's counters are cleared). The sim calls these where plants grow, animals eat and breed, hunters
+// catch and litter falls; slots.ts reads them once a window. Food is a group (a base species: its plants' grams, or
+// its young) or LITTER (grams); takers are groups.
+import { GEAR } from '../data/habitats';
+import { LITTER_MASS } from '../data/masses';
+import { NUM } from '../data/numbers';
+import { SPECIES } from '../data/species';
 import { GROUPS, LITTER, ROLES } from '../data/roles';
 import { type Profile } from './fit';
 import type { State } from './state';
@@ -14,7 +17,7 @@ export const PER_BUCKET = (GROUPS + 1) * COLS;
 export type Slot = {
   role: number; // index into ROLES
   place: number;
-  size: number; // food made per minute (leads: tiles where a plant of the stratum could live)
+  size: number; // food made per minute: plants and litter in grams, young in members (leads: tiles where a plant of the stratum could live)
   grams: number; // the size in real grams (leads: standing mass, g; the rest g/min); masses.ts
   use: number; // the share of the size taken, all groups together (leads: cover)
   takes: number[]; // per group, per minute (leads: cover)
@@ -41,9 +44,9 @@ export type Board = {
   rate: Float32Array; // smoothed, per minute
   dropRate: Float32Array;
   last: Float32Array; // the last window, per minute, unsmoothed (dev panel)
-  cap: Float32Array; // smoothed regrowth capacity, [bucket][group], cover per minute
   cover: Float32Array; // cover now, [bucket][group]
   gear: Int16Array; // per bucket × GEAR: the role in that loadout slot, or -1: locked
+  age: Uint32Array; // per bucket: windows smoothed since its id was made (0: its first window jumps to the value)
   windows: number;
   slots: Slot[]; // place × ROLES.length + role
   best: Best[]; // per role, over the whole island
@@ -51,32 +54,64 @@ export type Board = {
   lines: number; // chatter lines so far
   heads: number; // headlines so far
   renames: number; // habitats renamed so far
+  born: number; // habitat ids made so far (new pieces)
   alive: number[]; // per species: 1 if it lived on the island at the last window
   bestAt: number[]; // per role: the tick of its last island's-best headline
   ms: number; // what the last window update took
 };
 
 export function newBoard(places: number): Board {
-  const m = places * PER_BUCKET, d = places * GROUPS;
-  return {
-    cnt: new Float32Array(m), drops: new Float32Array(d), rate: new Float32Array(m), dropRate: new Float32Array(d),
-    last: new Float32Array(m), cap: new Float32Array(d), cover: new Float32Array(d), gear: new Int16Array(places * GEAR.length).fill(-1), windows: 0,
-    slots: Array.from({ length: places * ROLES.length }, (_, k) => ({
-      role: k % ROLES.length, place: Math.floor(k / ROLES.length), size: 0, grams: 0, use: 0, takes: new Array(GROUPS).fill(0),
-      holder: -1, share: 0, sp: -1, v: -1, tier: 0, yours: false, trend: 0, feeder: -1, fedBy: -1,
-      exists: false, open: false, big: false, hist: [],
-    })),
+  const B: Board = {
+    cnt: new Float32Array(0), drops: new Float32Array(0), rate: new Float32Array(0), dropRate: new Float32Array(0), last: new Float32Array(0),
+    cover: new Float32Array(0), gear: new Int16Array(0), age: new Uint32Array(0), windows: 0, slots: [],
     best: ROLES.map(() => ({ holder: -1, share: 0, size: 0, exists: false })),
-    changes: 0, lines: 0, heads: 0, renames: 0, alive: [], bestAt: [], ms: 0,
+    changes: 0, lines: 0, heads: 0, renames: 0, born: 0, alive: [], bestAt: [], ms: 0,
   };
+  growBoard(B, places);
+  return B;
 }
 
-/** The bucket a tile counts into (its habitat), or -1 at sea. */
-export const bucketOf = (s: State, i: number) => (s.region[i] < 0 ? -1 : s.region[i] * HABITAT_KINDS.length + s.hab[i]);
+const blankSlot = (k: number): Slot => ({
+  role: k % ROLES.length, place: Math.floor(k / ROLES.length), size: 0, grams: 0, use: 0, takes: new Array(GROUPS).fill(0),
+  holder: -1, share: 0, sp: -1, v: -1, tier: 0, yours: false, trend: 0, feeder: -1, fedBy: -1, exists: false, open: false, big: false, hist: [],
+});
+
+function more<T extends Float32Array | Int16Array | Uint32Array>(a: T, len: number, fill = 0): T {
+  const b = new (a.constructor as new (n: number) => T)(len);
+  b.fill(fill);
+  b.set(a);
+  return b;
+}
+
+/** Room for `places` buckets. */
+export function growBoard(B: Board, places: number) {
+  const have = B.age.length;
+  if (places <= have) return;
+  const m = places * PER_BUCKET, d = places * GROUPS;
+  B.cnt = more(B.cnt, m); B.rate = more(B.rate, m); B.last = more(B.last, m);
+  B.drops = more(B.drops, d); B.dropRate = more(B.dropRate, d); B.cover = more(B.cover, d);
+  B.gear = more(B.gear, places * GEAR.length, -1); B.age = more(B.age, places);
+  for (let k = have * ROLES.length; k < places * ROLES.length; k++) B.slots.push(blankSlot(k));
+}
+
+/** A bucket made new: its counters, rates and slots cleared. */
+export function clearPlace(B: Board, p: number) {
+  for (const a of [B.cnt, B.rate, B.last]) a.fill(0, p * PER_BUCKET, (p + 1) * PER_BUCKET);
+  for (const a of [B.drops, B.dropRate, B.cover]) a.fill(0, p * GROUPS, (p + 1) * GROUPS);
+  B.gear.fill(-1, p * GEAR.length, (p + 1) * GEAR.length);
+  B.age[p] = 0;
+  for (let k = p * ROLES.length; k < (p + 1) * ROLES.length; k++) B.slots[k] = blankSlot(k);
+}
+
+/** The bucket a tile counts into (its habitat's id), or -1 at sea. */
+export const bucketOf = (s: State, i: number) => s.place[i];
 export const groupOf = (s: State, sp: number) => s.species[sp].base;
 export const at = (b: number, food: number, col: number) => b * PER_BUCKET + food * COLS + col;
 
-/** Food made on tile i: cover grown, or young born. */
+/** Grams of litter per unit of the litter layer on a tile. */
+export const LITTER_G = LITTER_MASS * NUM.mass.tile;
+
+/** Food made on tile i: grams a plant made, or young born. */
 export function made(s: State, i: number, food: number, amount: number) {
   const b = bucketOf(s, i);
   if (b >= 0) s.board.cnt[at(b, food, 0)] += amount;
@@ -88,18 +123,21 @@ export function took(s: State, i: number, food: number, by: number, amount: numb
   if (b >= 0) s.board.cnt[at(b, food, 1 + by)] += amount;
 }
 
-/** Litter falls on tile i (dead plants, bodies, dung), from a group. */
+/** Grams of litter fall on tile i (turnover, dead plants, bodies, dung), from a group. */
 export function drop(s: State, i: number, from: number, amount: number) {
-  s.fall[i] += amount;
+  s.fall[i] += amount / LITTER_G;
+  if (SPECIES[from].animal) s.ledger.dropped += amount;
   const b = bucketOf(s, i);
   if (b < 0) return;
   s.board.cnt[at(b, LITTER, 0)] += amount;
   s.board.drops[b * GROUPS + from] += amount;
 }
 
-/** Litter the plants on tile i make or break down this second (their `makes`), split by how much each makes or uses. */
+/** Litter the plants on tile i make or break down this second (their `makes`, in layer units), split by how much
+ * each makes or uses; counted in grams. */
 export function litterFlow(s: State, P: Profile[], i: number, made: number, used: number) {
   const n = s.w * s.h;
+  made *= LITTER_G; used *= LITTER_G;
   let plus = 0, minus = 0;
   for (let slot = i; slot < s.occ.length; slot += n) {
     const v = s.occ[slot], r = v >= 0 ? (P[v].makes.litter ?? 0) * s.cover[slot] * s.health[slot] : 0;

@@ -12,8 +12,8 @@ const between = (s: State, [a, b]: readonly [number, number]) => a + Math.floor(
 const dist = (s: State, i: number, j: number) => Math.hypot((i % s.w) - (j % s.w), ((i / s.w) | 0) - ((j / s.w) | 0));
 const isRock = (t: number) => t === LAVA || t === CRACK;
 
-/** Makes the island. Returns the roughness field, so regions can follow the same ragged edges. */
-export function buildIsland(s: State): Float32Array {
+/** Makes the island. */
+export function buildIsland(s: State) {
   const I = NUM.island, { w, h } = s, n = w * h;
   // A wobbly ellipse: a few waves around the coast make bays and points.
   const wob = [0, 1, 2, 3].map(() => rand(s) * 6.28);
@@ -80,7 +80,7 @@ export function buildIsland(s: State): Float32Array {
   }
 
   nameLandmarks(s);
-  return applyEffects(s, toSea);
+  applyEffects(s, toSea);
 }
 
 /** Tiles to the nearest sea tile (8 neighbours). */
@@ -176,7 +176,7 @@ function wind(s: State, toSea: Int32Array): Float32Array {
 
 /** Base values and statuses: each landmark's effects, fading with distance (the strongest source wins), then the
  * wind's rain on top. */
-function applyEffects(s: State, toSea: Int32Array): Float32Array {
+function applyEffects(s: State, toSea: Int32Array) {
   const I = NUM.island, n = s.w * s.h, caps = new Map<number, number>(), rough = roughness(s), rain = wind(s, toSea);
   for (let i = 0; i < n; i++) if (s.terrain[i] !== SEA) s.base.water[i] = I.lavaWet;
   for (const m of s.landmarks) {
@@ -203,5 +203,4 @@ function applyEffects(s: State, toSea: Int32Array): Float32Array {
     s.soilCap[i] = caps.get(i) ?? Math.min(1, I.soilCapBase + s.base.water[i]);
     s.layers.water[i] = s.base.water[i];
   }
-  return rough;
 }

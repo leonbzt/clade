@@ -23,14 +23,10 @@
   let zi = $state(Number(new URLSearchParams(location.search).get('zoom')) || 0); // index into ZOOM_STEPS (dev: ?zoom=3)
   let pan = $state({ x: 0, y: 0 });
   const scale = $derived(fitScale * ZOOM_STEPS[zi]);
-  // Region names show in the Regions view; elsewhere landmark names show once you zoom in.
+  // Landmark names show once you zoom in (not in the Habitats view, where the habitats carry their names).
   const labels = $derived.by(() => {
     ui.gen;
     return game.landmarks.map((m) => ({ name: m.name, x: ((m.at % game.w) + 0.5) * T, y: Math.floor(m.at / game.w) * T }));
-  });
-  const regionLabels = $derived.by(() => {
-    ui.gen;
-    return game.regions.map((g, p) => ({ p, name: g.name, x: ((g.at % game.w) + 0.5) * T, y: (Math.floor(g.at / game.w) + 0.5) * T }));
   });
   // A loadout card on each habitat shown: its six mini icons, and its name when zoomed in (they follow ui.v).
   const habitatCards = $derived.by(() => {
@@ -133,11 +129,11 @@
     const r = canvas.getBoundingClientRect();
     const a = animalAt(game, (((e.clientX - r.left) / r.width) * W) / T, (((e.clientY - r.top) / r.height) * H) / T, Math.max(0.5, 1.2 / ZOOM_STEPS[zi]));
     if (a) { followAnimal(a.id); return; }
-    if (ui.view === 'habitats' && bucketOf(game, i) >= 0) { selectPlace(bucketOf(game, i)); ui.selected = i; return; }
+    if (ui.view === 'habitats' && game.habitats[bucketOf(game, i)]?.shown) { selectPlace(bucketOf(game, i)); ui.selected = i; return; }
     selectTile(i);
   }
 
-  const NAMES: Partial<Record<View, string>> = { none: 'Garden', zones: 'Zones', variants: 'Variants', animals: 'Animals', regions: 'Regions', habitats: 'Habitats' };
+  const NAMES: Partial<Record<View, string>> = { none: 'Garden', zones: 'Zones', variants: 'Variants', animals: 'Animals', habitats: 'Habitats' };
   const label = (v: View) => NAMES[v] ?? FIELDS[v as LayerId].name;
 </script>
 
@@ -162,11 +158,7 @@
       style:height="{H * scale}px"
       style:transform="translate({pan.x}px, {pan.y}px)"
     ></canvas>
-    {#if ui.view === 'regions'}
-      {#each regionLabels as l (l.p)}
-        <span class="label region" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
-      {/each}
-    {:else if ui.view === 'habitats'}
+    {#if ui.view === 'habitats'}
       {#each habitatCards as l (l.p)}
         <button class="label card" class:on={l.p === ui.place} style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px"
           onpointerdown={(e) => e.stopPropagation()} onclick={() => selectPlace(l.p)} title={l.name}>
@@ -207,7 +199,6 @@
   canvas { position: absolute; left: 0; top: 0; image-rendering: pixelated; display: block; transform-origin: 0 0; }
   .label { position: absolute; transform: translate(-50%, -100%); pointer-events: none; white-space: nowrap; font-size: 14px;
     color: var(--text); text-shadow: 1px 1px 0 var(--ink), -1px 1px 0 var(--ink), 1px -1px 0 var(--ink), -1px -1px 0 var(--ink); }
-  .label.region { transform: translate(-50%, -50%); font-size: 13px; }
   .label.card { transform: translate(-50%, -50%); font-size: 13px; pointer-events: auto; cursor: pointer; display: flex; flex-direction: column;
     align-items: center; gap: 2px; padding: 2px; margin: 0; background: #140f0b99; border: 1px solid transparent; box-shadow: none; }
   .label.card:hover, .label.card.on { color: var(--gold); background: #140f0bcc; border-color: var(--gold); }

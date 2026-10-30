@@ -37,7 +37,7 @@ type AnimalEntry = Pick<SpeciesDef, 'id' | 'name' | 'short' | 'needs' | 'toleran
 /** The plant numbers don't apply to animals; they stay at 0. */
 const animal = (d: AnimalEntry): SpeciesDef => ({
   id: d.id, name: d.name, short: d.short, needs: d.needs, tolerance: d.tolerance, traits: d.traits, blurb: d.blurb,
-  stratum: 'ground', seeds: 0, hold: 0, yield: 0, life: d.body.life, grow: 0, reserve: 1, litter: 0, makes: {}, animal: d.body,
+  stratum: 'ground', seeds: 0, hold: 0, yield: 0, life: d.body.life, grow: 0, reserve: 1, makes: {}, animal: d.body,
 });
 
 const band = (a: number, b: number, c: number, d: number) => [a, b, c, d] as const;
@@ -46,7 +46,7 @@ const snailBody: AnimalBody = {
   tag: 'snail', group: 12, kin: 'family', pace: 4, bite: 1, size: 3, speed: 0.15, life: 700, upkeep: 0.004, gain: 1, young: 2,
   escape: 1, range: 0.5, sight: 3, breedAt: 0.85, corpse: 0.02, yield: 0.6, cap: 80,
   diet: [{ plants: 'ground', rate: 0.2, gain: 0.075 }, { stock: 'litter', rate: 0.001, gain: 2 }],
-  makes: { nitrogen: 0.01 }, // about what the grazed cover would give as litter (moss: 0.08 litter × 0.1)
+  makes: { nitrogen: 0.0003 }, // what the grazed cover would give as litter (moss: 150 g = 0.15 litter × 0.002)
 };
 
 const springtailBody: AnimalBody = {
@@ -54,7 +54,7 @@ const springtailBody: AnimalBody = {
   young: 24, escape: 1, range: 0.5, sight: 3, breedAt: 0.75, corpse: 0.002, yield: 0.5, cap: 120,
   // Mainly fungus threads (real: springtails graze hyphae), rot as a side dish: litter → fungi → springtails → hunters.
   diet: [{ plants: 'under', rate: 0.0004, gain: 25 }, { stock: 'litter', rate: 0.00012, gain: 65, full: 0.3 }],
-  makes: { nitrogen: 0.03 }, // litter's own share (fields.ts): sooner, not more
+  makes: { nitrogen: 0.002 }, // litter's own share (fields.ts): sooner, not more
 };
 
 export const ANIMALS: SpeciesDef[] = [
@@ -111,7 +111,7 @@ export const ANIMALS: SpeciesDef[] = [
       escape: 1, range: 0.5, sight: 5, breedAt: 0.85, corpse: 0.02, yield: 2, cap: 40,
       // Ground beetles also scavenge: rot and dead things keep them going between catches.
       diet: [{ prey: 'tiny-hexapod', rate: 0.1, gain: 0.04 }, { prey: 'snail', rate: 0.05, gain: 0.6 }, { stock: 'litter', rate: 0.0008, gain: 4 }],
-      makes: { nitrogen: 0.03 }, // litter's share, for prey bodies and scavenged litter alike
+      makes: { nitrogen: 0.002 }, // litter's share, for prey bodies and scavenged litter alike
     },
   }),
 ];

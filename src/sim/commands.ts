@@ -10,7 +10,7 @@ import { adopt } from './arrivals';
 import { EV, type State } from './state';
 import { buildProfile, fit, profiles, type Profile } from './fit';
 import { doorNode } from './keys';
-import { canTake, kill, settle } from './life';
+import { canTake, ceilingOf, fullOf, kill, setMass, settle } from './life';
 import { othersMet, reqStatus } from './reqs';
 import { axisWords, defOf, newKey, poolOf, speciesIndex, variantFor, variantName, type Genome } from './variants';
 
@@ -76,7 +76,7 @@ function plant(s: State, P: Profile[], v: number, i: number) {
     if (Math.abs(dx) + Math.abs(dy) > r || x < 0 || y < 0 || x >= s.w || y >= s.h || !canPlant(s, P, p, j)) continue;
     const sl = slotFor(s, p.sp, j);
     if (s.occ[sl] >= 0) kill(s, sl, EV.taken);
-    settle(s, sl, v, NUM.founding.cover, EV.founded, fit(s, p, j));
+    settle(s, sl, v, NUM.founding.cover * ceilingOf(s, v, fit(s, p, j)), EV.founded, fit(s, p, j));
     s.variants[v].tiles++; s.count[p.sp]++;
   }
   const sp = s.species[p.sp];
@@ -187,10 +187,14 @@ function moveTiles(s: State, P: Profile[], from: number, to: number) {
   for (let slot = 0; slot < s.occ.length; slot++) {
     if (s.occ[slot] !== from) continue;
     const i = slot % n, up = k * n + i;
-    if (up === slot) { s.occ[slot] = to; s.variants[to].tiles++; continue; }
     const cover = s.cover[slot];
+    if (up === slot) { // same cover, in the new species' grams
+      const m = s.mass[slot];
+      s.occ[slot] = to; setMass(s, slot, cover * fullOf(s, to)); s.ledger.prod += s.mass[slot] - m; s.variants[to].tiles++;
+      continue;
+    }
     kill(s, slot, EV.taken);
-    if (s.occ[up] < 0 && fit(s, P[to], i) > 0) { settle(s, up, to, cover, EV.founded, fit(s, P[to], i)); s.variants[to].tiles++; }
+    if (s.occ[up] < 0 && fit(s, P[to], i) > 0) { settle(s, up, to, cover * fullOf(s, to), EV.founded, fit(s, P[to], i)); s.variants[to].tiles++; }
   }
 }
 

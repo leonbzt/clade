@@ -5,7 +5,7 @@ import { SPECIES, SPECIES_INDEX } from '../src/data/species';
 import { botTick } from '../src/sim/bot';
 import { pickHolder } from '../src/sim/slots';
 import { createState, type State } from '../src/sim/state';
-import { at } from '../src/sim/tally';
+import { at, LITTER_G } from '../src/sim/tally';
 
 const role = (id: string) => ROLES.find((r) => r.id === id)!;
 
@@ -37,7 +37,7 @@ describe('slots', () => {
     const B = s.board;
     for (let f = 0; f <= GROUPS; f++) {
       let made = 0, took = 0;
-      for (let b = 0; b < s.regions.length; b++) {
+      for (let b = 0; b < s.habitats.length; b++) {
         made += B.last[at(b, f, 0)] / 2;
         for (let g = 0; g < GROUPS; g++) took += B.last[at(b, f, 1 + g)] / 2;
       }
@@ -46,11 +46,11 @@ describe('slots', () => {
   }, 120_000);
 });
 
-/** Cover per plant group, members per animal group, and the litter on the land, right after a window update. */
+/** Grams per plant group, members per animal group, and grams of litter on the land, right after a window update. */
 function standing(s: State): number[] {
   const out = new Array(GROUPS + 1).fill(0), n = s.w * s.h;
-  for (let slot = 0; slot < s.occ.length; slot++) if (s.occ[slot] >= 0 && s.region[slot % n] >= 0) out[s.species[s.variants[s.occ[slot]].sp].base] += s.cover[slot];
+  for (let slot = 0; slot < s.occ.length; slot++) if (s.occ[slot] >= 0 && s.place[slot % n] >= 0) out[s.species[s.variants[s.occ[slot]].sp].base] += s.mass[slot];
   for (const a of s.agents) out[s.species[a.sp].base] += a.n;
-  for (let i = 0; i < n; i++) if (s.region[i] >= 0) out[LITTER] += s.layers.litter[i];
+  for (let i = 0; i < n; i++) if (s.place[i] >= 0) out[LITTER] += s.layers.litter[i] * LITTER_G;
   return out;
 }

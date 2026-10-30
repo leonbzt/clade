@@ -4,10 +4,10 @@
   import { placement, unlockedSpecies } from '../sim/commands';
   import { fitInfo, limitText, placeInfo } from '../sim/explain';
   import { profiles } from '../sim/fit';
-  import { compass } from '../sim/regions';
   import { HABITAT_KINDS } from '../data/habitats';
   import { HABITAT_TINT } from '../data/palette';
-  import { regionName } from '../sim/habitats';
+  import { MAJOR, PATCH } from '../sim/habitats';
+  import { loadout } from './board';
   import { bucketOf } from '../sim/tally';
   import { SEA } from '../sim/state';
   import { speciesIndex, stratumOf, variantName } from '../sim/variants';
@@ -35,10 +35,14 @@
           : `Fit ${info.tier} · ${limitText(p, info)}`,
       };
     }
-    const where = placeInfo(game, i), g = game.regions[game.region[i]], h = game.habitats[bucketOf(game, i)];
-    if (ui.view === 'regions' && !pl) return { region: `${g.name} · ${where.side} side · ${g.tiles} tiles`, terrain: '', who: '', vals: '', place };
-    if (ui.view === 'habitats' && !pl) return { region: `${h.shown ? h.name : `${HABITAT_KINDS[h.kind].name} (too small to show)`} · ${HABITAT_KINDS[h.kind].name.toLowerCase()} on ${regionName(game, h.region)} · ${h.tiles} tiles`, terrain: '', who: '', vals: '', place };
-    return { region: '', terrain: where.landmark ? `${where.landmark} (${where.terrain.toLowerCase()})` : where.terrain, who: who.join(' + ') || 'bare', vals: vals.join(' · '), place };
+    const where = placeInfo(game, i), h = game.habitats[bucketOf(game, i)];
+    if (ui.view === 'habitats' && !pl) {
+      // A major or a patch: its kind, size and top holders (one per filled slot); a scrap: just its kind.
+      const kind = HABITAT_KINDS[h.kind].name, held = h.tier >= PATCH ? loadout(game, h.id).filter((c) => !c.locked && c.holder >= 0).map((c) => `${c.slot}: ${c.who}`) : [];
+      const head = h.tier === MAJOR ? `${h.name} · ${kind.toLowerCase()} · ${h.tiles} tiles` : h.tier === PATCH ? `A patch of ${kind.toLowerCase()} · ${h.tiles} tiles` : `${kind} (a scrap)`;
+      return { line: [head, ...held].join(' · '), terrain: '', who: '', vals: '', place };
+    }
+    return { line: '', terrain: where.landmark ? `${where.landmark} (${where.terrain.toLowerCase()})` : where.terrain, who: who.join(' + ') || 'bare', vals: vals.join(' · '), place };
   });
 
   const placingInfo = $derived.by(() => {
@@ -76,8 +80,8 @@
       {#each Array.from({ length: LIMIT_COUNT }, (_, k) => k) as k (k)}<span class="small"><span class="swatch" style:background={limitColor(k)}></span>{limitName(k)}</span>{/each}
       <span class="dim">· Esc cancels</span>
     {/if}
-  {:else if hover?.region}
-    <span>{hover.region}</span>
+  {:else if hover?.line}
+    <span>{hover.line}</span>
   {:else if hover}
     <span>{hover.terrain}: {hover.who}</span>
     <span class="dim">{hover.vals}</span>
@@ -91,15 +95,12 @@
     <span class="dim small">grey = not shown yet · pick the species in the Species tab</span>
   {:else if ui.view === 'habitats'}
     {#each HABITAT_KINDS as k (k.id)}<span><span class="swatch" style:background={HABITAT_TINT[k.id]}></span>{k.name}</span>{/each}
-    <span class="dim small">click a habitat or its card for its loadout</span>
-  {:else if ui.view === 'regions'}
-    <span>Wind from the {compass(game.windFrom)}</span>
-    <span class="dim">the windward side gets more rain and salt spray on its coast; the lee is drier · {game.regions.length} regions</span>
+    <span class="dim small">click a named habitat or its card for its loadout · hover a patch for who holds it</span>
   {:else if layer}
     <span><span class="swatch" style:background={layer.color}></span>{layer.name}</span>
     <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${layer.viewMax}+)` : ''} · litter and salt are on the tile card</span>
   {:else}
-    <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (landmark names show when zoomed in), drag to move. Keys 1–9 and 0 switch views.</span>
+    <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (landmark names show when zoomed in), drag to move. Keys 1–9 switch views.</span>
   {/if}
 </span>
 

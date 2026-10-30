@@ -4,7 +4,6 @@
   // habitat with its six mini icons.
   import { HABITAT_KINDS } from '../data/habitats';
   import { ROLES } from '../data/roles';
-  import { regionName } from '../sim/habitats';
   import { groupName } from '../sim/slots';
   import { groupColor, loadout } from './board';
   import SlotIcon from './SlotIcon.svelte';
@@ -13,13 +12,13 @@
 
   const board = $derived.by(() => {
     ui.v;
-    const B = game.board, places = game.habitats.filter((h) => h.shown).map((h) => ({ p: h.id, name: h.name, cards: loadout(game, h.id) }));
+    const B = game.board, places = game.habitats.filter((h) => h.alive && h.shown).map((h) => ({ p: h.id, name: h.name, cards: loadout(game, h.id) }));
     const best = ROLES.flatMap((r, k) => {
       const b = B.best[k];
       return b.exists ? [{ k, icon: r.icon, name: r.kind === 'lead' ? r.name : `Best ${r.name.toLowerCase()}`, who: b.holder >= 0 ? groupName(b.holder) : '', color: groupColor(b.holder), share: Math.round(Math.min(1, b.share) * 100) }] : [];
     });
     const h = game.habitats[ui.place];
-    const here = h ? { name: h.name, kind: HABITAT_KINDS[h.kind].name, region: regionName(game, h.region), tiles: h.tiles, shown: h.shown, cards: loadout(game, h.id) } : null;
+    const here = h?.alive ? { name: h.name, kind: HABITAT_KINDS[h.kind].name, tiles: h.tiles, shown: h.shown, cards: loadout(game, h.id) } : null;
     return { places, best, here, warm: B.windows > 0 };
   });
   const open = $derived(board.here?.cards[ui.gear] ?? null);
@@ -36,7 +35,7 @@
   {#if board.here}
     {@const here = board.here}
     <h2>{here.name}</h2>
-    <p class="dim small sub">{here.kind} on {here.region} · {here.tiles} tiles{here.shown ? '' : ' · too small to show'}</p>
+    <p class="dim small sub">{here.kind} · {here.tiles} tiles{here.shown ? '' : ' · shrank to a patch'}</p>
     <div class="grid">
       {#each here.cards as c (c.k)}
         <button class="card" class:locked={c.locked} class:big={c.big} class:on={ui.gear === c.k} disabled={c.locked}
@@ -71,7 +70,7 @@
       </div>
     {/if}
   {:else}
-    <p class="dim">Choose a habitat: click it below, or on the map (key 0).</p>
+    <p class="dim">Choose a habitat: click it below, or on the map (key 9).</p>
   {/if}
 
   <details>

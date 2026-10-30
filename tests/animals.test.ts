@@ -1,3 +1,4 @@
+import { fullOf, setMass } from '../src/sim/life';
 import { describe, expect, it } from 'vitest';
 import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../src/data/species';
 import { FIELDS, STRATA, type StockDef } from '../src/data/fields';
@@ -32,7 +33,7 @@ function animal(s: State, id: string, i: number, e = 0.6) {
 function moss(s: State, i: number, bitter = false) {
   const sp = speciesIndex(s, 'moss'), v = variantFor(s, sp, { axes: [0, 0, 0, 0], traits: bitter ? ['bitter'] : [] });
   const slot = STRATA.indexOf('ground') * s.w * s.h + i;
-  s.occ[slot] = v; s.cover[slot] = 1; s.health[slot] = 1;
+  s.occ[slot] = v; setMass(s, slot, fullOf(s, v)); s.health[slot] = 1;
   return slot;
 }
 
