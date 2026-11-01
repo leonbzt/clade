@@ -105,7 +105,8 @@ export const ANIMALS: SpeciesDef[] = [
     ],
     body: { ...springtailBody, group: 10, kin: 'troop', stands: 500, store: 2.5, appetite: 5, upkeep: 0.28, bite: 2, size: 2, speed: 0.6,
       young: 2, breedAt: 0.8, cap: 60,
-      diet: [{ stock: 'litter', full: ofFall(0.1) }, { plants: 'ground', share: 1.25 }] },
+      // Dry crusts first (they graze cyanobacteria and lichen on bare rock), rot second.
+      diet: [{ plants: 'ground' }, { stock: 'litter', full: ofFall(0.1), share: 1.6 }] },
   }),
   animal({
     id: 'beetle', name: 'Ground beetles', short: 'Beetle', tolerance: { salty: 0.5 },
