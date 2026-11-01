@@ -199,3 +199,10 @@ The plan built on these answers: [design/game-shape.md](design/game-shape.md).
   the clock (b1) and fungus as a decay boost (b2), now. The rough real values (c) as a starting point.
 - **Time:** three tempos (life, cycle, ground) with the rule that grams and nitrogen only move on cycle, to be
   checked critically (→ P33 a). **A year ≈ 8 min.** Leak could be a mechanic (→ P33 b).
+
+## 1 Nov, before the 11e spec (P33 a, P33 c)
+- **The three-tempo clock waits until after slice 12 or later** (P33 a, roadmap call 2). Until then a year ≈ 8 min
+  is a display conversion.
+- **How species are made (P33 c): maybe better after the core gameplay,** to see how it interacts. You want to
+  discover adaptations you see from random gene changes, and species as a connected tree that rise from each other.
+  Home start: lean algae, cyano and early land plants; it depends on whether we take the route with full evolution.

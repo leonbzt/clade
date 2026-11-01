@@ -17,6 +17,8 @@ the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back
 - **Geology:** a few ground units (old flow, young flow, ash, cinder cone, beach) set soil cap, water and drainage;
   slope thins soil; places split along real lines; island recipes (AI, P30 f; you: leaning yes, wider than flow age).
 - **Humus:** one slow stock between litter and soil (AI, P30 g; you: yes, few layers).
+- **The clock with three tempos:** life, cycle, ground; rates per year ([design/nitrogen-and-time.md](design/nitrogen-and-time.md);
+  AI, P32 d, P33 a; you: after slice 12 or later).
 - **Leak as a mechanic:** nitrogen leaks with the water downhill; ridges poor, seeps rich; a Tight gene (AI, P33 b).
 - **Fixed flows:** water, nitrogen and soil run downhill; wind and rain gradients (AI, P13; you: wanted).
 - **More contrast:** height (the cone), disturbance (storms, vent flares), self-reinforcing patches (AI, P21 d; you:

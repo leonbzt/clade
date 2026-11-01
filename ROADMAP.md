@@ -21,10 +21,10 @@ loses) a slot → the slot pays for the next run.** Rough in places, but a real 
 **Steps**
 1. [ ] **Close out the sim (slice 11e).** Commit the P30 pass. 11d part C (animals in grams, the currency in real
    units, swings). Nitrogen by the gram and the rot chain (P32, decided 1 Nov). Small fixes: fewer headlines,
-   bristletails on dry crusts, the springtail refound bug.
+   bristletails on dry crusts, the springtail refound bug. Spec: [11e](docs/slices/11e-close-out-the-sim.md).
 2. [ ] **12a, the first run.** Islands from one generator (size, theme); one lineage; broods of three and the
-   heir's spot; seasons as the run clock; the run's end; a lineage card with XP. Decide P33 c (how species are
-   made) before its spec.
+   heir's spot; seasons as the run clock; the run's end; a lineage card with XP. P33 c (how species are made): your lean
+   is after the core loop (1 Nov), so 12a uses today's variants and splits.
 3. [ ] **12b, coming home.** The adapted line comes home as a species; release with the forecast; it takes a slot or
    doesn't; held slots pay.
 4. [ ] **The first-playable pass.** Play M1 end to end from a fresh start. Fix only what blocks or hides the loop:
@@ -35,12 +35,9 @@ needs your explicit OK, logged in [docs/decisions.md](docs/decisions.md).
 
 **Open calls for M1**
 1. Are this goal and "done when" right?
-2. **The clock with three tempos** (P32 d, P33 a): in step 1, or after M1? *AI lean: after M1.* Nitrogen by the
-   gram fixes a real fragility (any litter change swung the whole web in the P30 pass), so it stays in step 1. The
-   tempo refactor touches every rate in the data and forces another balance pass, but shows the player nothing
-   before runs exist. "A year ≈ 8 min" can be a display conversion until then.
-3. **How species are made** (P33 c, in [docs/proposals.md](docs/proposals.md)): decide before the 12a spec, because
-   runs are where your species come from.
+2. ~~The clock with three tempos~~ *Decided 1 Nov: after slice 12 or later.*
+3. **How species are made** (P33 c, in [docs/proposals.md](docs/proposals.md)): your lean (1 Nov) is after the core
+   loop. Confirm at the 12a spec.
 
 ## Later milestones (order approved 29 Oct; scope set when we get there)
 
@@ -54,7 +51,7 @@ needs your explicit OK, logged in [docs/decisions.md](docs/decisions.md).
 ## Frozen until M1 is played
 New species or animals beyond what a run needs · the food-web catalogue and trees (P31) · life coming ashore, cute
 animals, bigger islands (P33 e–g) · geology, humus, nitrogen leaking downhill (P30 f–g, P33 b) · borders between
-habitats · seasons and the nursery (M3) · genome v2 (M4) · art passes beyond readability.
+habitats · seasons and the nursery (M3) · genome v2 (M4) · the three-tempo clock (after slice 12) · art passes beyond readability.
 All of it is kept in [docs/ideas.md](docs/ideas.md).
 
 ## Done: M0, the living island (25 Oct – 1 Nov)

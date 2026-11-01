@@ -16,7 +16,8 @@ wins (and the code is the truth for what's built).
 
 **Reference** (open when a spec needs it):
 - `design/`: [game-shape.md](design/game-shape.md) (the plan behind M1–M4, 29 Oct) ·
-  [food-web.md](design/food-web.md) (the expansion plan, P31, parked) · [fresh-eyes.md](design/fresh-eyes.md)
+  [food-web.md](design/food-web.md) (the expansion plan, P31, parked) ·
+  [nitrogen-and-time.md](design/nitrogen-and-time.md) (P32 and the clock, P33 a; the source for 11e) · [fresh-eyes.md](design/fresh-eyes.md)
   (an outside designer's view, 26 Oct) · [references.md](design/references.md) (games to learn from, the look) ·
   [tech-art.md](design/tech-art.md) (stack, art direction).
 - `playtests/`: your notes after playing each slice. `research/`: sourced facts from the `researcher` agent.

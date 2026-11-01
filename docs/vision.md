@@ -64,8 +64,8 @@ logged with its date in [decisions.md](decisions.md). Open AI ideas are in [prop
   (`grow` and `renew` are split). Hectares and productivity per area.
 - **Nitrogen follows the grams** (1 Nov), with the code open to more nutrients. Litter decays by the clock; fungus
   speeds decay.
-- **Time:** a year ≈ 8 min. Three tempos (life, cycle, ground); grams and nitrogen move only on cycle. Still being
-  checked (P33 a).
+- **Time:** a year ≈ 8 min. Three tempos (life, cycle, ground); grams and nitrogen move only on cycle. The clock
+  waits until after slice 12 or later (1 Nov); until then a year is a display conversion.
 - **Swings are wanted:** high-appetite grazers, plants that can be grazed to death, some species dying out.
 
 ## Species and evolution
@@ -84,7 +84,9 @@ logged with its date in [decisions.md](decisions.md). Open AI ideas are in [prop
   plant) that branches into liverworts and mosses. Modern forms first; the full deep-time road later.
 - **Lichens are an unlock**, not the starting state.
 - **How new species are made:** no split-and-place by the player; founding could come with runs; wild splits wait
-  until 12b (1 Nov). Founders cost grams.
+  until 12b (1 Nov). Founders cost grams. Maybe better after the core loop (1 Nov): adaptations you discover from
+  random gene changes; species as one connected tree, rising from each other; a home start leaning toward algae,
+  cyano and early land plants, if we take the full-evolution route.
 - **Groups are named base species:** snails aren't slugs, but a slug species you found is still a slug.
 - Later: animals gain new diets through genes.
 
