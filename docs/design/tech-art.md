@@ -25,7 +25,7 @@ Both are a good fit for code-generated art:
   look line up.
 - **Low-res 3D:** render Three.js into a small target (e.g. 320×180) and scale it up with nearest-neighbour. Use flat
   shading and a limited palette. That's how the OSRS-like look is usually faked cheaply.
-- **Plants** come from L-systems or space colonization, drawn in pixels (see [minigames.md](minigames.md)).
+- **Plants** come from L-systems or space colonization, drawn in pixels (see minigames.md (archived)).
 
 ## Art with little manual work
 

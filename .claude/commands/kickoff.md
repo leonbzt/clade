@@ -4,11 +4,13 @@ description: Start a Clade session from the handoff notes, without re-reading ev
 
 Start a session. Topic from the user: $ARGUMENTS
 
-1. Read `docs/status.md` and `docs/README.md`. Read nothing else yet.
-2. From the index, pick only the docs this topic needs and read those. Never read `_old/` or `_archive/`.
-3. Reply in at most 8 lines:
-   - where we are
+1. Read `docs/status.md` and the "Now" section of `ROADMAP.md`. Read nothing else yet.
+2. Check the topic against the current milestone. If it's off the milestone, say so in one line and offer to park
+   it in `docs/ideas.md` or to continue anyway (the user decides).
+3. From `docs/README.md`, pick only the docs this topic needs and read those. Never read `_old/` or `_archive/`.
+4. Reply in at most 8 lines:
+   - where we are (milestone and step)
    - what this session will do
    - which files you read
    - one question, if something blocks you
-4. Then wait for the user, unless the topic is a clearly specified build slice.
+5. Then wait for the user, unless the topic is a clearly specified build slice.

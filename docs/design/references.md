@@ -10,7 +10,7 @@ details before quoting them anywhere.
 | **Terra Nil**           | Barren → lush transformation as the reward                                                              | The succession visual payoff                                            | —                                                             |
 | **Plague Inc.**         | Pick traits, then watch it spread on a simple map. Huge on mobile                                       | The release-and-spread moment; a trait tree with a clear map effect     | Its zero-sum, kill-everything framing                         |
 | **Cell to Singularity** | An idle game following the real tree of life, with facts                                                | Proof the audience exists; facts as rewards                             | Shallow generator-tier play: we add strategy                   |
-| **IdleOn**              | Parallel characters, each idling a different skill; class → subclass trees. Characters feed shared account layers (Family Bonus: best character per class) | Lineage slots; a small account bonus from the best species per guild, so a 2nd slot in the same guild isn't a duplicate | Hidden "visit to activate" gates. Overload is plausible but unverified ([research](research/progression-games.md)) |
+| **IdleOn**              | Parallel characters, each idling a different skill; class → subclass trees. Characters feed shared account layers (Family Bonus: best character per class) | Lineage slots; a small account bonus from the best species per guild, so a 2nd slot in the same guild isn't a duplicate | Hidden "visit to activate" gates. Overload is plausible but unverified ([research](../research/progression-games.md)) |
 | **Melvor Idle**         | Skills that feed each other's inputs; mastery 1–99 per item; a mastery pool with 10/25/50/95% checkpoints you can drop below by spending | Fit tiers as checkpoints; cross-skill inputs; offline progress | — |
 | **OSRS**                | Quests and achievement diaries (12 regions × 4 tiers) as visible gates with permanent perks; quest cape as a meta-goal; levels 1–99 hide an exponential curve (92 is half of 99) | Key innovations as quest-like gates with a requirement list; small named levels; "complete a guild" meta-goals | — |
 | **Idle Obelisk Miner**  | Layered systems unlocked by milestones; prestige resets upgrades but relics stay (low-confidence sources) | Layered unlocks; something permanent from every prestige | A weak early prestige; an early game that isn't idle yet |
@@ -36,4 +36,4 @@ details before quoting them anywhere.
 ## Sims and toys (for the minigame question)
 
 Viridi, Equilinox, Terra Nil, Reus, SimLife, SimEarth, Spore (cell stage), The Sapling, The Powder Toy / Sandspiel,
-Dorfromantik, Islanders, Mini Metro. What to take from each is in [minigames.md](minigames.md). From memory; verify.
+Dorfromantik, Islanders, Mini Metro. What to take from each is in minigames.md (archived). From memory; verify.

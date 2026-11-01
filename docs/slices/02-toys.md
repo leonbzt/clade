@@ -1,7 +1,7 @@
 # Slice 02: Three throwaway toys
 
 **Question:** which kind of hands-on play do you want to keep coming back to in a colony? Each toy tests one answer.
-The ideas behind them, and the wider brainstorm, are in [minigames.md](../minigames.md).
+The ideas behind them, and the wider brainstorm, are in minigames.md (archived).
 
 | Toy | File | What you do | What it tests |
 | --- | --- | --- | --- |

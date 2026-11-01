@@ -29,4 +29,4 @@ new niches (yes, but they differ little so far: P23 e).
 - Stat and scale cards, abilities and skills: yes. Evolution points as a currency. The relative vs absolute
   problem (see P22).
 - **"Overall stats and sim need some rethinking."** Next: a planning session with fresh eyes
-  ([session-fresh-eyes.md](../session-fresh-eyes.md)).
+  (session-fresh-eyes.md, archived).

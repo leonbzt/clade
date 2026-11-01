@@ -4,7 +4,7 @@
 then evolve the next species and place it while the old ones stay? And does the 2D pixel garden look good and read
 clearly?
 
-This is the review's M0 + M1 ([review-fresh-eyes.md](../review-fresh-eyes.md)), cut to the brief's 26 Oct direction.
+This is the review's M0 + M1 ([review-fresh-eyes.md](../design/fresh-eyes.md)), cut to the brief's 26 Oct direction.
 It replaces the slice 01 code (git tag `slice-01` keeps it).
 
 ## In scope

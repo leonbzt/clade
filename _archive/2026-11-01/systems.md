@@ -586,3 +586,111 @@ Ranked by how much they'd help reading the island, cheapest first:
   from guilds; real candidates are nitrogen fixed, litter recycled, spores or seeds spread, and prey caught. Not
   before 12a.
 - **Your calls (31 Oct):** a yes; hectares and productivity ride with 11d; the rest of b and c later.
+
+## P30. Rebalance after 11d B, geology, swings *(31 Oct, AI, from your 11d A+B play)*
+- **a. Turnover:** shed uses `grow` (per second), so plants renew ~5× a minute; grazer slots (a flow, ~1 t/min) dwarf
+  standing mass (340 kg), litter and nitrogen flood (hotspots under dense plants). Fix: a per-species `renew`
+  (≈5–10% of standing mass a minute) for the shed term; `grow` stays the fill speed. No extra compute.
+- **b. Nitrogen:** mainly from fixers (cyano, lichen) and animals (dung, bodies); litter recycles a small share and
+  leaks the rest. Real on young volcanic islands (Surtsey: fixers and seabird droppings first).
+- **c. Slot holders:** the biggest taker holds a slot above a small floor (≈2% of the food); the share is shown,
+  no longer the gate.
+- **d. Slugs:** a small wet niche (seeps, liverwort, fungus, fresh rot) with a lower upkeep than snails.
+- **e. Habitat thresholds:** a little lower (show ≈50, hide ≈35).
+- **f. Geology (later, its own spec):** a few ground units painted at island build, each with a type (old flow,
+  young flow, tephra/ash, cinder cone, beach) that sets soil cap, water hold and drainage; slope (from height) thins
+  soil and feeds the foot below; wind side brings salt and rain. Pieces of a kind don't join across a unit edge, so
+  places split along real lines ("Fern forest on the Old Flow"). Cost only at build. Island recipes (one big old flow
+  vs many young ones, springs, wind) make islands differ.
+- **g. Soil (later):** one slow humus stock between litter and soil (raises soil, holds nitrogen); not many layers.
+- **h. Swings (part C):** some grazers with high appetite that breed when fed and starve after; plants can be grazed
+  to death (higher `minGrazed`); some dying out is fine.
+- **i. Progression (later):** diets gained through genes; a fuller tree of life will shift balance, so balance the
+  structure now and fine-tune later. Balance shifting is part of the game.
+- **Your calls (31 Oct):** a, b, c, d, e now (one small pass); f leaning yes, wider than flow age; g yes, few layers;
+  h yes in part C; i yes.
+
+## P31. The tree of life and the food web: an expansion plan *(31 Oct, AI, from your ask; the plan is [review-food-web.md](review-food-web.md))*
+- **a. Six pieces of structure** so new species are data: food types (fruit, nectar, wood, sea wrack, windfall),
+  hunting by body size, body-size rules (life, young, home range from mass), a canopy with wood and fruit, roles
+  grouped by food, partnerships through agents (seed carrying, pollination).
+- **b. Four levels:** clade, species, form (Woody, Flightless, Giant, Dwarf), morph. Six ways a species is born,
+  including **wild splits** when habitat pieces isolate a species.
+- **c. A catalogue in rings** (shore and windfall → soil and litter → herbs → flowers and fruit → small vertebrates
+  → giants), mapped to four eras. Trees from tree ferns, conifers, pioneer and fruit trees, island woodiness.
+- **d. Founding costs:** f1 founders' grams, f2 tiers, f3 guild resources later.
+- **e. Order:** A web first, B runs first, C one structure slice (11e) then runs (AI lean: C).
+- **Open:** the nine questions in §9 of the plan (climate, how big, mammals, size windows, tree strata, imports,
+  wild splits, costs, order).
+- **Your calls (1 Nov):** Q1 a subtropical home, run islands that vary. Q5 a canopy stratum for trees. Q6 outside
+  inputs yes. Q7 wild splits: see 12b first, and think about how species are made (P33 c). Q8 f1, but no
+  split-and-place by the player; founding could come with runs. Open: Q2 (are bigger islands feasible? P33 f),
+  Q3 (bats yes, more cute animals, and animals coming ashore: P33 e, g), Q4 hunting by size, Q9 order.
+
+## P32. Nitrogen by the gram, the rot chain, and one clock *(31 Oct, AI, from your questions after the P30 pass)*
+- **Why it's fragile now:** nitrogen isn't tied to grams. Plants take a fixed rate whatever they grow, fungus makes
+  0.006 whatever it eats, and one unit is 5000 g/m² (real plant-available N is 1–5 g/m²). So fungus is nearly all
+  the nitrogen, and any change to litter swings the whole web (P30 a cut litter, fungus died, ferns crashed). Real
+  old ecosystems get ~90% of plant N from recycling; young volcanic islands are N-poor and new inputs decide.
+- **a. Nitrogen follows the grams.** Options: **a1 (AI lean)** each species has a tissue N share; plants take
+  production × share (no N, no growth); litter carries the N of what fell; decay frees it and a share `leak` is lost;
+  fungus speeds decay instead of making N; fixers add N per gram made; dung returns the food's N minus what the body
+  keeps; bodies carry theirs into litter; an N ledger like the grams one. Hotspots can't come from nothing. A few
+  multiplies per slot. **a2** only uptake tied to production, fungus as now. **a3** retune rates, no structure.
+- **b. Rot chain.** Standing litter = litterfall ÷ decay; real floors hold 1–3 years of fall. **b1** litter decay from
+  the clock (d), so litter holds a few "years" of fall again. **b2** fungus as a decay boost (litter → threads →
+  springtails). **b3** eaters' `full` and fungus's need in years of litterfall, not absolute units, so they rescale
+  when rates change. Lean: b1 + b3 now, b2 with a1.
+- **c. Real values** (rough, from memory; the researcher can source them). Per m²: standing g · production g/yr ·
+  tissue N. Cyano crust 10–50 · 20–100 · 3–6%, fixes 0.1–1 g N/yr. Lichen 50–500 · 10–50 · 1–3%, fixes 0.1–1.
+  Moss 100–1000 · 50–300 · ~1%, litter k 0.1–0.3/yr. Liverwort 50–300 · 50–200 · 1.5–2%. Club moss 100–500 · 50–150
+  · 1–1.5%. Fern 200–1000 · 200–800 (fronds ~1×/yr) · 1.5–2.5%, k 0.3–1/yr. Fungus threads 10–100, turnover 5–20/yr,
+  3–6%. Soil N: available 1–5 g, total 100–1000 g. Rain 0.1–1 g N/yr; a gull colony ~5 (Surtsey); leak in N-poor
+  land ≤10–20% of what's freed. Springtails 10⁴–10⁵ per m², snails 1–50; snail life 1–5 yr, springtail months.
+  Soil on young lava ~1 cm per 100–1000 years.
+- **d. One clock, three tempos.** Every rate in data in real units (per year), and the sim divides by a game clock:
+  ratios stay real and one knob speeds a whole group. One clock can't fit all: with a year ≈ 8 min, a fern forest
+  (decades) takes hours and soil (centuries) never comes. So three tempos, each one multiplier in the dev panel:
+  **life** (moving, eating, breeding: days), **cycle** (growth, turnover, litter, nitrogen: years), **ground** (soil,
+  humus, succession: centuries). Balance lives where tempos meet (grazing vs regrowth, soil vs plants), so an eater's
+  yearly intake stays in cycle units and only its behaviour is in life.
+- **e. Today's pace on that clock:** `renew` 6%/min ≈ moss turnover 0.5/yr, so a year ≈ 8 min. Then litter decay
+  should be ~0.0006–0.002/s (now 0.01, 5–15× fast) and a full crust fixes ~0.001 g N/m²/s.
+- **f. Small fixes:** fewer headlines (they doubled with the 2% floor: a higher bar or a per-habitat cooldown);
+  bristletails on dry crusts first, litter second; a sim line for nitrogen by source and litter in years of fall.
+- **Open:** a1, a2 or a3; three tempos or one; the year's length; the leak share.
+- **Your calls (1 Nov):** a1, with the code open to more nutrients. b1 + b2 now. c as a starting point. d three
+  tempos with the rule (grams and nitrogen only move on cycle), checked critically in P33 a. Leak could be a mechanic
+  (P33 b). A year ≈ 8 min.
+
+## P33. Species from the sim, life comes ashore, tempos checked *(1 Nov, AI, from your P31 and P32 calls)*
+- **a. Tempos, checked:** two real clocks and a view speed. **Cycle:** every gram and nitrogen flow (eating,
+  births, deaths, tree growth). **Ground:** slow stores (soil, humus); speeding them means a smaller store, and the
+  flows across the seam carry one visible factor, so the ledger stays honest. **Life:** movement and behaviour only;
+  foraging and hunting rates are set per year, so the life knob changes no yearly flow (a test: life ×2 keeps the
+  yearly flows within ~5%). Trees on cycle: a stand takes 1–3 h, fine for an idle game.
+- **b. Leak as a mechanic:** the leak share depends on cover (bare ground leaks most) and goes downhill with the
+  water, landing in low wet ground, springs and the shore. Ridges stay poor, seeps and valleys get rich; species that
+  hold nitrogen (a Tight gene) close the leak. Ties to P13 (fixed flows) and to regional contrast.
+- **c. Species from the sim:** no buying and no split-and-place. Three sim routes, each a headline, the new species
+  wild at first: **drift** (groups in separate habitat pieces drift apart), **key** (a variant meets a recipe and
+  rolls it), **partnership** (two species overlap long enough, e.g. lichen from fungus and cyano). You pick any
+  species to start a run from; runs are how you steer toward a recipe. Authored: the real tree, recipes and odds;
+  never which species or where.
+- **d. Today's introductions become sim routes:** land plants (bought) → a key; fungi (bought) → part of the
+  starting set; lichens (bought) → a partnership; ferns (bought on a layer gate) → a key on the vascular line;
+  animals (arrivals) → e.
+- **e. Life comes ashore.** **e1 (AI lean):** a shore stratum with sea life from the start (the sea is the
+  reservoir, like the start plant); lineages walk landward through Dry genes and recipes: sea snails → land snails,
+  sea isopods → woodlice, amphipods → beach hoppers, crabs → land crabs, fish → tetrapods → reptiles → turtles.
+  Real: these moves happened many times and are still going on at the shore (from memory; check). **e2:** animals
+  keep arriving. **e3:** one ancestor per group arrives, the rest evolves. The tension: a young island and deep time;
+  the game already folds time (mosses from early land plants).
+- **f. Bigger islands:** real units per m² make tile size a knob: a big island = the same tile count with 20–30 m
+  tiles, or more tiles with sleeping regions (game shape §5). Measure the tick first. 4× the area holds owls and
+  tortoises; island dragons need hundreds of km².
+- **g. Cute animals:** hermit crabs (real shore pioneers), sea turtles nesting on beaches (sea nitrogen ashore,
+  hatchlings running to the sea), geckos, fruit bats, rails, doves, nēnē, puffins and shearwaters, sea lions on
+  beaches, rice rats (real rafting rodents on the Galápagos; check).
+- **Open:** e1, e2 or e3; the starting set (the sea, cyano, fungal spores?); do arrivals stay at all (invaders
+  only?); how far deep time goes on the home island; P31 Q4 and Q9.

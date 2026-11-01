@@ -4,8 +4,8 @@
 evolution happen on the map, does a rare find feel like a reward, and does picking a variant to found as a new,
 named species feel like steering it?
 
-Builds on slice 06 (git tag `slice-06`). From the species talk on 27 Oct ([species-models.md](../species-models.md),
-P12 in [systems.md](../systems.md)) and your calls:
+Builds on slice 06 (git tag `slice-06`). From the species talk on 27 Oct (species-models.md, archived,
+P12 in systems.md, archived) and your calls:
 - Variants within a species. Evolution runs by itself and surprises you. You still see the mutations, and you pick a
   variant as a founder for another part of the map.
 - **Rarity uses game-like tiers.**

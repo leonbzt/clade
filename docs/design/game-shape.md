@@ -1,8 +1,8 @@
 # Clade's shape: lineages, island runs and a slot board (29 Oct)
 
 From the planning chat of 28–29 Oct. It replaces the first draft of this file (one lineage on one island).
-**An AI plan built on your answers; your calls are in P24 ([systems.md](systems.md)).** Nothing moves into the
-brief until you move it.
+**An AI plan built on your answers; your calls (P24) are in [decisions.md](../decisions.md).** Nothing moves into the
+vision until you move it.
 
 ## 0. In short
 
@@ -193,7 +193,7 @@ Today's genes carry slices 11–12. The rework comes once the first runs show wh
 | **14. The moving world** | Home seasons with a forecast, windows and blooms, 2–3 events, succession opening roles, the nursery and seeds. | Do changes make gifts and challenges? Does timing pay off? |
 | **15. Genome v2** | Stats and upkeep, forms, morphs, diet tags, the codex. | Are builds distinct, and are finds exciting? |
 
-Spec for 11: [slices/11-slot-board.md](slices/11-slot-board.md). **Later:** the archipelago map with
+Spec for 11: [slices/11-slot-board.md](../slices/11-slot-board.md). **Later:** the archipelago map with
 outposts, eras and the climax, a bigger home island, seeds and codes to share, wild holders, active abilities.
 
 ## 9. Still open

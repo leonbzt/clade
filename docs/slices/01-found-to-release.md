@@ -14,7 +14,7 @@ beat sheet disagree, this page wins.
 
 ## In scope
 
-- **Setup:** Vite + TypeScript + Svelte for menus (from [tech-art.md](../tech-art.md)). The logic is plain TS with no
+- **Setup:** Vite + TypeScript + Svelte for menus (from [tech-art.md](../design/tech-art.md)). The logic is plain TS with no
   DOM (`src/core/`), all numbers and content live in `src/data/`, and the UI is in `src/ui/`. Files stay under ~400 lines.
 - **Island view, placeholder 2D** (SVG or canvas): a bare island, a steam vent in the lava field (the fixed home) and the beach. The
   art spikes replace this view later, so keep it thin.

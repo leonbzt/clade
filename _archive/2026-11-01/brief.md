@@ -129,6 +129,15 @@ What's **decided**. Only the user moves things into this file. AI proposals live
   with efficiency shown beside it.
 - **Hectares and productivity per area** ride with slice 11d.
 
+### Direction *(31 Oct, after playing 11d parts A and B)*
+- **Split growth from turnover** (`grow` fills, `renew` sheds). The slot's **biggest taker holds almost whatever**
+  it takes. Slugs may keep only a small niche.
+- **Swings are wanted:** some high-appetite grazers, plants that can be grazed to death, some dying out.
+- **Balance shifts and can be part of the game.** Animals gain new diets through genes; a fuller tree of life is
+  coming, so balance the structure now and fine-tune later.
+- **Geology, leaning yes**, wider than flow age (height, wind, slope, sun, soil); cheap but feelable.
+- **Soil:** a few layers at most, not many. Habitat thresholds a little lower.
+
 ### Principles
 - **Simple core, strong progression** *(25 Oct)*. The core mechanics can be simple and repetitive if the progression and the sense of choosing what to do are very strong.
 - **Hand-curated progression; take shortcuts to proven concepts** *(25 Oct)*. Learn from IdleOn, Idle Obelisk Miner, Melvor Idle and OSRS.
