@@ -9,9 +9,7 @@ Marks: **(you)** your idea · **(AI)** AI idea · **you: yes / leaning yes** you
 the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back.
 
 ## Bugs (fix any time)
-- Refounding a springtail with insect traits keeps the springtail picture and name; it should become a bristletail
-  or just insects (you, 30 Oct).
-- News doubled: 29–35 headlines/h (was 15–21), chatter ~130/h. A higher bar or a per-habitat cooldown (P32 f).
+- (none open)
 
 ## World and sim
 - **Geology:** a few ground units (old flow, young flow, ash, cinder cone, beach) set soil cap, water and drainage;
@@ -25,6 +23,10 @@ the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back
   all good, start simple).
 - **Borders (ecotones)** as their own small places (AI, P28 d; you: parked).
 - **Food quality as C:N:** poor food is worth less, poor litter rots slower (AI, P29 b).
+- **Nitrogen resorption:** plants pull ~half their leaf nitrogen back before it falls, so less is locked in litter
+  and plants grow faster on a slow-rotting floor (AI, 11e B).
+- **Let size set the pace:** the burn's real mass^0.75 is in, but each species' `upkeep` cancels it (springtails
+  ×0.04); letting it act makes small animals starve ~10× faster and swing harder (AI, 11e A).
 - **Tile types change over generations:** lava → bare ground → forest floor (you, P22).
 - **Old growth / update what changes:** stable patches and groups update slower, a disturbance wakes them; update
   rate as a species trait (you, P21 b, P22).
@@ -57,8 +59,8 @@ the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back
 - **The species screen:** the card on the left, TierZoo-style stat cards, abilities as chips, plant/animal/fungi
   filters, extinct species leave the list (you + AI, P23).
 - **A tile side view:** a cut through one tile with all its layers (you, P22).
-- **Real units:** a map scale bar, counts as individuals and densities, body size you can see, island years, flows
-  in grams on a food-web view (AI, P27 b–f); turnover and home range (AI, P29 b).
+- **Real units, the rest:** body size you can see, island years, flows in grams on a food-web view (AI, P27 d–f);
+  turnover and home range (AI, P29 b). (Scale bar, counts and densities: done in 11e.)
 - **Horizontal currencies** from guilds: nitrogen fixed, litter recycled, spores spread, prey caught (AI, P29 c;
   not before 12a).
 - **Better names** for items (you, 30 Oct). **Bigger tiles** with sprites kept the same size (you, 30 Oct).

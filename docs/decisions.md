@@ -208,3 +208,8 @@ The plan built on these answers: [design/game-shape.md](design/game-shape.md).
   Home start: lean algae, cyano and early land plants; it depends on whether we take the route with full evolution.
 - **Slice 11e's two questions: ok to both.** Snails are the high-appetite grazer for the swings (slugs stay in their
   small wet niche); the whole real-units display goes in now (part C).
+
+## 1 Nov, while building 11e (how we work)
+- **"Do less full sims or try to reduce cpu time."** Tune with 1–2 seeds or small scratch tests; one full run per part.
+- **"Finish all open work automatically and if possible spec and start the next slice. You can kick off agents for
+  smaller tasks."**

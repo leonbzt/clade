@@ -22,7 +22,7 @@ loses) a slot → the slot pays for the next run.** Rough in places, but a real 
 1. [ ] **Close out the sim (slice 11e).** Commit the P30 pass. 11d part C (animals in grams, the currency in real
    units, swings). Nitrogen by the gram and the rot chain (P32, decided 1 Nov). Small fixes: fewer headlines,
    bristletails on dry crusts, the springtail refound bug. Spec: [11e](docs/slices/11e-close-out-the-sim.md).
-2. [ ] **12a, the first run.** Islands from one generator (size, theme); one lineage; broods of three and the
+2. [ ] **12a, the first run.** Spec: [12a](docs/slices/12a-the-first-run.md) (draft, waiting on your three calls). Islands from one generator (size, theme); one lineage; broods of three and the
    heir's spot; seasons as the run clock; the run's end; a lineage card with XP. P33 c (how species are made): your lean
    is after the core loop (1 Nov), so 12a uses today's variants and splits.
 3. [ ] **12b, coming home.** The adapted line comes home as a species; release with the forecast; it takes a slot or
