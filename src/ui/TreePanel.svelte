@@ -11,7 +11,9 @@
   import { canEvolve, canFoundSpecies, reqStatus, splitCost, suggestName } from '../sim/commands';
   import Specimen from './Specimen.svelte';
   import { doEvolve, game, startFounding, startPlacing, ui } from './game.svelte';
-  import { fmt } from './format';
+  import { grams } from './format';
+  import { count } from '../data/units';
+  import { NUM } from '../data/numbers';
 
   const depth = (id: string | null): number => {
     const n = TREE.find((t) => t.id === id);
@@ -22,12 +24,13 @@
    * (split off from another clade) is a root here. */
   function leaves(base: number) {
     const mine = game.species.map((x, sp) => ({ x, sp })).filter((o) => o.x.base === base);
-    const out: { sp: number; name: string; depth: number; tiles: number; dead: boolean; color: string; id: string }[] = [];
+    const out: { sp: number; name: string; depth: number; tiles: number; pop: string; dead: boolean; color: string; id: string }[] = [];
     const isRoot = (parent: number) => (m: (typeof mine)[number]) =>
       parent < 0 ? m.x.parent < 0 || game.species[m.x.parent].base !== base : m.x.parent === parent;
     const walk = (parent: number, depth: number) => {
       for (const o of mine.filter(isRoot(parent))) {
-        out.push({ sp: o.sp, id: o.x.id, name: o.x.name, depth, tiles: game.species[o.sp] && SPECIES[game.species[o.sp].base].animal ? game.members[o.sp] : game.count[o.sp], dead: o.x.at >= 0 && !game.count[o.sp], color: zoneColor(game, o.sp) });
+        const body = SPECIES[o.x.base].animal, tiles = body ? game.members[o.sp] : game.count[o.sp];
+        out.push({ sp: o.sp, id: o.x.id, name: o.x.name, depth, tiles, pop: body ? `≈ ${count(tiles * body.stands * NUM.mass.tile)}` : `${tiles} tiles`, dead: o.x.at >= 0 && !game.count[o.sp], color: zoneColor(game, o.sp) });
         walk(o.sp, depth + 1);
       }
     };
@@ -76,7 +79,7 @@
           <button class="leaf" class:dead={l.dead} style:margin-left="{l.depth * 14}px"
             onclick={() => { ui.focus = l.id; ui.tab = 'species'; ui.tree = false; }}>
             <span class="dot" style:background={l.dead ? 'transparent' : l.color}></span>{l.depth ? '└ ' : ''}{l.dead ? '† ' : ''}{l.name}
-            <span class="dim">{l.dead ? 'extinct' : `${l.tiles} tiles`}</span>
+            <span class="dim">{l.dead ? 'extinct' : l.pop}</span>
           </button>
         {/each}
       {:else if !n.open}
@@ -98,13 +101,13 @@
           {#if n.split}
             <button class="go" disabled={!n.split.can.ok} title={n.split.can.ok ? '' : n.split.can.reason}
               onclick={() => { startFounding(n.split!.v, suggestName(game, n.split!.v)); ui.tab = 'species'; ui.tree = false; }}>
-              Split it off as the first {n.short} · {fmt(n.split.cost)} biomass
+              Split it off as the first {n.short} · {grams(n.split.cost)} biomass
             </button>
           {/if}
         {:else}
           {#if n.arrive}<p class="dim">{n.visitor ? 'They are here, waiting at the landmark.' : 'Arrives by itself once its habitat is here.'}</p>{/if}
           <button class="go" disabled={!n.can} onclick={() => doEvolve(n.id)}>
-            {n.arrive ? 'Adopt them' : 'Evolve'}{n.cost ? ` · ${fmt(n.cost)} biomass` : ''}
+            {n.arrive ? 'Adopt them' : 'Evolve'}{n.cost ? ` · ${grams(n.cost)} biomass` : ''}
           </button>
         {/if}
       {/if}

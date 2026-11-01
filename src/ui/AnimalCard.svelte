@@ -9,6 +9,8 @@
   import { genomeLook } from '../view/look';
   import Specimen from './Specimen.svelte';
   import { clock } from './format';
+  import { count } from '../data/units';
+  import { defOf } from '../sim/variants';
   import { game, ui } from './game.svelte';
 
   const DOING = { look: 'looking around', walk: 'on the move', eat: 'eating', rest: 'resting, full', hunt: 'hunting' } as const;
@@ -19,7 +21,7 @@
     if (!a) return { gone: game.obits.find((o) => o.id === ui.follow) ?? null };
     const x = game.variants[a.v], sp = game.species[a.sp], i = tileOf(game, a), p = profile(game, a.v);
     return {
-      a, sp: sp.name, spId: sp.id, kin: bodyOf(game, a.sp).kin, look: genomeLook(game, a.sp, x.genome), form: variantName(game, a.v), tier: TIERS[x.tier],
+      a, sp: sp.name, spId: sp.id, perM2: a.n * (defOf(game, a.sp).animal?.stands ?? 0), kin: bodyOf(game, a.sp).kin, look: genomeLook(game, a.sp, x.genome), form: variantName(game, a.v), tier: TIERS[x.tier],
       genes: geneText(game, a.v), where: placeName(game, i), fit: Math.round(fit(game, p, i) * 100),
       age: Math.round(a.age), life: Math.round(a.life), energy: Math.round(a.e * 100),
       log: [...a.log].reverse().map((l) => ({ ...l, time: clock(l.tick, NUM.ticksPerSec) })),
@@ -32,7 +34,7 @@
     <Specimen look={card.look} scale={2} />
     <div>
       <h2>{card.kin ? `${card.sp}, ${card.kin}` : card.sp} #{card.a.id}</h2>
-      {#if card.kin}<div class="dim small">{card.a.n} {card.sp.toLowerCase()}{card.a.go ? ', walking off to settle' : ''}</div>{/if}
+      <div class="dim small">≈ {count(card.perM2 * NUM.mass.tile)} {card.sp.toLowerCase()}, {count(card.perM2)} per m²{card.a.go ? ', walking off to settle' : ''}</div>
       <div><b style:color={card.tier.color}>{card.tier.name}</b> {card.form}</div>
       <div class="dim small">{card.genes}</div>
     </div>
@@ -40,7 +42,6 @@
   <p>Now: <b>{DOING[card.a.doing]}</b> {card.where} <span class="dim">(fit here {card.fit}%)</span></p>
   <div class="row"><span>Energy</span><span class="bar"><span style:width="{card.energy}%"></span></span><span>{card.energy}%</span></div>
   <div class="row"><span>Age</span><span class="bar"><span class="age" style:width="{Math.min(100, (100 * card.age) / card.life)}%"></span></span><span>{card.age} / {card.life} s</span></div>
-  {#if card.a.n > 1}<p class="dim">A swarm of {card.a.n}.</p>{/if}
   <p class="dim">Young: {card.a.kids}{card.a.mom >= 0 ? ` · child of #${card.a.mom}` : ' · arrived from elsewhere'}</p>
   <h3>Lately</h3>
   {#each card.log as l (l.tick + l.text)}<div class="ev"><span class="dim">{l.time}</span> {l.text}</div>{/each}

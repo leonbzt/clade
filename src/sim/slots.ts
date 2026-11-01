@@ -233,7 +233,8 @@ export function updateSlots(s: State, P: Profile[]) {
 
 /** Each role's best holder on the whole island: the biggest share of all its food. */
 function bestOf(s: State, totals: number[], news: boolean) {
-  const B = s.board, places = s.habitats.length, takes = new Array(GROUPS);
+  const B = s.board, places = s.habitats.length, takes = new Array(GROUPS), T = NUM.ticksPerSec, H = NUM.habitats;
+  let last = B.bestAt.reduce((a, t) => Math.max(a, t), -Infinity); // the last island's-best headline, any role
   ROLES.forEach((role, r) => {
     takes.fill(0);
     for (let p = 0; p < places; p++) { const sl = B.slots[p * R + r]; for (let g = 0; g < GROUPS; g++) takes[g] += sl.takes[g]; }
@@ -241,8 +242,8 @@ function bestOf(s: State, totals: number[], news: boolean) {
     b.size = totals[r]; b.exists = totals[r] > 0;
     [b.holder, b.share] = pickHolder(role, takes, totals[r], was);
     if (!news || !b.exists) return;
-    const say = s.tick - (B.bestAt[r] ?? -Infinity) >= NUM.habitats.bestEvery * NUM.ticksPerSec ? headline : chatter;
-    if (b.holder >= 0 && b.holder !== was && say === headline) B.bestAt[r] = s.tick;
+    const say = s.tick - (B.bestAt[r] ?? -Infinity) >= H.bestEvery * T && s.tick - last >= H.bestGap * T ? headline : chatter;
+    if (b.holder >= 0 && b.holder !== was && say === headline) last = B.bestAt[r] = s.tick;
     if (b.holder >= 0 && b.holder !== was) say(s, role.kind === 'lead' ? `${groupName(b.holder)} now lead the island's ${bestName(role)}` : `${groupName(b.holder)} are the island's best ${bestName(role)}`);
     else if (b.holder < 0 && (was >= 0 || !existed) && role.kind !== 'lead') chatter(s, `${role.name}: open across the island`);
   });

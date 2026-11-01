@@ -11,7 +11,7 @@ import { groupName, slotAt } from '../sim/slots';
 import type { State } from '../sim/state';
 import type { Slot } from '../sim/tally';
 import { lookOf, type VariantLook } from '../view/look';
-import { grams } from './format';
+import { areaM2, grams } from '../data/units';
 
 /** One role under a card, or the card's own role. */
 export type RoleView = {
@@ -24,7 +24,7 @@ export type RoleView = {
   yours: boolean;
   open: boolean;
   big: boolean;
-  size: string; // "40 g/min · large"
+  size: string; // "40 g/min · 5 g/m² per min · large"
   hold: number; // the bar: the holder's share, then the other eaters', 0–1
   other: number;
   trend: string;
@@ -44,10 +44,12 @@ export type GearView = RoleView & {
 
 export const groupColor = (g: number) => (g >= 0 ? ZONE[SPECIES[g].id] ?? '#f0e6c8' : 'transparent');
 
-/** "40 g/min · large": the size in grams and a word from fixed steps, the same everywhere. */
-export function sizeText(sl: Slot): string {
-  const flow = ROLES[sl.role].kind !== 'lead', steps = SIZE_STEPS[flow ? 'flow' : 'stock'];
-  return `${grams(sl.grams)}${flow ? '/min' : ''} · ${SIZE_WORDS[steps.filter((x) => sl.grams >= x).length]}`;
+/** "40 g/min · 5 g/m² per min · large": the size in grams, per m² of its habitat, and a word from fixed steps, the
+ * same everywhere. */
+export function sizeText(s: State, sl: Slot): string {
+  const flow = ROLES[sl.role].kind !== 'lead', steps = SIZE_STEPS[flow ? 'flow' : 'stock'], m2 = areaM2(s.habitats[sl.place]?.tiles ?? 0);
+  const dense = m2 ? ` · ${grams(sl.grams / m2)}/m²${flow ? ' per min' : ''}` : '';
+  return `${grams(sl.grams)}${flow ? '/min' : ''}${dense} · ${SIZE_WORDS[steps.filter((x) => sl.grams >= x).length]}`;
 }
 
 function roleView(s: State, p: number, r: number): RoleView {
@@ -55,7 +57,7 @@ function roleView(s: State, p: number, r: number): RoleView {
   return {
     role: r, name: ROLES[r].name, holder: sl.holder, who: sl.holder < 0 ? '' : sp && sp.base === sl.holder && sp.parent >= 0 ? sp.name : groupName(sl.holder),
     color: groupColor(sl.holder), tier: sl.v >= 0 && sl.tier > 0 ? TIERS[sl.tier] : null, yours: sl.yours, open: sl.open, big: sl.big,
-    size: sizeText(sl), hold, other: use - hold, trend: sl.trend > 0 ? '↑' : sl.trend < 0 ? '↓' : '',
+    size: sizeText(s, sl), hold, other: use - hold, trend: sl.trend > 0 ? '↑' : sl.trend < 0 ? '↓' : '',
     fed: sl.feeder >= 0 ? `fed by ${groupName(sl.feeder)}${sl.fedBy >= 0 ? ` (${ROLES[sl.fedBy].name.toLowerCase()} here)` : ''}` : '',
   };
 }

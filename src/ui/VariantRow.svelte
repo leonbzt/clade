@@ -3,13 +3,13 @@
   // badge, the recipe it's working toward, and "Split off" when it's Rare or better (with a key: into a new clade).
   // Splitting asks for a name, then a spot for the founder patch. Hovering lights its tiles up.
   import { axesOf, COMBOS, GENES, TIERS } from '../data/genes';
-  import { SPECIES, SPECIES_INDEX } from '../data/species';
+  import { SPECIES } from '../data/species';
   import { TREE } from '../data/tree';
-  import { canFoundSpecies, doorOf, splitCost, suggestName } from '../sim/commands';
+  import { canFoundSpecies, splitCost, splitInto, suggestName } from '../sim/commands';
   import { recipesOf } from '../sim/keys';
   import { variantColors } from '../view/overlays';
   import { defOf, geneText, variantName } from '../sim/variants';
-  import { fmt } from './format';
+  import { grams } from './format';
   import { game, startFounding, ui } from './game.svelte';
 
   let { v, fresh }: { v: number; fresh: boolean } = $props();
@@ -20,7 +20,7 @@
     const x = game.variants[v];
     if (!x?.alive) return null;
     const base = game.species[x.sp].genome, def = defOf(game, x.sp);
-    const can = canFoundSpecies(game, v), door = doorOf(game, v), node = door ? TREE.find((n) => n.id === door.node)! : null;
+    const can = canFoundSpecies(game, v), into = splitInto(game, v);
     return {
       tier: TIERS[x.tier], color: variantColors(game, x.sp).get(v), name: variantName(game, v), tiles: x.tiles, genes: geneText(game, v),
       animal: !!def.animal,
@@ -28,7 +28,7 @@
       traits: def.traits.map((t) => ({ id: t.id, name: t.name, on: x.genome.traits.includes(t.id) })),
       combo: COMBOS.find((c) => c.id === x.combo) ?? null,
       canFound: can.ok, why: can.ok ? '' : can.reason, rareEnough: x.tier >= GENES.foundFrom, cost: splitCost(game, v),
-      door: node ? SPECIES[SPECIES_INDEX[node.species!]].short.toLowerCase() : null,
+      split: into.key ? `${into.door ? 'the first' : 'a new'} ${SPECIES[into.base].short.toLowerCase()}` : 'a new species',
       recipes: recipesOf(game, v).map((r) => ({ node: TREE.find((n) => n.id === r.key.node)!.name, items: r.items, all: r.items.every((i) => i.met) })),
     };
   });
@@ -44,7 +44,7 @@
 <div class="variant" title={row.genes} role="presentation" onmouseenter={() => (ui.hoverVariant = v)}>
   <span class="dot" style:background={row.color} style:outline="2px solid {row.tier.color}"></span>
   <span class="name"><b style:color={row.tier.color}>{row.name}</b>{#if fresh}<span class="new"> ✦ new</span>{/if}
-    <span class="dim small">{row.tier.name} · {row.tiles} {row.animal ? 'animals' : 'tiles'}</span></span>
+    <span class="dim small">{row.tier.name} · {row.tiles} {row.animal ? (row.tiles === 1 ? 'group' : 'groups') : 'tiles'}</span></span>
   <span class="pips">
     {#each row.axes as a (a.id)}
       <span class="axis" title="{a.word} {a.d > 0 ? '+' : ''}{a.d}">
@@ -71,7 +71,7 @@
     </div>
   {:else}
     <button class="found" disabled={!row.canFound} title={row.why} onclick={() => (naming = suggestName(game, v))}>
-      {row.door ? `Split off as the first ${row.door}` : 'Split off as a new species'} · {fmt(row.cost)}
+      Split off as {row.split} · {grams(row.cost)}
     </button>
   {/if}
 {/if}

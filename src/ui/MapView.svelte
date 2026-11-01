@@ -4,6 +4,7 @@
   import { DETAIL_FROM, ZOOM_STEPS } from '../data/view';
   import { FIELDS, type LayerId } from '../data/fields';
   import { GardenRenderer, VIEWS, type View } from '../view/render';
+  import { scaleBar } from '../view/scale';
   import MapReadout from './MapReadout.svelte';
   import { animalAt } from '../view/animals';
   import { doFound, followAnimal, game, selectPlace, selectTile, ui } from './game.svelte';
@@ -23,6 +24,7 @@
   let zi = $state(Number(new URLSearchParams(location.search).get('zoom')) || 0); // index into ZOOM_STEPS (dev: ?zoom=3)
   let pan = $state({ x: 0, y: 0 });
   const scale = $derived(fitScale * ZOOM_STEPS[zi]);
+  const bar = $derived(scaleBar(T * scale));
   // Landmark names show once you zoom in (not in the Habitats view, where the habitats carry their names).
   const labels = $derived.by(() => {
     ui.gen;
@@ -171,6 +173,7 @@
         <span class="label" style:left="{l.x * scale + pan.x}px" style:top="{l.y * scale + pan.y}px">{l.name}</span>
       {/each}
     {/if}
+    <div class="scale" style:width="{bar.px}px"><span>{bar.text}</span></div>
     {#if ui.banner}{#key ui.banner.id}<div class="banner panel">{ui.banner.text}</div>{/key}{/if}
   </div>
 
@@ -202,6 +205,10 @@
   .label.card { transform: translate(-50%, -50%); font-size: 13px; pointer-events: auto; cursor: pointer; display: flex; flex-direction: column;
     align-items: center; gap: 2px; padding: 2px; margin: 0; background: #140f0b99; border: 1px solid transparent; box-shadow: none; }
   .label.card:hover, .label.card.on { color: var(--gold); background: #140f0bcc; border-color: var(--gold); }
+  .scale { position: absolute; left: 10px; bottom: 8px; height: 5px; pointer-events: none; border: 2px solid var(--text); border-top: none;
+    filter: drop-shadow(1px 1px 0 var(--ink)); }
+  .scale span { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-size: 13px; color: var(--text); white-space: nowrap;
+    text-shadow: 1px 1px 0 var(--ink), -1px -1px 0 var(--ink); }
   .icons { display: grid; grid-template-columns: repeat(3, auto); gap: 3px; }
   .banner { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); max-width: 80%; padding: 6px 14px; text-align: center;
     color: var(--gold); border-color: var(--gold); pointer-events: none; animation: drop 4s steps(8) forwards; }

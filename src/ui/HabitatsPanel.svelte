@@ -3,6 +3,7 @@
   // a card to unfold the roles under it and light up its holder on the map. Then the island's best (folded) and every
   // habitat with its six mini icons.
   import { HABITAT_KINDS } from '../data/habitats';
+  import { hectares } from '../data/units';
   import { ROLES } from '../data/roles';
   import { groupName } from '../sim/slots';
   import { groupColor, loadout } from './board';
@@ -35,7 +36,7 @@
   {#if board.here}
     {@const here = board.here}
     <h2>{here.name}</h2>
-    <p class="dim small sub">{here.kind} · {here.tiles} tiles{here.shown ? '' : ' · shrank to a patch'}</p>
+    <p class="dim small sub">{here.kind} · {hectares(here.tiles)}{here.shown ? '' : ' · shrank to a patch'}</p>
     <div class="grid">
       {#each here.cards as c (c.k)}
         <button class="card" class:locked={c.locked} class:big={c.big} class:on={ui.gear === c.k} disabled={c.locked}
