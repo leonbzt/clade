@@ -5,7 +5,7 @@ import { STRATA } from '../src/data/fields';
 import { MASS } from '../src/data/masses';
 import { agentsStep, spawn, tileOf } from '../src/sim/agents';
 import { arrivals } from '../src/sim/arrivals';
-import { evolve } from '../src/sim/commands';
+import { evolve, foundSpecies, splitCost, speciesCost } from '../src/sim/commands';
 import { profiles } from '../src/sim/fit';
 import { createState, SEA, VENT, type State } from '../src/sim/state';
 import { recount, speciesIndex, variantFor } from '../src/sim/variants';
@@ -114,5 +114,20 @@ describe('animals', () => {
     } finally {
       SPECIES.pop(); delete SPECIES_INDEX.testbug; delete MASS.testbug;
     }
+  });
+
+  it('a springtail with the insect key splits into a bristletail, also once insects are reached', () => {
+    const s = createState(1), sp = speciesIndex(s, 'springtail'), bt = SPECIES_INDEX.bristletail;
+    s.reached.push('animals', 'hexapods', 'insects');
+    s.biomass = 1e12;
+    const v = variantFor(s, sp, { axes: [1, 0, 0, 0], traits: ['cuticle', 'insectBody'] });
+    s.variants[v].shown = true;
+    spawn(s, v, dampTile(s), 3, 'test');
+    const made = s.made, reached = s.reached.length;
+    expect(splitCost(s, v)).toBe(speciesCost(s, bt)); // a new species of the clade, not the door again
+    expect([...s.terrain.keys()].some((i) => foundSpecies(s, v, i, 'Dry Bristletail').ok)).toBe(true);
+    const x = s.species[s.species.length - 1];
+    expect([x.base, x.genome.traits, s.made, s.reached.length]).toEqual([bt, [], made + 1, reached]);
+    expect(s.agents.some((a) => a.v === v)).toBe(false);
   });
 });

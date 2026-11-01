@@ -3,6 +3,7 @@ import { ANIMAL } from '../data/animals';
 import { STRATA } from '../data/fields';
 import { axesOf, GENES, KEYS, type Key } from '../data/genes';
 import { NUM } from '../data/numbers';
+import { grams } from '../data/units';
 import { SPECIES, SPECIES_INDEX } from '../data/species';
 import { TREE, doorKey } from '../data/tree';
 import { spawn } from './agents';
@@ -90,7 +91,7 @@ export function found(s: State, speciesId: string, i: number): Result {
   if (!unlockedSpecies(s).includes(speciesId)) return fail('Evolve it first.');
   if (defOf(s, sp).animal) return fail('Animals arrive by themselves, or split off from a variant.');
   const cost = foundingCost(s, speciesId);
-  if (s.biomass < cost) return fail(`Needs ${cost} biomass.`);
+  if (s.biomass < cost) return fail(`Needs ${grams(cost)} of biomass.`);
   const why = plantCheck(s, P, founderProfile(s, speciesId, P), i);
   if (why) return fail(why);
   const v = variantFor(s, sp, founder(s, sp), P);
@@ -111,16 +112,17 @@ export function doorOf(s: State, v: number): Key | null {
   return key && !s.reached.includes(key.node) ? key : null;
 }
 
-/** What a split would make: the base species (a door's template, or the parent's) and the new base genome. A clade
- * change keeps the axis genes and drops the old clade's traits and the key. */
-function splitInto(s: State, v: number): { base: number; genome: Genome; key: Key | null } {
-  const x = s.variants[v], key = doorOf(s, v);
-  if (!key) return { base: s.species[x.sp].base, genome: { axes: [...x.genome.axes], traits: [...x.genome.traits] }, key };
-  return { base: SPECIES_INDEX[doorNode(key).species!], genome: { axes: [...x.genome.axes], traits: [] }, key };
+/** What a split would make: the base species and the new base genome. A key the species lacks takes it into the
+ * key's clade (`door` while that node isn't reached; after that, a new species of the clade, as any species made
+ * there); a clade change keeps the axis genes and drops the old clade's traits and the key. */
+export function splitInto(s: State, v: number): { base: number; genome: Genome; key: Key | null; door: boolean } {
+  const x = s.variants[v], key = newKey(x.genome, s.species[x.sp].genome), to = key ? SPECIES_INDEX[doorNode(key).species!] : -1;
+  if (!key || to === s.species[x.sp].base) return { base: s.species[x.sp].base, genome: { axes: [...x.genome.axes], traits: [...x.genome.traits] }, key: null, door: false };
+  return { base: to, genome: { axes: [...x.genome.axes], traits: [] }, key, door: !s.reached.includes(key.node) };
 }
 
-/** A split's biomass: the door node's cost, or the rising cost of a new species. */
-export const splitCost = (s: State, v: number) => { const k = doorOf(s, v); return k ? doorNode(k).cost : speciesCost(s, s.species[s.variants[v].sp].base); };
+/** A split's biomass: the door node's cost, or the rising cost of a new species in the clade it goes into. */
+export const splitCost = (s: State, v: number) => { const into = splitInto(s, v); return into.door ? doorNode(into.key!).cost : speciesCost(s, into.base); };
 
 /** A shown variant, Rare or better, can split off as a new species; one with a key opens its door. */
 export function canFoundSpecies(s: State, v: number): Result {
@@ -133,7 +135,7 @@ export function canFoundSpecies(s: State, v: number): Result {
     const left = n.reqs.find((r) => r.kind !== 'key' && !reqStatus(s, r).met);
     if (left && !othersMet(s, n)) return fail(`${n.name} needs: ${reqStatus(s, left).text}.`);
   }
-  if (s.biomass < splitCost(s, v)) return fail(`Needs ${splitCost(s, v)} biomass.`);
+  if (s.biomass < splitCost(s, v)) return fail(`Needs ${grams(splitCost(s, v))} of biomass.`);
   return { ok: true };
 }
 
@@ -141,7 +143,7 @@ export function canFoundSpecies(s: State, v: number): Result {
  * Wind Moss"). Numbered if a species already has it. */
 export function suggestName(s: State, v: number): string {
   const into = splitInto(s, v), short = SPECIES[into.base].short;
-  const base = into.key ? `${axisWords(into.genome, { axes: [0, 0, 0, 0], traits: [] }, axesOf(SPECIES[into.base])).join(' ') || 'First'} ${short}` : variantName(s, v);
+  const base = into.key ? `${axisWords(into.genome, { axes: [0, 0, 0, 0], traits: [] }, axesOf(SPECIES[into.base])).join(' ') || (into.door ? 'First' : 'New')} ${short}` : variantName(s, v);
   const taken = (n: string) => s.species.some((o) => o.name.toLowerCase() === n.toLowerCase());
   for (const suffix of ['', ' II', ' III', ' IV', ' V']) if (!taken(base + suffix)) return base + suffix;
   return `${base} ${s.species.length}`;
@@ -159,10 +161,10 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   if (fit(s, tmp, i) <= 0) return fail(`${nm} can't live here.`);
   if (!animal && occ >= 0 && s.variants[occ].sp !== x.sp && !canTake(s, P, tmp, at)) return fail(`${s.species[s.variants[occ].sp].name} hold this tile too well.`);
   s.biomass -= splitCost(s, v);
-  if (into.key) s.reached.push(into.key.node);
+  if (into.door) s.reached.push(into.key!.node);
   else s.made++;
   const sp = s.species.length, def = SPECIES[into.base], kin = s.species.filter((o) => o.base === into.base).length;
-  const hue = into.key ? 0 : parent.hue + GENES.hueShift * (kin % 2 ? 1 : -1) * Math.ceil(kin / 2);
+  const hue = into.door ? 0 : (into.key ? 0 : parent.hue) + GENES.hueShift * (kin % 2 ? 1 : -1) * Math.ceil(kin / 2);
   s.species.push({ id: `${def.id}-${kin + 1}`, name: nm, base: into.base, genome: into.genome, hue, parent: x.sp, at: -1, form: variantName(s, v) });
   s.count.push(0); s.members.push(0); s.prevCount.push(0);
   s.foundings[s.species[sp].id] = 0;
@@ -172,12 +174,12 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
     for (const a of s.agents) if (a.v === v) { const g = gramsOf(s, a); a.sp = sp; a.v = nv; s.ledger.came += gramsOf(s, a) - g; } // a new body plan weighs anew
     spawn(s, nv, i, Math.max(ANIMAL.founders, Math.ceil(def.animal!.group / 2)), `founded ${nm} here`);
     s.foundings[s.species[sp].id] = 1; s.species[sp].at = s.tick;
-    const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
+    const what = into.door ? `the first of the ${doorNode(into.key!).name.toLowerCase()}` : 'a new species';
     return { ok: true, msg: `${nm} is ${what}. The variant's animals are now ${nm}, and a founder group starts here.` };
   }
   moveTiles(s, P, v, nv);
   plant(s, P, nv, i);
-  const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
+  const what = into.door ? `the first of the ${doorNode(into.key!).name.toLowerCase()}` : 'a new species';
   return { ok: true, msg: `${nm} is ${what}. It took the variant's ${s.variants[nv].tiles} tiles and keeps its genes; its own variants start from here.` };
 }
 
@@ -230,7 +232,7 @@ export function canEvolve(s: State, nodeId: string): Result {
   if (node.arrive && s.visitors[nodeId] === undefined) return fail('It hasn\u2019t arrived yet.');
   if (doorKey(node)) return fail(`Split off a variant that carries the ${KEYS.find((k) => k.id === doorKey(node))!.name.toLowerCase()}.`);
   if (!s.ready.includes(nodeId) && !node.reqs.every((r) => reqStatus(s, r).met)) return fail('Requirements not met.');
-  if (s.biomass < node.cost) return fail(`Needs ${node.cost} biomass.`);
+  if (s.biomass < node.cost) return fail(`Needs ${grams(node.cost)} of biomass.`);
   return { ok: true };
 }
 

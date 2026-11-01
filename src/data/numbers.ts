@@ -27,8 +27,10 @@ export const NUM = {
   // seconds after a flare. A new lead renames a habitat once it has led for `rename` windows. Headlines: the last
   // `pinned` stay at the top of the feed; the same one isn't repeated within `repeat` seconds. A habitat growing is a
   // headline the first time only, its vanishing only after it stood `stood` seconds. A role's island's best is a
-  // headline at most once per `bestEvery` seconds; the rest is chatter.
-  habitats: { show: 50, hide: 35, patch: 8, scrap: 5, gap: 1, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
+  // headline at most once per `bestEvery` seconds, and any two island's-best headlines are `bestGap` seconds apart;
+  // the rest is chatter.
+  habitats: { show: 50, hide: 35, patch: 8, scrap: 5, gap: 1, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200,
+    bestGap: 300 },
   // m² per tile (10 m tiles; masses.ts); the shares of each gram of litter that decays into nitrogen and soil. Litter
   // recycles only a little nitrogen (the rest leaks); most comes from fixers and animals.
   mass: { tile: 100, litterN: 0.005, litterSoil: 0.05 },

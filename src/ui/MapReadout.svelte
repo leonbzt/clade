@@ -1,6 +1,7 @@
 <script lang="ts">
   import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATA, limitColor, limitName, type LayerId } from '../data/fields';
   import { TIER_COLORS } from '../data/palette';
+  import { grams, hectares, LAYER_UNITS, needText } from '../data/units';
   import { placement, unlockedSpecies } from '../sim/commands';
   import { fitInfo, limitText, placeInfo } from '../sim/explain';
   import { profiles } from '../sim/fit';
@@ -21,8 +22,8 @@
     if (i < 0 || game.terrain[i] === SEA) return null;
     const P = profiles(game), n = game.w * game.h;
     const who = STRATA.map((_, k) => game.occ[k * n + i]).filter((v) => v >= 0).map((v) => game.species[game.variants[v].sp].name);
-    const vals = LAYER_IDS.filter((l) => !FIELDS[l].hidden).map((l) => `${FIELDS[l].name.toLowerCase()} ${game.layers[l][i].toFixed(2)}`)
-      .concat(STATUS_IDS.filter((id) => game.statuses[id][i] > 0).map((id) => `${STATUSES[id].name.toLowerCase()} ${game.statuses[id][i].toFixed(2)}`));
+    const vals = LAYER_IDS.filter((l) => !FIELDS[l].hidden).map((l) => needText(l, game.layers[l][i]))
+      .concat(STATUS_IDS.filter((id) => game.statuses[id][i] > 0).map((id) => `${STATUSES[id].name.toLowerCase()} ${Math.round(game.statuses[id][i] * 100)}%`));
     let place: { tier: string | null; text: string } | null = null;
     const pl = ui.placing ? placement(game, ui.placing, P) : null;
     if (pl) {
@@ -39,7 +40,7 @@
     if (ui.view === 'habitats' && !pl) {
       // A major or a patch: its kind, size and top holders (one per filled slot); a scrap: just its kind.
       const kind = HABITAT_KINDS[h.kind].name, held = h.tier >= PATCH ? loadout(game, h.id).filter((c) => !c.locked && c.holder >= 0).map((c) => `${c.slot}: ${c.who}`) : [];
-      const head = h.tier === MAJOR ? `${h.name} · ${kind.toLowerCase()} · ${h.tiles} tiles` : h.tier === PATCH ? `A patch of ${kind.toLowerCase()} · ${h.tiles} tiles` : `${kind} (a scrap)`;
+      const head = h.tier === MAJOR ? `${h.name} · ${kind.toLowerCase()} · ${hectares(h.tiles)}` : h.tier === PATCH ? `A patch of ${kind.toLowerCase()} · ${hectares(h.tiles)}` : `${kind} (a scrap)`;
       return { line: [head, ...held].join(' · '), terrain: '', who: '', vals: '', place };
     }
     return { line: '', terrain: where.landmark ? `${where.landmark} (${where.terrain.toLowerCase()})` : where.terrain, who: who.join(' + ') || 'bare', vals: vals.join(' · '), place };
@@ -71,7 +72,7 @@
 <span class="readout">
   {#if placingInfo}
     <span class="gold">Founding {placingInfo.name}</span>
-    <span>{placingInfo.cost ? `${placingInfo.cost} biomass` : 'free'}</span>
+    <span>{placingInfo.cost ? `${grams(placingInfo.cost)} biomass` : 'free'}</span>
     {#if hover?.place}
       <span>{#if hover.place.tier}<span class="tier" style:background={TIER_COLORS[hover.place.tier]}>{hover.place.tier}</span>{/if} {hover.place.text}</span>
     {:else}
@@ -98,7 +99,7 @@
     <span class="dim small">click a named habitat or its card for its loadout · hover a patch for who holds it</span>
   {:else if layer}
     <span><span class="swatch" style:background={layer.color}></span>{layer.name}</span>
-    <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${layer.viewMax}+)` : ''} · litter and salt are on the tile card</span>
+    <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${LAYER_UNITS[ui.view as LayerId].value(layer.viewMax)}+)` : ''} · litter and salt are on the tile card</span>
   {:else}
     <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (landmark names show when zoomed in), drag to move. Keys 1–9 switch views.</span>
   {/if}

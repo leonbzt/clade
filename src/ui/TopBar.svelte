@@ -1,7 +1,7 @@
 <script lang="ts">
   import { NUM } from '../data/numbers';
   import { game, ui } from './game.svelte';
-  import { clock, fmt } from './format';
+  import { clock, grams } from './format';
 
   const info = $derived.by(() => {
     ui.v;
@@ -11,8 +11,8 @@
 
 <header class="panel bar">
   <span class="title">Clade</span>
-  <span class="stat"><span class="dim">Biomass</span> <b class="gold">{fmt(info.biomass)}</b>
-    <span class="dim">+{fmt(info.rate)}/s</span></span>
+  <span class="stat"><span class="dim">Biomass</span> <b class="gold">{grams(info.biomass)}</b>
+    <span class="dim">+{grams(info.rate)}/s</span></span>
   <span class="stat dim">{info.time}{ui.speed === 0 ? ' · paused' : ui.speed !== 1 ? ` · ×${ui.speed}` : ''}</span>
   <button class="dev" class:on={ui.dev} onclick={() => (ui.dev = !ui.dev)} title="Also: the key left of 1, or F2">Dev</button>
 </header>

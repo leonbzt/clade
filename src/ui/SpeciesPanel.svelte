@@ -15,7 +15,10 @@
   import PopBar from './PopBar.svelte';
   import VariantRow from './VariantRow.svelte';
   import { game, seeVariants, startPlacing, ui } from './game.svelte';
-  import { fmt } from './format';
+  import { grams } from './format';
+  import { NUM } from '../data/numbers';
+  import { count, hectares, LAYER_UNITS } from '../data/units';
+  import { tileOf } from '../sim/agents';
 
   const STATS: [Scalar, string, (v: number) => string][] = [
     ['seeds', 'Spreads', (v) => `${v.toFixed(2)}/s`],
@@ -42,6 +45,14 @@
 
   const depthOf = (sp: number): number => (game.species[sp].parent >= 0 ? 1 + depthOf(game.species[sp].parent) : 0);
 
+  /** "≈ 40 000 springtails · 400 per m²" (per m² of the tiles they're on), or "120 tiles · 1.2 ha". */
+  function popText(sp: number, n: number): string {
+    const body = defOf(game, sp).animal;
+    if (!body) return `${n} tiles · ${hectares(n)}`;
+    const on = new Set(game.agents.filter((a) => a.sp === sp).map((a) => tileOf(game, a))).size;
+    return `≈ ${count(n * body.stands * NUM.mass.tile)} ${game.species[sp].name.toLowerCase()}${on ? ` · ${count((n * body.stands) / on)} per m²` : ''}`;
+  }
+
   const list = $derived.by(() => {
     ui.v;
     // Lineage order: each species right after the one it was founded from.
@@ -54,13 +65,21 @@
       const sp = speciesIndex(game, id), x = game.species[sp];
       const vs = poolOf(game, sp).filter((v) => game.variants[v].shown && game.variants[v].tier !== TIER.base);
       for (const v of vs) if (glints(game.variants[v])) fresh.add(v);
-      return { id, sp, name: x.name, animal: !!defOf(game, sp).animal, tiles: defOf(game, sp).animal ? game.members[sp] : coverCount(game, id), cost: foundingCost(game, id), look: speciesLook(game, sp),
+      const animal = !!defOf(game, sp).animal, tiles = animal ? game.members[sp] : coverCount(game, id);
+      return { id, sp, name: x.name, animal, tiles, pop: popText(sp, tiles), cost: foundingCost(game, id), look: speciesLook(game, sp),
         made: x.parent >= 0 ? game.species[x.parent].name : null, depth: depthOf(sp), variants: vs };
     });
   });
 
   // Seeing a variant in this list counts as looking at it: its glint on the map stops.
   $effect(() => { seeVariants(list.flatMap((s) => s.variants)); });
+
+  /** "light −30%", "soil +0.12 cm/s", "uses nitrogen 1.0 g/m²/s": what a full-cover plant does to a layer. */
+  function makeText(id: LayerId, r: number): string {
+    const u = LAYER_UNITS[id], name = u.name.toLowerCase();
+    if (FIELDS[id].kind === 'level') return `${name} ${u.part(r)}`;
+    return r > 0 ? `${name} ${u.part(r)}/s` : `uses ${name} ${u.part(-r).slice(1)}/s`;
+  }
 
   /** A band on a 0–1 axis: the survivable range light, the ideal range solid (in % of the bar). */
   const clip = (v: number) => Math.max(0, Math.min(1, v)) * 100;
@@ -80,13 +99,15 @@
       diet: animal ? animal.diet.map((d, k) => `${foodText(d)}${k ? ' (side food)' : ''}`) : [],
       dung: animal ? Object.keys(animal.makes).join(', ') : '',
       needs: p.needs.map((n) => {
-        const id = LAYER_IDS[n.layer], b = n.band;
-        return { id, name: FIELDS[id].name, color: FIELDS[id].color, lo: clip(b[0]), a: clip(b[1]), z: clip(b[2]), hi: clip(b[3]),
-          text: `ideal ${b[1] < 0 ? 0 : +b[1].toFixed(2)}–${b[2] > 1 ? 1 : +b[2].toFixed(2)}`, why: p.parts[`need:${id}`].join('\n') || 'base' };
+        // In real units; shade reads as light, so its bar and range are mirrored.
+        const id = LAYER_IDS[n.layer], u = LAYER_UNITS[id], m = (k: number) => (u.inverse ? 100 - clip(n.band[3 - k]) : clip(n.band[k]));
+        const lo = clip(n.band[1]) / 100, hi = clip(n.band[2]) / 100, [from, to] = u.inverse ? [hi, lo] : [lo, hi];
+        return { id, name: u.name, color: FIELDS[id].color, lo: m(0), a: m(1), z: m(2), hi: m(3),
+          text: `ideal ${u.value(from)}–${u.value(to)}`, why: p.parts[`need:${id}`].join('\n') || 'base' };
       }),
       tolerance: p.tolerance.map((t) => `${STATUSES[STATUS_IDS[t.status]].name}: keeps ${Math.round(t.tol * 100)}% of its fit`),
       makes: (Object.entries(p.makes) as [LayerId, number][]).map(([id, r]) => ({
-        text: FIELDS[id].kind === 'level' ? `${FIELDS[id].name.toLowerCase()} +${+r.toFixed(4)}` : r > 0 ? `${FIELDS[id].name.toLowerCase()} +${+r.toFixed(4)}/s` : `uses ${FIELDS[id].name.toLowerCase()} ${+(-r).toFixed(4)}/s`,
+        text: makeText(id, r),
         color: FIELDS[id].color, why: p.parts[`make:${id}`].join('\n'),
       })),
       stats: animal ? BODY.map(([k, label, show]) => ({ label, value: show(p.body[k]!), why: p.parts[`body:${k}`].join('\n') }))
@@ -102,10 +123,10 @@
     <div class="row" class:on={ui.focus === s.id} style:margin-left="{s.depth * 14}px" onclick={() => (ui.focus = s.id)} role="button" tabindex="0"
       onkeydown={(e) => e.key === 'Enter' && (ui.focus = s.id)}>
       <Specimen look={s.look} scale={1} size={40} />
-      <div class="name"><b>{s.name}</b><span class="dim">{s.tiles} {s.animal ? 'animals' : 'tiles'} · {s.variants.length} form{s.variants.length === 1 ? '' : 's'}{s.made ? ` · from ${s.made}` : ''}</span>
+      <div class="name"><b>{s.name}</b><span class="dim">{s.pop} · {s.variants.length} form{s.variants.length === 1 ? '' : 's'}{s.made ? ` · from ${s.made}` : ''}</span>
         {#if s.tiles}<PopBar sp={s.sp} />{/if}</div>
       {#if !s.animal}<button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
-        Found {s.cost ? fmt(s.cost) : 'free'}
+        Found {s.cost ? grams(s.cost) : 'free'}
       </button>{/if}
     </div>
     {#if ui.focus === s.id}
@@ -182,7 +203,7 @@
   .card { margin-top: 12px; border-top: 2px solid var(--ink); padding-top: 8px; }
   .top { display: flex; gap: 10px; align-items: flex-start; }
   .top p { margin: 0; }
-  .need { display: grid; grid-template-columns: 70px 1fr 90px; gap: 6px; align-items: center; cursor: help; }
+  .need { display: grid; grid-template-columns: 76px 1fr auto; gap: 6px; align-items: center; cursor: help; }
   .bar { position: relative; height: 10px; background: var(--ink); border: 1px solid var(--edge); }
   .band { position: absolute; top: 0; bottom: 0; opacity: 0.35; }
   .ideal { position: absolute; top: 0; bottom: 0; }

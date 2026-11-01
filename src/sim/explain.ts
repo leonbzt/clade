@@ -4,6 +4,7 @@ import { HABITAT_KINDS } from '../data/habitats';
 import { FIELDS, LAYER_IDS, STATUS_IDS, STATUSES, STRATA, STRATUM_NAMES, limitName, type LayerId, type LevelDef, type StockDef } from '../data/fields';
 import { LANDMARKS } from '../data/landmarks';
 import { NUM } from '../data/numbers';
+import { LAYER_UNITS } from '../data/units';
 import { fellLast, gatherFlows, landMean, levelTerms, stockTerms } from './fields';
 import { feltValue, fit, limitOf, score, statusScore, tierOf, type Profile } from './fit';
 import { EV, SEA, TERRAIN_NAMES, type State } from './state';
@@ -25,14 +26,15 @@ export function fitInfo(s: State, p: Profile, i: number): FitInfo {
   return { fit: f, tier: tierOf(f), limit: l, needs };
 }
 
-/** A sentence for the limit: "limited by water (0.31; ideal from 0.45)" or "limited by salt (scores 0.30 here)". */
+/** A sentence for the limit, in real units: "limited by moisture (16%; ideal from 22%)" or "limited by salt (scores
+ * 0.30 here)". Shade reads as light, so its sides swap. */
 export function limitText(p: Profile, info: FitInfo): string {
   if (info.limit < 0) return info.fit > 0 ? 'nothing holds it back' : '';
   const verb = info.fit > 0 ? 'limited' : 'ruled out', name = limitName(info.limit).toLowerCase();
   if (info.limit >= LAYER_IDS.length) return `${verb} by ${name} (scores ${r2(info.fit)} here)`;
   const n = p.needs.find((x) => x.layer === info.limit)!, v = info.needs.find((x) => x.limiting)!.value, b = n.band;
-  const side = v < b[1] ? `ideal from ${r2(b[1])}` : `ideal up to ${r2(b[2])}`;
-  return `${verb} by ${name} (${r2(v)}; ${side})`;
+  const u = LAYER_UNITS[LAYER_IDS[info.limit]], low = v < b[1], edge = u.value(low ? b[1] : b[2]);
+  return `${verb} by ${u.name.toLowerCase()} (${u.value(v)}; ${low !== !!u.inverse ? 'ideal from' : 'ideal up to'} ${edge})`;
 }
 
 const CODE_TEXT: Record<number, string> = {
@@ -48,6 +50,7 @@ export type SlotInfo = {
   species: string | null;
   variant: VariantInfo | null;
   cover: number;
+  mass: number; // grams on the tile
   health: number;
   dying: boolean;
   fit: FitInfo | null;
@@ -68,6 +71,7 @@ export function slotInfo(s: State, P: Profile[], k: number, i: number): SlotInfo
     species: x ? s.species[x.sp].name : null,
     variant: x ? { v, name: variantName(s, v), tier: x.tier, tierName: tierName(x.tier), genes: geneText(s, v), shown: x.shown } : null,
     cover: x ? s.cover[slot] : 0,
+    mass: x ? s.mass[slot] : 0,
     health: x ? s.health[slot] : 0,
     dying: !!x && s.dying[slot] === 1,
     fit: x ? fitInfo(s, P[v], i) : null,
@@ -75,7 +79,8 @@ export function slotInfo(s: State, P: Profile[], k: number, i: number): SlotInfo
   };
 }
 
-export type LayerInfo = { id: LayerId; name: string; value: number; parts: { label: string; value: number }[]; perSec: boolean; hidden: boolean };
+/** fall: what falls in per second (litter), for its years of fall. */
+export type LayerInfo = { id: LayerId; name: string; value: number; parts: { label: string; value: number }[]; perSec: boolean; hidden: boolean; fall: number };
 
 /** Each layer's value on a tile, with its parts. Stocks show rates per second; levels show what adds up. */
 export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
@@ -95,7 +100,7 @@ export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
     const def = FIELDS[id], value = s.layers[id][i], name = def.name, hidden = !!def.hidden;
     if (def.kind === 'level') {
       const parts = [...levelTerms(s, id, def as LevelDef, 0, i), ...who(id, 1)];
-      return { id, name, value, parts, perSec: false, hidden };
+      return { id, name, value, parts, perSec: false, hidden, fall: 0 };
     }
     const st = def as StockDef, mean = st.diffuse ? landMean(s, s.layers[id], i) : value;
     const t = stockTerms(st, value, F.plus[id][i], F.minus[id][i], F.cover[i], mean, st.fall ? fellLast[i] ?? 0 : 0);
@@ -108,7 +113,7 @@ export function layerInfo(s: State, P: Profile[], i: number): LayerInfo[] {
     ];
     if (st.diffuse) parts.push({ label: 'from neighbours', value: t.spread });
     if (st.fall) parts.push({ label: 'dead plants, here and next door', value: t.fell });
-    return { id, name, value, parts, perSec: true, hidden };
+    return { id, name, value, parts, perSec: true, hidden, fall: st.fall ? t.made + t.fell : 0 };
   });
 }
 
