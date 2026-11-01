@@ -66,7 +66,8 @@ logged with its date in [decisions.md](decisions.md). Open AI ideas are in [prop
   speeds decay.
 - **Time:** a year ≈ 8 min. Three tempos (life, cycle, ground); grams and nitrogen move only on cycle. The clock
   waits until after slice 12 or later (1 Nov); until then a year is a display conversion.
-- **Swings are wanted:** high-appetite grazers, plants that can be grazed to death, some species dying out.
+- **Swings are wanted:** high-appetite grazers (snails first, 1 Nov), plants that can be grazed to death, some
+  species dying out.
 
 ## Species and evolution
 - **The species is the core unit** and the one adaptation core for all kingdoms. Everything you introduce uses the

@@ -17,7 +17,7 @@ Three parts, in order, each checked with `npm run sim` before the next.
 - The store `e` (0–1) means up to `store` × body mass. Young cost their body mass; a catch is worth the prey's mass;
   dead members go to litter in grams. The grams ledger includes animals.
 - Tiles are 10 m (`NUM.mass.tile` = 100); `stands` scales with it.
-- **Swings:** one grazer gets a high appetite and grazes patches to death, crashes, and comes back. Hunters persist
+- **Swings:** snails get a high appetite and grazes patches to death, crashes, and comes back. Hunters persist
   through `keep` and `B`.
 - The Biomass currency counts real grams made (plant growth + young born). Costs × one factor, so the first founding
   comes at about today's time (±30 %). No more tuning: founding changes once runs exist.
@@ -65,8 +65,6 @@ Three parts, in order, each checked with `npm run sim` before the next.
 - Touches sim structure: yes (A and B), on your calls of 30 Oct and 1 Nov. The sim freeze starts after this slice.
 - Three parts, about one session each. C can ride along with B if there's room.
 
-## Open questions
-1. Swings: which grazer gets the high appetite? *AI lean: snails on ground plants;* slugs stay in their small wet
-   niche.
-2. Part C is the display list from 11d part C. All of it now, or only the currency and tile card, with counts,
-   hectares and the scale bar in the first-playable pass? *AI lean: all now; it's display only and cheap.*
+## Your calls (1 Nov)
+1. Swings: snails get the high appetite (on ground plants); slugs stay in their small wet niche.
+2. Part C: the whole display list now.

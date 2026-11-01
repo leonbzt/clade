@@ -206,3 +206,5 @@ The plan built on these answers: [design/game-shape.md](design/game-shape.md).
 - **How species are made (P33 c): maybe better after the core gameplay,** to see how it interacts. You want to
   discover adaptations you see from random gene changes, and species as a connected tree that rise from each other.
   Home start: lean algae, cyano and early land plants; it depends on whether we take the route with full evolution.
+- **Slice 11e's two questions: ok to both.** Snails are the high-appetite grazer for the swings (slugs stay in their
+  small wet niche); the whole real-units display goes in now (part C).
