@@ -28,7 +28,7 @@ const LEADS = STRATA.map((_, k) => ROLES.findIndex((r) => r.kind === 'lead' && r
 const UNDER = GEAR.map((g) => ROLES.flatMap((r, k) => (g.kinds?.includes(r.kind) ? [k] : [])));
 /** Grams per unit of each food made: an animal member; plants and litter are counted in grams. And a plant's grams at
  * full cover on a tile, for the leads. */
-const GRAMS = [...SPECIES.map((d) => (d.animal ? MASS[d.id] ?? 0 : 1)), 1];
+const GRAMS = [...SPECIES.map((d) => (d.animal ? (MASS[d.id] ?? 0) * d.animal.stands * NUM.mass.tile : 1)), 1];
 const FULL = SPECIES.map((d) => (MASS[d.id] ?? 0) * NUM.mass.tile);
 
 export const groupName = (g: number) => SPECIES[g].name;

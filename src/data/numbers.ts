@@ -29,9 +29,11 @@ export const NUM = {
   // headline the first time only, its vanishing only after it stood `stood` seconds. A role's island's best is a
   // headline at most once per `bestEvery` seconds; the rest is chatter.
   habitats: { show: 50, hide: 35, patch: 8, scrap: 5, gap: 1, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
-  // m² per tile (masses.ts); the shares of each gram of litter that decays into nitrogen and soil. Litter recycles
-  // only a little nitrogen (the rest leaks); most comes from fixers and animals.
-  mass: { tile: 1, litterN: 0.005, litterSoil: 0.05 },
+  // m² per tile (10 m tiles; masses.ts); the shares of each gram of litter that decays into nitrogen and soil. Litter
+  // recycles only a little nitrogen (the rest leaks); most comes from fixers and animals.
+  mass: { tile: 100, litterN: 0.005, litterSoil: 0.05 },
+  // Biomass is the grams made (plant growth, young born); every cost is its old number × this.
+  cost: 1000,
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
     oldEvery: 4, // old growth updates every this many ticks

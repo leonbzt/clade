@@ -31,7 +31,7 @@ export type Agent = {
   y: number;
   tx: number; // where it's heading
   ty: number;
-  e: number; // energy, 0–1
+  e: number; // its store, 0–1 (bodies.ts: up to `store` × its body)
   age: number; // seconds
   life: number; // seconds it will live, set at birth
   n: number; // members: 1, or a group's size (family, swarm)
@@ -46,6 +46,7 @@ export type Agent = {
   woke: number; // the tick a hunter last came by
   go: boolean; // walking away after a split, before it settles
   full: number; // seconds of rest left after a catch
+  bit: number; // grams hunters took from members not yet whole (bodies.ts)
 };
 
 export type Landmark = { kind: LandmarkKind; name: string; tiles: number[]; at: number }; // at: where its name goes

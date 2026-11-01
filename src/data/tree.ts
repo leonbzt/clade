@@ -4,6 +4,7 @@
 // An arrival is a node whose species turns up by itself at a landmark once its habitat is there; you adopt it.
 import type { LayerId } from './fields';
 import type { LandmarkKind } from './landmarks';
+import { NUM } from './numbers';
 
 export type Req =
   | { kind: 'layer'; layer: LayerId; min: number; tiles: number }
@@ -21,7 +22,7 @@ export type TreeNode = {
   arrive?: { at: LandmarkKind; n: number; text: string }; // an arrival: n individuals show up at a landmark of this kind
 };
 
-export const TREE: TreeNode[] = [
+const NODES: TreeNode[] = [
   { id: 'life', name: 'Life', parent: null, cost: 0, reqs: [],
     fact: 'A bare volcanic island: everything that lives here has to arrive and settle.' },
   { id: 'cyanobacteria', name: 'Cyanobacteria', parent: 'life', species: 'cyano', cost: 0, reqs: [],
@@ -62,6 +63,9 @@ export const TREE: TreeNode[] = [
     arrive: { at: 'beach', n: 2, text: 'Two ground beetles crawled off a drift log at {place}.' },
     fact: 'Beetles are the largest order of animals. Ground beetles hunt on the soil surface, and some specialise in cracking snails.' },
 ];
+
+/** The nodes, their costs in grams of Biomass (× NUM.cost). */
+export const TREE: TreeNode[] = NODES.map((n) => ({ ...n, cost: Math.round(n.cost * NUM.cost) }));
 
 export const START_REACHED = ['life'];
 

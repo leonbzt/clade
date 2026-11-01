@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { botTick } from '../src/sim/bot';
-import { growth } from '../src/sim/life';
-import { createState } from '../src/sim/state';
+import { fullOf, growth, setMass } from '../src/sim/life';
+import { createState, SEA, VENT } from '../src/sim/state';
+import { STRATA } from '../src/data/fields';
+import { spawn } from '../src/sim/agents';
+import { closeLedger } from '../src/sim/ledger';
+import { step } from '../src/sim/tick';
+import { speciesIndex, variantFor } from '../src/sim/variants';
 
 describe('grams', () => {
   it('a grazed plant regrows to its ceiling, and a full one makes what it sheds', () => {
@@ -25,4 +30,27 @@ describe('grams', () => {
     expect(L.decay).toBeGreaterThan(0);
     expect(Math.abs(L.gap)).toBeLessThan(0.001 * L.stock);
   }, 60_000);
+
+  it('the books balance with animals grazing, hunting, breeding and dying', () => {
+    const s = createState(1), n = s.w * s.h, v0 = s.terrain.findIndex((t) => t === VENT);
+    const vOf = (id: string) => { const sp = speciesIndex(s, id); return variantFor(s, sp, s.species[sp].genome); };
+    const moss = vOf('moss'), fungus = vOf('fungus');
+    for (let i = 0; i < n; i++) {
+      const dx = (i % s.w) - (v0 % s.w), dy = ((i / s.w) | 0) - ((v0 / s.w) | 0);
+      if (s.terrain[i] === SEA || dx * dx + dy * dy > 36) continue;
+      s.layers.litter[i] = 0.3;
+      for (const [k, v] of [[STRATA.indexOf('ground'), moss], [STRATA.indexOf('under'), fungus]]) {
+        const slot = k * n + i; s.occ[slot] = v; setMass(s, slot, fullOf(s, v)); s.health[slot] = 1;
+      }
+    }
+    const at = v0 + 2;
+    spawn(s, vOf('snail'), at, 24, 'test'); spawn(s, vOf('springtail'), at, 400, 'test'); spawn(s, vOf('beetle'), at, 3, 'test');
+    closeLedger(s);
+    for (let k = 0; k < 120 * 10; k++) step(s);
+    const L = s.ledger.last;
+    expect(L.animals).toBeGreaterThan(0);
+    expect(L.burn).toBeGreaterThan(0);
+    expect(L.eaten).toBeGreaterThan(0);
+    expect(Math.abs(L.gap)).toBeLessThan(0.001 * L.stock);
+  }, 30_000);
 });

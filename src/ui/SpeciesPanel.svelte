@@ -27,7 +27,7 @@
 
   const BODY: [BodyStat, string, (v: number) => string][] = [
     ['speed', 'Speed', (v) => `${v.toFixed(2)} tiles/s`],
-    ['upkeep', 'Upkeep', (v) => `${(v * 100).toFixed(2)}% energy/s`],
+    ['upkeep', 'Burn', (v) => `×${v.toFixed(2)}`],
     ['young', 'Young per brood', (v) => v.toFixed(1)],
     ['life', 'Lifespan', (v) => `${Math.round(v)} s`],
     ['escape', 'Easy to catch', (v) => `×${v.toFixed(2)}`],

@@ -43,7 +43,7 @@
     });
     return { name: game.habitats[p].name, rows, perTick: (B.ms / (NUM.slots.window * NUM.ticksPerSec)).toFixed(4), ms: B.ms.toFixed(2) };
   });
-  // The books in grams over the last minute (ledger.ts): plants and litter, what flowed in and out, and the gap.
+  // The books in grams over the last minute (ledger.ts): plants, litter and animals, what flowed in and out, and the gap.
   const books = $derived.by(() => {
     ui.v;
     const L = game.ledger.last;
@@ -76,7 +76,7 @@
     </table>
     <p class="dim">slot update {slots.ms} ms a window · {slots.perTick} ms/tick</p>
   {/if}
-  <p class="dim">ledger/min: made {grams(books.prod)} · eaten {grams(books.eaten)} · dropped {grams(books.dropped)} · decay {grams(books.decay)} · gap {books.off} of {grams(books.stock)}</p>
+  <p class="dim">ledger/min: made {grams(books.prod)} · came {grams(books.came)} · burnt {grams(books.burn)} · decay {grams(books.decay)} (inside: eaten {grams(books.eaten)}, dropped {grams(books.dropped)}) · gap {books.off} of {grams(books.stock)}, animals {grams(books.animals)}</p>
   <p class="dim">{game.habitats.filter((h) => h.alive && h.shown).length} habitats, {game.habitats.filter((h) => h.alive && h.tier === 1).length} patches · {game.board.heads} headlines · {game.board.lines} chatter · {game.board.renames} renames</p>
   <p class="dim">{stats.agents} agents · {stats.slow}% settled · {stats.ms} ms/tick · window.dev.dump()</p>
 </div>

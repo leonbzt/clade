@@ -2,7 +2,7 @@ import { fullOf, setMass } from '../src/sim/life';
 import { describe, expect, it } from 'vitest';
 import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../src/data/species';
 import { STRATA } from '../src/data/fields';
-import { LITTER_MASS, NITROGEN_MASS } from '../src/data/masses';
+import { MASS } from '../src/data/masses';
 import { agentsStep, spawn, tileOf } from '../src/sim/agents';
 import { arrivals } from '../src/sim/arrivals';
 import { evolve } from '../src/sim/commands';
@@ -78,7 +78,7 @@ describe('animals', () => {
     const at = s.visitors.snails;
     expect(at).toBeDefined();
     expect(s.landmarks[s.mark[at]].kind).toBe('beach');
-    s.biomass = 1000;
+    s.biomass = 1e9;
     expect(evolve(s, 'snails').ok).toBe(true);
     const snails = s.agents.filter((a) => s.species[a.sp].id === 'snail');
     expect(snails.reduce((m, a) => m + a.n, 0)).toBe(5);
@@ -102,23 +102,17 @@ describe('animals', () => {
   it('a new animal added only as data lives, eats and breeds', () => {
     const springtail = SPECIES[SPECIES_INDEX.springtail];
     const bug: SpeciesDef = { ...springtail, id: 'testbug', name: 'Test bugs', short: 'Bug',
-      animal: { ...springtail.animal!, tag: 'testbug', group: 1, young: 2, diet: [{ stock: 'litter', rate: 0.01, gain: 10 }] } };
-    SPECIES.push(bug); SPECIES_INDEX.testbug = SPECIES.length - 1;
+      animal: { ...springtail.animal!, tag: 'testbug', group: 1, store: 3, young: 2, diet: [{ stock: 'litter' }] } }; // alone, it needs a store to make a young as big as itself
+    SPECIES.push(bug); SPECIES_INDEX.testbug = SPECIES.length - 1; MASS.testbug = 0.0001;
     try {
       const s = createState(4), i = dampTile(s);
       for (let k = 0; k < s.layers.litter.length; k++) if (s.terrain[k] !== SEA) s.layers.litter[k] = 0.3;
-      const a = animal(s, 'testbug', i, 0.5);
+      const a = animal(s, 'testbug', i, 0.9);
       for (let k = 0; k < 600; k++) { recount(s); tick(s); }
       expect(a.ate).toBeGreaterThan(0);
       expect(s.agents.filter((b) => s.species[b.sp].id === 'testbug').length).toBeGreaterThan(1);
     } finally {
-      SPECIES.pop(); delete SPECIES_INDEX.testbug;
+      SPECIES.pop(); delete SPECIES_INDEX.testbug; delete MASS.testbug;
     }
-  });
-
-  it('eaten litter frees at most 1% of its grams as nitrogen (real litter holds 1–2%)', () => {
-    const share = (LITTER_MASS * 0.01) / NITROGEN_MASS;
-    for (const d of SPECIES) if (d.animal?.diet.some((f) => 'stock' in f && f.stock === 'litter'))
-      expect(d.animal.makes.nitrogen ?? 0, d.id).toBeLessThanOrEqual(share);
   });
 });

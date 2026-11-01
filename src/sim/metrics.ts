@@ -1,26 +1,28 @@
 // Numbers about the whole island: limits per species, trends for the feed, diversity and dominance for the runner.
 import { FIELDS, LIMIT_COUNT, STRATA } from '../data/fields';
 import { NUM } from '../data/numbers';
-import { fit, limitOf, type Profile } from './fit';
+import { buildProfile, fit, limitOf, type Profile } from './fit';
 import { SEA, type State } from './state';
 import { defOf, stratumOf } from './variants';
+import { burnG, keepOf } from './bodies';
+import { LITTER_G } from './tally';
 
-/** A rough curve model: the members an animal's main food could feed, or null for hunters. A stock feeds what its
- * decay would take away each second; plant cover what it regrows (a quarter of its full growth rate). Members =
- * food per second × energy per unit ÷ upkeep per member. */
+/** A rough curve model: the members an animal's main food could feed, or null for hunters. Litter feeds what its
+ * decay would take away each second; plants what they regrow (a quarter of their full growth rate). Members = grams
+ * of food per second × keep ÷ the burn per member. */
 export function expected(s: State, P: Profile[], sp: number): number | null {
   const b = defOf(s, sp).animal, d = b?.diet[0];
   if (!b || !d || 'prey' in d) return null;
-  const n = s.w * s.h;
+  const n = s.w * s.h, base = buildProfile(s, sp, s.species[sp].genome);
   let food = 0;
   if ('stock' in d) {
-    const L = s.layers[d.stock], f = FIELDS[d.stock], k = f.kind === 'stock' ? f.decay : 0;
-    for (let i = 0; i < n; i++) food += L[i] * k;
+    const f = FIELDS.litter, k = f.kind === 'stock' ? f.decay : 0;
+    for (let i = 0; i < n; i++) food += s.layers.litter[i] * k * LITTER_G;
   } else {
     const k = STRATA.indexOf(d.plants) * n;
-    for (let i = 0; i < n; i++) { const v = s.occ[k + i]; if (v >= 0) food += s.cover[k + i] * P[v].stats.palatable * P[v].stats.grow * 0.25; }
+    for (let i = 0; i < n; i++) { const v = s.occ[k + i]; if (v >= 0) food += s.mass[k + i] * P[v].stats.palatable * P[v].stats.grow * 0.25; }
   }
-  return Math.round((food * d.gain) / b.upkeep);
+  return Math.round((food * keepOf(d, base)) / burnG(s, base));
 }
 
 /** For one species: how many of its tiles each limit holds back (index = limit; one more = not held back).

@@ -12,7 +12,9 @@
 // island at the end, holder changes per loadout slot per hour, renames, headlines and chatter per hour, and the slot
 // update's cost per tick.
 // A sixth line: grams. Mean grams per tile each plant holds against its full mass (masses.ts), the ledger's flows
-// over the last minute, and its worst gap over the run.
+// over the last minute (animals included), and its worst gap over the run. Grazer swings: how often the island's
+// snails (and slugs) fell to half their peak and came back to 80% of it; "local": the same in 12×12-tile cells (a
+// peak of two families or more). SERIES=1 prints the island's snails per minute.
 // A measuring tool, not a balance bot. Skipped in `npm run check`.
 import { it } from 'vitest';
 import { writeSync } from 'node:fs';
@@ -35,7 +37,7 @@ import { grams } from '../src/ui/format';
 
 const env = process.env, SEEDS = Number(env.SEEDS || 5), MIN = Number(env.MIN || 60);
 const out = (s: string) => writeSync(1, s + '\n'); // straight to stdout: vitest hides console.log
-const UNLOCKS = ['mosses', 'lichens', 'vascular', 'ferns'];
+const UNLOCKS = ['land', 'mosses', 'lichens', 'vascular', 'ferns'];
 const ARRIVALS = ['hexapods', 'snails', 'beetles', 'slugs', 'insects'];
 const ANIMAL_IDS = SPECIES.filter((d) => d.animal).map((d) => d.id);
 const ABBR = ['cy', 'th', 'lv', 'mo', 'li', 'fu', 'cl', 'fe'];
@@ -44,6 +46,15 @@ const ABBR = ['cy', 'th', 'lv', 'mo', 'li', 'fu', 'cl', 'fe'];
 const count = (s: ReturnType<typeof createState>, id: string) => s.species.reduce((a, x, sp) => a + (SPECIES[x.base].id === id ? s.count[sp] : 0), 0);
 const members = (s: ReturnType<typeof createState>, id: string) => s.species.reduce((a, x, sp) => a + (SPECIES[x.base].id === id ? s.members[sp] : 0), 0);
 const capOf = (id: string) => SPECIES.find((d) => d.id === id)!.animal!.cap;
+/** Crashes and returns in a series: a fall to half the peak, then back to 80% of that peak. */
+function swings(xs: number[], min = 20): number {
+  let peak = 0, low = Infinity, n = 0;
+  for (const x of xs) {
+    if (low === Infinity) { peak = Math.max(peak, x); if (peak >= min && x <= peak / 2) low = x; }
+    else if (x >= 0.8 * peak) { n++; peak = x; low = Infinity; }
+  }
+  return n;
+}
 
 it.skipIf(!env.SIM)('sim', () => {
   timer.now = () => performance.now();
@@ -54,7 +65,7 @@ it.skipIf(!env.SIM)('sim', () => {
     const s = createState(seed), when: Record<string, string> = {}, vs: VariantStats = variantStats();
     let ms = 0, msN = 0, mossPeak = 0, landed = -1, landTick = 0, reach = -1, fewestOpen = Infinity, slotMs = 0, windows = 0;
     let fewHab = Infinity, mostHab = 0, unique = true, lockedLive = 0, heads30 = 0, born30 = 0, gapMax = 0;
-    const lo: Record<string, number> = {}, hi: Record<string, number> = {};
+    const lo: Record<string, number> = {}, hi: Record<string, number> = {}, grazers: Record<string, number[]> = { snail: [], slug: [] }, cells: number[][] = [];
     let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0;
     for (let k = 0; k < MIN * 600; k++) {
       const t0 = performance.now(), waiting = s.visitors.snails;
@@ -79,6 +90,12 @@ it.skipIf(!env.SIM)('sim', () => {
           for (const h of shown) GEAR.forEach((g, k) => { if (g.plant && gear(h, k) < 0 && s.board.slots[h.id * ROLES.length + ROLES.findIndex((r) => r.id === `lead:${g.stratum}`)].takes.some((c) => c > 0)) lockedLive++; });
         }
       }
+      if (s.tick % 600 === 0) {
+        for (const id in grazers) grazers[id].push(members(s, id));
+        const c = new Array(Math.ceil(s.w / 12) * Math.ceil(s.h / 12)).fill(0);
+        for (const a of s.agents) if (['snail', 'slug'].includes(SPECIES[s.species[a.sp].base].id)) c[((a.y / 12) | 0) * Math.ceil(s.w / 12) + ((a.x / 12) | 0)] += a.n;
+        c.forEach((x, k) => (cells[k] ??= []).push(x));
+      }
       if (s.tick % 600 === 0 && s.ledger.last.stock) gapMax = Math.max(gapMax, Math.abs(s.ledger.last.gap) / s.ledger.last.stock);
       if (s.tick % 6000 === 0) { if (minutes(s) === MIN) turn = changed(s, snap, snapshot(s)) / 10; snap = snapshot(s); }
       // Litter swing: the mean change per tile per minute, over the last 10 minutes.
@@ -97,13 +114,14 @@ it.skipIf(!env.SIM)('sim', () => {
     out(vs.line(s, MIN));
     out(`     animals: ${ARRIVALS.map((a) => `${a.slice(0, 4)} ${when[a] ?? '-'}`).join(' · ')} | ` +
       ANIMAL_IDS.map((id) => `${id.slice(0, 5)} ${members(s, id)} (${lo[id] ?? 0}–${hi[id] ?? 0}) ${Math.round((100 * count(s, id)) / capOf(id))}%`).join(' ') +
-      ` | snail reach ${reach < 0 ? '-' : reach.toFixed(0)} | moss ${count(s, 'moss')}/${mossPeak} | ${s.agents.length} agents ${Math.round((100 * s.agents.filter((a) => a.slow).length) / (s.agents.length || 1))}% slow` +
+      ` | swings ${Object.keys(grazers).map((id) => `${id} ${swings(grazers[id])}`).join(' ')} local ${cells.reduce((q, xs) => q + swings(xs, 24), 0)} | snail reach ${reach < 0 ? '-' : reach.toFixed(0)} | moss ${count(s, 'moss')}/${mossPeak} | ${s.agents.length} agents ${Math.round((100 * s.agents.filter((a) => a.slow).length) / (s.agents.length || 1))}% slow` +
       ` | ${msN ? (ms / msN).toFixed(2) : '-'} ms/tick`);
     const med = (ww: boolean, lava: boolean) => {
       const v = [...s.layers.water].filter((_, i) => s.terrain[i] !== SEA && (s.windward[i] >= 0.5) === ww && (!lava || s.mark[i] < 0)).sort((a, b) => a - b);
       return v[v.length >> 1];
     };
     const wet = med(true, true) - med(false, true);
+    if (env.SERIES) out(`     snails/min: ${grazers.snail.join(' ')}`);
     out(`     land: water on lava windward ${med(true, true).toFixed(2)} lee ${med(false, true).toFixed(2)} (all land ${med(true, false).toFixed(2)}/${med(false, false).toFixed(2)})` +
       ` ${wet >= 0.08 ? 'ok' : 'LOW'}`);
     const B = s.board, open = ROLES.filter((r, k) => r.row !== 'lead' && B.best[k].exists && B.best[k].holder < 0).map((r) => r.name);
@@ -118,7 +136,8 @@ it.skipIf(!env.SIM)('sim', () => {
     const held = SPECIES.map(() => ({ g: 0, c: 0 })), L = s.ledger.last;
     for (let slot = 0; slot < s.occ.length; slot++) if (s.occ[slot] >= 0) { const b = s.species[s.variants[s.occ[slot]].sp].base; held[b].g += s.mass[slot]; held[b].c++; }
     out(`     grams: ${SPECIES.flatMap((d, b) => (d.animal || !held[b].c ? [] : [`${ABBR[b]} ${Math.round(held[b].g / held[b].c)}/${Math.round(MASS[d.id] * NUM.mass.tile)}`])).join(' ')} g per tile |` +
-      ` per min: made ${grams(L.prod)}, eaten ${grams(L.eaten)}, dropped ${grams(L.dropped)}, decay ${grams(L.decay)}, standing ${grams(L.stock)} | worst gap ${(gapMax * 100).toFixed(4)}% ${gapMax < 0.001 ? 'ok' : 'OFF'}`);
+      ` per min: made ${grams(L.prod)}, came ${grams(L.came)}, burnt ${grams(L.burn)}, decay ${grams(L.decay)}, eaten ${grams(L.eaten)}, dropped ${grams(L.dropped)}, standing ${grams(L.stock)} (animals ${grams(L.animals)}) |` +
+      ` biomass ${grams(s.biomass)} | worst gap ${(gapMax * 100).toFixed(4)}% ${gapMax < 0.001 ? 'ok' : 'OFF'}`);
     if (env.LIMITS && seed === 1) {
       const P = profiles(s);
       for (let sp = 0; sp < s.species.length; sp++) {

@@ -28,6 +28,8 @@ function clear(s: State, slot: number) {
 
 /** Grams in a slot at full cover, per base species. */
 const FULL = SPECIES.map((d) => (MASS[d.id] ?? 0) * NUM.mass.tile);
+/** Biomass counts the grams a plant makes, × its yield genes (a variant that yields 20% less counts 80%). */
+const YIELD = SPECIES.map((d) => d.yield);
 export const fullOf = (s: State, v: number) => FULL[s.species[s.variants[v].sp].base];
 /** What health allows in a slot, in grams. */
 export const ceilingOf = (s: State, v: number, health: number) => fullOf(s, v) * Math.sqrt(Math.max(0, health));
@@ -115,7 +117,7 @@ export function lifeStep(s: State, P: Profile[], tickDt: number) {
         s.dying[slot] = 1; s.old[slot] = 0;
         record(s, slot, stressed ? EV.stress : EV.age, sp, stressed ? limit : -1);
       }
-      gain += p.stats.yield * c * h * dt;
+      if (grown.made > 0) gain += grown.made * dt * (YIELD[s.species[sp].base] ? p.stats.yield / YIELD[s.species[sp].base] : 1);
       if (rand(s) < dt * p.stats.seeds * c * h) spread(s, P, v, k, i); // weak plants make fewer spores
     }
   }

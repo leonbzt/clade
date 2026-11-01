@@ -6,6 +6,7 @@ import { NUM } from '../data/numbers';
 import { SPECIES, SPECIES_INDEX } from '../data/species';
 import { TREE, doorKey } from '../data/tree';
 import { spawn } from './agents';
+import { gramsOf } from './bodies';
 import { adopt } from './arrivals';
 import { EV, type State } from './state';
 import { buildProfile, fit, profiles, type Profile } from './fit';
@@ -32,7 +33,7 @@ export function coverCount(s: State, speciesId: string): number {
 
 export function foundingCost(s: State, speciesId: string): number {
   const n = s.foundings[speciesId], F = NUM.founding;
-  return n === 0 ? 0 : Math.round(F.base * F.growth ** (n - 1));
+  return n === 0 ? 0 : Math.round(F.base * NUM.cost * F.growth ** (n - 1));
 }
 
 const slotFor = (s: State, sp: number, i: number) => STRATA.indexOf(defOf(s, sp).stratum) * s.w * s.h + i;
@@ -102,7 +103,7 @@ export function found(s: State, speciesId: string, i: number): Result {
 /** Biomass for founding a variant as a new species; it rises with each one. */
 /** A new species' biomass, rising with each species already made in the same clade (on the same template). */
 export const speciesCost = (s: State, base: number) =>
-  Math.round(GENES.speciate.base * GENES.speciate.growth ** s.species.slice(SPECIES.length).filter((o) => o.base === base).length);
+  Math.round(GENES.speciate.base * NUM.cost * GENES.speciate.growth ** s.species.slice(SPECIES.length).filter((o) => o.base === base).length);
 
 /** The door a variant would open by splitting off: the key it carries, while that node isn't reached yet. */
 export function doorOf(s: State, v: number): Key | null {
@@ -168,7 +169,7 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   const nv = variantFor(s, sp, into.genome, P);
   s.variants[nv].shown = s.variants[nv].seen = true;
   if (animal) {
-    for (const a of s.agents) if (a.v === v) { a.sp = sp; a.v = nv; }
+    for (const a of s.agents) if (a.v === v) { const g = gramsOf(s, a); a.sp = sp; a.v = nv; s.ledger.came += gramsOf(s, a) - g; } // a new body plan weighs anew
     spawn(s, nv, i, Math.max(ANIMAL.founders, Math.ceil(def.animal!.group / 2)), `founded ${nm} here`);
     s.foundings[s.species[sp].id] = 1; s.species[sp].at = s.tick;
     const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
