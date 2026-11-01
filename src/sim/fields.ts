@@ -6,7 +6,7 @@ import { FIELDS, LAYER_IDS, LEVEL_ORDER, STOCK_ORDER, STRATA, type LayerId, type
 import { SEA, type State } from './state';
 import { type Profile } from './fit';
 import { litterFlow, LITTER_G } from './tally';
-import { free, rain } from './nitrogen';
+import { free, rain, spreadN } from './nitrogen';
 
 /** Per tile: what the occupants put into or take from each layer this second. */
 export type Flows = {
@@ -142,4 +142,5 @@ export function updateFields(s: State, P: Profile[], dt: number) {
     }
   }
   rain(s, dt);
+  spreadN(s, dt);
 }

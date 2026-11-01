@@ -34,8 +34,10 @@ export const NUM = {
   // m² per tile (10 m tiles; masses.ts); the share of each gram of litter that decays into soil.
   mass: { tile: 100, litterSoil: 0.05 },
   // Nitrogen by the gram (nitrogen.ts), in g/m²: a share `leak` of what decay frees is lost; rain adds `rain` per
-  // second everywhere (0.6 g/m² a year, a year ≈ 8 min); fresh land starts with `start` (ash and sea spray).
-  nitrogen: { leak: 0.1, rain: 0.6 / 480, start: 0.5 },
+  // second everywhere (0.6 g/m² a year, a year ≈ 8 min); fresh land starts with `start` (ash and sea spray); `spread`
+  // per second moves it toward its land neighbours (water, roots and hyphae), without loss. Uptake slows as it runs
+  // low: at `half` g/m² a plant gets half of what it asks for, so some always stays in the soil.
+  nitrogen: { leak: 0.1, rain: 0.6 / 480, start: 0.5, spread: 0.02, half: 1 },
   // Biomass is the grams made (plant growth, young born); every cost is its old number × this.
   cost: 1000,
   life: {

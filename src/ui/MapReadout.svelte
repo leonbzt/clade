@@ -99,7 +99,7 @@
     <span class="dim small">click a named habitat or its card for its loadout · hover a patch for who holds it</span>
   {:else if layer}
     <span><span class="swatch" style:background={layer.color}></span>{layer.name}</span>
-    <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${LAYER_UNITS[ui.view as LayerId].value(layer.viewMax)}+)` : ''} · litter and salt are on the tile card</span>
+    <span class="dim">faint = {layer.words[0]} · strong = {layer.words[1]}{layer.viewMax ? ` (${LAYER_UNITS[ui.view as LayerId].value(layer.viewMax)}+)` : ''}{ui.view === 'nitrogen' ? ' · all of it: soil, litter and plants (the tile card shows the free part)' : ''} · litter and salt are on the tile card</span>
   {:else}
     <span class="dim">Hover a tile to inspect it, click for details. Wheel to zoom (landmark names show when zoomed in), drag to move. Keys 1–9 switch views.</span>
   {/if}

@@ -8,6 +8,7 @@
 // and the stocks (litter, nitrogen), so the layers stay the link between species.
 import { ANIMAL, type AnimalBody, type Food } from '../data/animals';
 import { STRATA } from '../data/fields';
+import { SPECIES } from '../data/species';
 import { NUM } from '../data/numbers';
 import { rand } from './rng';
 import { EV, SEA, idx, type Agent, type State } from './state';
@@ -122,7 +123,8 @@ function quality(s: State, P: Profile[], d: Food, i: number): number {
   if ('prey' in d) return 0;
   if ('stock' in d) return Math.min(1, s.layers[d.stock][i] / (d.full ?? FULL));
   const slot = STRATA.indexOf(d.plants) * s.w * s.h + i, v = s.occ[slot];
-  return v < 0 || s.dying[slot] ? 0 : P[v].stats.palatable * s.cover[slot];
+  if (v < 0 || s.dying[slot] || (d.only && !d.only.includes(SPECIES[groupOf(s, P[v].sp)].id))) return 0;
+  return P[v].stats.palatable * s.cover[slot];
 }
 
 /** Grazes and eats litter on its tile; a group eats the richest tiles around it first, as its members would, up to

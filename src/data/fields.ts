@@ -45,8 +45,9 @@ export const FIELDS: Record<LayerId, FieldDef> = {
   shade: { kind: 'level', name: 'Shade', words: ['open sky', 'deep shade'], color: '#8a5ad8', bleed: 0.2, readBelow: 'herb' },
   water: { kind: 'level', name: 'Water', words: ['dry', 'soaked'], color: '#3a8ae0', from: { soil: 0.3, shade: 0.15 } },
   soil: { kind: 'stock', name: 'Soil', words: ['bare rock', 'deep soil'], color: '#a8703c', rest: 0, decay: 0.002, protect: 0.85, capped: true },
-  // Available nitrogen, NITROGEN_MASS g/m² per unit. Its own books move it (nitrogen.ts), not this kernel.
-  nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0, decay: 0, open: true, viewMax: 0.3 },
+  // Available nitrogen, NITROGEN_MASS g/m² per unit. Its own books move it (nitrogen.ts), not this kernel. The map
+  // shows all of a tile's nitrogen (soil, litter, plants; nAllAt), so viewMax is on that scale.
+  nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0, decay: 0, open: true, viewMax: 3.5 },
   // Litter: turnover, dead plants and bodies fall in (grams, with their nitrogen); decay frees the nitrogen, gives
   // `litterSoil` of each gram as soil, and breathes out the rest. Fungi speed it on their tile (their `rot`).
   litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: LITTER_DECAY, fall: true, open: true, hidden: true,

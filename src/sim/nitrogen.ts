@@ -2,7 +2,7 @@
 // available nitrogen (with too little, it makes less); a fixer fixes its own and adds `fix` per gram it makes. What
 // falls carries its nitrogen into the litter (a hidden stock per tile); decay frees it, and a share `leak` is lost.
 // An animal keeps its body's share of what it keeps; dung carries the rest, and what it burns goes back to the soil.
-// Rain adds a little everywhere. The books, like the grams': in (fixed, rain, came), out (leak), and the pools
+// Uptake slows as it runs low, and it evens out toward neighbours (spreadN). Rain adds a little everywhere. The books, like the grams': in (fixed, rain, came), out (leak), and the pools
 // (plants, litter, animals, the soil's available nitrogen). Grams of nitrogen per tile; the layer holds available
 // nitrogen in units of NITROGEN_MASS g/m².
 import { ANIMAL_N } from '../data/animals';
@@ -50,11 +50,36 @@ export function rain(s: State, dt: number) {
   for (let i = 0; i < s.w * s.h; i++) if (s.terrain[i] !== SEA) { nGive(s, i, g); s.nbook.rain += g; }
 }
 
+const scratch = { a: new Float32Array(0) };
+/** Available nitrogen evens out toward land neighbours over `dt` seconds: pairwise (right and down), so nothing is
+ * made or lost. */
+export function spreadN(s: State, dt: number) {
+  const L = s.layers.nitrogen, n = s.w * s.h, k = (NUM.nitrogen.spread * dt) / 4;
+  if (scratch.a.length !== n) scratch.a = new Float32Array(n);
+  const v = scratch.a;
+  v.set(L);
+  for (let i = 0; i < n; i++) {
+    if (s.terrain[i] === SEA) continue;
+    const x = i % s.w;
+    if (x + 1 < s.w && s.terrain[i + 1] !== SEA) { const f = k * (v[i] - v[i + 1]); L[i] -= f; L[i + 1] += f; }
+    if (i + s.w < n && s.terrain[i + s.w] !== SEA) { const f = k * (v[i] - v[i + s.w]); L[i] -= f; L[i + s.w] += f; }
+  }
+}
+
 /** Decay freed `g` grams of nitrogen from tile i's litter: most to the soil, a share lost. */
 export function free(s: State, i: number, g: number) {
   const lost = g * NUM.nitrogen.leak;
   nGive(s, i, g - lost);
   s.nbook.freed += g; s.nbook.leak += lost;
+}
+
+/** All the nitrogen on tile i, in layer units: free in the soil, in the litter and in the plants (the map shows this;
+ * plants keep the free share low where they grow). */
+export function nAllAt(s: State, i: number): number {
+  const n = s.w * s.h;
+  let g = s.layers.nitrogen[i] * N_UNIT + s.litN[i] + s.fallN[i];
+  for (let k = 0; k < STRATA.length; k++) { const v = s.occ[k * n + i]; if (v >= 0) g += s.mass[k * n + i] * nOf(s.species[s.variants[v].sp].base); }
+  return g / N_UNIT;
 }
 
 /** The pools now, in grams of nitrogen. */

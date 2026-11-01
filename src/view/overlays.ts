@@ -11,6 +11,7 @@ import { fit, limitOf, tierOf } from '../sim/fit';
 import { SEA, type State } from '../sim/state';
 import { SCRAP } from '../sim/habitats';
 import { bucketOf } from '../sim/tally';
+import { nAllAt } from '../sim/nitrogen';
 import { defOf, poolOf, speciesIndex, stratumOf } from '../sim/variants';
 import { tinted } from './pixels';
 import { SPECIES } from '../data/species';
@@ -118,7 +119,7 @@ export function holderHighlight(ctx: Ctx, s: State, place: number, group: number
 
 /** One layer: a single colour, stronger where the value is higher. */
 export function layerView(ctx: Ctx, s: State, id: LayerId) {
-  const v = s.layers[id], max = FIELDS[id].viewMax ?? 1;
+  const v = id === 'nitrogen' ? Float32Array.from({ length: s.w * s.h }, (_, i) => nAllAt(s, i)) : s.layers[id], max = FIELDS[id].viewMax ?? 1;
   wash(ctx, 0.72);
   ctx.fillStyle = FIELDS[id].color;
   for (let i = 0; i < v.length; i++) {

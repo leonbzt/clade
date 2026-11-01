@@ -16,7 +16,8 @@ export type BodyStat = 'speed' | 'gain' | 'upkeep' | 'life' | 'young' | 'escape'
 export type Food =
   // eats litter: it feeds fully where the litter is at `full` (layer units, default ofFall(0.03)), less below
   | { stock: 'litter'; share?: number; keep?: number; full?: number }
-  | { plants: StratumId; share?: number; keep?: number } // grazes a stratum (× the plant's palatability and cover)
+  | { plants: StratumId; only?: string[]; share?: number; keep?: number } // grazes a stratum (× the plant's palatability
+  // and cover); `only`: just these base species
   | { prey: string; rate: number; keep?: number }; // hunts agents with this tag: tries per second
 // `share`: the part of its appetite this food can fill (default 1; side foods also × `range`). `keep`: the share of
 // the grams it keeps (default ANIMAL.keep).
@@ -52,7 +53,7 @@ const band = (a: number, b: number, c: number, d: number) => [a, b, c, d] as con
 
 const snailBody: AnimalBody = {
   tag: 'snail', group: 12, kin: 'family', stands: 20, store: 2, appetite: 30, pace: 4, bite: 1, size: 3, speed: 0.15, life: 700,
-  upkeep: 1, gain: 1, young: 2, escape: 1, range: 0.5, sight: 3, breedAt: 0.85, cap: 80,
+  upkeep: 1.5, gain: 1, young: 2, escape: 1, range: 0.5, sight: 3, breedAt: 0.85, cap: 80,
   diet: [{ plants: 'ground' }, { stock: 'litter', share: 0.13 }],
 };
 
@@ -77,14 +78,14 @@ export const ANIMALS: SpeciesDef[] = [
   animal({
     id: 'slug', name: 'Slugs', short: 'Slug', tolerance: { salty: 0.2 },
     needs: { water: band(0.42, 0.62, 1, 1.3) },
-    blurb: 'Snails that lost their shell. Cheaper to keep and less picky: liverworts, fungus and fresh rot in wet seeps. But they dry out fast and have nowhere to hide.',
+    blurb: 'Snails that lost their shell. Cheaper to keep and less picky: liverworts and fungus in wet seeps. But they dry out fast and have nowhere to hide.',
     traits: [
       { id: 'slime', name: 'Sealing slime', up: 'lives 0.1 drier', down: 'costs 10% more to keep', mods: [{ need: 'water', low: -0.1 }, { body: 'upkeep', mul: 1.1 }] },
       { id: 'quick', name: 'Quick breeder', up: '50% more young', down: 'lives 30% shorter', mods: [{ body: 'young', mul: 1.5 }, { body: 'life', mul: 0.7 }] },
     ],
-    // A small wet niche: cheaper than a snail, and fungus and fresh rot on the side.
-    body: { ...snailBody, tag: 'snail', stands: 8, appetite: 10, pace: 3, speed: 0.22, young: 3, upkeep: 1.13, escape: 1.3, life: 500, range: 0.7,
-      diet: [{ plants: 'ground' }, { plants: 'under', share: 0.53 }, { stock: 'litter', share: 0.36, full: ofFall(0.02) }] },
+    // A small wet niche: cheaper than a snail, and fungus on the side (litter fed them without limit).
+    body: { ...snailBody, tag: 'snail', stands: 8, appetite: 10, pace: 3, speed: 0.22, young: 3, upkeep: 1.7, escape: 1.3, life: 500, range: 0.7,
+      diet: [{ plants: 'ground' }, { plants: 'under', share: 0.53 }] },
   }),
   animal({
     id: 'springtail', name: 'Springtails', short: 'Springtail', tolerance: { salty: 0.5 },
@@ -103,10 +104,11 @@ export const ANIMALS: SpeciesDef[] = [
     traits: [
       { id: 'scales', name: 'Slippery scales', up: 'a third harder to catch', down: 'moves 10% slower', mods: [{ body: 'escape', mul: 0.66 }, { body: 'speed', mul: 0.9 }] },
     ],
-    body: { ...springtailBody, group: 10, kin: 'troop', stands: 500, store: 2.5, appetite: 5, upkeep: 0.28, bite: 2, size: 2, speed: 0.6,
+    body: { ...springtailBody, group: 10, kin: 'troop', stands: 500, store: 2.5, appetite: 10, upkeep: 0.28, bite: 2, size: 2, speed: 0.6,
       young: 2, breedAt: 0.8, cap: 60,
-      // Dry crusts first (they graze cyanobacteria and lichen on bare rock), rot second.
-      diet: [{ plants: 'ground' }, { stock: 'litter', full: ofFall(0.1), share: 1.6 }] },
+      // Dry crusts (cyanobacteria and lichen on bare rock); other ground plants and rot only on the side, so they
+      // live where crusts are.
+      diet: [{ plants: 'ground', only: ['cyano', 'lichen'] }, { plants: 'ground', share: 0.3 }, { stock: 'litter', full: ofFall(0.1), share: 0.3 }] },
   }),
   animal({
     id: 'beetle', name: 'Ground beetles', short: 'Beetle', tolerance: { salty: 0.5 },

@@ -16,6 +16,7 @@ import { fit, limitOf, type Profile } from './fit';
 import { defOf, maybeMutate, pickVariant } from './variants';
 import { drop, groupOf, made } from './tally';
 import { N_UNIT, nGive, nOf, nTake } from './nitrogen';
+import { NITROGEN_MASS } from '../data/masses';
 
 const L = NUM.life;
 
@@ -61,7 +62,7 @@ export function kill(s: State, slot: number, code: number, limit = -1) {
  * Where there's almost none, it doesn't take (false). */
 export function settle(s: State, slot: number, v: number, grams: number, code: number, health: number): boolean {
   const i = slot % (s.w * s.h), g = groupOf(s, s.variants[v].sp), n = nOf(g);
-  if (!SPECIES[g].fix && s.layers.nitrogen[i] * N_UNIT < 0.01 * grams * n) return false;
+  if (!roots(s, slot, v, grams)) return false;
   if (SPECIES[g].fix) s.nbook.fixed += grams * n;
   else grams = nTake(s, i, grams * n) / n;
   s.occ[slot] = v; s.health[slot] = health; s.dying[slot] = 0; s.old[slot] = 0;
@@ -72,12 +73,19 @@ export function settle(s: State, slot: number, v: number, grams: number, code: n
   return true;
 }
 
+/** Whether a plant of variant v can settle in a slot with `grams`: a fixer always, others need a little nitrogen. */
+function roots(s: State, slot: number, v: number, grams: number): boolean {
+  const i = slot % (s.w * s.h), g = groupOf(s, s.variants[v].sp);
+  return !!SPECIES[g].fix || s.layers.nitrogen[i] * N_UNIT >= 0.01 * grams * nOf(g);
+}
+
 /** The grams a plant can make out of `want` with the nitrogen on its tile: production × its share. A fixer fixes
  * its own and adds `fix` per gram it makes. */
 function feed(s: State, i: number, p: Profile, g: number, want: number): number {
   const n = nOf(g);
   if (p.stats.fix > 0) { const add = want * p.stats.fix; nGive(s, i, add); s.nbook.fixed += want * n + add; return want; }
-  return nTake(s, i, want * n) / n;
+  const v = s.layers.nitrogen[i] * NITROGEN_MASS; // g/m²
+  return nTake(s, i, (want * n * v) / (v + NUM.nitrogen.half)) / n;
 }
 
 /** Your species' last few tiles don't die and can't be taken. */
@@ -152,9 +160,11 @@ function spread(s: State, P: Profile[], v: number, k: number, from: number) {
     if (rand(s) < f * f * f && settle(s, slot, v, L.settleCover * ceilingOf(s, v, f), EV.settled, f)) maybeMutate(s, P, slot);
     return;
   }
-  if (canTake(s, P, P[v], slot) && rand(s) < L.takeover) {
+  const grams = L.settleCover * ceilingOf(s, v, f);
+  if (canTake(s, P, P[v], slot) && rand(s) < L.takeover && roots(s, slot, v, grams)) { // no nitrogen, no takeover
     kill(s, slot, EV.taken);
-    if (settle(s, slot, v, L.settleCover * ceilingOf(s, v, f), EV.settled, f)) maybeMutate(s, P, slot);
+    settle(s, slot, v, grams, EV.settled, f);
+    maybeMutate(s, P, slot);
   }
 }
 
