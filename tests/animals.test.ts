@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../src/data/species';
 import { STRATA } from '../src/data/fields';
 import { MASS } from '../src/data/masses';
+import { LITTER_G } from '../src/sim/tally';
 import { agentsStep, spawn, tileOf } from '../src/sim/agents';
 import { arrivals } from '../src/sim/arrivals';
 import { evolve } from '../src/sim/commands';
@@ -106,7 +107,7 @@ describe('animals', () => {
     SPECIES.push(bug); SPECIES_INDEX.testbug = SPECIES.length - 1; MASS.testbug = 0.0001;
     try {
       const s = createState(4), i = dampTile(s);
-      for (let k = 0; k < s.layers.litter.length; k++) if (s.terrain[k] !== SEA) s.layers.litter[k] = 0.3;
+      for (let k = 0; k < s.layers.litter.length; k++) if (s.terrain[k] !== SEA) { s.layers.litter[k] = 0.3; s.litN[k] = 0.3 * LITTER_G * 0.015; } // 1.5% nitrogen
       const a = animal(s, 'testbug', i, 0.9);
       for (let k = 0; k < 600; k++) { recount(s); tick(s); }
       expect(a.ate).toBeGreaterThan(0);

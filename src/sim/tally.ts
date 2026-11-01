@@ -9,6 +9,7 @@ import { SPECIES } from '../data/species';
 import { GROUPS, LITTER, ROLES } from '../data/roles';
 import { type Profile } from './fit';
 import type { State } from './state';
+import { nOf } from './nitrogen';
 
 /** Per bucket and food: what was made, then what each group took. */
 export const COLS = GROUPS + 1;
@@ -123,9 +124,12 @@ export function took(s: State, i: number, food: number, by: number, amount: numb
   if (b >= 0) s.board.cnt[at(b, food, 1 + by)] += amount;
 }
 
-/** Grams of litter fall on tile i (turnover, dead plants, bodies, dung), from a group. */
-export function drop(s: State, i: number, from: number, amount: number) {
+/** Grams of litter fall on tile i (turnover, dead plants, bodies, dung), from a group, with their nitrogen (by
+ * default the group's share; dung brings its own). */
+export function drop(s: State, i: number, from: number, amount: number, n = amount * nOf(from)) {
   s.fall[i] += amount / LITTER_G;
+  s.fallN[i] += n;
+  s.ledger.fell += amount;
   if (SPECIES[from].animal) s.ledger.dropped += amount;
   const b = bucketOf(s, i);
   if (b < 0) return;

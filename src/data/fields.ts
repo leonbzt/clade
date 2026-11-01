@@ -1,7 +1,7 @@
 // The layers, the statuses and the strata. Every layer is 0–1 per tile, with plain words for 0 and 1. Species read
 // layers (needs) and write them (makes); they never name each other. A new layer is one entry here, plus the
 // species that care about it. Rates are per second. Litter is grams (masses.ts), so it has no top.
-import { LITTER_MASS, NITROGEN_MASS, SOIL_MASS } from './masses';
+import { LITTER_MASS, SOIL_MASS } from './masses';
 import { NUM } from './numbers';
 
 export const STRATA = ['under', 'ground', 'herb'] as const;
@@ -34,15 +34,23 @@ export type StockDef = Common & {
 };
 export type FieldDef = LevelDef | StockDef;
 
+/** Litter decay per second: the floor holds 1–3 years of fall (a year ≈ 8 min). The runner's fragility test scales
+ * it (DECAY=0.5 or 2). */
+const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env;
+export const LITTER_DECAY = 0.001 * Number(env?.DECAY ?? 1);
+/** A litter amount tuned at the old decay (0.01 per second), held in years of fall: it scales with the decay. */
+export const ofFall = (x: number) => (x * 0.01) / LITTER_DECAY;
+
 export const FIELDS: Record<LayerId, FieldDef> = {
   shade: { kind: 'level', name: 'Shade', words: ['open sky', 'deep shade'], color: '#8a5ad8', bleed: 0.2, readBelow: 'herb' },
   water: { kind: 'level', name: 'Water', words: ['dry', 'soaked'], color: '#3a8ae0', from: { soil: 0.3, shade: 0.15 } },
   soil: { kind: 'stock', name: 'Soil', words: ['bare rock', 'deep soil'], color: '#a8703c', rest: 0, decay: 0.002, protect: 0.85, capped: true },
-  nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0.01, decay: 0.001, diffuse: 0.005, viewMax: 0.3 },
-  // Litter: turnover, dead plants and bodies fall in (grams); decay gives `litterN` of each gram as nitrogen and
-  // `litterSoil` as soil, and the rest is breathed out.
-  litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: 0.01, fall: true, open: true, hidden: true,
-    into: { nitrogen: (LITTER_MASS * NUM.mass.litterN) / NITROGEN_MASS, soil: (LITTER_MASS * NUM.mass.litterSoil) / SOIL_MASS } },
+  // Available nitrogen, NITROGEN_MASS g/m² per unit. Its own books move it (nitrogen.ts), not this kernel.
+  nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0, decay: 0, open: true, viewMax: 0.3 },
+  // Litter: turnover, dead plants and bodies fall in (grams, with their nitrogen); decay frees the nitrogen, gives
+  // `litterSoil` of each gram as soil, and breathes out the rest. Fungi speed it on their tile (their `rot`).
+  litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: LITTER_DECAY, fall: true, open: true, hidden: true,
+    into: { soil: (LITTER_MASS * NUM.mass.litterSoil) / SOIL_MASS } },
 };
 
 /** Levels are computed in this order (water needs shade). */

@@ -10,7 +10,7 @@ export const MASS: Record<string, number> = {
 
 /** Litter: grams per m² for one unit of the litter layer (1 = "thick litter"; real forest floors are 500–5000). */
 export const LITTER_MASS = 1000;
-/** Nitrogen and soil: grams per m² for one unit of their layer. Game-paced, not real: litter turns over in a couple of
- * minutes here, so a unit of nitrogen stands for many grams. */
-export const NITROGEN_MASS = 5000;
+/** Available nitrogen: grams per m² for one unit of its layer (real plant-available N is 1–5 g/m²). */
+export const NITROGEN_MASS = 5;
+/** Soil: grams per m² for one unit of its layer. */
 export const SOIL_MASS = 20_000;

@@ -7,6 +7,7 @@ import { SPECIES, SPECIES_INDEX } from '../data/species';
 import { TREE, doorKey } from '../data/tree';
 import { spawn } from './agents';
 import { gramsOf } from './bodies';
+import { nGive, nOf, nTake } from './nitrogen';
 import { adopt } from './arrivals';
 import { EV, type State } from './state';
 import { buildProfile, fit, profiles, type Profile } from './fit';
@@ -77,8 +78,7 @@ function plant(s: State, P: Profile[], v: number, i: number) {
     if (Math.abs(dx) + Math.abs(dy) > r || x < 0 || y < 0 || x >= s.w || y >= s.h || !canPlant(s, P, p, j)) continue;
     const sl = slotFor(s, p.sp, j);
     if (s.occ[sl] >= 0) kill(s, sl, EV.taken);
-    settle(s, sl, v, NUM.founding.cover * ceilingOf(s, v, fit(s, p, j)), EV.founded, fit(s, p, j));
-    s.variants[v].tiles++; s.count[p.sp]++;
+    if (settle(s, sl, v, NUM.founding.cover * ceilingOf(s, v, fit(s, p, j)), EV.founded, fit(s, p, j))) { s.variants[v].tiles++; s.count[p.sp]++; }
   }
   const sp = s.species[p.sp];
   if (sp.at < 0) sp.at = s.tick;
@@ -169,7 +169,10 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   const nv = variantFor(s, sp, into.genome, P);
   s.variants[nv].shown = s.variants[nv].seen = true;
   if (animal) {
-    for (const a of s.agents) if (a.v === v) { const g = gramsOf(s, a); a.sp = sp; a.v = nv; s.ledger.came += gramsOf(s, a) - g; } // a new body plan weighs anew
+    for (const a of s.agents) if (a.v === v) { // a new body plan weighs anew
+      const g = gramsOf(s, a), n = g * nOf(s.species[a.sp].base);
+      a.sp = sp; a.v = nv; s.ledger.came += gramsOf(s, a) - g; s.nbook.came += gramsOf(s, a) * nOf(into.base) - n;
+    }
     spawn(s, nv, i, Math.max(ANIMAL.founders, Math.ceil(def.animal!.group / 2)), `founded ${nm} here`);
     s.foundings[s.species[sp].id] = 1; s.species[sp].at = s.tick;
     const what = into.key ? `the first of the ${doorNode(into.key).name.toLowerCase()}` : 'a new species';
@@ -190,12 +193,15 @@ function moveTiles(s: State, P: Profile[], from: number, to: number) {
     const i = slot % n, up = k * n + i;
     const cover = s.cover[slot];
     if (up === slot) { // same cover, in the new species' grams
-      const m = s.mass[slot];
-      s.occ[slot] = to; setMass(s, slot, cover * fullOf(s, to)); s.ledger.prod += s.mass[slot] - m; s.variants[to].tiles++;
+      const m = s.mass[slot], n0 = m * nOf(s.species[s.variants[from].sp].base), n1 = nOf(s.species[s.variants[to].sp].base);
+      // The new body takes its nitrogen from the old one and the tile (as far as it goes), or gives back the rest.
+      const g = n1 * cover * fullOf(s, to) > n0 ? (n0 + nTake(s, i, n1 * cover * fullOf(s, to) - n0)) / n1 : cover * fullOf(s, to);
+      if (n1 * g < n0) nGive(s, i, n0 - n1 * g);
+      s.occ[slot] = to; setMass(s, slot, g); s.ledger.prod += s.mass[slot] - m; s.variants[to].tiles++;
       continue;
     }
     kill(s, slot, EV.taken);
-    if (s.occ[up] < 0 && fit(s, P[to], i) > 0) { settle(s, up, to, cover * fullOf(s, to), EV.founded, fit(s, P[to], i)); s.variants[to].tiles++; }
+    if (s.occ[up] < 0 && fit(s, P[to], i) > 0 && settle(s, up, to, cover * fullOf(s, to), EV.founded, fit(s, P[to], i))) s.variants[to].tiles++;
   }
 }
 

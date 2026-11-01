@@ -8,14 +8,15 @@ import { SEA } from './island';
 import type { State } from './state';
 import { LITTER_G } from './tally';
 import { gramsOf } from './bodies';
+import { closeNBook } from './nitrogen';
 
-export type Flows = { prod: number; came: number; burn: number; eaten: number; dropped: number; decay: number };
+export type Flows = { prod: number; came: number; burn: number; eaten: number; dropped: number; decay: number; fell: number }; // fell: all litterfall (shown)
 export type Ledger = Flows & {
   at: number; // grams standing at the last close
   last: Flows & { gap: number; stock: number; animals: number }; // the last minute's flows, the gap, and what stands now
 };
 
-const zero = (): Flows => ({ prod: 0, came: 0, burn: 0, eaten: 0, dropped: 0, decay: 0 });
+const zero = (): Flows => ({ prod: 0, came: 0, burn: 0, eaten: 0, dropped: 0, decay: 0, fell: 0 });
 export const newLedger = (): Ledger => ({ ...zero(), at: 0, last: { ...zero(), gap: 0, stock: 0, animals: 0 } });
 
 /** Grams in the animals. */
@@ -33,8 +34,9 @@ export function standing(s: State): number {
 /** Closes a period: the flows since the last close, and the gap between them and what changed. */
 export function closeLedger(s: State) {
   const L = s.ledger, now = standing(s);
-  L.last = { prod: L.prod, came: L.came, burn: L.burn, eaten: L.eaten, dropped: L.dropped, decay: L.decay, stock: now, animals: animalGrams(s),
+  L.last = { prod: L.prod, came: L.came, burn: L.burn, eaten: L.eaten, dropped: L.dropped, decay: L.decay, fell: L.fell, stock: now, animals: animalGrams(s),
     gap: now - L.at - (L.prod + L.came - L.burn - L.decay) };
   L.at = now;
   Object.assign(L, zero());
+  closeNBook(s);
 }

@@ -22,7 +22,7 @@ export type Profile = {
   parts: Record<string, string[]>; // why each number is what it is: 'seeds', 'need:water', 'make:nitrogen', ...
 };
 
-const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'renew', 'reserve', 'palatable'];
+const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'renew', 'reserve', 'palatable', 'fix', 'rot'];
 const BODY: BodyStat[] = ['speed', 'gain', 'upkeep', 'life', 'young', 'escape', 'range'];
 
 /** The mods a genome brings, each with its source's name. */
@@ -42,7 +42,7 @@ function genomeMods(s: State, sp: number, g: Genome): [string, Mod][] {
 export function buildProfile(s: State, sp: number, g: Genome, v = -1): Profile {
   const def = defOf(s, sp);
   const stats = {} as Record<Scalar, number>, parts: Record<string, string[]> = {};
-  for (const k of SCALARS) { stats[k] = k === 'palatable' ? def.palatable ?? 1 : def[k]; parts[k] = [`base ${fmt(stats[k])}`]; }
+  for (const k of SCALARS) { stats[k] = k === 'palatable' ? def.palatable ?? 1 : def[k] ?? 0; parts[k] = [`base ${fmt(stats[k])}`]; }
   const body: Partial<Record<BodyStat, number>> = {};
   if (def.animal) for (const k of BODY) { body[k] = def.animal[k]; parts[`body:${k}`] = [`base ${fmt(body[k]!)}`]; }
   const bands: Partial<Record<LayerId, number[]>> = {};

@@ -6,6 +6,7 @@ import { STRATA } from '../src/data/fields';
 import { spawn } from '../src/sim/agents';
 import { closeLedger } from '../src/sim/ledger';
 import { step } from '../src/sim/tick';
+import { LITTER_G } from '../src/sim/tally';
 import { speciesIndex, variantFor } from '../src/sim/variants';
 
 describe('grams', () => {
@@ -29,16 +30,19 @@ describe('grams', () => {
     expect(L.prod).toBeGreaterThan(0);
     expect(L.decay).toBeGreaterThan(0);
     expect(Math.abs(L.gap)).toBeLessThan(0.001 * L.stock);
+    const N = s.nbook.last;
+    expect(N.fixed).toBeGreaterThan(0);
+    expect(Math.abs(N.gap)).toBeLessThan(0.001 * (N.plants + N.litter + N.animals + N.soil));
   }, 60_000);
 
-  it('the books balance with animals grazing, hunting, breeding and dying', () => {
+  it('the books balance with animals grazing, hunting, breeding and dying, in grams and in nitrogen', () => {
     const s = createState(1), n = s.w * s.h, v0 = s.terrain.findIndex((t) => t === VENT);
     const vOf = (id: string) => { const sp = speciesIndex(s, id); return variantFor(s, sp, s.species[sp].genome); };
     const moss = vOf('moss'), fungus = vOf('fungus');
     for (let i = 0; i < n; i++) {
       const dx = (i % s.w) - (v0 % s.w), dy = ((i / s.w) | 0) - ((v0 / s.w) | 0);
       if (s.terrain[i] === SEA || dx * dx + dy * dy > 36) continue;
-      s.layers.litter[i] = 0.3;
+      s.layers.litter[i] = 3; s.litN[i] = 3 * LITTER_G * 0.015;
       for (const [k, v] of [[STRATA.indexOf('ground'), moss], [STRATA.indexOf('under'), fungus]]) {
         const slot = k * n + i; s.occ[slot] = v; setMass(s, slot, fullOf(s, v)); s.health[slot] = 1;
       }
@@ -52,5 +56,9 @@ describe('grams', () => {
     expect(L.burn).toBeGreaterThan(0);
     expect(L.eaten).toBeGreaterThan(0);
     expect(Math.abs(L.gap)).toBeLessThan(0.001 * L.stock);
+    const N = s.nbook.last, all = N.plants + N.litter + N.animals + N.soil;
+    expect(N.freed).toBeGreaterThan(0);
+    expect(N.rain).toBeGreaterThan(0);
+    expect(Math.abs(N.gap)).toBeLessThan(0.001 * all);
   }, 30_000);
 });

@@ -5,14 +5,16 @@
 // Grams (bodies.ts): a member stands for `stands` real animals per m² of tile, so its body is MASS × stands × the
 // tile's m². It burns B × upkeep × stands × mass^0.75 g/s, eats up to `appetite` × that, keeps `keep` of what it eats
 // and drops the rest as dung (litter). Its store e (0–1) holds up to `store` × its body. Rates are per second.
-import type { StratumId } from './fields';
+// Nitrogen (nitrogen.ts): a body is ANIMAL_N of its grams; dung carries the food's nitrogen minus what it keeps, and
+// what it burns goes back to the soil.
+import { ofFall, type StratumId } from './fields';
 import type { SpeciesDef, Trait } from './species';
 
 /** Body numbers that genes can change (×). */
 export type BodyStat = 'speed' | 'gain' | 'upkeep' | 'life' | 'young' | 'escape' | 'range';
 
 export type Food =
-  // eats litter: it feeds fully where the litter is at `full` (layer units, default 0.1), less below
+  // eats litter: it feeds fully where the litter is at `full` (layer units, default ofFall(0.03)), less below
   | { stock: 'litter'; share?: number; keep?: number; full?: number }
   | { plants: StratumId; share?: number; keep?: number } // grazes a stratum (× the plant's palatability and cover)
   | { prey: string; rate: number; keep?: number }; // hunts agents with this tag: tries per second
@@ -31,34 +33,34 @@ export type AnimalBody = Record<BodyStat, number> & {
   sight: number; // tiles it looks around for food
   breedAt: number; // store it needs before it breeds
   diet: Food[]; // the first is its main food; the others give `range` × as much
-  makes: { nitrogen?: number }; // dung's nitrogen: layer units per gram eaten, per m² of tile (part B: by the gram)
   cap: number; // groups, a safety net per species; food should be the real limit
   size: number; // px on the map
 };
 
 type AnimalEntry = Pick<SpeciesDef, 'id' | 'name' | 'short' | 'needs' | 'tolerance' | 'blurb'> & { traits: Trait[]; body: AnimalBody };
 
+/** Nitrogen in an animal's live grams (~30% dry, ~10% of that nitrogen). */
+export const ANIMAL_N = 0.025;
+
 /** The plant numbers don't apply to animals; they stay at 0. */
 const animal = (d: AnimalEntry): SpeciesDef => ({
   id: d.id, name: d.name, short: d.short, needs: d.needs, tolerance: d.tolerance, traits: d.traits, blurb: d.blurb,
-  stratum: 'ground', seeds: 0, hold: 0, yield: 0, life: d.body.life, grow: 0, renew: 0, reserve: 1, makes: {}, animal: d.body,
+  stratum: 'ground', seeds: 0, hold: 0, yield: 0, life: d.body.life, grow: 0, renew: 0, reserve: 1, makes: {}, animal: d.body, n: ANIMAL_N,
 });
 
 const band = (a: number, b: number, c: number, d: number) => [a, b, c, d] as const;
 
 const snailBody: AnimalBody = {
-  tag: 'snail', group: 12, kin: 'family', stands: 50, store: 2, appetite: 30, pace: 4, bite: 1, size: 3, speed: 0.15, life: 700,
+  tag: 'snail', group: 12, kin: 'family', stands: 20, store: 2, appetite: 30, pace: 4, bite: 1, size: 3, speed: 0.15, life: 700,
   upkeep: 1, gain: 1, young: 2, escape: 1, range: 0.5, sight: 3, breedAt: 0.85, cap: 80,
   diet: [{ plants: 'ground' }, { stock: 'litter', share: 0.13 }],
-  makes: { nitrogen: 0.000002 }, // what the grazed grams would give as litter
 };
 
 const springtailBody: AnimalBody = {
   tag: 'tiny-hexapod', group: 200, kin: 'swarm', stands: 2400, store: 1, appetite: 8, pace: 2, bite: 6, size: 1, speed: 0.35,
   life: 400, upkeep: 0.042, gain: 1, young: 24, escape: 1, range: 0.5, sight: 3, breedAt: 0.75, cap: 120,
   // Mainly fungus threads (real: springtails graze hyphae), rot as a side dish: litter → fungi → springtails → hunters.
-  diet: [{ plants: 'under' }, { stock: 'litter', share: 0.78, full: 0.3 }],
-  makes: { nitrogen: 0.00007 }, // fungus is rich in nitrogen; it comes back sooner
+  diet: [{ plants: 'under' }, { stock: 'litter', share: 0.78, full: ofFall(0.1) }],
 };
 
 export const ANIMALS: SpeciesDef[] = [
@@ -82,7 +84,7 @@ export const ANIMALS: SpeciesDef[] = [
     ],
     // A small wet niche: cheaper than a snail, and fungus and fresh rot on the side.
     body: { ...snailBody, tag: 'snail', stands: 8, appetite: 10, pace: 3, speed: 0.22, young: 3, upkeep: 1.13, escape: 1.3, life: 500, range: 0.7,
-      diet: [{ plants: 'ground' }, { plants: 'under', share: 0.53 }, { stock: 'litter', share: 0.36, full: 0.05 }] },
+      diet: [{ plants: 'ground' }, { plants: 'under', share: 0.53 }, { stock: 'litter', share: 0.36, full: ofFall(0.02) }] },
   }),
   animal({
     id: 'springtail', name: 'Springtails', short: 'Springtail', tolerance: { salty: 0.5 },
@@ -102,8 +104,8 @@ export const ANIMALS: SpeciesDef[] = [
       { id: 'scales', name: 'Slippery scales', up: 'a third harder to catch', down: 'moves 10% slower', mods: [{ body: 'escape', mul: 0.66 }, { body: 'speed', mul: 0.9 }] },
     ],
     body: { ...springtailBody, group: 10, kin: 'troop', stands: 500, store: 2.5, appetite: 5, upkeep: 0.28, bite: 2, size: 2, speed: 0.6,
-      young: 2, breedAt: 0.8, cap: 60, makes: { nitrogen: 0.000006 },
-      diet: [{ stock: 'litter', full: 0.3 }, { plants: 'ground', share: 1.25 }] },
+      young: 2, breedAt: 0.8, cap: 60,
+      diet: [{ stock: 'litter', full: ofFall(0.1) }, { plants: 'ground', share: 1.25 }] },
   }),
   animal({
     id: 'beetle', name: 'Ground beetles', short: 'Beetle', tolerance: { salty: 0.5 },
@@ -118,7 +120,6 @@ export const ANIMALS: SpeciesDef[] = [
       upkeep: 0.71, gain: 1, young: 1, escape: 1, range: 0.5, sight: 5, breedAt: 0.85, cap: 40,
       // Ground beetles also scavenge: rot and dead things keep them going between catches.
       diet: [{ prey: 'tiny-hexapod', rate: 0.1 }, { prey: 'snail', rate: 0.05 }, { stock: 'litter' }],
-      makes: { nitrogen: 0.000002 }, // litter's share, for prey bodies and scavenged litter alike
     },
   }),
 ];

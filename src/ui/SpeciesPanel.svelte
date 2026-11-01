@@ -78,7 +78,7 @@
     return {
       name: x.name, def, look: speciesLook(game, sp), stratum: animal ? 'Animal' : STRATUM_NAMES[def.stratum], limits: animal ? [] : limits, animal: !!animal,
       diet: animal ? animal.diet.map((d, k) => `${foodText(d)}${k ? ' (side food)' : ''}`) : [],
-      dung: animal ? Object.keys(animal.makes).join(', ') : '',
+      dung: animal ? 'litter' : '',
       needs: p.needs.map((n) => {
         const id = LAYER_IDS[n.layer], b = n.band;
         return { id, name: FIELDS[id].name, color: FIELDS[id].color, lo: clip(b[0]), a: clip(b[1]), z: clip(b[2]), hi: clip(b[3]),

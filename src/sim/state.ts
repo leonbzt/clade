@@ -7,6 +7,7 @@ import { START_REACHED } from '../data/tree';
 import { buildIsland } from './island';
 import { newBoard, type Board } from './tally';
 import { closeLedger, newLedger, type Ledger } from './ledger';
+import { newNBook, seedNitrogen, type NBook } from './nitrogen';
 import { buildHabitats, type Habitat } from './habitats';
 import { baseSpecies, type Species, type Variant } from './variants';
 
@@ -73,8 +74,11 @@ export type State = {
   heads: { tick: number; text: string }[]; // the last headlines: big news, shown as a banner and pinned in the feed
   board: Board; // the slot board: counters and slots per bucket (slots.ts)
   ledger: Ledger; // the books in grams (ledger.ts)
+  nbook: NBook; // the nitrogen books (nitrogen.ts)
   layers: Record<LayerId, Float32Array>;
   fall: Float32Array; // litter from dying plants since the last layer update, per tile
+  fallN: Float32Array; // its nitrogen, grams per tile
+  litN: Float32Array; // the nitrogen in the litter on each tile, grams
   occ: Int16Array; // per slot: variant index, or -1
   mass: Float32Array; // per slot: the plant's grams (its state)
   cover: Float32Array; // per slot: 0–1, mass ÷ its full mass (life.ts keeps it in step)
@@ -123,8 +127,8 @@ export function createState(seed: number): State {
     statuses: Object.fromEntries(STATUS_IDS.map((id) => [id, new Float32Array(n)])) as Record<StatusId, Float32Array>,
     landmarks: [], mark: new Int16Array(n).fill(-1), vents: [],
     windFrom: 0, windward: new Float32Array(n), place: new Int16Array(n).fill(-1),
-    hab: new Uint8Array(n), scar: new Int32Array(n).fill(-1), habitats: [], heads: [], board: newBoard(0), ledger: newLedger(),
-    layers: perLayer(n), fall: new Float32Array(n),
+    hab: new Uint8Array(n), scar: new Int32Array(n).fill(-1), habitats: [], heads: [], board: newBoard(0), ledger: newLedger(), nbook: newNBook(),
+    layers: perLayer(n), fall: new Float32Array(n), fallN: new Float32Array(n), litN: new Float32Array(n),
     occ: new Int16Array(slots).fill(-1), mass: new Float32Array(slots), cover: new Float32Array(slots), health: new Float32Array(slots), dying: new Uint8Array(slots), old: new Uint8Array(slots),
     lastTick: new Int32Array(slots), lastCode: new Uint8Array(slots), lastSp: new Int16Array(slots).fill(-1),
     lastLimit: new Int8Array(slots).fill(-1),
@@ -138,6 +142,7 @@ export function createState(seed: number): State {
   for (const sp of s.species) s.foundings[sp.id] = 0;
   buildIsland(s);
   buildHabitats(s);
+  seedNitrogen(s);
   closeLedger(s);
   return s;
 }

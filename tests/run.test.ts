@@ -15,6 +15,9 @@
 // over the last minute (animals included), and its worst gap over the run. Grazer swings: how often the island's
 // snails (and slugs) fell to half their peak and came back to 80% of it; "local": the same in 12×12-tile cells (a
 // peak of two families or more). SERIES=1 prints the island's snails per minute.
+// A seventh line: nitrogen. Per minute by source (fixed, rain, freed from litter) and lost (leak), the pools now, and
+// the books' worst gap; litter on the floor in years of its fall (a year ≈ 8 min). DECAY=0.5 or 2 scales litter decay
+// (the fragility test).
 // A measuring tool, not a balance bot. Skipped in `npm run check`.
 import { it } from 'vitest';
 import { writeSync } from 'node:fs';
@@ -34,6 +37,7 @@ import { SEA } from '../src/sim/state';
 import { MASS } from '../src/data/masses';
 import { NUM } from '../src/data/numbers';
 import { grams } from '../src/ui/format';
+import { LITTER_G } from '../src/sim/tally';
 
 const env = process.env, SEEDS = Number(env.SEEDS || 5), MIN = Number(env.MIN || 60);
 const out = (s: string) => writeSync(1, s + '\n'); // straight to stdout: vitest hides console.log
@@ -64,7 +68,7 @@ it.skipIf(!env.SIM)('sim', () => {
   for (let seed = 1; seed <= SEEDS; seed++) {
     const s = createState(seed), when: Record<string, string> = {}, vs: VariantStats = variantStats();
     let ms = 0, msN = 0, mossPeak = 0, landed = -1, landTick = 0, reach = -1, fewestOpen = Infinity, slotMs = 0, windows = 0;
-    let fewHab = Infinity, mostHab = 0, unique = true, lockedLive = 0, heads30 = 0, born30 = 0, gapMax = 0;
+    let fewHab = Infinity, mostHab = 0, unique = true, lockedLive = 0, heads30 = 0, born30 = 0, gapMax = 0, nGapMax = 0;
     const lo: Record<string, number> = {}, hi: Record<string, number> = {}, grazers: Record<string, number[]> = { snail: [], slug: [] }, cells: number[][] = [];
     let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0;
     for (let k = 0; k < MIN * 600; k++) {
@@ -96,6 +100,7 @@ it.skipIf(!env.SIM)('sim', () => {
         for (const a of s.agents) if (['snail', 'slug'].includes(SPECIES[s.species[a.sp].base].id)) c[((a.y / 12) | 0) * Math.ceil(s.w / 12) + ((a.x / 12) | 0)] += a.n;
         c.forEach((x, k) => (cells[k] ??= []).push(x));
       }
+      if (s.tick % 600 === 0 && s.tick > 600) { const N = s.nbook.last, all = N.plants + N.litter + N.animals + N.soil; if (all) nGapMax = Math.max(nGapMax, Math.abs(N.gap) / all); }
       if (s.tick % 600 === 0 && s.ledger.last.stock) gapMax = Math.max(gapMax, Math.abs(s.ledger.last.gap) / s.ledger.last.stock);
       if (s.tick % 6000 === 0) { if (minutes(s) === MIN) turn = changed(s, snap, snapshot(s)) / 10; snap = snapshot(s); }
       // Litter swing: the mean change per tile per minute, over the last 10 minutes.
@@ -138,6 +143,11 @@ it.skipIf(!env.SIM)('sim', () => {
     out(`     grams: ${SPECIES.flatMap((d, b) => (d.animal || !held[b].c ? [] : [`${ABBR[b]} ${Math.round(held[b].g / held[b].c)}/${Math.round(MASS[d.id] * NUM.mass.tile)}`])).join(' ')} g per tile |` +
       ` per min: made ${grams(L.prod)}, came ${grams(L.came)}, burnt ${grams(L.burn)}, decay ${grams(L.decay)}, eaten ${grams(L.eaten)}, dropped ${grams(L.dropped)}, standing ${grams(L.stock)} (animals ${grams(L.animals)}) |` +
       ` biomass ${grams(s.biomass)} | worst gap ${(gapMax * 100).toFixed(4)}% ${gapMax < 0.001 ? 'ok' : 'OFF'}`);
+    const NB = s.nbook.last;
+    let floor = 0;
+    for (let i = 0; i < s.w * s.h; i++) if (s.terrain[i] !== SEA) floor += s.layers.litter[i] * LITTER_G;
+    out(`     nitrogen/min: fixed ${grams(NB.fixed)}, rain ${grams(NB.rain)}, freed ${grams(NB.freed)}, leak ${grams(NB.leak)} | pools: plants ${grams(NB.plants)}, litter ${grams(NB.litter)}, animals ${grams(NB.animals)}, soil ${grams(NB.soil)} |` +
+      ` worst gap ${(nGapMax * 100).toFixed(4)}% ${nGapMax < 0.001 ? 'ok' : 'OFF'} | litter ${(floor / (L.fell * 8 || 1)).toFixed(1)} years of fall`);
     if (env.LIMITS && seed === 1) {
       const P = profiles(s);
       for (let sp = 0; sp < s.species.length; sp++) {

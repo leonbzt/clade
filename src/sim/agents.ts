@@ -17,8 +17,11 @@ import { defOf, mutation, variantFor } from './variants';
 import { drop, groupOf, LITTER_G, made, took } from './tally';
 import { LITTER } from '../data/roles';
 import { bite, bodyG, burnG, gramsOf, keepOf, lose, memberG, shareOf, storeG } from './bodies';
+import { nGive, nOf } from './nitrogen';
+import { ofFall } from '../data/fields';
 
 const A = ANIMAL;
+const FULL = ofFall(0.03); // litter eaters feed fully from here, unless their food says otherwise
 const DT = 1 / NUM.ticksPerSec;
 
 export const tileOf = (s: State, a: Agent) => idx(s, a.x | 0, a.y | 0);
@@ -117,7 +120,7 @@ function range(s: State, b: AnimalBody, i: number): number[] {
 /** How well one food source feeds on tile i (0–1): little litter or thin, unpalatable cover feeds less. */
 function quality(s: State, P: Profile[], d: Food, i: number): number {
   if ('prey' in d) return 0;
-  if ('stock' in d) return Math.min(1, s.layers[d.stock][i] / (d.full ?? 0.1));
+  if ('stock' in d) return Math.min(1, s.layers[d.stock][i] / (d.full ?? FULL));
   const slot = STRATA.indexOf(d.plants) * s.w * s.h + i, v = s.occ[slot];
   return v < 0 || s.dying[slot] ? 0 : P[v].stats.palatable * s.cover[slot];
 }
@@ -126,7 +129,7 @@ function quality(s: State, P: Profile[], d: Food, i: number): number {
  * its appetite and the room in its store. Returns the grams kept; dung goes to its own tile. */
 function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, here: number, dt: number): number {
   const n = s.w * s.h, tiles = range(s, b, here), most = b.appetite * burnG(s, p) * dt * a.n;
-  let room = (1 - a.e) * a.n * storeG(s, a.sp), kept = 0, eaten = 0, what = '';
+  let room = (1 - a.e) * a.n * storeG(s, a.sp), kept = 0, eaten = 0, nIn = 0, what = '';
   b.diet.forEach((d, k) => {
     const share = shareOf(d, k, p), keep = keepOf(d, p);
     if (share <= 0 || 'prey' in d || room <= 0) return;
@@ -137,12 +140,13 @@ function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, here: 
       if (want <= 0 || f <= 0) break;
       let g: number;
       if ('stock' in d) {
-        g = Math.min(s.layers.litter[i] * LITTER_G, want * f);
-        s.layers.litter[i] -= g / LITTER_G;
+        const have = s.layers.litter[i] * LITTER_G, n = have > 0 ? (s.litN[i] * Math.min(have, want * f)) / have : 0;
+        g = Math.min(have, want * f);
+        s.layers.litter[i] -= g / LITTER_G; s.litN[i] -= n; nIn += n;
         took(s, i, LITTER, groupOf(s, a.sp), g); what ||= 'litter';
       } else {
         const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot];
-        g = Math.min(s.mass[slot], want * f);
+        g = Math.min(s.mass[slot], want * f); nIn += g * nOf(groupOf(s, P[v].sp));
         s.health[slot] = Math.max(0, s.health[slot] - (g / fullOf(s, v)) * A.wound); // lost leaves cost reserves: regrowth slows
         setMass(s, slot, s.mass[slot] - g); s.old[slot] = 0;
         took(s, i, groupOf(s, P[v].sp), groupOf(s, a.sp), g); what ||= s.species[P[v].sp].name;
@@ -152,7 +156,7 @@ function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, here: 
     }
   });
   s.ledger.eaten += eaten;
-  if (eaten > 0) dung(s, a, b, here, eaten, eaten - kept);
+  if (eaten > 0) kept = digest(s, a, here, eaten, kept, nIn);
   if (kept > 0 && a.doing !== 'eat') note(s, a, `started eating ${what.toLowerCase()}`);
   return kept;
 }
@@ -184,17 +188,19 @@ function hunt(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, i: nu
     else if (lost) note(s, prey, `lost ${lost} to a ${by}`);
     kept = g * keep;
     a.full = A.handling * Math.min(1, kept / S / 0.2);
-    dung(s, a, b, i, g, g - kept);
+    kept = digest(s, a, i, g, kept, g * nOf(groupOf(s, prey.sp)));
     note(s, a, lost > 1 ? `caught ${lost} ${name}` : `caught some of the ${name}`);
   });
   return kept;
 }
 
-/** Dung: the grams it didn't keep fall as litter on its tile, with a little nitrogen at once. */
-function dung(s: State, a: Agent, b: AnimalBody, i: number, eaten: number, left: number) {
-  drop(s, i, groupOf(s, a.sp), left);
-  const N = s.layers.nitrogen;
-  if (b.makes.nitrogen) N[i] = Math.min(1, N[i] + (eaten * b.makes.nitrogen) / NUM.mass.tile);
+/** A meal: the body keeps its nitrogen share of the grams it keeps, as far as the meal's nitrogen goes (poor food:
+ * less kept, more dung). Dung, the rest of the grams and nitrogen, falls as litter on its tile. Returns the grams
+ * kept. */
+function digest(s: State, a: Agent, i: number, eaten: number, kept: number, nIn: number): number {
+  const g = groupOf(s, a.sp), n = nOf(g), k = Math.min(kept, nIn / n);
+  drop(s, i, g, eaten - k, Math.max(0, nIn - k * n));
+  return k;
 }
 
 /** The best of a few spots 4–10 tiles away (food × fit) where the variant can live, or null. */
@@ -298,7 +304,7 @@ export function agentsStep(s: State, P: Profile[]): number {
     a.full = Math.max(0, a.full - dt);
     // Grams burnt per member: more where it fits badly, less at rest. The last of the store goes before it starves.
     const cost = dt * burnG(s, p) * (1 + A.stress * (1 - f)), burnt = Math.min(a.e * S, cost * (a.doing === 'rest' ? A.rest : 1));
-    a.e -= burnt / S; s.ledger.burn += burnt * a.n;
+    a.e -= burnt / S; s.ledger.burn += burnt * a.n; nGive(s, i, burnt * a.n * nOf(groupOf(s, a.sp))); // its nitrogen goes back to the soil
     if (a.e <= 1e-9) { a.e = 0; die(s, a, i, f <= 0 ? 'died where it could not live' : 'starved'); continue; }
     if (b.group > 1) { // a group renews itself: members die of age now and then, the group goes on
       const old = a.n * (dt / a.life), lost = Math.min(a.n, Math.floor(old) + (rand(s) < old % 1 ? 1 : 0));
@@ -344,7 +350,7 @@ export function spawn(s: State, v: number, i: number, members: number, why: stri
       n: Math.min(per, left), doing: 'look', think: 0, mom: -1, kids: 0, ate: 0, log: [{ tick: s.tick, text: why }],
       last: s.tick - Math.floor(rand(s) * b.pace), slow: false, woke: 0, go: false, full: 0, bit: 0 };
     s.agents.push(a);
-    s.ledger.came += gramsOf(s, a);
+    s.ledger.came += gramsOf(s, a); s.nbook.came += gramsOf(s, a) * nOf(groupOf(s, sp));
     s.variants[v].tiles++;
   }
 }
