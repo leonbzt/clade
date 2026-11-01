@@ -37,7 +37,7 @@ type AnimalEntry = Pick<SpeciesDef, 'id' | 'name' | 'short' | 'needs' | 'toleran
 /** The plant numbers don't apply to animals; they stay at 0. */
 const animal = (d: AnimalEntry): SpeciesDef => ({
   id: d.id, name: d.name, short: d.short, needs: d.needs, tolerance: d.tolerance, traits: d.traits, blurb: d.blurb,
-  stratum: 'ground', seeds: 0, hold: 0, yield: 0, life: d.body.life, grow: 0, reserve: 1, makes: {}, animal: d.body,
+  stratum: 'ground', seeds: 0, hold: 0, yield: 0, life: d.body.life, grow: 0, renew: 0, reserve: 1, makes: {}, animal: d.body,
 });
 
 const band = (a: number, b: number, c: number, d: number) => [a, b, c, d] as const;
@@ -70,13 +70,15 @@ export const ANIMALS: SpeciesDef[] = [
   }),
   animal({
     id: 'slug', name: 'Slugs', short: 'Slug', tolerance: { salty: 0.2 },
-    needs: { water: band(0.38, 0.6, 1, 1.3) },
-    blurb: 'Snails that lost their shell. Quicker and cheaper to build, but they dry out fast and have nowhere to hide.',
+    needs: { water: band(0.42, 0.62, 1, 1.3) },
+    blurb: 'Snails that lost their shell. Cheaper to keep and less picky: liverworts, fungus and fresh rot in wet seeps. But they dry out fast and have nowhere to hide.',
     traits: [
       { id: 'slime', name: 'Sealing slime', up: 'lives 0.1 drier', down: 'costs 10% more to keep', mods: [{ need: 'water', low: -0.1 }, { body: 'upkeep', mul: 1.1 }] },
       { id: 'quick', name: 'Quick breeder', up: '50% more young', down: 'lives 30% shorter', mods: [{ body: 'young', mul: 1.5 }, { body: 'life', mul: 0.7 }] },
     ],
-    body: { ...snailBody, tag: 'snail', pace: 3, speed: 0.22, young: 3, upkeep: 0.0045, escape: 1.3, life: 500 },
+    // A small wet niche: cheaper than a snail, and fungus and fresh rot on the side.
+    body: { ...snailBody, tag: 'snail', pace: 3, speed: 0.22, young: 3, upkeep: 0.0036, escape: 1.3, life: 500, range: 0.7,
+      diet: [{ plants: 'ground', rate: 0.15, gain: 0.075 }, { plants: 'under', rate: 0.2, gain: 0.03 }, { stock: 'litter', rate: 0.002, gain: 2, full: 0.05 }] },
   }),
   animal({
     id: 'springtail', name: 'Springtails', short: 'Springtail', tolerance: { salty: 0.5 },

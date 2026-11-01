@@ -1,6 +1,7 @@
 // Life in every slot. Health follows fit slowly (the plant's reserves); a slot's state is its mass in grams, and its
-// ceiling is what health allows. Production peaks at full size and turnover sheds a share of the mass as litter, so a
-// mature plant makes food all the time and a grazed one regrows by itself. Cover is mass ÷ the full mass. Spores,
+// ceiling is what health allows. Growth (`grow`) fills the slot toward the ceiling; turnover (`renew`) sheds a small
+// share of the mass as litter and makes it anew, so a mature plant makes food slowly all the time and a grazed one
+// regrows fast by itself. Cover is mass ÷ the full mass. Spores,
 // yield and death follow health too, so plants switch on and off slowly. A dying plant thins out over time and drops
 // its grams as litter as it goes. Open slots go to whichever seed arrives and fits, so fast spreaders win gaps and strong holders
 // keep their tiles. A slot holds a variant: variants of one species compete like species do, and a settling child
@@ -37,11 +38,12 @@ export function setMass(s: State, slot: number, g: number) {
   s.mass[slot] = g; s.cover[slot] = f > 0 ? g / f : 0;
 }
 
-/** A plant's grams per second, with x = mass ÷ ceiling: production grow × ceiling × (2x − x²), highest at full size;
- * turnover grow × mass, shed as litter. Net growth is grow × ceiling × (x − x²). */
-export function growth(mass: number, ceiling: number, grow: number): { made: number; shed: number } {
-  const x = ceiling > 0 ? mass / ceiling : 0;
-  return { made: ceiling > 0 ? grow * ceiling * Math.max(0, 2 * x - x * x) : 0, shed: grow * mass };
+/** A plant's grams per second, with x = mass ÷ ceiling: net growth grow × ceiling × (x − x²) up to the ceiling, and
+ * above it (health fell) a loss of grow × the excess; turnover renew × mass. Production is the regrowth plus the mass
+ * made anew; the turnover is shed as litter, and so is the loss. */
+export function growth(mass: number, ceiling: number, grow: number, renew: number): { made: number; shed: number } {
+  const x = ceiling > 0 ? mass / ceiling : 2, net = x <= 1 ? grow * ceiling * (x - x * x) : -grow * (mass - Math.max(0, ceiling));
+  return { made: renew * mass + Math.max(0, net), shed: renew * mass + Math.max(0, -net) };
 }
 
 /** Empties a slot at once (taken over, or a flare); the dead plant's grams become litter. */
@@ -100,7 +102,7 @@ export function lifeStep(s: State, P: Profile[], tickDt: number) {
       const f = fit(s, p, i), limit = limitOf();
       const h = (s.health[slot] += (f - s.health[slot]) * Math.min(1, dt / p.stats.reserve));
       // Grams: production toward what health allows, turnover to litter.
-      const grown = growth(s.mass[slot], ceilingOf(s, v, h), p.stats.grow);
+      const grown = growth(s.mass[slot], ceilingOf(s, v, h), p.stats.grow, p.stats.renew);
       setMass(s, slot, s.mass[slot] + dt * (grown.made - grown.shed));
       if (grown.made > 0) { made(s, i, g, grown.made * dt); s.ledger.prod += grown.made * dt; }
       if (grown.shed > 0) drop(s, i, g, grown.shed * dt);

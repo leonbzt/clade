@@ -1,7 +1,8 @@
 import { fullOf, setMass } from '../src/sim/life';
 import { describe, expect, it } from 'vitest';
 import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../src/data/species';
-import { FIELDS, STRATA, type StockDef } from '../src/data/fields';
+import { STRATA } from '../src/data/fields';
+import { LITTER_MASS, NITROGEN_MASS } from '../src/data/masses';
 import { agentsStep, spawn, tileOf } from '../src/sim/agents';
 import { arrivals } from '../src/sim/arrivals';
 import { evolve } from '../src/sim/commands';
@@ -115,8 +116,8 @@ describe('animals', () => {
     }
   });
 
-  it('eaten litter releases no more nitrogen than decaying litter', () => {
-    const share = (FIELDS.litter as StockDef).into!.nitrogen!;
+  it('eaten litter frees at most 1% of its grams as nitrogen (real litter holds 1–2%)', () => {
+    const share = (LITTER_MASS * 0.01) / NITROGEN_MASS;
     for (const d of SPECIES) if (d.animal?.diet.some((f) => 'stock' in f && f.stock === 'litter'))
       expect(d.animal.makes.nitrogen ?? 0, d.id).toBeLessThanOrEqual(share);
   });

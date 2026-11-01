@@ -136,7 +136,7 @@ function eat(s: State, P: Profile[], a: Agent, p: Profile, b: AnimalBody, here: 
         got += (take / a.n) * d.gain; eaten += take; what ||= 'litter';
         continue;
       }
-      const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot], take = Math.min(s.cover[slot], want * f), grams = take * fullOf(s, v);
+      const slot = STRATA.indexOf(d.plants) * n + i, v = s.occ[slot], take = Math.min(s.cover[slot], want * f), grams = Math.min(s.mass[slot], take * fullOf(s, v));
       setMass(s, slot, s.mass[slot] - grams); s.old[slot] = 0; want -= take / f;
       took(s, i, groupOf(s, P[v].sp), groupOf(s, a.sp), grams); s.ledger.eaten += grams;
       s.health[slot] = Math.max(0, s.health[slot] - take * A.wound); // lost leaves cost reserves: regrowth slows

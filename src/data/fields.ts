@@ -38,10 +38,10 @@ export const FIELDS: Record<LayerId, FieldDef> = {
   shade: { kind: 'level', name: 'Shade', words: ['open sky', 'deep shade'], color: '#8a5ad8', bleed: 0.2, readBelow: 'herb' },
   water: { kind: 'level', name: 'Water', words: ['dry', 'soaked'], color: '#3a8ae0', from: { soil: 0.3, shade: 0.15 } },
   soil: { kind: 'stock', name: 'Soil', words: ['bare rock', 'deep soil'], color: '#a8703c', rest: 0, decay: 0.002, protect: 0.85, capped: true },
-  nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0.01, decay: 0.002, diffuse: 0.005, viewMax: 0.3 },
+  nitrogen: { kind: 'stock', name: 'Nitrogen', words: ['none', 'rich'], color: '#5cc040', rest: 0.01, decay: 0.001, diffuse: 0.005, viewMax: 0.3 },
   // Litter: turnover, dead plants and bodies fall in (grams); decay gives `litterN` of each gram as nitrogen and
   // `litterSoil` as soil, and the rest is breathed out.
-  litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: 0.05, fall: true, open: true, hidden: true,
+  litter: { kind: 'stock', name: 'Litter', words: ['clean', 'thick litter'], color: '#e0b030', rest: 0, decay: 0.01, fall: true, open: true, hidden: true,
     into: { nitrogen: (LITTER_MASS * NUM.mass.litterN) / NITROGEN_MASS, soil: (LITTER_MASS * NUM.mass.litterSoil) / SOIL_MASS } },
 };
 

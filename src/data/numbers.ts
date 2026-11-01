@@ -16,11 +16,11 @@ export const NUM = {
     // windward edge to `lee` on the far edge; its coast gets salt spray, fading over `sprayIn` tiles.
     wind: { windward: 0.12, lee: -0.05, spray: 0.3, sprayIn: 2 },
   },
-  // The slot board (slots.ts): counters over windows of `window` s, smoothed over about `smooth` s. A slot is open
-  // when no group takes `open` of its size (a holder keeps it down to `keep`); a challenger needs `hyst` more than
-  // the holder. Big open: among the `bigTop` largest of its role, and at least `bigShare` of the largest. A slot
+  // The slot board (slots.ts): counters over windows of `window` s, smoothed over about `smooth` s. The biggest taker
+  // holds a slot from a small floor, `open` of its size (a holder keeps it down to `keep`); below that it is open. A
+  // challenger needs `hyst` more than the holder. Big open: among the `bigTop` largest of its role, and at least `bigShare` of the largest. A slot
   // exists from `exists` of its role's largest. A board row changes only for one `sticky` × bigger.
-  slots: { window: 30, smooth: 180, open: 0.15, keep: 0.1, hyst: 0.1, bigTop: 3, bigShare: 0.25, exists: 0.03,
+  slots: { window: 30, smooth: 180, open: 0.02, keep: 0.015, hyst: 0.1, bigTop: 3, bigShare: 0.25, exists: 0.03,
     sticky: 1.25, trend: 0.15, trendWindows: 6, warmup: 4 },
   // Habitats (habitats.ts): connected pieces of one kind, gaps of `gap` tiles bridged. A major one (named, on the
   // board) from `show` tiles, hidden below `hide`; a patch (hover only) from `patch`, a scrap below `scrap`. A vent scar lasts `scar`
@@ -28,9 +28,10 @@ export const NUM = {
   // `pinned` stay at the top of the feed; the same one isn't repeated within `repeat` seconds. A habitat growing is a
   // headline the first time only, its vanishing only after it stood `stood` seconds. A role's island's best is a
   // headline at most once per `bestEvery` seconds; the rest is chatter.
-  habitats: { show: 60, hide: 40, patch: 8, scrap: 5, gap: 1, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
-  // m² per tile (masses.ts); the shares of each gram of litter that decays into nitrogen and soil
-  mass: { tile: 1, litterN: 0.01, litterSoil: 0.05 },
+  habitats: { show: 50, hide: 35, patch: 8, scrap: 5, gap: 1, scar: 300, rename: 10, pinned: 3, repeat: 600, stood: 600, bestEvery: 1200 },
+  // m² per tile (masses.ts); the shares of each gram of litter that decays into nitrogen and soil. Litter recycles
+  // only a little nitrogen (the rest leaks); most comes from fixers and animals.
+  mass: { tile: 1, litterN: 0.005, litterSoil: 0.05 },
   life: {
     stress: 1.5, // death rate × (1 + stress × (1 − health))
     oldEvery: 4, // old growth updates every this many ticks

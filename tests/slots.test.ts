@@ -24,7 +24,7 @@ describe('slots', () => {
     expect(pickHolder(r, takes, 1, beetle)[0]).toBe(beetle);
     takes[slug] = 0.7;
     expect(pickHolder(r, takes, 1, beetle)[0]).toBe(slug);
-    takes.fill(0); takes[beetle] = 0.1;
+    takes.fill(0); takes[beetle] = 0.018; // under the floor for a newcomer, over it for the holder
     expect(pickHolder(r, takes, 1, -1)[0]).toBe(-1);
     expect(pickHolder(r, takes, 1, beetle)[0]).toBe(beetle); // a holder keeps it down to `keep`
   });

@@ -22,7 +22,7 @@ export type Profile = {
   parts: Record<string, string[]>; // why each number is what it is: 'seeds', 'need:water', 'make:nitrogen', ...
 };
 
-const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'reserve', 'palatable'];
+const SCALARS: Scalar[] = ['seeds', 'hold', 'yield', 'life', 'grow', 'renew', 'reserve', 'palatable'];
 const BODY: BodyStat[] = ['speed', 'gain', 'upkeep', 'life', 'young', 'escape', 'range'];
 
 /** The mods a genome brings, each with its source's name. */

@@ -5,14 +5,16 @@ import { createState } from '../src/sim/state';
 
 describe('grams', () => {
   it('a grazed plant regrows to its ceiling, and a full one makes what it sheds', () => {
-    const C = 150, grow = 0.08, dt = 0.1;
+    const C = 150, grow = 0.08, renew = 0.0012, dt = 0.1;
     let m = 0.2 * C;
-    for (let t = 0; t < 120; t += dt) { const g = growth(m, C, grow); m += dt * (g.made - g.shed); }
+    for (let t = 0; t < 120; t += dt) { const g = growth(m, C, grow, renew); m += dt * (g.made - g.shed); }
     expect(m / C).toBeGreaterThan(0.97);
     expect(m / C).toBeLessThanOrEqual(1);
-    const full = growth(C, C, grow);
-    expect(full.made).toBeCloseTo(grow * C);
+    const full = growth(C, C, grow, renew);
+    expect(full.made).toBeCloseTo(renew * C);
     expect(full.made).toBeCloseTo(full.shed);
+    const over = growth(1.2 * C, C, grow, renew); // health fell: it shrinks, and the loss is litter
+    expect(over.shed).toBeGreaterThan(over.made);
   });
 
   it('the books balance to within 0.1% over a minute', () => {
