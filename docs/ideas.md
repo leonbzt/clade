@@ -1,75 +1,76 @@
 # Ideas (parking lot)
 
-Ideas that aren't on the current milestone. **One line each:** what it is, whose it is, and where the long version
-lives. Parking an idea isn't rejecting it. Nothing here gets built or specced until a milestone needs it; then it
-becomes a proposal ([proposals.md](proposals.md)). Read this file when planning the next milestone, not every
-session.
+Ideas that aren't on the current milestone. **One line each.** Parking an idea isn't rejecting it; nothing here is
+built or specced until a milestone needs it, then it becomes a proposal ([proposals.md](proposals.md)).
 
-Marks: **(you)** your idea · **(AI)** AI idea · **you: yes / leaning yes** your call so far. "P13" etc. point to
-the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back.
+**2 Nov: every v1 idea reviewed against v2** (v1's parking lot, vision's "wanted later" and "on hold", the game
+shape, your 26 Oct mechanics list). The sorting and the verdicts are **AI's**; nothing is dropped until you say so.
+v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 
-## Bugs (fix any time)
-- **The tree's insects:** beetles sit beside insects (they are insects); bristletails evolve from springtails
-  (cousins). Moving beetles gates them behind the insect key; the springtail needs a stem hexapod (route C). AI, 1 Nov.
+## Already in the v2 plan
+- Picks with a cost, every trait with a downside (you) · let size set the pace (AI) → Upkeep comes from the body.
+- Keys that add features · nothing bought · wild drift species (route C) → parts; species come from runs; garden
+  mutants you can take on a run.
+- Tile types change over generations: lava → bare ground → forest floor (you) → habitats emerge as soil builds; the
+  tier list's ladder.
+- Melvor checkpoints, OSRS diaries, Stardew bundles, small named levels, guilds (habitat × food) → the tier list:
+  tiers, rows by succession, niches, lineage ranks.
+- The adapting minigame "should feel like an interaction" (you) · one activity per kingdom (you) · a tile side view,
+  a cut with all its layers (you, 28 Oct) → the side-view run.
+- Auto battler "set up and see how good it does" (you) → the release into the garden. Draft (you) → the brood of 3.
+- Banked time and fast-forward → offline progress with saves (M1).
+- Old growth and update rates (AI) · a bigger island (AI) → moot as performance work: the patch model is cheap.
 
-## World and sim
-- **Geology:** a few ground units (old flow, young flow, ash, cinder cone, beach) set soil cap, water and drainage;
-  slope thins soil; places split along real lines; island recipes (AI, P30 f; you: leaning yes, wider than flow age).
-- **Humus:** one slow stock between litter and soil (AI, P30 g; you: yes, few layers).
-- **The clock with three tempos:** life, cycle, ground; rates per year ([design/nitrogen-and-time.md](design/nitrogen-and-time.md);
-  AI, P32 d, P33 a; you: after slice 12 or later).
-- **Leak as a mechanic:** nitrogen leaks with the water downhill; ridges poor, seeps rich; a Tight gene (AI, P33 b).
-- **Fixed flows:** water, nitrogen and soil run downhill; wind and rain gradients (AI, P13; you: wanted).
-- **More contrast:** height (the cone), disturbance (storms, vent flares), self-reinforcing patches (AI, P21 d; you:
-  all good, start simple).
-- **Borders (ecotones)** as their own small places (AI, P28 d; you: parked).
-- **Food quality as C:N:** poor food is worth less, poor litter rots slower (AI, P29 b).
-- **Nitrogen resorption:** plants pull ~half their leaf nitrogen back before it falls, so less is locked in litter
-  and plants grow faster on a slow-rotting floor (AI, 11e B).
-- **Let size set the pace:** the burn's real mass^0.75 is in, but each species' `upkeep` cancels it (springtails
-  ×0.04); letting it act makes small animals starve ~10× faster and swing harder (AI, 11e A).
-- **Tile types change over generations:** lava → bare ground → forest floor (you, P22).
-- **Old growth / update what changes:** stable patches and groups update slower, a disturbance wakes them; update
-  rate as a species trait (you, P21 b, P22).
-- **A bigger island:** tile size as a knob, or sleeping regions; measure the tick first (AI, P33 f; P31 Q2 open).
-- **Two zooms and chunks** (AI, P15; you: later, see vision).
-- **More run themes and places:** salt, ash and cave islands; the archipelago map; outposts (AI, game-shape; after
-  M1, from 12a's Out).
-- **Hiding:** shade and caves make prey harder to catch (AI, P25 e; you: very interesting).
+## Fits v2, later
+- **Geology** (ground units, slope, island recipes; you: leaning yes) → the land layer. M1 needs a small part
+  (substrate, wetness, height) to make habitats; the rest later.
+- More landmarks (waterfalls, rivers); fixed flows of water and nutrients downhill → cheap along the patch graph.
+- More run islands (salt, ash, caves), the archipelago map, outposts.
+- Two zoom levels: the garden and a close view of one habitat (possibly in side view) (you + AI).
+- **Morphs:** rare looks (a colour, a pattern, a left-coiled snail); cheap with bodies drawn from genes.
+- **"Resembles…":** a body close to a real species' shape names it, with a fact and a source (you + AI). Strong fit.
+- Hindsight names for big groups; partnerships (lichen, mycorrhiza) as a partner that changes the side-view rules
+  (your "guilds change the rules").
+- Species similarity and a cumulative gene view; the lineage's family tree; the tree of life as a collection.
+- The nursery: crossing two lines, kept scarce. Sharing island seeds and genome codes (a code redraws the specimen).
+- Animals with staged assembly (Hatched): snails, springtails, spiders, then beetles, bees, bats; cute animals
+  (hermit crabs, geckos, fruit bats, rails, doves, nēnē…). Diet through mouthparts.
+- Seabirds as engineers: a colony as a nutrient hotspot that brings seeds (an outside input to a patch).
+- Hiding in shade and caves (prey harder to catch) as a niche modifier (you: very interesting).
+- Trees and fruits, a canopy stratum: the growth program plus a vascular part.
+- Eras and the island's climax as prestige. The sea line and life coming ashore (era-sized).
+- The species screen: the specimen card, TierZoo-style stat cards, parts as chips, filters (you + AI). A light
+  version in M1.
+- **Critical:** horizontal currencies from guilds (nitrogen fixed, litter recycled, spores spread) → one or two at
+  most, or currencies sprawl.
+- **Critical:** evolution points (you) → only for rerolls or an extra shoot. Buying traits breaks "adapting has to
+  feel like adapting".
+- Skills per kingdom, idle skilling (you) → lineage levels could work like skills.
+- Better names; bigger tiles with sprites the same size (you).
 
-## Species and evolution
-- **Route C's pieces** (decided 1 Nov: with genome v2, M4): nothing bought, stem templates, wild drift species,
-  partnerships, hindsight names, keys that add features, extinct branches, island ages. [design/evolution.md](design/evolution.md) §5–6.
-- **Evolution points:** a currency for an archetype, or for when mutation doesn't bring the combo you want (you).
-- **Diet shifts:** food tags, diets as weights, a gene that moves along a food graph (you, P22; P30 i yes).
-- **Metabolism gene and dormancy** (AI, P22; you: watch the complexity, prefer emergent edges).
-- **Absolute vs relative genes:** a cumulative view and similarity between species (you, P22).
-- **Species that converge merge** (you, P23 c). Runs merge back if not diverged enough (decided 1 Nov).
-- **"Resembles…":** real species as stat combinations with a fact and a source (you + AI, P18).
-- **Picks with a cost:** every trait has a downside or upkeep (AI, P3; you: idea, 28 Oct). Genome v2 (M4).
-- **Four levels** (clade, species, form, morph) and six ways a species is born (AI, P31 b).
+## Fits if reshaped
+- The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
+  patch niches replace the structure.
+- Diet shifts on a food graph (you) → diet from body parts and one niche per food; no graph before animals.
+- Metabolism gene and dormancy (AI) → a Pace stat would be the seventh; fold it into Growth and Upkeep, or swap.
+- Four levels (clade, species, form, morph) and six ways a species is born (AI) → three: clade (parts), species
+  (runs), morph (looks).
+- Borders (ecotones) as small places (AI) → a patch kind if the land makes one; not a system.
+- Real units, the rest (flows in grams, turnover, home range) (AI) → keep grams on screen; drop the flow views.
+- Your mechanics list (Go/Risk territory, Carcassonne tiles, connect the flow, hidden info, a timing bar,
+  deckbuilding) → one per activity, not all at once. The side view fits connect the flow and hidden soil (roots
+  reveal what's near) (AI).
+- Your sim methods, one per kingdom: plants = space colonization and L-systems; fungi = physarum; animals = boids
+  and pheromone trails (AI).
 
-## Animals and the food web
-- **The food-web expansion plan:** six structure pieces, a catalogue in rings, eras, trees ([design/food-web.md](design/food-web.md),
-  AI, P31). Open: Q3 mammals (you: bats yes, more cute animals), Q4 hunting by size, Q9 order.
-- **Life comes ashore:** sea life on a shore stratum walks landward through genes and recipes (AI, P33 e1; e2/e3
-  are alternatives).
-- **Cute animals:** hermit crabs, sea turtles, geckos, fruit bats, rails, doves, nēnē, puffins, sea lions, rice rats
-  (AI, P33 g).
-- **Seabirds as engineers:** a colony as a nitrogen hotspot that brings seeds (AI, P14, P19).
-- **More animals; more and larger plants with trees and fruits** (you, 30 Oct).
-
-## Board, screen and units
-- **The species screen:** the card on the left, TierZoo-style stat cards, abilities as chips, plant/animal/fungi
-  filters, extinct species leave the list (you + AI, P23).
-- **A tile side view:** a cut through one tile with all its layers (you, P22).
-- **Real units, the rest:** body size you can see, island years, flows in grams on a food-web view (AI, P27 d–f);
-  turnover and home range (AI, P29 b). (Scale bar, counts and densities: done in 11e.)
-- **Horizontal currencies** from guilds: nitrogen fixed, litter recycled, spores spread, prey caught (AI, P29 c;
-  not before 12a).
-- **Better names** for items (you, 30 Oct). **Bigger tiles** with sprites kept the same size (you, 30 Oct).
-
-## Minigames (on hold since 26 Oct)
-- Hands-on play in the colony: three toys tested it (AI, P1, [slices/02-toys.md](slices/02-toys.md)).
-- One grid, four verbs (Grow, Gather, Guard, Bet) for every kingdom (AI, P2).
-- The adapting minigame: start from the roll idea, but it should feel like an interaction (you, 27 Oct).
+## AI: drop? (v1 sim realism, or replaced)
+- Humus as its own stock → fold into soil depth.
+- The clock with three tempos → one fixed step.
+- Nitrogen leaking downhill with a Tight gene; food quality as C:N; nitrogen resorption.
+- Species that converge merge; runs merge back → merging back was reversed on 2 Nov.
+- One grid with four verbs (Grow, Gather, Guard, Bet) for every kingdom → one activity per kingdom instead.
+- The tree's insect errors (beetles beside insects, bristletails from springtails) → v1's tree; "keep the tree
+  accurate" carries.
+- "Minigames wait until the garden core is fun" (26 Oct) → v2 reverses it: the activity comes first.
+- v1's first-session script (seabirds in session 2, mosses via the leafy shoot, a cliffhanger) → the vent start
+  stays (tastes.md).

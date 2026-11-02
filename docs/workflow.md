@@ -6,21 +6,22 @@ Every idea takes the same path, and each step has one home:
 
 ```
 idea ──► ideas.md (one line) ──► proposals.md (when a milestone needs it: options, AI lean, ≤3 questions)
-     ──► your call ──► decisions.md (dated) + vision.md ──► a slice spec ──► build ──► playtests/
+     ──► your call ──► decisions.md (dated) + spec.md ──► a slice spec ──► build ──► playtests/
 ```
 
 - **Ideas don't skip steps.** A new idea mid-session gets one line in `ideas.md`, and the work goes on.
 - **A proposal must name the milestone it serves.** If the current milestone doesn't need it, it stays an idea.
 - **At most three open proposals.** When you decide, the call is logged and the proposal is deleted; when one goes
   stale, it moves back to `ideas.md` as one line.
-- **vision.md holds only your calls,** current and without history. `decisions.md` keeps the history.
+- **spec.md is the game as decided,** current and without history (one page). `tastes.md` keeps your tastes and
+  lessons; `decisions.md` keeps the history.
 
 ## Milestones and the scope gate
 
 - `ROADMAP.md` lists milestones. **Only the current one gets specs and code.**
 - Before any spec or code, ask: *does the current milestone need this?* If not, park it.
-- **Sim freeze:** while the player-facing slices of a milestone are being built, the sim gets bug fixes and tuning
-  only. A structural change needs your explicit OK.
+- **Budgets** (in the roadmap): speed, check time, and at most 4 stocks, 6 stats and 10 genes per kingdom. A new
+  stock, stat or gene replaces one, or needs your explicit OK.
 - A milestone ends when its "done when" holds in play, not when the code is in. Then we plan the next one from the
   roadmap and `ideas.md`, with options first.
 
@@ -50,11 +51,12 @@ idea ──► ideas.md (one line) ──► proposals.md (when a milestone need
 
 1. CLAUDE.md is short (rules and pointers); it's loaded on every turn.
 2. Read the index, then only the docs the task needs. Reference files by path; never paste them.
-3. `_old/` and `_archive/` reads are blocked in `.claude/settings.json`: no accidental reads, no drift.
+3. `_old/` and `_archive/` reads are blocked in `.claude/settings.json`; `_v1/` is off limits by CLAUDE.md, except
+   the carry-over files it names. No accidental reads, no drift.
 4. Small source files, data separate from logic, so reads stay small.
 5. Text over screenshots: the dev panel and `window.dev.dump()`. Screenshots only for visual questions, scaled down.
-6. Quiet scripts: `npm run check` prints only failures; `SEEDS=1 MIN=30 npm run sim` for a quick look.
-7. Decisions are written once (`decisions.md`, `vision.md`) and not re-discussed.
+6. Quiet scripts: `npm run check` prints only failures and stays under 10 s; no long headless sim runs.
+7. Decisions are written once (`decisions.md`, `spec.md`) and not re-discussed.
 8. Batch questions at the end of a turn.
 9. The cheaper model for mechanical work: data entry, renames, boilerplate.
 

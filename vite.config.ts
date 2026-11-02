@@ -5,5 +5,6 @@ export default defineConfig({
   plugins: [svelte()],
   test: {
     include: ['tests/**/*.test.ts'],
+    passWithNoTests: true,
   },
 });

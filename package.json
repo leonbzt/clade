@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "check": "node scripts/check.mjs",
-    "test": "vitest run",
-    "sim": "SIM=1 vitest run tests/run.test.ts --reporter=dot"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",

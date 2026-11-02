@@ -16,4 +16,4 @@ You research for Clade, an idle / RPG evolution game with a biology-literate aud
    - at most three "Ideas for Clade", one line each, labelled **idea**. They're input for the caller, not proposals.
 5. Reply to the caller in at most 10 lines: the key findings and the file path.
 
-Write only your research file; don't edit other docs. Never read `_old/` or `_archive/`.
+Write only your research file; don't edit other docs. Never read `_old/`, `_archive/` or `_v1/`.

@@ -136,8 +136,11 @@ genes; a few hundred growth steps a season. Small and short, so it can be rich.
   portable. Refactoring in place would mean keeping the tests and balance set-up of a model being removed.
 - **The risk:** a rebuild fails when it restarts with the same open scope. Guard: a one-page spec, a tiny M1, the
   budgets below.
-- **How:** this repo, a new branch; v1's `src/`, `tests/` and its docs move to `_v1/` (blocked like `_old/`). Keep
-  git history, the tooling, skills, the researcher agent, `docs/research/`.
+- **How (done 2 Nov):** v1 committed on `slice-11e` (`ecaff4f`); branch `v2` moved v1's `src/`, `tests/`, roadmap
+  and docs to `_v1/` (off limits by CLAUDE.md). Kept: git history, the tooling, skills, the researcher agent,
+  `docs/research/`, `toys/`. **Carry-over files** a spec may read: `_v1/src/sim/island.ts` and
+  `_v1/src/data/islands.ts` (generator), `_v1/src/sim/habitats.ts` (habitat finder), `_v1/src/view/pixels.ts`,
+  `terrain.ts`, `plants.ts` (pixel painting).
 - **Step 0 (one session):** a toy in `toys/`: genes → side-view growth → stats → a brood of 3. If picking heirs
   isn't fun on its own, nothing on top will fix it.
 - **M1, one question:** "Does growing a line in side view and placing it on the tier list make me want the next

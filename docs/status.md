@@ -1,30 +1,27 @@
 # Status
 
-Updated 2026-11-02. **Milestone: M1, the first playable · step 1 (11e, now with part D) and step 2 (12a parts A and
-B) built, both waiting on your playtest** (`ROADMAP.md`). Branch `slice-11e`; the 11e playtest fixes are committed,
-the 12a work, part D and the doc edits are uncommitted on it.
+Updated 2026-11-02. **v2, the rebuild. Milestone: M0 (the toy, then the spec) · step 1, the toy** (`ROADMAP.md`,
+an AI draft for your approval). Branch `v2`; v1 is committed on `slice-11e` (`ecaff4f`) and moved to `_v1/`.
 
 ## Done
-- **The evolution plan:** `docs/design/evolution.md` (today's genes, variants and tree; real evolution; game vs real;
-  route B, runs make species; authored vs free; route C with genome v2; work and risks).
-- **11e part D** (`src/data/genes.ts`, spec `docs/slices/11e-close-out-the-sim.md`): stem doors (Leafy and Upright
-  only from early land plants); Dry trades shade tolerance (−0.08/−0.15), Wet widens it. Check passes; sim 5/5,
-  Mosses + Vascular 5/5; Upright now from early land plants, ~2 min later.
-- **12a A and B** (other session; build notes in the spec): runs, seasons, broods, heirs, keys on runs, founders from
-  any living line species. Tests `tests/islands.test.ts`, `tests/runs.test.ts`. Dev: `?bot=600&run=0`.
+- The v1 review and the v2 plan: `docs/design/rebuild.md` (critique; the loop; genome → body → stats → niche; tiles
+  for the land, patches for life, with a grid vs patch benchmark; the rebuild; Mycelarium and Hatched).
+- Research: `docs/research/mycelarium.md`, `hatched.md`; `real-evolution.md` kept from v1's evolution doc.
+- The move: `_v1/` holds v1's code, tests, roadmap and docs. New: `docs/tastes.md` (your tastes, wishes, lessons),
+  `docs/ideas.md` (every idea reviewed against v2; the verdicts are AI's), `docs/decisions.md` (v2 log), the roadmap
+  draft. CLAUDE.md, the workflow, the commands and the researcher agent point at the new layout. `npm run sim` is
+  gone; `npm run check` passes in ~4 s.
 
-## Decided (1 Nov)
-- Route B now, into C with genome v2 (M4); merge back if not diverged enough; stem doors; new clades through runs;
-  "discovering life yourself". P35: part D now; "author the laws, not the history"; recipes hinted step by step.
+## Decided (2 Nov)
+- Rebuild; patch model; genome → body → stats; the side-view grow run; niches × tiers with a light ladder.
+- Toy first, then the spec; the spec replaces the vision; tastes kept in `tastes.md`.
 
 ## Next
-1. Your 11e playtest → `docs/playtests/11e-close-out.md`; then commit and merge `slice-11e` (only on your word).
-2. Your 12a playtest → `docs/playtests/12a-the-first-run.md`.
-3. The 12b spec with route B: merge-back threshold (AI: Rare+ from its parent, or a key), birthplace tag, the home
-   split goes, the lineage's family tree. Then part C's spec and the M2 scope call.
+1. The toy (`toys/`, built on `toys/specimen.ts`): genes → side-view body → live stats; aimed shoots with a cost
+   preview; a brood of 3 → pick the heir; 4–6 seasons. Question: enough decisions, do heirs feel different?
+2. Your playtest → `docs/playtests/`. Then the one-page spec (`docs/spec.md`).
 
 ## Open
-- Moss stays 96–100% Dry at home (born Dry); the wet sister comes from runs. Watch: early land plants thin to
-  80–414 tiles by 60 min (runs start from them); bot-made home species alive 10 min later 1/5 (part D or 12a?).
-- 12a's AI fill-ins; a small dry island is about as wet as home; part C vs M2. 11e tuning to watch (beetles, snails).
-- `.claude/agents/researcher.md` has an uncommitted edit that isn't AI's (yours?). Roadmap call 1: M1's goal.
+- Your approval of the roadmap draft and of the ideas review (drops wait for your word).
+- `main` is still at v1's older state; `slice-11e` and `v2` aren't merged (on your word).
+- The root `index.html` points at `src/main.ts`, which is gone until M1; the toys work at `/toys/`.

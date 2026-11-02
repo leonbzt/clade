@@ -5,24 +5,23 @@ wins (and the code is the truth for what's built).
 
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |
-| [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, what's frozen | You (AI drafts) | Every session |
+| [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, the budgets | You (AI drafts) | Every session |
 | [status.md](status.md) | The last handoff: done, decided, next, open | AI at `/handoff` | Every session |
-| [vision.md](vision.md) | What you've decided, as it stands now | You (AI records your calls) | Design sessions, specs |
+| `spec.md` (after the toy) | The game in one page; replaces v1's vision. Until then: [design/rebuild.md](design/rebuild.md) | You (AI drafts) | Design sessions, slice specs |
+| [tastes.md](tastes.md) | Your tastes, wishes and lessons, in your words | You (AI records) | Design sessions, specs |
 | [slices/](slices/) | One spec per slice ([_template.md](slices/_template.md)) | AI drafts, you approve | The current one when building |
 | [proposals.md](proposals.md) | Open AI proposals (three at most) | AI | When deciding |
-| [decisions.md](decisions.md) | The dated log of your calls | AI records them at `/handoff` | To check why or when |
-| [ideas.md](ideas.md) | The parking lot, one line each | Anyone | When planning the next milestone |
+| [decisions.md](decisions.md) | The dated log of your calls (v2) | AI records them | To check why or when |
+| [ideas.md](ideas.md) | The parking lot, reviewed against v2 | Anyone | When planning the next milestone |
 | [workflow.md](workflow.md) | How we work: sessions, the idea funnel, tokens | You | When the process changes |
 
 **Reference** (open when a spec needs it):
-- `design/`: [rebuild.md](design/rebuild.md) (v1 review and the v2 plan, 2 Nov) · [game-shape.md](design/game-shape.md) (the plan behind M1–M4, 29 Oct) ·
-  [evolution.md](design/evolution.md) (species, genes and the tree: today, real evolution, routes B and C, 1 Nov) ·
-  [food-web.md](design/food-web.md) (the expansion plan, P31, parked) ·
-  [nitrogen-and-time.md](design/nitrogen-and-time.md) (P32 and the clock, P33 a; the source for 11e) · [fresh-eyes.md](design/fresh-eyes.md)
-  (an outside designer's view, 26 Oct) · [references.md](design/references.md) (games to learn from, the look) ·
-  [tech-art.md](design/tech-art.md) (stack, art direction).
-- `playtests/`: your notes after playing each slice. `research/`: sourced facts from the `researcher` agent.
+- `design/`: [rebuild.md](design/rebuild.md) (the v1 review and the v2 plan, with the grid vs patch benchmark,
+  2 Nov) · [references.md](design/references.md) (games to learn from).
+- `research/`: sourced facts from the `researcher` agent (Mycelarium, Hatched, real evolution, mosses, the tree of
+  life, layer sims, progression games, the virtual plant lab).
+- `playtests/`: your notes after playing each slice (v2 starts empty).
 
-Outside `docs/`: `toys/` holds throwaway prototypes. `_archive/` holds retired docs (P1–P33 in full, the old brief,
-the outline, minigames, species models, the layer-sim review); reading it is blocked, like `_old/`. Ask to bring one
-back.
+Outside `docs/`: `toys/` holds throwaway prototypes. `_v1/` is v1 (code, tests and docs, 25 Oct – 2 Nov);
+`_archive/` holds older retired docs; `_old/` the first AI prototype. All three are off limits unless you ask
+(CLAUDE.md names the v1 files a spec may carry over).
