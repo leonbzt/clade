@@ -84,6 +84,9 @@ has to fit.
   everything; nitrogen looked noisy.
 - **12a (2 Nov):** "a little lost and it was random"; "everything still feels really unclear"; "I don't get what
   the levels benefit".
+- **Grow toy, first build (2 Nov):** "fun in principle"; managing the growth and roots and directing the plant "is
+  something I can imagine going forward with"; generations felt too short; the habitat should be shaped by its
+  neighbours and its habitat type.
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

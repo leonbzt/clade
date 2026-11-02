@@ -1,27 +1,26 @@
 # Status
 
-Updated 2026-11-02. **v2, the rebuild. Milestone: M0 (the toy, then the spec) · step 1, the toy** (`ROADMAP.md`,
-an AI draft for your approval). Branch `v2`; v1 is committed on `slice-11e` (`ecaff4f`) and moved to `_v1/`.
+Updated 2026-11-02. **v2, the rebuild. Milestone: M0 (the toy, then the spec) · step 1, the toy.** Branch `v2` on
+GitHub (`leonbzt/clade`, public); v1 is on `slice-11e` and in `_v1/`.
 
 ## Done
-- The v1 review and the v2 plan: `docs/design/rebuild.md` (critique; the loop; genome → body → stats → niche; tiles
-  for the land, patches for life, with a grid vs patch benchmark; the rebuild; Mycelarium and Hatched).
-- Research: `docs/research/mycelarium.md`, `hatched.md`; `real-evolution.md` kept from v1's evolution doc.
-- The move: `_v1/` holds v1's code, tests, roadmap and docs. New: `docs/tastes.md` (your tastes, wishes, lessons),
-  `docs/ideas.md` (every idea reviewed against v2; the verdicts are AI's), `docs/decisions.md` (v2 log), the roadmap
-  draft. CLAUDE.md, the workflow, the commands and the researcher agent point at the new layout. `npm run sim` is
-  gone; `npm run check` passes in ~4 s.
+- The grow toy, rebuilt to the spec (`docs/slices/00-grow-toy.md`): `toys/grow.html` with `grow-data.ts` (genes,
+  habitats, targets, tuning), `grow-world.ts` (hidden soil, neighbours, light), `grow-sim.ts` (plant, 3 stocks,
+  stats, score), `grow-verbs.ts` (wake, cut, dig, brood, prediction), `grow-view.ts` (canvas), `grow.ts` (run, HUD).
+- Your first playtest (of the first build, made without the spec): `docs/playtests/00-grow-toy.md`.
+- The root page redirects to `/toys/` until M1. `npm run check` passes (~5 s).
 
 ## Decided (2 Nov)
-- Rebuild; patch model; genome → body → stats; the side-view grow run; niches × tiers with a light ladder.
-- Toy first, then the spec; the spec replaces the vision; tastes kept in `tastes.md`.
+- The spec's questions: seeds land on different spots (in); nutrient is the only currency for the verbs (yes).
+- Rebuild the toy to the spec; longer generations (90 s seasons); the habitat shaped by neighbours and habitat type.
 
 ## Next
-1. The toy (`toys/`, built on `toys/specimen.ts`): genes → side-view body → live stats; aimed shoots with a cost
-   preview; a brood of 3 → pick the heir; 4–6 seasons. Question: enough decisions, do heirs feel different?
-2. Your playtest → `docs/playtests/`. Then the one-page spec (`docs/spec.md`).
+1. Play the rebuilt toy: all 3 habitats, verbs on and off. Add your notes to `docs/playtests/00-grow-toy.md`
+   (enough decisions? heirs different? is the habitat a real choice?).
+2. Tune by feel in `toys/grow-data.ts` (`T`, `HABITATS`, `TARGETS`, `TIERS`), then tick step 1 in `ROADMAP.md`.
+3. Step 2: the one-page spec (`docs/spec.md`), from rebuild.md, tastes.md and the playtest.
 
 ## Open
-- Your approval of the roadmap draft and of the ideas review (drops wait for your word).
-- `main` is still at v1's older state; `slice-11e` and `v2` aren't merged (on your word).
-- The root `index.html` points at `src/main.ts`, which is gone until M1; the toys work at `/toys/`.
+- The habitat details (3 habitats, neighbours that shade, grow and drain) are AI's: keep, change or cut?
+- Balance is a first pass: no-verb seasons score mostly D–B; Low cover is the hardest; water has no cap.
+- `main` is still v1's older state; `v2` isn't merged (on your word).
