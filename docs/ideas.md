@@ -48,6 +48,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Skills per kingdom, idle skilling (you) → lineage levels could work like skills.
 - Better names; bigger tiles with sprites the same size (you).
 
+- Grow toy: the dead parent's leaves and roots feed the soil (litter) for its heir (AI, 2 Nov).
+
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
   patch niches replace the structure.

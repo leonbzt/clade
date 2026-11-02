@@ -30,5 +30,11 @@ Your calls, dated, in your words where possible. Only explicit calls; AI proposa
 - **The toy's verb: not aimed shots** ("it would feel really copied"). **Buds and pruning above ground, mixed with
   hidden soil below (Minesweeper-like), with a switch to turn the verbs off.** "A game-like mechanic similar to this,
   also not required." Spec: [slices/00-grow-toy.md](slices/00-grow-toy.md).
-- **Build the toy** with two changes: **the 3 seeds land in different spots**, and **nutrient is the only
-  currency** (no water stock in the toy).
+- **The toy spec's open questions:** seeds land at different spots: **in**. Nutrient as the only currency **for the
+  verbs**: **yes**. (The first build read this as the only stock, without the spec; corrected below.)
+
+## 2 Nov, after playing the first build ([playtests/00-grow-toy.md](playtests/00-grow-toy.md))
+- **Rebuild the toy to match the spec**, from a fresh start. "Fun in principle"; managing growth and roots and
+  directing the plant "is something I can imagine going forward with".
+- **Generations are too short** → longer seasons.
+- **The habitat is shaped by its neighbours and its habitat type** → added to the toy spec.

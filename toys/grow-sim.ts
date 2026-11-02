@@ -1,350 +1,245 @@
-// Grow toy (slice 00): the rules. No DOM. The plant is a node graph; every node hangs off its parent, so a
-// child's index is always above its parent's. Nutrient is the only currency.
+// Grow toy (slice 00): the plant. A tree of nodes; a child's index is always above its parent's. Three stocks:
+// energy (leaves), water (roots in water pockets and loam), nutrient (roots in nutrient pockets, pays the verbs).
+// Each tick the net energy is shared among the active tips, so fewer tips grow faster. No DOM.
 
-import { BASE_GENES, CELL, COLS, GENES, GROUND, H, LEVELS, ROWS, SPOTS, T, W, gene, type Genes } from './grow-data';
+import { GROUND, H, SPOTS, STAT_SCALE, T, TARGETS, W, gene, type Genes, type StatId } from './grow-data';
+import { cellIndex, isPocket, light, reveal, type Pt, type Rng, type World } from './grow-world';
 
 export type Kind = 'shoot' | 'root';
-export type Pt = { x: number; y: number };
+export type State = 'tip' | 'bud' | 'seg';
 export interface Node {
-  x: number; y: number; parent: number; kind: Kind; order: number; heading: number;
-  tip: boolean; leaf: number; light: number; dead: boolean; target: Pt | null; cost: number;
+  x: number; y: number; parent: number; kind: Kind; state: State; heading: number; len: number;
+  leaf: number; light: number; thick: number; progress: number; target: Pt | null; dead: boolean;
+  order: number; // 0 = the main stem or root, +1 per branching
 }
-export interface Cell { kind: 'plain' | 'pocket' | 'stone'; amount: number; max: number; seen: boolean; hint: number }
-export interface Plot { cells: Cell[] }
-export interface Flow { light: number; uptake: number; upkeep: number; income: number; limit: 'light' | 'roots' }
+export interface Flow { energyIn: number; energyUp: number; waterIn: number; waterUse: number; nutrientIn: number; wilting: boolean }
 export interface Plant {
-  genes: Genes; spot: number; x: number; nodes: Node[]; store: number; gathered: number; acc: number; flow: Flow;
-  reserve: number; // auto-growth leaves this much for the verbs
+  genes: Genes; spot: number; x: number; nodes: Node[]; rng: Rng;
+  energy: number; water: number; nutrient: number; flow: Flow;
 }
 
-const UP = -Math.PI / 2, DOWN = Math.PI / 2;
-let rnd = Math.random;
-const seeded = (a: number) => () => {
-  a = (a + 0x6d2b79f5) | 0;
-  let t = Math.imul(a ^ (a >>> 15), 1 | a);
-  t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
+export const UP = -Math.PI / 2, DOWN = Math.PI / 2;
+const turn = (a: number, to: number, k: number) => a + Math.atan2(Math.sin(to - a), Math.cos(to - a)) * k;
 
-// ---- the plot ----
-
-export function makePlot(): Plot {
-  const cells: Cell[] = [];
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      const stone = rnd() < T.stoneBase + T.stoneRight * (c / COLS) + 0.04 * (r / ROWS);
-      cells.push({ kind: stone ? 'stone' : 'plain', amount: T.plainAmount, max: T.plainAmount, seen: false, hint: 0 });
-    }
-  }
-  for (let p = 0; p < T.pockets; p++) {
-    const c = Math.floor(COLS * rnd() ** 1.5), r = 1 + Math.floor((ROWS - 1) * rnd());
-    const amt = T.pocketAmount[0] + (T.pocketAmount[1] - T.pocketAmount[0]) * rnd() + r * 4;
-    cells[r * COLS + c] = { kind: 'pocket', amount: amt, max: amt, seen: false, hint: 0 };
-  }
-  for (const x of SPOTS) {
-    const c = Math.floor(x / CELL);
-    for (const r of [0, 1]) if (cells[r * COLS + c].kind === 'stone') cells[r * COLS + c].kind = 'plain';
-  }
-  for (let i = 0; i < cells.length; i++) {
-    const c = i % COLS, r = Math.floor(i / COLS);
-    let n = 0;
-    for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
-      const rr = r + dr, cc = c + dc;
-      if ((dr || dc) && rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && cells[rr * COLS + cc].kind === 'pocket') n++;
-    }
-    cells[i].hint = n;
-  }
-  return { cells };
+function mk(p: Partial<Node> & Pick<Node, 'x' | 'y' | 'parent' | 'kind'>): Node {
+  return { state: 'tip', heading: p.kind === 'shoot' ? UP : DOWN, len: 0, leaf: 0, light: 1, thick: 1, progress: 0, target: null, dead: false, order: 0, ...p };
 }
 
-export const cellAt = (x: number, y: number) => {
-  const c = Math.floor(x / CELL), r = Math.floor((y - GROUND) / CELL);
-  return c < 0 || c >= COLS || r < 0 || r >= ROWS ? -1 : r * COLS + c;
-};
-
-export function reveal(plot: Plot, x: number, y: number) {
-  const c = Math.floor(x / CELL), r = Math.floor((y - GROUND) / CELL);
-  for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
-    const rr = r + dr, cc = c + dc;
-    if (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS) plot.cells[rr * COLS + cc].seen = true;
-  }
-}
-
-export const skyLight = (x: number) =>
-  T.shade + (1 - T.shade) * Math.max(0, Math.min(1, (x - T.shadeFrom) / (T.shadeTo - T.shadeFrom)));
-
-// ---- the plant ----
-
-function node(p: Partial<Node> & Pick<Node, 'x' | 'y' | 'parent' | 'kind'>): Node {
-  return { order: 0, heading: p.kind === 'shoot' ? UP : DOWN, tip: true, leaf: 0, light: 1, dead: false, target: null, cost: 0, ...p };
-}
-
-export function newPlant(genes: Genes, spot: number, store: number, plot: Plot | null): Plant {
+export function newPlant(genes: Genes, spot: number, world: World | null, rng: Rng): Plant {
   const x = SPOTS[spot];
   const nodes = [
-    node({ x, y: GROUND, parent: -1, kind: 'shoot', tip: false }),
-    node({ x, y: GROUND - 6, parent: 0, kind: 'shoot', leaf: 2 }),
-    node({ x, y: GROUND + 6, parent: 0, kind: 'root' }),
+    mk({ x, y: GROUND, parent: -1, kind: 'shoot', state: 'seg' }),
+    mk({ x, y: GROUND - 4, parent: 0, kind: 'shoot', len: 4, leaf: 2 }),
+    mk({ x, y: GROUND + 4, parent: 0, kind: 'root', len: 4 }),
   ];
-  if (plot) { reveal(plot, x, GROUND + 6); reveal(plot, x, GROUND + 6 + CELL); }
-  return { genes, spot, x, nodes, store, gathered: 0, acc: 0, reserve: 0, flow: { light: 0, uptake: 0, upkeep: 0, income: 0, limit: 'light' } };
+  if (world) reveal(world, x, GROUND + 4);
+  return {
+    genes, spot, x, nodes, rng, ...T.start,
+    flow: { energyIn: 0, energyUp: 0, waterIn: 0, waterUse: 0, nutrientIn: 0, wilting: false },
+  };
 }
 
-export const segCost = (p: Plant, kind: Kind) =>
-  kind === 'shoot'
-    ? (T.shootCost * gene(p.genes, 'internode')) / 8 + T.leafCost * gene(p.genes, 'leaf')
-    : T.rootCost * (0.5 + 0.5 * gene(p.genes, 'hairs'));
+// ---- costs ----
 
-const turn = (a: number, to: number, k: number) => {
-  const d = Math.atan2(Math.sin(to - a), Math.cos(to - a));
-  return a + d * k;
-};
-
-function pickTip(p: Plant, kind: Kind): number {
-  let best = -1, total = 0;
-  const up = gene(p.genes, 'upright');
-  for (let i = 0; i < p.nodes.length; i++) {
-    const n = p.nodes[i];
-    if (n.dead || !n.tip || n.kind !== kind) continue;
-    if (kind === 'root' && n.target) return i; // sent roots go first
-    const w = n.order === 0 ? 1 + 2 * (kind === 'shoot' ? up : 0.5) : 1 / (1 + n.order * 0.3);
-    total += w;
-    if (rnd() * total < w) best = i;
-  }
-  return best;
+const hardMult = (p: Plant) => 1 + (T.hardCost - 1) / gene(p.genes, 'thickness');
+export function segCost(p: Plant, kind: Kind, world: World | null, at?: Node): number {
+  const th = gene(p.genes, 'thickness');
+  if (kind === 'shoot') return (T.shootCost * gene(p.genes, 'internode') * th) / 8 + T.leafCost * gene(p.genes, 'leaf');
+  const c = at && world ? cellIndex(at.x, at.y) : -1;
+  return ((T.rootCost * T.rootLen * th) / 8) * (c >= 0 && world!.cells[c].kind === 'hard' ? hardMult(p) : 1);
 }
 
-function addBud(p: Plant, at: number, heading: number): number {
+// ---- growth ----
+
+export function addBud(p: Plant, at: number, heading: number, kind: Kind = 'shoot', state: State = 'bud'): number {
   const n = p.nodes[at];
-  p.nodes.push(node({ x: n.x, y: n.y, parent: at, kind: n.kind, order: n.order + 1, heading }));
+  p.nodes.push(mk({ x: n.x, y: n.y, parent: at, kind, state, heading, order: n.order + 1 }));
   return p.nodes.length - 1;
 }
 
-function extendShoot(p: Plant, i: number): boolean {
-  const t = p.nodes[i], len = gene(p.genes, 'internode');
+/** Extend a shoot tip by one segment (geometry only; the caller pays). The new tip, or -1 if it can't grow on. */
+export function extendShoot(p: Plant, world: World | null, i: number): number {
+  const t = p.nodes[i], len = gene(p.genes, 'internode'), rng = p.rng;
   for (let tries = 0; tries < 3; tries++) {
-    let h = t.heading + (rnd() - 0.5) * 0.5;
-    h = turn(h, UP, gene(p.genes, 'upright') * 0.35 + tries * 0.3);
-    const x = t.x + Math.cos(h) * len, y = t.y + Math.sin(h) * len;
-    if (y > GROUND - 3 || y < 6 || x < 4 || x > W - 4) continue;
-    t.tip = false;
-    p.nodes.push(node({ x, y, parent: i, kind: 'shoot', order: t.order, heading: h, leaf: gene(p.genes, 'leaf'), cost: segCost(p, 'shoot') }));
-    const k = p.nodes.length - 1;
-    if (rnd() < gene(p.genes, 'branching')) {
-      const side = k % 2 ? 1 : -1;
-      addBud(p, k, h + (side * gene(p.genes, 'angle') * Math.PI) / 180);
+    let h = turn(t.heading + (rng() - 0.5) * 0.5, UP, (t.order ? 0.06 : 0.18) + tries * 0.3); // side shoots keep their angle
+    if (world) { // lean toward the brighter side
+      const l = light(world, t.x - 12, t.y), r = light(world, t.x + 12, t.y);
+      if (l !== r) h = turn(h, l > r ? Math.PI : 0, 0.12);
     }
-    return true;
+    const x = t.x + Math.cos(h) * len, y = t.y + Math.sin(h) * len;
+    if (y > GROUND - 3 || y < 4 || x < 4 || x > W - 4) continue;
+    t.state = 'seg';
+    p.nodes.push(mk({ x, y, parent: i, kind: 'shoot', heading: h, len, leaf: gene(p.genes, 'leaf'), order: t.order }));
+    const k = p.nodes.length - 1, ang = (gene(p.genes, 'angle') * Math.PI) / 180;
+    const buds = Math.floor(gene(p.genes, 'buds') + rng());
+    for (let b = 0; b < buds; b++) addBud(p, k, h + ((k + b) % 2 ? ang : -ang));
+    return k;
   }
-  t.tip = false;
-  return false;
+  t.state = 'seg';
+  return -1;
 }
 
-function extendRoot(p: Plant, plot: Plot | null, i: number): boolean {
-  const t = p.nodes[i], len = T.rootLen;
+function extendRoot(p: Plant, world: World | null, i: number): number {
+  const t = p.nodes[i], rng = p.rng, len = T.rootLen;
   let h: number;
-  if (t.target) {
-    h = Math.atan2(t.target.y - t.y, t.target.x - t.x) + (rnd() - 0.5) * 0.3;
-  } else {
+  if (t.target) h = Math.atan2(t.target.y - t.y, t.target.x - t.x) + (rng() - 0.5) * 0.3;
+  else {
     const dive = gene(p.genes, 'dive');
-    h = t.heading + (rnd() - 0.5) * 0.6;
-    h = turn(h, DOWN, dive * 0.3);
-    h = turn(h, Math.cos(h) >= 0 ? 0 : Math.PI, (1 - dive) * 0.2);
+    h = turn(t.heading + (rng() - 0.5) * 0.6, DOWN, dive * 0.25);
+    h = turn(h, Math.cos(h) >= 0 ? 0.25 : Math.PI - 0.25, (1 - dive) * 0.2);
   }
-  for (const dh of [0, 0.9, -0.9, 1.6, -1.6]) {
+  for (const dh of [0, 0.8, -0.8, 1.5, -1.5]) {
     const a = h + dh, x = t.x + Math.cos(a) * len, y = t.y + Math.sin(a) * len;
     if (y < GROUND + 3 || y > H - 3 || x < 3 || x > W - 3) continue;
-    const c = cellAt(x, y);
-    if (plot && c >= 0 && plot.cells[c].kind === 'stone') { plot.cells[c].seen = true; continue; }
-    t.tip = false;
+    const c = cellIndex(x, y);
+    if (world && c >= 0 && world.cells[c].kind === 'stone') { world.cells[c].seen = true; continue; }
     const target = t.target && Math.hypot(t.target.x - x, t.target.y - y) > len ? t.target : null;
-    t.target = null;
-    p.nodes.push(node({ x, y, parent: i, kind: 'root', order: t.order, heading: a, target, cost: segCost(p, 'root') }));
-    if (plot) reveal(plot, x, y);
-    if (!target && rnd() < gene(p.genes, 'rootBranch')) addBud(p, p.nodes.length - 1, a + (rnd() < 0.5 ? 0.9 : -0.9));
-    return true;
+    t.state = 'seg'; t.target = null;
+    p.nodes.push(mk({ x, y, parent: i, kind: 'root', heading: a, len, target, order: t.order }));
+    const k = p.nodes.length - 1;
+    if (world) reveal(world, x, y);
+    if (!target && rng() < T.rootBranch + 0.12 * gene(p.genes, 'buds')) addBud(p, k, a + (rng() < 0.5 ? 0.9 : -0.9), 'root', 'tip');
+    return k;
   }
-  t.tip = false;
-  t.target = null;
-  return false;
+  t.state = 'seg'; t.target = null;
+  return -1;
 }
 
-/** One growth step. Free = a preview in open ground: no costs, no stone. */
-function growOnce(p: Plant, plot: Plot | null, free: boolean): boolean {
-  if (p.nodes.length >= T.maxNodes) return false;
-  const sent = p.nodes.some((n) => !n.dead && n.tip && n.target);
-  let kind: Kind = rnd() < (sent ? Math.max(0.6, gene(p.genes, 'rootShare')) : gene(p.genes, 'rootShare')) ? 'root' : 'shoot';
-  let i = pickTip(p, kind);
-  if (i < 0) { kind = kind === 'root' ? 'shoot' : 'root'; i = pickTip(p, kind); }
-  if (i < 0) return false;
-  const cost = segCost(p, kind);
-  if (!free && p.store - cost < p.reserve) return false;
-  const ok = kind === 'shoot' ? extendShoot(p, i) : extendRoot(p, plot, i);
-  if (ok && !free) p.store -= cost;
-  return true;
+export const extend = (p: Plant, world: World | null, i: number) =>
+  p.nodes[i].kind === 'shoot' ? extendShoot(p, world, i) : extendRoot(p, world, i);
+
+/** Wake the dormant buds on the few nodes below node i (apical dominance released). */
+export function wakeBelow(p: Plant, i: number) {
+  let n = p.nodes[i].parent;
+  for (let k = 0; k < 3 && n >= 0; k++, n = p.nodes[n].parent) {
+    for (const b of p.nodes) if (b.parent === n && b.state === 'bud' && !b.dead) b.state = 'tip';
+  }
 }
 
-function shadeLeaves(p: Plant) {
+/** Share the growth energy among the active tips; tips that reach a segment's cost extend. */
+function grow(p: Plant, world: World | null) {
+  if (p.nodes.length >= T.maxNodes) return;
+  const tips = { shoot: [] as number[], root: [] as number[] };
+  p.nodes.forEach((n, i) => { if (!n.dead && n.state === 'tip') tips[n.kind].push(i); });
+  const spend = Math.max(0, p.energy) * 0.5;
+  let share = gene(p.genes, 'rootShare');
+  if (!tips.root.length) share = 0;
+  if (!tips.shoot.length) share = tips.root.length ? 1 : 0;
+  if (!tips.shoot.length && !tips.root.length) return;
+  p.energy -= spend;
+  for (const kind of ['shoot', 'root'] as Kind[]) {
+    const list = tips[kind], pool = spend * (kind === 'root' ? share : 1 - share);
+    const weight = (i: number) => (p.nodes[i].target ? 3 : 1);
+    const total = list.reduce((s, i) => s + weight(i), 0);
+    for (const i of list) {
+      const n = p.nodes[i], cost = segCost(p, kind, world, n);
+      const add = Math.min((pool * weight(i)) / total, T.progressCap * cost - n.progress);
+      n.progress += Math.max(0, add);
+      p.energy += (pool * weight(i)) / total - Math.max(0, add);
+      const water = kind === 'shoot' ? T.segWater : 0;
+      if (n.progress >= cost && p.water >= water) {
+        p.water -= water;
+        const carry = n.progress - cost, k = extend(p, world, i);
+        n.progress = 0;
+        if (k >= 0) p.nodes[k].progress = carry;
+        else if (kind === 'shoot') wakeBelow(p, i);
+      }
+    }
+  }
+}
+
+// ---- the tick ----
+
+function shade(p: Plant, world: World | null) {
   const leaves = p.nodes.filter((n) => !n.dead && n.kind === 'shoot' && n.leaf > 0);
   for (const a of leaves) {
     let above = 0;
-    for (const b of leaves) if (b !== a && b.y < a.y - 2 && Math.abs(b.x - a.x) < 3 + b.leaf * 2) above++;
-    a.light = skyLight(a.x) * T.selfShade ** above;
+    for (const b of leaves) if (b !== a && b.y < a.y - 2 && Math.abs(b.x - a.x) < 2 + b.leaf * 1.5) above++;
+    a.light = (world ? light(world, a.x, a.y) : 1) * T.selfShade ** above;
   }
 }
 
-/** One tick: shade, draw nutrient from the soil (capped by what the leaves power), pay upkeep, grow. */
-export function tick(p: Plant, plot: Plot, t: number) {
-  if (t % 5 === 0) shadeLeaves(p);
-  let light = T.trickle, upkeep = 0;
+/** Pipe model: stems thicken with the leaves they carry. */
+function thicken(p: Plant) {
+  const carried = new Float32Array(p.nodes.length), th = gene(p.genes, 'thickness');
+  for (let i = p.nodes.length - 1; i > 0; i--) {
+    const n = p.nodes[i];
+    if (n.dead) continue;
+    carried[i] += n.leaf > 0 || n.kind === 'root' ? 1 : 0;
+    n.thick = th * (1 + (n.kind === 'shoot' ? 0.18 : 0.1) * Math.sqrt(carried[i]));
+    if (n.parent >= 0) carried[n.parent] += carried[i];
+  }
+}
+
+export function tick(p: Plant, world: World, t: number) {
+  if (t % 5 === 0) shade(p, world);
+  if (t % 10 === 0) thicken(p);
+  const thirst = world.habitat.thirst;
+  let eIn = 0, eUp = 0, wUse = 0;
   const perCell = new Map<number, number>();
   for (const n of p.nodes) {
-    if (n.dead) continue;
-    if (n.kind === 'shoot') {
-      light += n.leaf * n.light * T.leafRate;
-      upkeep += T.upkeep + n.leaf * T.leafUpkeep;
-    } else {
-      upkeep += T.upkeep;
-      const c = cellAt(n.x, n.y);
+    if (n.dead || n.state === 'bud') continue;
+    eUp += (T.upkeep * n.thick * Math.max(n.len, 4)) / 8;
+    if (n.kind === 'shoot' && n.leaf > 0) {
+      eIn += n.leaf * n.light * T.leafRate;
+      wUse += n.leaf * n.light * T.leafThirst * thirst;
+    } else if (n.kind === 'root') {
+      const c = cellIndex(n.x, n.y);
       if (c >= 0) perCell.set(c, (perCell.get(c) ?? 0) + 1);
     }
   }
-  const hairs = gene(p.genes, 'hairs');
-  const pots: [Cell, number][] = [];
-  let uptake = 0;
+  let wIn = 0, nIn = 0;
   for (const [c, k] of perCell) {
-    const cell = plot.cells[c];
-    if (cell.kind === 'stone' || cell.amount <= 0) continue;
-    const pot = Math.min(cell.amount, (cell.kind === 'pocket' ? T.pocketRate : T.plainRate) * Math.min(k, T.rootCap) * hairs);
-    pots.push([cell, pot]);
-    uptake += pot;
+    const cell = world.cells[c], m = Math.min(k, T.rootCap);
+    if (cell.kind === 'water' || cell.kind === 'nutrient') {
+      const got = Math.min(cell.amount, m * (cell.kind === 'water' ? T.pocketWater : T.pocketNutrient));
+      cell.amount -= got;
+      if (cell.kind === 'water') wIn += got; else nIn += got;
+    } else if (cell.kind !== 'stone') {
+      wIn += m * T.loamWater * world.habitat.moisture * (cell.kind === 'hard' ? 0.5 : 1);
+    }
   }
-  const income = Math.min(light, uptake + T.trickle);
-  const f = uptake > 0 ? Math.min(1, Math.max(0, income - T.trickle) / uptake) : 0;
-  for (const [cell, pot] of pots) cell.amount -= pot * f;
-  p.flow = { light, uptake: uptake + T.trickle, upkeep, income, limit: light < uptake + T.trickle ? 'light' : 'roots' };
-  p.store = Math.max(0, p.store + income - upkeep);
-  p.gathered += income;
-  p.acc = Math.min(p.acc + gene(p.genes, 'vigor'), 4);
-  while (p.acc >= 1) {
-    p.acc -= 1;
-    if (!growOnce(p, plot, false)) { p.acc = 0; break; }
-  }
+  const wilting = p.water <= 0.05;
+  const eGot = eIn * (wilting ? T.wilt : 1);
+  p.energy = Math.max(0, p.energy + eGot - eUp);
+  p.water = Math.max(0, p.water + wIn - wUse * (wilting ? T.wilt : 1));
+  p.nutrient += nIn;
+  p.flow = { energyIn: eGot, energyUp: eUp, waterIn: wIn, waterUse: wUse, nutrientIn: nIn, wilting };
+  const dom = gene(p.genes, 'dominance');
+  for (const n of p.nodes) if (n.state === 'bud' && !n.dead && p.rng() < T.wakeChance * (1 - dom) ** 2) n.state = 'tip';
+  grow(p, world);
 }
 
-// ---- verbs ----
+// ---- stats and the score ----
 
-export const BUD_COST = T.budCost;
-
-export function nearestNode(p: Plant, x: number, y: number, kind: Kind, r = 9): number {
-  let best = -1, bd = r * r;
-  for (let i = 1; i < p.nodes.length; i++) {
-    const n = p.nodes[i];
-    if (n.dead || n.kind !== kind) continue;
-    const d = (n.x - x) ** 2 + (n.y - y) ** 2;
-    if (d < bd) { bd = d; best = i; }
-  }
-  return best;
-}
-
-export function bud(p: Plant, i: number, towardX: number): boolean {
-  if (p.store < T.budCost) return false;
-  p.store -= T.budCost;
-  const side = towardX >= p.nodes[i].x ? 1 : -1;
-  addBud(p, i, UP + side * 0.9);
-  return true;
-}
-
-export function subtree(p: Plant, i: number): number[] {
-  const inside = new Set([i]);
-  for (let k = i + 1; k < p.nodes.length; k++) if (inside.has(p.nodes[k].parent)) inside.add(k);
-  return [...inside].filter((k) => !p.nodes[k].dead);
-}
-
-export function prunePreview(p: Plant, i: number) {
-  const cut = subtree(p, i).map((k) => p.nodes[k]);
-  const refund = cut.reduce((s, n) => s + n.cost, 0) * T.pruneRefund;
-  const upkeep = cut.reduce((s, n) => s + T.upkeep + n.leaf * T.leafUpkeep, 0);
-  return { parts: cut.length, refund, upkeep };
-}
-
-/** Cut the branch at node i; a bud wakes on the node below. */
-export function prune(p: Plant, i: number) {
-  const { refund } = prunePreview(p, i);
-  for (const k of subtree(p, i)) { p.nodes[k].dead = true; p.nodes[k].tip = false; }
-  p.store += refund;
-  const below = p.nodes[i].parent;
-  if (below >= 0) addBud(p, below, UP + (rnd() < 0.5 ? 0.8 : -0.8));
-}
-
-export function rootPreview(p: Plant, x: number, y: number) {
-  let from = -1, bd = Infinity;
-  for (let i = 0; i < p.nodes.length; i++) {
-    const n = p.nodes[i];
-    if (n.dead || n.kind !== 'root') continue;
-    const d = Math.hypot(n.x - x, n.y - y);
-    if (d < bd) { bd = d; from = i; }
-  }
-  const n = p.nodes[from], fresh = !(n.tip && !n.target);
-  const steps = Math.ceil(bd / T.rootLen);
-  return { from, steps, cost: steps * segCost(p, 'root') + (fresh ? T.budCost : 0), fresh };
-}
-
-export function sendRoot(p: Plant, x: number, y: number): boolean {
-  const pr = rootPreview(p, x, y);
-  if (pr.from < 0 || (pr.fresh && p.store < T.budCost)) return false;
-  let i = pr.from;
-  if (pr.fresh) { p.store -= T.budCost; i = addBud(p, pr.from, Math.atan2(y - p.nodes[i].y, x - p.nodes[i].x)); }
-  p.nodes[i].target = { x, y };
-  return true;
-}
-
-// ---- stats, broods ----
-
-export function stats(p: Plant) {
-  let top = GROUND, lo = W, hi = 0, deep = GROUND, leaves = 0;
+export type Stats = Record<StatId, number> & { biomass: number; leaves: number; depth: number };
+export function stats(p: Plant, world: World | null): Stats {
+  let top = GROUND, lo = W, hi = 0, deep = GROUND, leaves = 0, th = 0, segs = 0, bio = 0;
+  const tapped = new Set<number>();
   for (const n of p.nodes) {
-    if (n.dead) continue;
-    if (n.kind === 'shoot') { top = Math.min(top, n.y); lo = Math.min(lo, n.x); hi = Math.max(hi, n.x); if (n.leaf) leaves++; }
-    else deep = Math.max(deep, n.y);
+    if (n.dead || n.state === 'bud') continue;
+    bio += n.len * n.thick * n.thick * 0.02 + n.leaf * 0.05;
+    if (n.kind === 'shoot') {
+      top = Math.min(top, n.y); lo = Math.min(lo, n.x); hi = Math.max(hi, n.x);
+      if (n.leaf) leaves++;
+      if (n.len) { th += n.thick; segs++; }
+    } else {
+      deep = Math.max(deep, n.y);
+      const c = cellIndex(n.x, n.y);
+      if (world && c >= 0 && isPocket(world.cells[c])) tapped.add(c);
+    }
   }
-  return { reach: GROUND - top, spread: Math.max(0, hi - lo), depth: deep - GROUND, leaves };
+  const f = p.flow;
+  return {
+    reach: GROUND - top, spread: Math.max(0, hi - lo), roots: tapped.size, toughness: segs ? th / segs : 0,
+    growth: (f.energyIn - f.energyUp) * 10, upkeep: (f.energyUp + f.waterUse) * 10,
+    biomass: bio, leaves, depth: deep - GROUND,
+  };
 }
 
-export function mutate(g: Genes): { genes: Genes; changed: number[] } {
-  const genes = [...g], changed: number[] = [];
-  const k = 1 + Math.floor(rnd() * 3);
-  while (changed.length < k) {
-    const i = Math.floor(rnd() * GENES.length);
-    if (changed.includes(i)) continue;
-    const step = (rnd() < 0.5 ? -1 : 1) * (rnd() < 0.35 ? 2 : 1);
-    const v = Math.max(0, Math.min(LEVELS, genes[i] + step));
-    if (v === genes[i]) continue;
-    genes[i] = v;
-    changed.push(i);
-  }
-  return { genes, changed };
+export function score(s: Stats, targetId: string): number {
+  const w = TARGETS.find((t) => t.id === targetId)!.w;
+  let v = 0;
+  for (const [k, wt] of Object.entries(w) as [StatId, number][]) v += wt * Math.min(1, Math.max(0, s[k]) / STAT_SCALE[k]);
+  return Math.max(0, Math.min(100, Math.round(v * 100)));
 }
-
-/** The body a genome grows in open ground, for the brood cards. One fixed random stream, so bodies differ by genes. */
-export function preview(genes: Genes): Plant {
-  const keep = rnd;
-  rnd = seeded(7);
-  const p = newPlant(genes, 2, 0, null);
-  const steps = Math.round(T.previewSteps * (0.7 + 0.3 * gene(genes, 'vigor')));
-  for (let s = 0; s < steps; s++) if (!growOnce(p, null, true)) break;
-  rnd = keep;
-  return p;
-}
-
-export interface Seed { genes: Genes; changed: number[]; spot: number; body: Plant }
-
-export function brood(parent: Plant): Seed[] {
-  const spots = [0, 1, 2, 3, 4].sort(() => rnd() - 0.5).slice(0, 3).sort((a, b) => a - b);
-  return spots.map((spot) => {
-    const { genes, changed } = mutate(parent.genes);
-    return { genes, changed, spot, body: preview(genes) };
-  });
-}
-
-export const firstPlant = (plot: Plot) => newPlant([...BASE_GENES], 2, T.startStore, plot);

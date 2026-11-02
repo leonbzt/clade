@@ -1,6 +1,6 @@
 # Slice 00: the grow toy
 
-**Milestone:** M0, step 1 (`ROADMAP.md`). **AI draft for your approval.**
+**Milestone:** M0, step 1 (`ROADMAP.md`). **Approved 2 Nov** ("rebuild the toy so it matches the spec").
 **Question:** With buds and pruning above ground and hidden soil below, are there enough decisions? And do the heirs
 feel different? (Compare with the verbs switched off.)
 **Builds on:** decisions.md, 2 Nov: genome → body → stats; the side-view run; a toy first; buds and pruning mixed
@@ -28,7 +28,14 @@ your surroundings". It starts from `toys/specimen.ts` (the canvas, the HUD, the 
   (pockets tapped) · Toughness (mean thickness) · Growth (net energy/s) · Upkeep (energy and water/s). Biomass in g.
 - **Target:** at the start, pick 1 of 3 cards (e.g. Tall herb, Low cover, Deep rooter). Each card weighs the stats
   into a score, and the score gives a tier F → S. The score updates live.
-- **Seasons:** 5, about 60–90 s each at ×1, with pause and ×4. The soil you've revealed stays revealed; tapped
+- **Habitat** (added 2 Nov from your playtest; the details are an AI proposal): at the start, pick 1 of 3
+  habitats beside the target: *Forest edge* (a tree, a shrub and a fern as neighbours; rich, moist loam), *Lava
+  field* (full sun and thirsty air; hard soil and stone, few pockets, water deep), *Wet hollow* (sedge clumps
+  crowding the light low down; soft, wet soil). **Neighbours** shade the leaves under their crowns, grow during the
+  season, and drain the pockets in their root zones. So the 5 seed spots differ: under a crown, in the open, beside a
+  rival's roots.
+- **Seasons:** 5, 90 s each at ×1 (your playtest: "generations feel too short"), with pause, ×4 and ×10. Water
+  pockets refill between seasons (rain). The soil you've revealed stays revealed; tapped
   nutrient pockets stay empty.
 - **Brood:** at the season's end, 3 seeds. Each has the heir's genes with mutations (mostly ±1 pip, now and then
   ±2), a small body grown without verbs, the changed pips marked, a predicted score, and its landing spot on the soil.
@@ -44,7 +51,7 @@ your surroundings". It starts from `toys/specimen.ts` (the canvas, the HUD, the 
 - v1's pixel painting: M1. The toy draws plain lines and blobs.
 
 ## Done when
-- [ ] In play: pick a target, then grow 5 seasons with wake, cut and dig, each with a cost preview. The brood of 3 is
+- [ ] In play: pick a habitat and a target, then grow 5 seasons with wake, cut and dig, each with a cost preview. The brood of 3 is
   drawn as bodies with pips. A final tier. The switch turns the verbs off.
 - [ ] `npm run check` passes.
 - [ ] Your playtest notes are in `docs/playtests/00-grow-toy.md`: enough decisions (on vs off)? Heirs different?
@@ -54,5 +61,5 @@ your surroundings". It starts from `toys/specimen.ts` (the canvas, the HUD, the 
 - Fits one or two sessions. Build order: the body and stats, the brood, the soil, the shoot verbs, the switch.
 
 ## Open questions
-1. Seeds landing at different spots (good genes on a poor spot): in or out? AI lean: in, it's one more real choice.
-2. Nutrient as the only currency for the verbs, earned by the soil puzzle: AI lean: yes, it ties the two halves.
+- Answered 2 Nov: seeds land at different spots (in); nutrient is the only currency for the verbs (yes).
+- After the playtest: is the habitat a real choice, or does one habitat and spot always win?

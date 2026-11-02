@@ -6,29 +6,35 @@
     <title>Toy: Grow a line</title>
     <link rel="stylesheet" href="./toys.css" />
     <style>
-      .col { display: flex; flex-direction: column; gap: 10px; max-width: 960px; }
+      .col { display: flex; flex-direction: column; gap: 10px; max-width: 960px; flex: 1 1 600px; }
+      #hud { width: 330px; }
       .bar { height: 6px; background: #333a42; border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
       .bar div { height: 100%; background: var(--accent); }
+      .target { display: flex; justify-content: space-between; align-items: center; border: 1px solid #48505a; border-radius: 4px; padding: 6px 8px; margin: 6px 0; }
+      .tier { font: 700 28px/1 system-ui; color: #ffe36b; min-width: 32px; text-align: center; }
+      .tier.small { font-size: 18px; } .tier.big { font-size: 64px; }
       .gene { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-      .gene > span:first-child { width: 96px; }
+      .gene > span:first-child { width: 78px; }
       .gene.ch > span:first-child { color: #ffe36b; }
       .pips { display: inline-flex; gap: 2px; }
-      .pips i { width: 7px; height: 9px; background: #333a42; border-radius: 1px; }
+      .pips i { width: 8px; height: 9px; background: #333a42; border-radius: 1px; }
       .pips i.f { background: #8fd16a; }
       .gene.ch .pips i.f { background: #ffe36b; }
-      .cards { display: flex; gap: 10px; flex-wrap: wrap; }
-      .card.seed { width: 300px; cursor: pointer; }
+      .cards { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0; }
+      .card.pick { width: 230px; } .card.pick.on { border-color: var(--accent); background: #26331f; }
+      .card.seed { width: 280px; }
       .card.seed canvas { display: block; margin: 6px 0; cursor: pointer; }
-      table { border-collapse: collapse; font-size: 13px; }
-      td, th { padding: 3px 8px; text-align: left; border-bottom: 1px solid #333a42; }
-      #hud { width: 320px; }
+      .card.end { display: flex; justify-content: space-between; align-items: center; cursor: default; }
+      table { border-collapse: collapse; font-size: 13px; margin: 8px 0; }
+      td, th { padding: 3px 8px; text-align: left; border-bottom: 1px solid #333a42; vertical-align: top; }
+      td.genome .gene span:first-child { width: 70px; }
     </style>
   </head>
   <body>
     <main>
       <div class="col">
         <canvas id="view"></canvas>
-        <section id="brood"></section>
+        <section id="panel"></section>
       </div>
       <aside id="hud"></aside>
     </main>
