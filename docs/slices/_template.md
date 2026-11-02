@@ -12,7 +12,7 @@
 
 ## Done when
 - [ ] In play: what you can see and do.
-- [ ] `npm run check` passes; `npm run sim` 5/5 seeds.
+- [ ] `npm run check` passes.
 - [ ] Your playtest notes are in `docs/playtests/NN-name.md`.
 
 ## Size check

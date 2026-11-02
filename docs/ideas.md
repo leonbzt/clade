@@ -4,7 +4,7 @@ Ideas that aren't on the current milestone. **One line each.** Parking an idea i
 built or specced until a milestone needs it, then it becomes a proposal ([proposals.md](proposals.md)).
 
 **2 Nov: every v1 idea reviewed against v2** (v1's parking lot, vision's "wanted later" and "on hold", the game
-shape, your 26 Oct mechanics list). The sorting and the verdicts are **AI's**; nothing is dropped until you say so.
+shape, your 26 Oct mechanics list). The sorting and the verdicts are **AI's**; the drops are yours (confirmed 2 Nov).
 v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 
 ## Already in the v2 plan
@@ -63,7 +63,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Your sim methods, one per kingdom: plants = space colonization and L-systems; fungi = physarum; animals = boids
   and pheromone trails (AI).
 
-## AI: drop? (v1 sim realism, or replaced)
+## Dropped (your call, 2 Nov): v1 sim realism, or replaced
 - Humus as its own stock → fold into soil depth.
 - The clock with three tempos → one fixed step.
 - Nitrogen leaking downhill with a Tight gene; food quality as C:N; nitrogen resorption.

@@ -22,3 +22,13 @@ Your calls, dated, in your words where possible. Only explicit calls; AI proposa
 - **Likes:** the side view and "the feeling you grow everything"; Hatched's staged assembly. "I like the new ideas
   and inputs."
 - **A critical review of all collected ideas first** → [ideas.md](ideas.md) (the verdicts are AI's).
+
+## 2 Nov, the roadmap and the ideas review
+- **Roadmap draft approved** ("roadmap confirmed").
+- **Ideas review: the drops confirmed.** The rest of the verdicts stay AI's.
+- **A short spec for the toy** before building it.
+- **The toy's verb: not aimed shots** ("it would feel really copied"). **Buds and pruning above ground, mixed with
+  hidden soil below (Minesweeper-like), with a switch to turn the verbs off.** "A game-like mechanic similar to this,
+  also not required." Spec: [slices/00-grow-toy.md](slices/00-grow-toy.md).
+- **Build the toy** with two changes: **the 3 seeds land in different spots**, and **nutrient is the only
+  currency** (no water stock in the toy).

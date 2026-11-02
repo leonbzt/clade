@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: Grow a line</title>
+    <link rel="stylesheet" href="./toys.css" />
+    <style>
+      .col { display: flex; flex-direction: column; gap: 10px; max-width: 960px; }
+      .bar { height: 6px; background: #333a42; border-radius: 3px; overflow: hidden; margin-bottom: 6px; }
+      .bar div { height: 100%; background: var(--accent); }
+      .gene { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+      .gene > span:first-child { width: 96px; }
+      .gene.ch > span:first-child { color: #ffe36b; }
+      .pips { display: inline-flex; gap: 2px; }
+      .pips i { width: 7px; height: 9px; background: #333a42; border-radius: 1px; }
+      .pips i.f { background: #8fd16a; }
+      .gene.ch .pips i.f { background: #ffe36b; }
+      .cards { display: flex; gap: 10px; flex-wrap: wrap; }
+      .card.seed { width: 300px; cursor: pointer; }
+      .card.seed canvas { display: block; margin: 6px 0; cursor: pointer; }
+      table { border-collapse: collapse; font-size: 13px; }
+      td, th { padding: 3px 8px; text-align: left; border-bottom: 1px solid #333a42; }
+      #hud { width: 320px; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="col">
+        <canvas id="view"></canvas>
+        <section id="brood"></section>
+      </div>
+      <aside id="hud"></aside>
+    </main>
+    <script type="module" src="./grow.ts"></script>
+  </body>
+</html>
