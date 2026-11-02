@@ -25,6 +25,7 @@ const fail = (reason: string): Result => ({ ok: false, reason });
 /** Species ids you can found: those whose tree node you reached (a door's template only through a split), and the
  * ones you made. */
 export function unlockedSpecies(s: State): string[] {
+  if (s.run) return s.run.line.map((sp) => s.species[sp].id); // a run: only the line (it grows by its broods)
   const reached = new Set(TREE.filter((n) => n.species && !doorKey(n) && s.reached.includes(n.id)).map((n) => n.species!));
   return s.species.filter((x) => reached.has(x.id) || x.parent >= 0).map((x) => x.id);
 }
@@ -57,9 +58,11 @@ export function canFoundAt(s: State, speciesId: string, i: number, P: Profile[] 
   return canPlant(s, P, founderProfile(s, speciesId, P), i);
 }
 
-function canPlant(s: State, P: Profile[], p: Profile, i: number): boolean {
+/** Room for a plant of this profile on tile i. A founder patch of a new species may take its parent's (kin's) tiles. */
+function canPlant(s: State, P: Profile[], p: Profile, i: number, kin = -1): boolean {
   const slot = slotFor(s, p.sp, i), occ = s.occ[slot];
-  return !(occ >= 0 && s.variants[occ].sp === p.sp) && fit(s, p, i) > 0 && canTake(s, P, p, slot);
+  if (occ >= 0 && s.variants[occ].sp === p.sp) return false;
+  return fit(s, p, i) > 0 && ((occ >= 0 && s.variants[occ].sp === kin) || canTake(s, P, p, slot));
 }
 
 /** Why a plant with this profile can't go here, or null. */
@@ -71,12 +74,13 @@ function plantCheck(s: State, P: Profile[], p: Profile, i: number): string | nul
   return null;
 }
 
-/** Plants a patch (radius `founding.patch`) of variant `v` around tile i, wherever it can take the slot. */
-function plant(s: State, P: Profile[], v: number, i: number) {
+/** Plants a patch (radius `founding.patch`) of variant `v` around tile i, wherever it can take the slot (or a tile of
+ * species `kin`, its parent). */
+export function plant(s: State, P: Profile[], v: number, i: number, kin = -1) {
   const p = P[v], x0 = i % s.w, y0 = (i / s.w) | 0, r = NUM.founding.patch;
   for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
     const x = x0 + dx, y = y0 + dy, j = y * s.w + x;
-    if (Math.abs(dx) + Math.abs(dy) > r || x < 0 || y < 0 || x >= s.w || y >= s.h || !canPlant(s, P, p, j)) continue;
+    if (Math.abs(dx) + Math.abs(dy) > r || x < 0 || y < 0 || x >= s.w || y >= s.h || !canPlant(s, P, p, j, kin)) continue;
     const sl = slotFor(s, p.sp, j);
     if (s.occ[sl] >= 0) kill(s, sl, EV.taken);
     if (settle(s, sl, v, NUM.founding.cover * ceilingOf(s, v, fit(s, p, j)), EV.founded, fit(s, p, j))) { s.variants[v].tiles++; s.count[p.sp]++; }
@@ -88,6 +92,7 @@ function plant(s: State, P: Profile[], v: number, i: number) {
 
 export function found(s: State, speciesId: string, i: number): Result {
   const sp = speciesIndex(s, speciesId), P = profiles(s);
+  if (s.run) return fail('No founding on a run: the line grows by its broods.');
   if (!unlockedSpecies(s).includes(speciesId)) return fail('Evolve it first.');
   if (defOf(s, sp).animal) return fail('Animals arrive by themselves, or split off from a variant.');
   const cost = foundingCost(s, speciesId);
@@ -127,7 +132,9 @@ export const splitCost = (s: State, v: number) => { const into = splitInto(s, v)
 /** A shown variant, Rare or better, can split off as a new species; one with a key opens its door. */
 export function canFoundSpecies(s: State, v: number): Result {
   const x = s.variants[v], key = doorOf(s, v);
+  if (s.run) return fail('No splits on a run: the line comes home whole.');
   if (!x?.alive || !x.shown) return fail('That variant is gone.');
+  if (x.split) return fail('It already founded a species.');
   if (x.tier < GENES.foundFrom) return fail('Only Rare or better variants can found a species.');
   if (key) {
     const n = doorNode(key);
@@ -149,8 +156,9 @@ export function suggestName(s: State, v: number): string {
   return `${base} ${s.species.length}`;
 }
 
-/** Variant `v` splits off as a new species: all its tiles become the new species (moving up a stratum if the new
- * clade lives in another), its genome the new base, and a founder patch goes on tile i. A key opens its door. */
+/** Variant `v` splits off as a new species: its genome the new base, a founder patch on tile i. A key opens its door.
+ * Start fresh (`GENES.fresh`): the variant stays with its parent. Otherwise all its tiles (or animals) become the new
+ * species, moving up a stratum if the new clade lives in another. */
 export function foundSpecies(s: State, v: number, i: number, name: string): Result {
   const can = canFoundSpecies(s, v);
   if (!can.ok) return can;
@@ -170,25 +178,28 @@ export function foundSpecies(s: State, v: number, i: number, name: string): Resu
   s.foundings[s.species[sp].id] = 0;
   const nv = variantFor(s, sp, into.genome, P);
   s.variants[nv].shown = s.variants[nv].seen = true;
+  if (GENES.fresh) x.split = true;
   if (animal) {
-    for (const a of s.agents) if (a.v === v) { // a new body plan weighs anew
+    if (!GENES.fresh) for (const a of s.agents) if (a.v === v) { // a new body plan weighs anew
       const g = gramsOf(s, a), n = g * nOf(s.species[a.sp].base);
       a.sp = sp; a.v = nv; s.ledger.came += gramsOf(s, a) - g; s.nbook.came += gramsOf(s, a) * nOf(into.base) - n;
     }
     spawn(s, nv, i, Math.max(ANIMAL.founders, Math.ceil(def.animal!.group / 2)), `founded ${nm} here`);
     s.foundings[s.species[sp].id] = 1; s.species[sp].at = s.tick;
     const what = into.door ? `the first of the ${doorNode(into.key!).name.toLowerCase()}` : 'a new species';
-    return { ok: true, msg: `${nm} is ${what}. The variant's animals are now ${nm}, and a founder group starts here.` };
+    return { ok: true, msg: GENES.fresh ? `${nm} is ${what}: a founder group starts here, and the variant stays with ${parent.name}.`
+      : `${nm} is ${what}. The variant's animals are now ${nm}, and a founder group starts here.` };
   }
-  moveTiles(s, P, v, nv);
-  plant(s, P, nv, i);
+  if (!GENES.fresh) moveTiles(s, P, v, nv);
+  plant(s, P, nv, i, x.sp);
   const what = into.door ? `the first of the ${doorNode(into.key!).name.toLowerCase()}` : 'a new species';
-  return { ok: true, msg: `${nm} is ${what}. It took the variant's ${s.variants[nv].tiles} tiles and keeps its genes; its own variants start from here.` };
+  return { ok: true, msg: GENES.fresh ? `${nm} is ${what}: it starts fresh as a patch of ${s.variants[nv].tiles} tiles, and the variant stays with ${parent.name}.`
+    : `${nm} is ${what}. It took the variant's ${s.variants[nv].tiles} tiles and keeps its genes; its own variants start from here.` };
 }
 
 /** Every tile of variant `from` becomes variant `to`. In the same stratum it keeps its cover; otherwise the old plant
  * goes and the new one settles above it where it can live and the slot is free. */
-function moveTiles(s: State, P: Profile[], from: number, to: number) {
+export function moveTiles(s: State, P: Profile[], from: number, to: number) {
   const n = s.w * s.h, k = STRATA.indexOf(defOf(s, s.variants[to].sp).stratum);
   for (let slot = 0; slot < s.occ.length; slot++) {
     if (s.occ[slot] !== from) continue;
@@ -233,6 +244,7 @@ export function markSeen(s: State, v: number) {
 export function canEvolve(s: State, nodeId: string): Result {
   const node = TREE.find((n) => n.id === nodeId);
   if (!node) return fail('No such node.');
+  if (s.run) return fail('The tree grows at home.');
   if (s.reached.includes(nodeId)) return fail('Already reached.');
   if (node.parent && !s.reached.includes(node.parent)) return fail('Reach its parent first.');
   if (node.arrive && s.visitors[nodeId] === undefined) return fail('It hasn\u2019t arrived yet.');

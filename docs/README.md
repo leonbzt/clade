@@ -15,7 +15,8 @@ wins (and the code is the truth for what's built).
 | [workflow.md](workflow.md) | How we work: sessions, the idea funnel, tokens | You | When the process changes |
 
 **Reference** (open when a spec needs it):
-- `design/`: [game-shape.md](design/game-shape.md) (the plan behind M1–M4, 29 Oct) ·
+- `design/`: [rebuild.md](design/rebuild.md) (v1 review and the v2 plan, 2 Nov) · [game-shape.md](design/game-shape.md) (the plan behind M1–M4, 29 Oct) ·
+  [evolution.md](design/evolution.md) (species, genes and the tree: today, real evolution, routes B and C, 1 Nov) ·
   [food-web.md](design/food-web.md) (the expansion plan, P31, parked) ·
   [nitrogen-and-time.md](design/nitrogen-and-time.md) (P32 and the clock, P33 a; the source for 11e) · [fresh-eyes.md](design/fresh-eyes.md)
   (an outside designer's view, 26 Oct) · [references.md](design/references.md) (games to learn from, the look) ·

@@ -125,7 +125,7 @@
       <Specimen look={s.look} scale={1} size={40} />
       <div class="name"><b>{s.name}</b><span class="dim">{s.pop} · {s.variants.length} form{s.variants.length === 1 ? '' : 's'}{s.made ? ` · from ${s.made}` : ''}</span>
         {#if s.tiles}<PopBar sp={s.sp} />{/if}</div>
-      {#if !s.animal}<button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
+      {#if !s.animal && !game.run}<button class:on={ui.placing === s.id} onclick={(e) => { e.stopPropagation(); startPlacing(s.id); }}>
         Found {s.cost ? grams(s.cost) : 'free'}
       </button>{/if}
     </div>

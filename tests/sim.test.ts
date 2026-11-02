@@ -128,10 +128,14 @@ describe('sim', () => {
     expect(tile).toBeDefined();
     expect(s.species.length).toBe(before + 1);
     expect(s.species[before].genome.axes).toEqual([2, 0, 0, -1]);
-    // A split, not a twin: the variant's tiles went with it.
-    expect(s.occ.some((o) => o === v)).toBe(false);
     recount(s);
-    expect(coverCount(s, s.species[before].id)).toBeGreaterThanOrEqual(held);
+    if (GENES.fresh) { // start fresh: the variant stays with its parent; the new species is only its founder patch
+      expect(s.occ.filter((o) => o === v).length).toBeGreaterThan(0);
+      expect(coverCount(s, s.species[before].id)).toBeLessThanOrEqual(13); // a radius-2 diamond
+    } else { // a split, not a twin: the variant's tiles went with it
+      expect(s.occ.some((o) => o === v)).toBe(false);
+      expect(coverCount(s, s.species[before].id)).toBeGreaterThanOrEqual(held);
+    }
     expect(canFoundSpecies(s, v).ok).toBe(false); // once only
   }, 120_000);
 
@@ -159,7 +163,8 @@ describe('sim', () => {
     expect(moss.parent).toBe(th);
     expect(moss.genome).toEqual({ axes: [1, 0, 0, 1], traits: [] });
     expect(s.reached).toContain('mosses');
-    expect(s.occ.some((o) => o === c)).toBe(false);
+    expect(s.occ.some((o) => o === c)).toBe(!!GENES.fresh); // start fresh: the carrier stays with its parent
+    if (GENES.fresh) expect(keyCarrier(s, leafy)).toBe(-1); // it founded its species: no longer a carrier
   });
 
   it('founding helps: a species founded at dry +2 steps to +3 far more often than its parent does', () => {

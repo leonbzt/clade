@@ -88,8 +88,9 @@ function feed(s: State, i: number, p: Profile, g: number, want: number): number 
   return nTake(s, i, (want * n * v) / (v + NUM.nitrogen.half)) / n;
 }
 
-/** Your species' last few tiles don't die and can't be taken. */
-export const protectedSp = (s: State, sp: number) => s.foundings[s.species[sp].id] > 0 && s.count[sp] <= L.floor;
+/** Your species' last few tiles don't die and can't be taken. On a run only in the landing season: after that the
+ * line can die out. */
+export const protectedSp = (s: State, sp: number) => s.foundings[s.species[sp].id] > 0 && s.count[sp] <= L.floor && (!s.run || s.run.season < 1);
 const protectedAt = (s: State, slot: number) => protectedSp(s, s.variants[s.occ[slot]].sp);
 
 /** The occupant's strength: its health × hold; young and dying plants hold on less well. */

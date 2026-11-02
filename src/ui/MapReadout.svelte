@@ -2,7 +2,8 @@
   import { FIELDS, LAYER_IDS, LIMIT_COUNT, STATUS_IDS, STATUSES, STRATA, limitColor, limitName, type LayerId } from '../data/fields';
   import { TIER_COLORS } from '../data/palette';
   import { grams, hectares, LAYER_UNITS, needText } from '../data/units';
-  import { placement, unlockedSpecies } from '../sim/commands';
+  import { unlockedSpecies } from '../sim/commands';
+  import { placementOf as placement } from '../sim/placing';
   import { fitInfo, limitText, placeInfo } from '../sim/explain';
   import { profiles } from '../sim/fit';
   import { HABITAT_KINDS } from '../data/habitats';
@@ -26,7 +27,10 @@
       .concat(STATUS_IDS.filter((id) => game.statuses[id][i] > 0).map((id) => `${STATUSES[id].name.toLowerCase()} ${Math.round(game.statuses[id][i] * 100)}%`));
     let place: { tier: string | null; text: string } | null = null;
     const pl = ui.placing ? placement(game, ui.placing, P) : null;
-    if (pl) {
+    if (pl?.run) {
+      const w = pl.run(i);
+      place = { tier: null, text: `${w.word}: ${w.reason}` };
+    } else if (pl) {
       const p = pl.p, info = fitInfo(game, p, i), occ = game.occ[stratumOf(game, p.sp) * n + i];
       const held = info.fit > 0 && !pl.ok(i), mine = occ >= 0 && game.variants[occ].sp === p.sp;
       place = {
@@ -50,7 +54,7 @@
     ui.v;
     const pl = ui.placing ? placement(game, ui.placing) : null;
     if (!pl) return null;
-    return { name: ui.placing!.startsWith('v:') ? `${ui.foundName} (new species from ${pl.name})` : pl.name, cost: pl.cost };
+    return { name: ui.placing!.startsWith('v:') ? `${ui.foundName} (new species from ${pl.name})` : pl.name, cost: pl.cost, run: !!pl.run };
   });
 
   const zones = $derived.by(() => {
@@ -71,7 +75,7 @@
 
 <span class="readout">
   {#if placingInfo}
-    <span class="gold">Founding {placingInfo.name}</span>
+    <span class="gold">{placingInfo.run ? 'Placing' : 'Founding'} {placingInfo.name}</span>
     <span>{placingInfo.cost ? `${grams(placingInfo.cost)} biomass` : 'free'}</span>
     {#if hover?.place}
       <span>{#if hover.place.tier}<span class="tier" style:background={TIER_COLORS[hover.place.tier]}>{hover.place.tier}</span>{/if} {hover.place.text}</span>

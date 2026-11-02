@@ -4,7 +4,7 @@
 export const NUM = {
   ticksPerSec: 10,
   fieldsEvery: 10, // ticks between layer updates (they run with dt = 1 s)
-  map: { w: 96, h: 56, tile: 12 },
+  map: { tile: 12 }, // px per tile; map sizes are in islands.ts
   island: {
     radius: 0.45, // share of the map
     coastWidth: 0.07, // share of the radius: the ring where beaches can be

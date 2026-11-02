@@ -21,12 +21,15 @@ loses) a slot → the slot pays for the next run.** Rough in places, but a real 
 **Steps**
 1. [ ] **Close out the sim (slice 11e).** Commit the P30 pass. 11d part C (animals in grams, the currency in real
    units, swings). Nitrogen by the gram and the rot chain (P32, decided 1 Nov). Small fixes: fewer headlines,
-   bristletails on dry crusts, the springtail refound bug. Spec: [11e](docs/slices/11e-close-out-the-sim.md).
-2. [ ] **12a, the first run.** Spec: [12a](docs/slices/12a-the-first-run.md) (draft, waiting on your three calls). Islands from one generator (size, theme); one lineage; broods of three and the
-   heir's spot; seasons as the run clock; the run's end; a lineage card with XP. P33 c (how species are made): your lean
-   is after the core loop (1 Nov), so 12a uses today's variants and splits.
-3. [ ] **12b, coming home.** The adapted line comes home as a species; release with the forecast; it takes a slot or
-   doesn't; held slots pay.
+   bristletails on dry crusts, the springtail refound bug. Stem doors and the shade–drought trade-off (P35, decided 1 Nov). Spec: [11e](docs/slices/11e-close-out-the-sim.md).
+2. [ ] **12a, the first run.** Spec: [12a](docs/slices/12a-the-first-run.md) (calls settled 1 Nov; parts A and B ready). Islands from one generator (size, theme); one lineage; broods of three and the
+   heir's spot; seasons as the run clock; the run's end; a lineage card with XP. No player splits on runs. *Route B
+   (decided 1 Nov):* a run starts from any living species of the line or a home find ([evolution](docs/design/evolution.md)). Part C, animal lineages, may pull a second lineage and
+   helpers forward from M2 (decided at C's spec).
+3. [ ] **12b, coming home.** *Revised 2 Nov:* a run starts from **a home target slot** (adapt to your
+   surroundings); the line always comes home as a new species, starting fresh (no merge back, no separate release
+   step); it takes the slot or doesn't; held slots pay. Open: the home split, levels ("wait"), the family tree
+   inside the tree of life.
 4. [ ] **The first-playable pass.** Play M1 end to end from a fresh start. Fix only what blocks or hides the loop:
    the first screen, the start at the vent, knowing what to do next.
 
@@ -36,8 +39,8 @@ needs your explicit OK, logged in [docs/decisions.md](docs/decisions.md).
 **Open calls for M1**
 1. Are this goal and "done when" right?
 2. ~~The clock with three tempos~~ *Decided 1 Nov: after slice 12 or later.*
-3. **How species are made** (P33 c, in [docs/proposals.md](docs/proposals.md)): your lean (1 Nov) is after the core
-   loop. Confirm at the 12a spec.
+3. ~~How species are made (P33 c)~~ *Decided 1 Nov: route B (runs make species) in 12a/12b, route C with genome v2
+   (M4), stem doors. Plan: [evolution](docs/design/evolution.md); open parts: P35.*
 
 ## Later milestones (order approved 29 Oct; scope set when we get there)
 
@@ -45,7 +48,7 @@ needs your explicit OK, logged in [docs/decisions.md](docs/decisions.md).
 | --- | --- | --- |
 | **M2 The loop repeats** | Slice 13: saves, banked away time and fast-forward, a second lineage, helpers | Do short check-ins work? Do lineages help each other? |
 | **M3 The moving world** | Slice 14: home seasons with a forecast, blooms, 2–3 events, succession opening roles, the nursery and seeds | Do changes make gifts and challenges? Does timing pay off? |
-| **M4 Builds and finds** | Slice 15: genome v2 (stats with upkeep, forms, morphs, diet tags), the codex | Are builds distinct, and are finds exciting? |
+| **M4 Builds and finds** | Slice 15: genome v2 (stats with upkeep, forms, morphs, diet tags), the codex; the full evolution route C (*decided 1 Nov*: nothing bought, wild species, partnerships, hindsight names) | Are builds distinct, and are finds exciting? |
 | **After** | The archipelago and outposts; eras and the island's climax; the food-web expansion (P31); life coming ashore; geology; a bigger island; sharing seeds | Set later |
 
 ## Frozen until M1 is played

@@ -8,15 +8,20 @@
   import TilePanel from './TilePanel.svelte';
   import AnimalCard from './AnimalCard.svelte';
   import HabitatsPanel from './HabitatsPanel.svelte';
-  import { ui } from './game.svelte';
+  import LineagePanel from './LineagePanel.svelte';
+  import RunPanel from './RunPanel.svelte';
+  import RunModals from './RunModals.svelte';
+  import { game, ui } from './game.svelte';
+
+  const onRun = $derived((ui.gen, !!game.run));
   import { VIEWS } from '../view/render';
 
   function key(e: KeyboardEvent) {
     // The backtick is a dead key on German keyboards, so match the physical key (left of 1) and F2 too.
     if (e.code === 'Backquote' || e.key === '`' || e.key === 'F2') { e.preventDefault(); ui.dev = !ui.dev; }
     if (e.target instanceof HTMLInputElement) return;
-    if (e.key === 'Escape') { ui.placing = null; ui.tree = false; }
-    if (e.key === 't' || e.key === 'T') ui.tree = !ui.tree;
+    if (e.key === 'Escape') { ui.placing = null; ui.tree = false; ui.runSetup = false; }
+    if ((e.key === 't' || e.key === 'T') && !game.run) ui.tree = !ui.tree;
     // Number keys switch the map view: 1 Garden, 2 Zones, 3 Water, ... 9 Habitats
     const k = e.key === '0' ? 10 : Number(e.key);
     if (k >= 1 && k <= VIEWS.length) ui.view = VIEWS[k - 1];
@@ -31,16 +36,19 @@
     <MapView />
     <aside class="panel side">
       <nav class="tabs">
-        <button class="treebtn" onclick={() => (ui.tree = true)} title="The tree of life (T)">Tree of life</button>
+        {#if !onRun}<button class="treebtn" onclick={() => (ui.tree = true)} title="The tree of life (T)">Tree of life</button>{/if}
+        <button class:on={ui.tab === 'lineage'} onclick={() => (ui.tab = 'lineage')}>{onRun ? 'Run' : 'Lineage'}</button>
         <button class:on={ui.tab === 'species'} onclick={() => (ui.tab = 'species')}>Species</button>
         <button class:on={ui.tab === 'tile'} onclick={() => (ui.tab = 'tile')}>Tile</button>
-        <button class:on={ui.tab === 'habitats'} onclick={() => (ui.tab = 'habitats')}>Habitats</button>
+        {#if !onRun}<button class:on={ui.tab === 'habitats'} onclick={() => (ui.tab = 'habitats')}>Habitats</button>{/if}
         {#if ui.follow >= 0}<button class:on={ui.tab === 'animal'} onclick={() => (ui.tab = 'animal')}>Animal</button>{/if}
       </nav>
-      {#if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'animal'}<AnimalCard />{:else if ui.tab === 'habitats'}<HabitatsPanel />{:else}<TilePanel />{/if}
+      {#if ui.tab === 'lineage'}{#if onRun}<RunPanel />{:else}<LineagePanel />{/if}
+      {:else if ui.tab === 'species'}<SpeciesPanel />{:else if ui.tab === 'animal'}<AnimalCard />{:else if ui.tab === 'habitats'}<HabitatsPanel />{:else}<TilePanel />{/if}
     </aside>
   </main>
-  {#if ui.tree}<TreeScreen />{/if}
+  {#if ui.tree && !onRun}<TreeScreen />{/if}
+  <RunModals />
   {#if ui.dev}<DevPanel />{/if}
   <Toasts />
 </div>

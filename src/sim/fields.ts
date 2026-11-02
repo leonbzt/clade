@@ -58,6 +58,8 @@ export function stockTerms(def: StockDef, v: number, plus: number, minus: number
 export function levelTerms(s: State, id: LayerId, def: LevelDef, add: number, i: number) {
   const out: { label: string; value: number }[] = [];
   if (s.base[id][i]) out.push({ label: 'ground, landmarks and wind', value: s.base[id][i] });
+  // Run islands: the season scales the base moisture (wet ×1.3, dry ×0.7).
+  if (id === 'water' && s.wet !== 1 && s.base.water[i]) out.push({ label: 'the season', value: s.base.water[i] * (s.wet - 1) });
   for (const [l, w] of Object.entries(def.from ?? {})) out.push({ label: FIELDS[l as LayerId].name, value: w * s.layers[l as LayerId][i] });
   if (add) out.push({ label: 'plants here', value: add });
   return out;

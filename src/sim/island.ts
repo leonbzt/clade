@@ -1,6 +1,7 @@
 // Island making: the coast, then the landmarks by seed, then the wind and the base values and statuses they leave
 // behind. Only the shapes are code (a point, a stream line, a stretch of coast, a tube); the effects are data.
 import { type LayerId, type StatusId } from '../data/fields';
+import { THEMES } from '../data/islands';
 import { LANDMARKS, type LandmarkKind } from '../data/landmarks';
 import { NUM } from '../data/numbers';
 import { rand } from './rng';
@@ -12,9 +13,12 @@ const between = (s: State, [a, b]: readonly [number, number]) => a + Math.floor(
 const dist = (s: State, i: number, j: number) => Math.hypot((i % s.w) - (j % s.w), ((i / s.w) | 0) - ((j / s.w) | 0));
 const isRock = (t: number) => t === LAVA || t === CRACK;
 
-/** Makes the island. */
+/** Makes the island, by its theme (home's row keeps today's numbers). Spacing between landmarks scales with the map. */
 export function buildIsland(s: State) {
-  const I = NUM.island, { w, h } = s, n = w * h;
+  const I = NUM.island, T = THEMES[s.theme], { w, h } = s, n = w * h, k0 = w / 96;
+  // A smaller island gets fewer landmarks, by area (at least one); a theme's own counts stand as they are.
+  const count = (kind: LandmarkKind): readonly [number, number] => T.counts[kind] ?? (k0 === 1 ? LANDMARKS[kind].count
+    : [Math.max(1, Math.round(LANDMARKS[kind].count[0] * k0 * k0)), Math.max(1, Math.round(LANDMARKS[kind].count[1] * k0 * k0))]);
   // A wobbly ellipse: a few waves around the coast make bays and points.
   const wob = [0, 1, 2, 3].map(() => rand(s) * 6.28);
   const r = new Float32Array(n);
@@ -22,7 +26,7 @@ export function buildIsland(s: State) {
     const x = i % w, y = (i / w) | 0, a = Math.atan2(y - h / 2, x - w / 2);
     const edge = 1 + 0.1 * Math.sin(2 * a + wob[0]) + 0.08 * Math.sin(3 * a + wob[1]) + 0.06 * Math.sin(5 * a + wob[2]) + 0.04 * Math.sin(9 * a + wob[3]);
     r[i] = Math.hypot((x + 0.5 - w / 2) / (w * I.radius), (y + 0.5 - h / 2) / (h * I.radius)) / edge;
-    s.terrain[i] = r[i] > 1 ? SEA : rand(s) < I.crackShare ? CRACK : LAVA;
+    s.terrain[i] = r[i] > 1 ? SEA : rand(s) < I.crackShare * T.crack ? CRACK : LAVA;
   }
   const toSea = seaDistance(s);
   const add = (kind: LandmarkKind, tiles: number[], terrain: number) => {
@@ -32,7 +36,7 @@ export function buildIsland(s: State) {
   };
 
   // Beaches: stretches of the coast, spread around the island.
-  const nb = between(s, LANDMARKS.beach.count), a0 = rand(s) * 6.28;
+  const nb = between(s, count('beach')), a0 = rand(s) * 6.28;
   for (let k = 0; k < nb; k++) {
     const a = a0 + (k * 6.28) / nb + (rand(s) - 0.5) * 0.8, span = 0.2 + rand(s) * 0.25;
     const tiles: number[] = [];
@@ -46,10 +50,10 @@ export function buildIsland(s: State) {
 
   // Vents: the first sits left of centre (the obvious first home); the others spread out inland.
   const vents: number[] = [];
-  const nv = between(s, LANDMARKS.vent.count);
+  const nv = between(s, count('vent'));
   for (let k = 0; k < nv; k++) {
     const i = k === 0 ? Math.floor(h * 0.5) * w + Math.floor(w * 0.38)
-      : pick(s, (j) => r[j] < 0.6 && isRock(s.terrain[j]) && vents.every((v) => dist(s, j, v) >= 16));
+      : pick(s, (j) => r[j] < 0.6 && isRock(s.terrain[j]) && vents.every((v) => dist(s, j, v) >= 16 * k0));
     if (i < 0) continue;
     vents.push(i); s.vents.push(i);
     add('vent', [i], VENT);
@@ -57,10 +61,10 @@ export function buildIsland(s: State) {
 
   // Springs, each with a stream that wanders toward the sea.
   const springs: number[] = [];
-  const ns = between(s, LANDMARKS.spring.count);
+  const ns = between(s, count('spring'));
   for (let k = 0; k < ns; k++) {
     const i = pick(s, (j) => r[j] > 0.25 && r[j] < 0.7 && isRock(s.terrain[j])
-      && vents.every((v) => dist(s, j, v) >= 10) && springs.every((v) => dist(s, j, v) >= 14));
+      && vents.every((v) => dist(s, j, v) >= 10 * k0) && springs.every((v) => dist(s, j, v) >= 14 * k0));
     if (i < 0) continue;
     springs.push(i);
     const line = walk(s, i, Math.atan2(((i / w) | 0) - h / 2, (i % w) - w / 2), 0.5, 45, (t) => isRock(t));
@@ -69,9 +73,9 @@ export function buildIsland(s: State) {
   }
 
   // Lava tubes: short, nearly straight tunnels in the open lava field.
-  const nc = between(s, LANDMARKS.cave.count);
+  const nc = between(s, count('cave'));
   for (let k = 0, tries = 0; k < nc && tries < 30; tries++) {
-    const i = pick(s, (j) => r[j] < 0.75 && isRock(s.terrain[j]) && vents.every((v) => dist(s, j, v) >= 6));
+    const i = pick(s, (j) => r[j] < 0.75 && isRock(s.terrain[j]) && vents.every((v) => dist(s, j, v) >= 6 * k0));
     if (i < 0) break;
     const line = walk(s, i, rand(s) * 6.28, 0.25, 5 + Math.floor(rand(s) * 4), (t) => isRock(t));
     if (line.length < 4) continue;
@@ -177,8 +181,8 @@ function wind(s: State, toSea: Int32Array): Float32Array {
 /** Base values and statuses: each landmark's effects, fading with distance (the strongest source wins), then the
  * wind's rain on top. */
 function applyEffects(s: State, toSea: Int32Array) {
-  const I = NUM.island, n = s.w * s.h, caps = new Map<number, number>(), rough = roughness(s), rain = wind(s, toSea);
-  for (let i = 0; i < n; i++) if (s.terrain[i] !== SEA) s.base.water[i] = I.lavaWet;
+  const I = NUM.island, n = s.w * s.h, caps = new Map<number, number>(), rough = roughness(s), rain = wind(s, toSea), sky = THEMES[s.theme].rain;
+  for (let i = 0; i < n; i++) if (s.terrain[i] !== SEA) s.base.water[i] = I.lavaWet * sky;
   for (const m of s.landmarks) {
     const def = LANDMARKS[m.kind];
     for (const [key, [value, reach]] of Object.entries(def.effects)) {
@@ -198,7 +202,7 @@ function applyEffects(s: State, toSea: Int32Array) {
   }
   for (let i = 0; i < n; i++) {
     if (s.terrain[i] === SEA) continue;
-    s.base.water[i] = Math.min(1, Math.max(0, s.base.water[i] + rain[i]));
+    s.base.water[i] = Math.min(1, Math.max(0, s.base.water[i] + rain[i] * sky));
     if (s.terrain[i] === CRACK) s.base.water[i] = Math.min(1, s.base.water[i] + I.crackWet);
     s.soilCap[i] = caps.get(i) ?? Math.min(1, I.soilCapBase + s.base.water[i]);
     s.layers.water[i] = s.base.water[i];

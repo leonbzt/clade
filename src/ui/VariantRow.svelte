@@ -69,7 +69,7 @@
       <button onclick={pick} disabled={!naming.trim()}>Pick a spot</button>
       <button onclick={() => (naming = null)}>×</button>
     </div>
-  {:else}
+  {:else if !game.run}
     <button class="found" disabled={!row.canFound} title={row.why} onclick={() => (naming = suggestName(game, v))}>
       Split off as {row.split} · {grams(row.cost)}
     </button>

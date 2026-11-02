@@ -2,7 +2,7 @@
 // Strata are stored one after another: the slot of stratum k on tile i is k * n + i.
 import { LAYER_IDS, STATUS_IDS, STRATA, type LayerId, type StatusId } from '../data/fields';
 import type { LandmarkKind } from '../data/landmarks';
-import { NUM } from '../data/numbers';
+import { SIZES, type SizeId, type ThemeId } from '../data/islands';
 import { START_REACHED } from '../data/tree';
 import { buildIsland } from './island';
 import { newBoard, type Board } from './tally';
@@ -10,6 +10,7 @@ import { closeLedger, newLedger, type Ledger } from './ledger';
 import { newNBook, seedNitrogen, type NBook } from './nitrogen';
 import { buildHabitats, type Habitat } from './habitats';
 import { baseSpecies, type Species, type Variant } from './variants';
+import { lineageName, newLineage, type Lineage, type Run } from './lineage';
 
 export { SEA, BEACH, LAVA, CRACK, VENT, SPRING, STREAM, CAVE } from './island';
 export const TERRAIN_NAMES = ['Sea', 'Beach', 'Lava field', 'Crack', 'Steam vent', 'Spring', 'Stream', 'Lava tube'];
@@ -54,6 +55,10 @@ export type Landmark = { kind: LandmarkKind; name: string; tiles: number[]; at: 
 
 export type State = {
   seed: number;
+  theme: ThemeId; // the island's theme (islands.ts): home, or a run island's
+  wet: number; // run islands: the season's swing, × the base moisture (1 at home)
+  run: Run | null; // set on a run island: its season clock, broods and the line (run.ts)
+  lineage: Lineage | null; // home only: your lineage, its form, level and runs (lineage.ts)
   rng: number;
   tick: number;
   w: number;
@@ -119,10 +124,11 @@ export type State = {
 
 const perLayer = (n: number) => Object.fromEntries(LAYER_IDS.map((id) => [id, new Float32Array(n)])) as Record<LayerId, Float32Array>;
 
-export function createState(seed: number): State {
-  const { w, h } = NUM.map, n = w * h, slots = n * STRATA.length;
+/** An island from one generator: home (today's island) by default, or a run island of a size and theme. */
+export function createState(seed: number, opts: { size?: SizeId; theme?: ThemeId } = {}): State {
+  const theme = opts.theme ?? 'home', { w, h } = SIZES[opts.size ?? 'home'], n = w * h, slots = n * STRATA.length;
   const s: State = {
-    seed, rng: seed >>> 0, tick: 0, w, h,
+    seed, theme, wet: 1, run: null, lineage: theme === 'home' ? newLineage() : null, rng: seed >>> 0, tick: 0, w, h,
     terrain: new Uint8Array(n), base: perLayer(n), soilCap: new Float32Array(n),
     statuses: Object.fromEntries(STATUS_IDS.map((id) => [id, new Float32Array(n)])) as Record<StatusId, Float32Array>,
     landmarks: [], mark: new Int16Array(n).fill(-1), vents: [],
@@ -141,6 +147,7 @@ export function createState(seed: number): State {
   s.count = s.species.map(() => 0); s.members = s.species.map(() => 0); s.prevCount = s.species.map(() => 0);
   for (const sp of s.species) s.foundings[sp.id] = 0;
   buildIsland(s);
+  if (s.lineage) s.lineage.name = lineageName(s);
   buildHabitats(s);
   seedNitrogen(s);
   closeLedger(s);

@@ -1,5 +1,6 @@
 import { fullOf, setMass } from '../src/sim/life';
 import { describe, expect, it } from 'vitest';
+import { GENES } from '../src/data/genes';
 import { SPECIES, SPECIES_INDEX, type SpeciesDef } from '../src/data/species';
 import { STRATA } from '../src/data/fields';
 import { MASS } from '../src/data/masses';
@@ -129,6 +130,6 @@ describe('animals', () => {
     expect([...s.terrain.keys()].some((i) => foundSpecies(s, v, i, 'Dry Bristletail').ok)).toBe(true);
     const x = s.species[s.species.length - 1];
     expect([x.base, x.genome.traits, s.made, s.reached.length]).toEqual([bt, [], made + 1, reached]);
-    expect(s.agents.some((a) => a.v === v)).toBe(false);
+    expect(s.agents.some((a) => a.v === v)).toBe(!!GENES.fresh); // start fresh: the variant's animals stay
   });
 });

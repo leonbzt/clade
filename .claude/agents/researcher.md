@@ -13,7 +13,7 @@ You research for Clade, an idle / RPG evolution game with a biology-literate aud
 4. Write the full result to `docs/research/<short-topic>.md`:
    - a summary of at most 10 lines
    - the details as bullets with sources
-   - "Use in Clade" ideas, labelled **proposal**
+   - at most three "Ideas for Clade", one line each, labelled **idea**. They're input for the caller, not proposals.
 5. Reply to the caller in at most 10 lines: the key findings and the file path.
 
-Never read `_old/`.
+Write only your research file; don't edit other docs. Never read `_old/` or `_archive/`.

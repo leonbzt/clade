@@ -9,7 +9,8 @@ Marks: **(you)** your idea · **(AI)** AI idea · **you: yes / leaning yes** you
 the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back.
 
 ## Bugs (fix any time)
-- (none open)
+- **The tree's insects:** beetles sit beside insects (they are insects); bristletails evolve from springtails
+  (cousins). Moving beetles gates them behind the insect key; the springtail needs a stem hexapod (route C). AI, 1 Nov.
 
 ## World and sim
 - **Geology:** a few ground units (old flow, young flow, ash, cinder cone, beach) set soil cap, water and drainage;
@@ -32,15 +33,18 @@ the archived proposals (`_archive/2026-11-01/systems.md`); ask to bring one back
   rate as a species trait (you, P21 b, P22).
 - **A bigger island:** tile size as a knob, or sleeping regions; measure the tick first (AI, P33 f; P31 Q2 open).
 - **Two zooms and chunks** (AI, P15; you: later, see vision).
+- **More run themes and places:** salt, ash and cave islands; the archipelago map; outposts (AI, game-shape; after
+  M1, from 12a's Out).
 - **Hiding:** shade and caves make prey harder to catch (AI, P25 e; you: very interesting).
 
 ## Species and evolution
-- **Wild splits / drift** when habitat pieces isolate a species (AI, P31, P33 c; you: see 12b first).
+- **Route C's pieces** (decided 1 Nov: with genome v2, M4): nothing bought, stem templates, wild drift species,
+  partnerships, hindsight names, keys that add features, extinct branches, island ages. [design/evolution.md](design/evolution.md) §5–6.
 - **Evolution points:** a currency for an archetype, or for when mutation doesn't bring the combo you want (you).
 - **Diet shifts:** food tags, diets as weights, a gene that moves along a food graph (you, P22; P30 i yes).
 - **Metabolism gene and dormancy** (AI, P22; you: watch the complexity, prefer emergent edges).
 - **Absolute vs relative genes:** a cumulative view and similarity between species (you, P22).
-- **Species that converge merge** (you, P23 c).
+- **Species that converge merge** (you, P23 c). Runs merge back if not diverged enough (decided 1 Nov).
 - **"Resembles…":** real species as stat combinations with a fact and a source (you + AI, P18).
 - **Picks with a cost:** every trait has a downside or upkeep (AI, P3; you: idea, 28 Oct). Genome v2 (M4).
 - **Four levels** (clade, species, form, morph) and six ways a species is born (AI, P31 b).

@@ -21,9 +21,10 @@ export const doorNode = (key: Key) => TREE.find((n) => n.id === key.node)!;
 /** The clade (tree node) a species belongs to: the node whose species or template its base is. */
 export const cladeOf = (s: State, sp: number) => TREE.find((n) => n.species === defOf(s, sp).id)?.id ?? null;
 
-/** Your species that can meet this door's recipe: living ones in its `from` clades. */
+/** Your species that can meet this door's recipe: living ones in its `from` clades (on a run, only the line's
+ * newest species). */
 export const fromSpecies = (s: State, key: Key) =>
-  s.species.flatMap((_, sp) => (s.count[sp] > 0 && key.from.includes(cladeOf(s, sp) ?? '') ? [sp] : []));
+  s.species.flatMap((_, sp) => (s.count[sp] > 0 && key.from.includes(cladeOf(s, sp) ?? '') && (!s.run || sp === s.run.line[s.run.line.length - 1]) ? [sp] : []));
 
 const carried = (g: Genome, key: Key) => key.precursors.filter((p) => hasPrecursor(g, p)).length;
 
@@ -34,15 +35,17 @@ function pool(s: State, key: Key) {
     ? [{ v, k: carried(x.genome, key), tiles: x.tiles }] : []));
 }
 
-/** The door is open: its parent is reached, it isn't, and its other requirements are met. */
+/** The door is open: its parent is reached, it isn't, and its other requirements are met. On a run island the
+ * requirements are home's (copied at landing), and a door stays open after home reached it: a key on a run makes
+ * the line a new species of that clade. */
 export const doorOpen = (s: State, key: Key) => {
   const n = doorNode(key);
-  return !s.reached.includes(n.id) && (!n.parent || s.reached.includes(n.parent)) && othersMet(s, n);
+  return (!s.reached.includes(n.id) || !!s.run) && (!n.parent || s.reached.includes(n.parent)) && othersMet(s, n);
 };
 
-/** A living variant that carries this key and can split off, or -1. */
+/** A living variant that carries this key and can split off (hasn't yet), or -1. */
 export const keyCarrier = (s: State, key: Key) =>
-  s.variants.findIndex((x) => x.alive && x.genome.traits.includes(key.id) && !s.species[x.sp].genome.traits.includes(key.id));
+  s.variants.findIndex((x) => x.alive && !x.split && x.genome.traits.includes(key.id) && !s.species[x.sp].genome.traits.includes(key.id));
 
 /** For the tree screen and the variant rows: the recipe, the closest variant, the candidates and the carrier. */
 export function keyProgress(s: State, key: Key) {
@@ -87,6 +90,7 @@ export function keyInnovations(s: State, P: Profile[], dt: number) {
       continue;
     }
     s.keyRoll[key.id] = 0;
+    if (s.run) continue; // no nudge on a run: the line has to reach the recipe itself
     s.keyClock[key.id] = (s.keyClock[key.id] ?? 0) + step;
     if (s.keyClock[key.id] < KEY.nudge || !all.length) continue;
     s.keyClock[key.id] = 0;

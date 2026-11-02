@@ -24,12 +24,14 @@ function ramp(id: AxisId, name: string, plus: string, minus: string, steps: Reco
   return { id, name, plus, minus, steps: all };
 }
 
+/** Dry / Wet also trades shade: plants rarely take both drought and deep shade (the real shade–drought trade-off),
+ * so a Dry form holds open ground and a plain or Wet one the shade under the herbs. */
 export const AXES: Axis[] = [
   ramp('dry', 'Dry', 'Dry', 'Wet', {
-    1: [{ need: 'water', low: -0.05, high: -0.05 }, { stat: 'grow', mul: 0.92 }],
-    2: [{ need: 'water', low: -0.1, high: -0.1 }, { stat: 'grow', mul: 0.85 }],
-    [-1]: [{ need: 'water', low: 0.05, high: 0.05 }, { stat: 'grow', mul: 1.08 }],
-    [-2]: [{ need: 'water', low: 0.1, high: 0.1 }, { stat: 'grow', mul: 1.15 }],
+    1: [{ need: 'water', low: -0.05, high: -0.05 }, { need: 'shade', high: -0.08 }, { stat: 'grow', mul: 0.92 }],
+    2: [{ need: 'water', low: -0.1, high: -0.1 }, { need: 'shade', high: -0.15 }, { stat: 'grow', mul: 0.85 }],
+    [-1]: [{ need: 'water', low: 0.05, high: 0.05 }, { need: 'shade', high: 0.08 }, { stat: 'grow', mul: 1.08 }],
+    [-2]: [{ need: 'water', low: 0.1, high: 0.1 }, { need: 'shade', high: 0.15 }, { stat: 'grow', mul: 1.15 }],
   }),
   ramp('shade', 'Shade', 'Shade', 'Sun', {
     1: [{ need: 'shade', high: 0.1 }, { stat: 'grow', mul: 0.92 }],
@@ -111,9 +113,16 @@ export const GENES = {
   foundFrom: TIER.rare, // a shown variant this rare or better can be founded as a new species
   speciate: { base: 1500, growth: 1.8 }, // biomass for a new species, rising with each one in its clade
   hueShift: 0.05, // a new species' colour moves this far from its parent's
+  // Start fresh (decided 2 Nov, a switch so it can go back): a new species (a split at home, a key on a run) starts as
+  // a founder patch only, and the variant it came from stays with its parent. false: the variant's tiles (or animals)
+  // move to the new species, as before 2 Nov.
+  fresh: true,
 };
 
-/** Doors: a tree node opens when one of your variants meets its recipe. A shown variant of a species in one of the
+/** Doors: a tree node opens when one of your variants meets its recipe. Stem doors (1 Nov): `from` is only the
+ * node's parent clade, so groups branch from the stem line instead of turning into each other (moss never becomes
+ * club moss). Insects still come from springtails until a stem hexapod exists (route C). A shown variant of a
+ * species in one of the
  * `from` clades that carries every precursor is a candidate; the key gene arrives in the biggest candidate within
  * `KEY.window` minutes. The variant with the key splits off as the clade's first species, on the node's template. */
 export type Precursor = { axis?: AxisId; step?: number; trait?: string; text: string }; // step: at least this far, on its side
@@ -127,12 +136,12 @@ export const KEYS: Key[] = [
       { axis: 'spread', step: -1, text: 'grows as a tight mat (Tight)' },
     ] },
   { id: 'leafy', name: 'Leafy shoot', word: 'Leafy', up: 'takes 0.1 more shade', down: 'spreads 5% slower', key: true,
-    mods: [{ need: 'shade', high: 0.1 }, { stat: 'seeds', mul: 0.95 }], node: 'mosses', from: ['land', 'liverworts'], precursors: [
+    mods: [{ need: 'shade', high: 0.1 }, { stat: 'seeds', mul: 0.95 }], node: 'mosses', from: ['land'], precursors: [
       { axis: 'dry', step: 1, text: 'survives drying out (Dry)' },
       { axis: 'spread', step: 1, text: 'spores lifted into the wind (Wind)' },
     ] },
   { id: 'tracheids', name: 'Water-carrying cells', word: 'Upright', up: 'lives 0.05 drier', down: 'grows 5% slower', key: true,
-    mods: [{ need: 'water', low: -0.05 }, { stat: 'grow', mul: 0.95 }], node: 'vascular', from: ['land', 'mosses'], precursors: [
+    mods: [{ need: 'water', low: -0.05 }, { stat: 'grow', mul: 0.95 }], node: 'vascular', from: ['land'], precursors: [
       { trait: 'rhizoids', text: 'Rhizoids anchor it' },
       { axis: 'dry', step: 1, text: 'lives drier (Dry)' },
     ] },

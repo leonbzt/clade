@@ -6,7 +6,7 @@ import { NUM } from '../data/numbers';
 import { HABITAT_TINT, PAL, TIER_COLORS, ZONE } from '../data/palette';
 import { HABITAT_KINDS } from '../data/habitats';
 import { VARIANT_COLORS } from '../data/view';
-import { placement } from '../sim/commands';
+import { placementOf as placement } from '../sim/placing';
 import { fit, limitOf, tierOf } from '../sim/fit';
 import { SEA, type State } from '../sim/state';
 import { SCRAP } from '../sim/habitats';

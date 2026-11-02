@@ -13,6 +13,7 @@ import { keyInnovations } from './keys';
 import { recount } from './variants';
 import { updateSlots } from './slots';
 import { closeLedger } from './ledger';
+import { runTick } from './run';
 
 const DT = 1 / NUM.ticksPerSec;
 const LOG_KEEP = 30;
@@ -29,10 +30,11 @@ export function step(s: State) {
     updateFields(s, P, NUM.fieldsEvery * DT);
     keyInnovations(s, P, NUM.fieldsEvery * DT);
     checkReady(s);
-    arrivals(s, NUM.fieldsEvery * DT);
+    if (!s.run) arrivals(s, NUM.fieldsEvery * DT); // a plant run: the line is alone, no arrivals
   }
   if (s.tick % (NUM.trendEvery * NUM.ticksPerSec) === 0) trends(s, P);
-  if (s.tick % (NUM.slots.window * NUM.ticksPerSec) === 0) updateSlots(s, P);
+  if (!s.run && s.tick % (NUM.slots.window * NUM.ticksPerSec) === 0) updateSlots(s, P); // no slot board on a run
+  if (s.run) runTick(s, P);
   if (s.tick % HISTORY_EVERY === 0) { s.history.push({ tick: s.tick, counts: [...s.count] }); closeLedger(s); }
   if (s.log.length > LOG_KEEP) s.log.splice(0, s.log.length - LOG_KEEP);
   s.biomass += gain;

@@ -22,6 +22,8 @@ logged with its date in [decisions.md](decisions.md). Open AI ideas are in [prop
 - **Runs happen on young islands:** land a lineage with one or two helpers (full species, sometimes other boosts),
   play its generations, and bring the whole adapted line home, where it has to take a slot.
 - **The game starts at home** (the pioneer at the vent); the first run comes after about 10 minutes.
+- **The first lineage is a plant** *(1 Nov)*: fungi and animals need plants. The lichen has to evolve. Animal
+  lineages run on islands with wild plants and two helper species you pick.
 - Breeding yes, but scarce. Shaping the land is a feeling. Terra Nil is a main reference. The naturalist is a role
   the game fits (readable animals, distinct species), not the core.
 - **A long target:** the island's climax closes an era.
@@ -75,7 +77,8 @@ logged with its date in [decisions.md](decisions.md). Open AI ideas are in [prop
 - **Species carry variants with differing genes.** Mutations happen by themselves and can be an unexpected reward.
 - **Rarity uses game-like tiers** and scales up cumulatively the further a form is from its clade's base. Founding
   has to help noticeably; extremes stay rare.
-- **Species split off from variants** (their tiles move; no twin populations). **Clades are authored** (templates and
+- **Species split off from variants** and **start fresh** *(2 Nov)*: a founder patch only, the variant stays with its
+  parent (a switch, `GENES.fresh`; before, its tiles moved). **Clades are authored** (templates and
   recipes); **species are free.** Genes carry, the bar resets; the cap counts from the clade.
 - **Keys are authored recipes:** a variant with the whole recipe is a candidate and can roll the key. Three gene
   layers: axis steps → combos → keys. A key innovation is a new clade.
@@ -84,10 +87,18 @@ logged with its date in [decisions.md](decisions.md). Open AI ideas are in [prop
 - **Speciation loosely follows the real tree of life**, with a lot of freedom. Start: a basal ancestor (an early land
   plant) that branches into liverworts and mosses. Modern forms first; the full deep-time road later.
 - **Lichens are an unlock**, not the starting state.
-- **How new species are made:** no split-and-place by the player; founding could come with runs; wild splits wait
-  until 12b (1 Nov). Founders cost grams. Maybe better after the core loop (1 Nov): adaptations you discover from
-  random gene changes; species as one connected tree, rising from each other; a home start leaning toward algae,
-  cyano and early land plants, if we take the full-evolution route.
+- **How new species are made:** no split-and-place by the player (1 Nov). Founders cost grams. **Runs make species**
+  *(1 Nov, route B)*: landing splits the line from its parent; the island's theme is the selection; coming home, the
+  line comes home as a new species (*2 Nov:* no merge back), aimed at **a home target slot** it was run for. A key on a
+  run makes the line a new clade; finds at home are run founders. **Route C, full evolution, follows with genome v2**
+  (M4): nothing bought, wild species, partnerships; a home start leaning toward algae, cyano and early land plants.
+  Plan: [design/evolution.md](design/evolution.md).
+- **A connected tree** *(1 Nov)*: stem doors. A new clade opens only from its parent group's line, so groups branch
+  instead of turning into each other. Species rise from each other, from adaptations you discover in random gene
+  changes.
+- **The feeling: discovering life yourself** *(1 Nov)*. **Author the laws of nature, not the history:** the
+  backbone, body plans, genes, recipes and odds are authored; every species, the tree's shape and the order of doors
+  are free. **Recipes are hinted and revealed step by step** as your variants reach them (route C).
 - **Groups are named base species:** snails aren't slugs, but a slug species you found is still a slug.
 - Later: animals gain new diets through genes.
 
@@ -149,7 +160,6 @@ Decided then and not withdrawn, but made before lineages and runs. **Check which
 
 | #   | Question                                                                  | Notes                         |
 | --- | ------------------------------------------------------------------------- | ----------------------------- |
-| 5   | First run: always a pioneer plant, or your choice?                        |                               |
 | 6   | Does the garden ever reset (eras)?                                        | The game shape proposes eras  |
 | 8   | How many parallel slots, and when do they unlock?                         | Lineages: 1 → 3–4 (29 Oct)    |
 | 9   | itch.io means desktop browsers. Touch-first portrait, or a layout for both? | [design/tech-art.md](design/tech-art.md) |

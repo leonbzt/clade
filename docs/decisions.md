@@ -213,3 +213,58 @@ The plan built on these answers: [design/game-shape.md](design/game-shape.md).
 - **"Do less full sims or try to reduce cpu time."** Tune with 1–2 seeds or small scratch tests; one full run per part.
 - **"Finish all open work automatically and if possible spec and start the next slice. You can kick off agents for
   smaller tasks."**
+
+## 1 Nov, the 12a calls
+- **Splits on the run:** none by the player; variants and keys as today; the line comes home whole. Confirms P33 c
+  (how species are made) for after the core loop (roadmap call 3).
+- **Seasons on run islands:** a wet/dry swing of the island's moisture, run islands only. OK'd under the sim freeze.
+- **The first lineage is a plant:** "only start with plant on land, fungi and animals need plants". No lichen at the
+  start: "lichen have to evolve". Animal lineages come as 12a part C, after A and B have been played, on islands with
+  "wild plants and two selectable helper species to start".
+
+## 1 Nov, the evolution route (tree of life)
+The analysis and plan: [design/evolution.md](design/evolution.md). Open parts: P35.
+- **Route B early, into route C with genome v2:** "b early into c sounds great with genome v2". Runs make species
+  now (12a/12b: landing splits the line, the theme selects, the line comes home as a species); the full evolution
+  route (nothing bought, wild species, partnerships, hindsight names) comes with genome v2 (M4).
+- **Coming home: "merge back if not diverged enough."** Far enough (AI: Rare or better from its parent, or a key):
+  a new species. Otherwise it rejoins its parent as a variant.
+- **Stem doors: "i want a connected tree."** A new clade opens only from its parent group's line. When (before the
+  freeze or after M1) is open (P35).
+- **New clades through runs:** "generation of new clades by the proposed way sounds good". A key on a run makes the
+  line a new clade; a key carrier or Rare find at home is a run's founder.
+- **The feeling to aim for: "discovering life yourself."** You asked what's authored and what's free: AI answer in
+  design/evolution.md §5 (P35).
+- AI withdrew P34 a (founders start plain): it reversed your 27 Oct "genes carry".
+
+## 1 Nov, P35 (the evolution route, the rest)
+- **Stem doors and P34 b: "now"**, before the freeze (built as 11e part D).
+- **"Author the laws of nature, not the history": yes.** Free: every species, the tree's shape, the order of doors.
+- **Recipes: "hinted, revealed step by step"** (route C, with genome v2). M1 keeps today's visible checklist.
+- **"Go with proposed order":** stem doors and the trade-off now; route B's pieces in 12a (built) and 12b; route C
+  with genome v2 (M4).
+
+## 2 Nov, after playing 12a
+- **Runs: "it's okay but I felt a little lost and it was random."** Notes: `playtests/12a-the-first-run.md`.
+- **Start fresh: "the new variants should start fresh"**, at home too. A new species (a split at home, a key on a run)
+  starts as a founder patch only; the variant it came from stays with its parent. This reverses "their tiles move;
+  no twin populations" (27 Oct). **Kept reversible:** `GENES.fresh` in `src/data/genes.ts` (false = tiles move, as
+  before). Built the same day.
+- **A run starts from a home target slot: "great, I love the concept, always adapt to your surroundings."** The run
+  aims at a slot at home; the shape of it goes in the 12b spec.
+- **12b items:** merge back if it didn't diverge enough: **no** (reverses 1 Nov). Release with the forecast as its
+  own step: **no**. Held slots pay: **ok**. The lineage's family tree: "maybe cool if it doesn't overlap" (with the
+  tree of life). The home split going: no answer yet.
+- **Levels and XP: "wait"**, unclear what they give. Open until the 12b spec.
+
+## 2 Nov, the rebuild direction (after the v1 review)
+- **"I'm unsatisfied with the current trajectory":** the project is blowing up, sessions are long from sim runs and
+  tests, the vision drifts, several parts are half-baked. Review and plan: [design/rebuild.md](design/rebuild.md).
+- **The plan: "I love your reply in general and the new plan."** Breed a line in a run, release it into an idle
+  garden, a tier list of builds. Stays idle/incremental.
+- **Tier list: niches × tiers, "maybe some light ladder or ladder feeling".**
+- **Sim: "I definitely want to check out the patch model"**; keep getting the habitats in detail. Feasibility of
+  patch vs grid checked (design/rebuild.md §5).
+- **Genetics: "love the genetics split with the body determining stats"** (genome → body → stats → niche).
+- **Run: "side view grow run is cool for a start"** (Mycelarium as a reference; Hatched for procedural creatures).
+- **Rebuild: "sounds fine"**; you asked whether it makes sense (AI view: design/rebuild.md §6).

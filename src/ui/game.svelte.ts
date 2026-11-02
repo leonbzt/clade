@@ -4,11 +4,16 @@ import { NUM } from '../data/numbers';
 import * as cmd from '../sim/commands';
 import { createState, type State } from '../sim/state';
 import { step } from '../sim/tick';
-import { botTick } from '../sim/bot';
+import { botTick, runBotTick } from '../sim/bot';
+import { canRun, finish, founders, offers, runCost, type RunLine } from '../sim/lineage';
+import { bringHome, land, placeHeir, startRun } from '../sim/run';
+import { profiles } from '../sim/fit';
 import { timer } from '../sim/slots';
 import { VIEWS, type View } from '../view/render';
 
-export let game: State = createState(1);
+/** Home, and the island on screen: home, or the run island while you're away (home waits, paused). */
+export let home: State = createState(1);
+export let game: State = home;
 
 type Toast = { id: number; text: string; kind: 'info' | 'bad' | 'fact' };
 
@@ -19,7 +24,9 @@ class UI {
   placing = $state<string | null>(null); // a species id, or `v:<variant>` while founding a new species
   foundName = $state(''); // the name for that new species
   focus = $state('thallus');
-  tab = $state<'species' | 'tile' | 'animal' | 'habitats'>('species');
+  tab = $state<'species' | 'tile' | 'animal' | 'habitats' | 'lineage'>('species');
+  runSetup = $state(false); // the run's offers and founders are open
+  lastRun = $state<RunLine | null>(null); // the run that just ended, for its card back home
   place = $state(-1); // the habitat shown in the Habitats tab (its bucket)
   gear = $state(-1); // the loadout card unfolded there
   banner = $state<{ id: number; text: string } | null>(null); // the headline over the map
@@ -44,9 +51,13 @@ function frame(now: number) {
   last = now;
   let n = 0;
   const t0 = performance.now();
-  while (acc >= TICK_MS && n < 5000) { step(game); acc -= TICK_MS; n++; }
+  // A run waits for its landing, and stops at its end (the end card is up).
+  const still = !!game.run && (!game.run.landed || !!game.run.end);
+  if (still) acc = 0;
+  while (acc >= TICK_MS && n < 5000 && !(game.run?.end)) { step(game); acc -= TICK_MS; n++; }
   if (n) perf.ms += ((performance.now() - t0) / n - perf.ms) * 0.05;
   if (n >= 5000) acc = 0;
+  if (game.run && !game.run.landed && !ui.placing) ui.placing = 'land';
   if (now - lastBump > 500) { ui.v++; lastBump = now; banners(now); }
   requestAnimationFrame(frame);
 }
@@ -70,6 +81,9 @@ export function start() {
   if (q.get('tile')) ui.selected = Number(q.get('tile'));
   if (VIEWS.includes(q.get('view') as View)) ui.view = q.get('view') as View;
   if (q.get('place')) startPlacing(q.get('place')!);
+  // ?run=0|1 starts a run on that offer (the price paid by the dev), ?runbot=300 lets the run bot play 300 s of it.
+  if (q.get('run')) { home.biomass += runCost(home); if (!home.reached.includes('land')) home.reached.push('land'); beginRun(Number(q.get('run')), 0); }
+  if (game.run && Number(q.get('runbot')) > 0) autoplay(Number(q.get('runbot')));
 }
 
 // Headlines show one at a time over the map, queued (a few at most, so a skip doesn't bury the map).
@@ -108,6 +122,15 @@ export function startFounding(v: number, name: string) {
 
 export function doFound(i: number) {
   if (!ui.placing) return;
+  if (game.run) {
+    if (ui.placing === 'land') { if (land(game, profiles(game), i)) ui.placing = null; else toast('The founder can\u2019t live here.', 'bad'); }
+    else if (ui.placing.startsWith('heir:')) {
+      if (placeHeir(game, profiles(game), Number(ui.placing.slice(5)), i) >= 0) { ui.placing = null; toast('The heir is down.'); }
+      else toast('Not there: within reach of the line, where it can live.', 'bad');
+    }
+    ui.v++;
+    return;
+  }
   if (ui.placing.startsWith('v:')) {
     if (report(cmd.foundSpecies(game, Number(ui.placing.slice(2)), i, ui.foundName))) {
       ui.placing = null; ui.focus = game.species[game.species.length - 1].id;
@@ -128,14 +151,45 @@ export function doEvolve(nodeId: string) {
 }
 
 export function skip(seconds: number) {
-  for (let k = 0; k < seconds * NUM.ticksPerSec; k++) step(game);
+  if (game.run && !game.run.landed) return;
+  for (let k = 0; k < seconds * NUM.ticksPerSec && !game.run?.end; k++) step(game);
   ui.v++;
 }
 
-/** The greedy bot plays for a while: a quick way to see later stages. */
+/** The greedy bot plays for a while: a quick way to see later stages (on a run, the run bot). */
 export function autoplay(seconds: number) {
-  for (let k = 0; k < seconds * NUM.ticksPerSec; k++) botTick(game);
+  for (let k = 0; k < seconds * NUM.ticksPerSec && !game.run?.end; k++) (game.run ? runBotTick : botTick)(game);
+  if (game.run?.landed) ui.placing = null;
   ui.v++;
+}
+
+/** Start a run: offer k, founder f. Home pays and waits; the run island goes on screen, waiting for the landing. */
+export function beginRun(k: number, f: number) {
+  const can = canRun(home);
+  if (!can.ok) { toast(can.reason, 'bad'); return; }
+  game = startRun(home, offers(home)[k], founders(home)[f]);
+  ui.runSetup = false; ui.placing = 'land'; ui.tab = 'lineage'; ui.focus = 'line'; ui.tree = false; ui.selected = -1; ui.follow = -1; ui.place = -1;
+  ui.view = 'none'; ui.lit = null; ui.lastRun = null;
+  queue = []; seenHead = 0; ui.banner = null;
+  ui.gen++; ui.v++;
+}
+
+export function pickHeir(k: number) {
+  ui.placing = `heir:${k}`;
+}
+
+export function doBringHome() {
+  if (bringHome(game)) ui.v++;
+}
+
+/** Back home: the run's form, finds and XP go to the lineage; home carries on where it stopped. */
+export function endRun() {
+  if (!game.run) return;
+  ui.lastRun = finish(home, game);
+  game = home;
+  ui.placing = null; ui.tab = 'lineage'; ui.focus = 'thallus'; ui.selected = -1; ui.view = 'none';
+  queue = []; seenHead = home.heads.length ? home.heads[home.heads.length - 1].tick : 0; ui.banner = null;
+  ui.gen++; ui.v++;
 }
 
 /** Opens an animal's card and follows it. */
@@ -162,7 +216,8 @@ export function addBiomass(n: number) {
 }
 
 export function reset() {
-  game = createState(Math.floor(Math.random() * 1e9));
+  game = home = createState(Math.floor(Math.random() * 1e9));
+  ui.runSetup = false; ui.lastRun = null;
   ui.placing = null; ui.focus = 'thallus'; ui.tab = 'species'; ui.tree = false; ui.selected = -1; ui.follow = -1; ui.place = -1; ui.lit = null; ui.gear = -1;
   queue = []; seenHead = 0; ui.banner = null;
   ui.gen++; ui.v++;

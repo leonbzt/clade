@@ -32,6 +32,7 @@ export type Variant = {
   tier: number; // index into TIERS
   combo: string | null;
   born: number;
+  split?: boolean; // founded a species (start fresh): it can't again, and it no longer counts as a key carrier
 };
 
 export const ZERO: Genome = { axes: [0, 0, 0, 0], traits: [] };

@@ -36,8 +36,10 @@ import { PATCH } from '../src/sim/habitats';
 import { SEA } from '../src/sim/state';
 import { MASS } from '../src/data/masses';
 import { NUM } from '../src/data/numbers';
+import { RUN } from '../src/data/islands';
 import { grams } from '../src/ui/format';
 import { LITTER_G } from '../src/sim/tally';
+import { runLine } from './run-line';
 
 const env = process.env, SEEDS = Number(env.SEEDS || 5), MIN = Number(env.MIN || 60);
 const out = (s: string) => writeSync(1, s + '\n'); // straight to stdout: vitest hides console.log
@@ -64,14 +66,15 @@ it.skipIf(!env.SIM)('sim', () => {
   timer.now = () => performance.now();
   if (env.TABLE) out(interactionTable());
   out(`seed | ${UNLOCKS.map((u) => u.slice(0, 4)).join(' ')} | ${ABBR.map((a) => a.padStart(5)).join('')} | hill  dom  turn%/min litter/min N med/top lively | ok`);
-  let pass = 0;
+  let pass = 0, runsOk = 0;
   for (let seed = 1; seed <= SEEDS; seed++) {
     const s = createState(seed), when: Record<string, string> = {}, vs: VariantStats = variantStats();
     let ms = 0, msN = 0, mossPeak = 0, landed = -1, landTick = 0, reach = -1, fewestOpen = Infinity, slotMs = 0, windows = 0;
     let fewHab = Infinity, mostHab = 0, unique = true, lockedLive = 0, heads30 = 0, born30 = 0, gapMax = 0, nGapMax = 0;
     const lo: Record<string, number> = {}, hi: Record<string, number> = {}, grazers: Record<string, number[]> = { snail: [], slug: [] }, cells: number[][] = [];
-    let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0;
+    let snap = snapshot(s), turn = 0, lit = Float32Array.from(s.layers.litter), litSwing = 0, runs = '';
     for (let k = 0; k < MIN * 600; k++) {
+      if (k === 10 * 600) { const r = runLine(s); runs = r.text; if (r.lived) runsOk++; }
       const t0 = performance.now(), waiting = s.visitors.snails;
       botTick(s, (l) => { const m = l.match(/^([\d.]+)m (?:evolve|door) (\w+)/); if (m && [...UNLOCKS, ...ARRIVALS].includes(m[2])) when[m[2]] = m[1]; });
       if (s.agents.length > 20) { ms += performance.now() - t0; msN++; }
@@ -117,6 +120,7 @@ it.skipIf(!env.SIM)('sim', () => {
       `${ABBR[s.species[dom.sp]?.base] ?? '--'}${Math.round(dom.share * 100)}% ${(turn * 100).toFixed(2).padStart(5)}     ${litSwing.toFixed(4)}  ` +
       `${N.median.toFixed(2)}/${N.top.toFixed(2)}  ${lively}/${s.landmarks.length} | ${ok ? 'PASS' : 'FAIL'}`);
     out(vs.line(s, MIN));
+    if (runs) out(runs);
     out(`     animals: ${ARRIVALS.map((a) => `${a.slice(0, 4)} ${when[a] ?? '-'}`).join(' · ')} | ` +
       ANIMAL_IDS.map((id) => `${id.slice(0, 5)} ${members(s, id)} (${lo[id] ?? 0}–${hi[id] ?? 0}) ${Math.round((100 * count(s, id)) / capOf(id))}%`).join(' ') +
       ` | swings ${Object.keys(grazers).map((id) => `${id} ${swings(grazers[id])}`).join(' ')} local ${cells.reduce((q, xs) => q + swings(xs, 24), 0)} | snail reach ${reach < 0 ? '-' : reach.toFixed(0)} | moss ${count(s, 'moss')}/${mossPeak} | ${s.agents.length} agents ${Math.round((100 * s.agents.filter((a) => a.slow).length) / (s.agents.length || 1))}% slow` +
@@ -160,5 +164,6 @@ it.skipIf(!env.SIM)('sim', () => {
     }
   }
   out(`${pass}/${SEEDS} seeds pass (≥5 of 7 plants alive, none over 60% of its stratum, still changing, ≥4 lively landmarks)`);
+  if (MIN > 10) out(`${runsOk}/${SEEDS} seeds: the run bot's line lived ${RUN.seasons} seasons on both themes`);
   out(variantSummary());
 }, 900_000);

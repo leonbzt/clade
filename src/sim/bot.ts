@@ -8,6 +8,8 @@ import { keyCarrier } from './keys';
 import { SEA, type State } from './state';
 import { step } from './tick';
 import { speciesIndex } from './variants';
+import { cardProfile, inReach } from './brood';
+import { buildFounder, land, placeHeir } from './run';
 
 /** Land tiles by how well this profile fits them, best first. */
 function bestTiles(s: State, p: Profile): number[] {
@@ -33,6 +35,21 @@ export function botTick(s: State, log?: (line: string) => void) {
         log?.(`${t()} ${door ? `door ${door.k.node}` : 'species'} ${name}`); break;
       }
     }
+  }
+  step(s);
+}
+
+/** The run bot: lands the founder on its best tile, then each season takes the Steady card to its best tile within
+ * reach. A ruler for the run line in `npm run sim`. */
+export function runBotTick(s: State) {
+  const R = s.run!;
+  if (R.end) return;
+  if (!R.landed) {
+    const at = bestTiles(s, buildFounder(s))[0];
+    if (at === undefined || !land(s, profiles(s), at)) { R.end = 'died'; return; }
+  } else if (R.brood.length) {
+    const k = Math.max(0, R.brood.findIndex((c) => c.kind === 'steady')), at = bestTiles(s, cardProfile(s, R.brood[k].genome)).find((i) => inReach(s, i));
+    if (at === undefined || placeHeir(s, profiles(s), k, at) < 0) R.brood = [];
   }
   step(s);
 }

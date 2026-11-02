@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { NUM } from '../data/numbers';
   import { DETAIL_FROM, ZOOM_STEPS } from '../data/view';
   import { FIELDS, type LayerId } from '../data/fields';
@@ -13,7 +13,9 @@
   import { loadout } from './board';
   import { bucketOf } from '../sim/tally';
 
-  const T = NUM.map.tile, W = NUM.map.w * T, H = NUM.map.h * T;
+  const T = NUM.map.tile;
+  // The island on screen sets the map's size: home, or a smaller run island.
+  let W = $state(game.w * T), H = $state(game.h * T);
 
   let canvas: HTMLCanvasElement;
   let wrap: HTMLElement;
@@ -33,12 +35,17 @@
   // A loadout card on each habitat shown: its six mini icons, and its name when zoomed in (they follow ui.v).
   const habitatCards = $derived.by(() => {
     ui.gen; ui.v;
+    if (game.run) return []; // no slot board on a run
     return game.habitats.filter((h) => h.shown && h.at >= 0).map((h) => ({ p: h.id, name: h.name, cards: loadout(game, h.id), x: ((h.at % game.w) + 0.5) * T, y: (Math.floor(h.at / game.w) + 0.5) * T }));
   });
 
   $effect(() => {
     ui.gen;
-    renderer = new GardenRenderer(game, canvas);
+    untrack(() => {
+      W = game.w * T; H = game.h * T; zi = 0; pan = { x: 0, y: 0 };
+      renderer = new GardenRenderer(game, canvas);
+      if (wrap) fitToSpace();
+    });
   });
 
   // Set up once. (An $effect here would re-run whenever zoom or pan change, since it reads them.)

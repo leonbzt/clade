@@ -41,7 +41,19 @@ Three parts, in order, each checked with `npm run sim` before the next.
 - Fewer headlines (a higher bar or a per-habitat cooldown). Bristletails eat dry crusts first, litter second.
   Refounding a springtail with insect traits makes a bristletail. A sim line: N by source, litter in years of fall.
 
-## Out
+**Part D: stem doors and the shade–drought trade-off** (P35, *decided 1 Nov: "now"*; plan in
+[design/evolution.md](../design/evolution.md))
+- **Stem doors:** Leafy and Upright open only from early land plants (`from: ['land']`), so a moss stays a moss and
+  never becomes a club moss. Insects keep coming from springtails until a stem hexapod exists (route C, M4).
+- **P34 b as a real trade-off:** Dry steps narrow the shade band (−0.08, −0.15), Wet steps widen it, so a Wet form
+  does better in shade than a Dry one (plants rarely take both drought and deep shade).
+- Built 1 Nov, after A–C. Check: 2 seeds, 35 min: Upright from the early land plants at 19.9 and 23.4 min (was
+  17.6 and 21.4, from a Dry Wind Moss). Moss stays 96–100% Dry at home even with the shade cost doubled: it's
+  born Dry from its Dry Wind ancestor, and the shady wet ground belongs to liverworts and early land plants. The
+  wet sister comes from runs (route B); the trade-off gives it ground to win at home (12b).
+- Full sim (5 seeds, 60 min, with 12a's code): 5/5 pass, Mosses + Vascular opened 5/5. To watch: early land plants
+  thin to 80–414 tiles by 60 min (the stem runs start from); bot-made species alive 10 min later: 1/5.
+
 - The three-tempo clock: your call, after slice 12 or later. Until then a year ≈ 8 min is a display conversion
   (ideas.md, design/nitrogen-and-time.md).
 - Leak as a mechanic, humus, geology, more nutrients, food quality as C:N (ideas.md).
