@@ -43,8 +43,8 @@ export const STAT_NAMES: Record<StatId, string> = {
 };
 /** The raw value that counts as 1.0, per form (a mat's reach is a cushion's height). Tuned by feel. */
 export const STAT_SCALE: Record<FormId, Record<StatId, number>> = {
-  moss: { reach: 30, spread: 700, roots: 30, toughness: 1.6, growth: 4, upkeep: 4 },
-  herb: { reach: 300, spread: 260, roots: 8, toughness: 2.6, growth: 10, upkeep: 12 },
+  moss: { reach: 30, spread: 500, roots: 120, toughness: 2, growth: 10, upkeep: 8 }, // roots: rhizoid length
+  herb: { reach: 400, spread: 400, roots: 14, toughness: 3.5, growth: 16, upkeep: 14 },
   tree: { reach: 420, spread: 500, roots: 10, toughness: 5, growth: 12, upkeep: 16 },
 };
 
