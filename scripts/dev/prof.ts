@@ -1,0 +1,20 @@
+// Dev only: time the garden step. `npx tsx scripts/dev/prof.ts`
+import { BASE_GENES } from '../../src/data/genes';
+import { gameStep, newGame, release, startRun, tierList } from '../../src/sim/game';
+import { gardenStep, refreshStocks } from '../../src/sim/garden';
+const g = newGame(7);
+startRun(g, g.sprouts[0].id, g.sprouts[0].patch); release(g, [8, 300, 10, 1.1, 2.5, 1.5], BASE_GENES, null);
+const kinds: Record<number, number> = {}; for (const p of g.hab.patches) kinds[p.kind] = (kinds[p.kind] ?? 0) + p.tiles.length;
+console.log('patches', g.hab.patches.length, 'tiles by kind', JSON.stringify(kinds), 'rows', tierList(g).map((r) => `${r.open ? 1 : 0}/${r.tiles}`).join(' '));
+let t = performance.now(); for (let k = 0; k < 10000; k++) gardenStep(g.garden, g.hab, g.species); console.log('gardenStep µs', ((performance.now() - t) / 10).toFixed(1));
+t = performance.now(); for (let k = 0; k < 1000; k++) refreshStocks(g.garden, g.hab, g.species); console.log('refresh µs', (performance.now() - t).toFixed(1));
+t = performance.now(); for (let k = 0; k < 10000; k++) gameStep(g); console.log('gameStep µs', ((performance.now() - t) / 10).toFixed(1));
+let e = 0; for (const L of g.garden.life) for (const s of L.slots) if (s) e += s.length; console.log('entries', e, 'species', g.species.length);
+for (let k = 0; k < 26000; k++) gameStep(g);
+const kinds2: Record<number, number> = {}; for (const p of g.hab.patches) kinds2[p.kind] = (kinds2[p.kind] ?? 0) + p.tiles.length;
+console.log('after 10 h: patches', g.hab.patches.length, JSON.stringify(kinds2), 'rows', tierList(g).map((r) => `${r.open ? 1 : 0}/${r.tiles}/${Math.round(r.area)}`).join(' '));
+console.log(g.news.slice(0, 5).map((n) => n.text).join(' | '));
+import { findHabitats } from '../../src/sim/habitats';
+import { remap } from '../../src/sim/succession';
+t = performance.now(); for (let k = 0; k < 100; k++) findHabitats(g.isl); console.log('findHabitats ms', ((performance.now() - t) / 100).toFixed(2));
+t = performance.now(); for (let k = 0; k < 100; k++) g.hab = remap(g.isl, g.hab, g.garden, g.species); console.log('remap ms', ((performance.now() - t) / 100).toFixed(2));
