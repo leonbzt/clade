@@ -31,7 +31,7 @@ export const SUCCESSION = {
   max: 1.2,
   // soil per second per unit of cover in each layer (mat, herb, canopy): your full moss cover takes lava to bare in
   // ~45 min, a full herb cover bare ground to forest in ~70 min. Natives build soil at `native` × that.
-  rate: [7e-5, 1.1e-4, 1.6e-4],
+  rate: [1.4e-5, 2.2e-5, 3.2e-5],
   native: 0.08,
   // a layer builds soil only up to its cap: mats make thin soil (bare ground), herbs make forest floor
   cap: [0.45, 0.9, 1.2],

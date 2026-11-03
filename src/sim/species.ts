@@ -49,8 +49,12 @@ export function autoName(form: FormId, sn: number[], taken: Set<string>): string
 
 /** A colour per species: hue walks the golden angle by id; the form sets lightness. */
 export function speciesColor(id: number, form: FormId): string {
-  const hue = (90 + id * 137.5) % 360, l = form === 'moss' ? 52 : form === 'herb' ? 45 : 32;
-  return `hsl(${hue.toFixed(0)} 55% ${l}%)`;
+  const h = ((90 + id * 137.5) % 360) / 360, s = 0.75, l = form === 'moss' ? 0.6 : form === 'herb' ? 0.52 : 0.42;
+  const f = (n: number) => {
+    const k = (n + h * 12) % 12, c = l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(c * 255).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`; // hex, so the map painter can read it
 }
 
 export function makeNatives(): Species[] {
