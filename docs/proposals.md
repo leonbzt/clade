@@ -8,4 +8,4 @@ milestone goes to [ideas.md](ideas.md) as one line.
 Numbers continue from P35. P1–P33 in full are archived (`_archive/2026-11-01/systems.md`, reads blocked). Only the
 open parts needed for M1 are kept here; the rest is parked in ideas.md.
 
-(None open. P35 was decided 1 Nov: see decisions.md and [design/evolution.md](design/evolution.md).)
+(None open. P36 was decided 3 Nov: see decisions.md.)

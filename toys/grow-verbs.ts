@@ -1,8 +1,8 @@
-// Grow toy (slice 00): the verbs (wake a bud, cut a branch, dig), each with its preview, and the brood. No DOM.
+// Grow toy (slices 00, 00b): the verbs (wake a bud, cut a branch, dig), each with its preview, and the brood. No DOM.
 
-import { CELL, GENES, PIPS, SPOTS, T, gene, type Genes } from './grow-data';
-import { addBud, extendShoot, newPlant, score, stats, tick, wakeBelow, type Node, type Plant, type Stats } from './grow-sim';
-import { cellIndex, knownCopy, seeded, worldTick, type World } from './grow-world';
+import { CELL, GENES, PIPS, SPOTS, T, formOf, gene, type FormId, type Genes } from './grow-data';
+import { addBud, extendShoot, newPlant, score, stats, tick, upkeepOf, wakeBelow, type Node, type Plant, type Stats } from './grow-sim';
+import { cellIndex, knownCopy, seeded, worldTick, type Rng, type World } from './grow-world';
 
 // ---- wake a bud ----
 
@@ -45,7 +45,7 @@ export function cutPreview(p: Plant, world: World, i: number) {
   const leaves = cut.filter((n) => n.leaf > 0);
   const energy = leaves.reduce((s, n) => s + n.leaf * n.light * T.leafRate, 0) * 10;
   const water = leaves.reduce((s, n) => s + n.leaf * n.light * T.leafThirst, 0) * world.habitat.thirst * 10;
-  const upkeep = cut.reduce((s, n) => s + (T.upkeep * n.thick * Math.max(n.len, 4)) / 8, 0) * 10;
+  const upkeep = cut.reduce((s, n) => s + upkeepOf(n), 0) * 10;
   let wakes = 0;
   for (let n = p.nodes[i].parent, k = 0; k < 3 && n >= 0; k++, n = p.nodes[n].parent) {
     wakes += p.nodes.filter((b) => b.parent === n && b.state === 'bud' && !b.dead).length;
@@ -114,21 +114,26 @@ export function mutate(g: Genes, rng: () => number): { genes: Genes; changed: nu
 }
 
 export interface Seed { genes: Genes; changed: number[]; spot: number; body: Plant; stats: Stats; score: number }
+export type Make = (genes: Genes, spot: number, world: World | null, rng: Rng) => Plant;
+export interface Brood { seeds: Seed[]; base: { stats: Stats; score: number } }
 
 /** A season grown without verbs, on what you've seen of the soil (hidden cells count as loam). */
-export function predict(genes: Genes, spot: number, world: World, target: string, seed: number): { body: Plant; stats: Stats; score: number } {
-  const w = knownCopy(world), body = newPlant(genes, spot, w, seeded(seed));
-  for (let t = 1; t <= T.seasonTicks; t++) { worldTick(w, t); tick(body, w, t); }
+export function predict(genes: Genes, spot: number, world: World, target: string, seed: number, form: FormId, make: Make) {
+  const w = knownCopy(world), body = make(genes, spot, w, seeded(seed)), ticks = formOf(form).seasonTicks;
+  for (let t = 1; t <= ticks; t++) { worldTick(w, t, ticks); tick(body, w, t); }
   const s = stats(body, w);
   return { body, stats: s, score: score(s, target) };
 }
 
-export function brood(parent: Plant, world: World, target: string, rng: () => number): Seed[] {
-  const spots = [0, 1, 2, 3, 4].sort(() => rng() - 0.5).slice(0, 3).sort((a, b) => a - b);
-  return spots.map((spot, i) => {
+/** n seeds on different spots, each one season predicted; base = the parent's genes on its own spot, no verbs. */
+export function brood(parent: Plant, world: World, target: string, rng: () => number, n: number, make: Make): Brood {
+  const spots = [0, 1, 2, 3, 4].sort(() => rng() - 0.5).slice(0, n).sort((a, b) => a - b);
+  const base = predict(parent.genes, parent.spot, world, target, world.seed * 7 + 9, parent.form, make);
+  const seeds = spots.map((spot, i) => {
     const { genes, changed } = mutate(parent.genes, rng);
-    return { genes, changed, spot, ...predict(genes, spot, world, target, world.seed * 7 + i) };
+    return { genes, changed, spot, ...predict(genes, spot, world, target, world.seed * 7 + i, parent.form, make) };
   });
+  return { seeds, base };
 }
 
 /** The open spot nearest the middle: where a line starts. */
@@ -142,6 +147,8 @@ export const spotLabel = (world: World, spot: number) => {
   const roots = world.habitat.neighbours.find((nb) => Math.abs(x - nb.x) < nb.roots);
   return under ? `under the ${under.kind}` : roots ? `in the open, by the ${roots.kind}'s roots` : 'in the open';
 };
+
+export const makeHerb: Make = (g, s, w, r) => newPlant(g, s, w, r, 'herb');
 
 export const geneText = (g: Genes, i: number) => {
   const d = GENES[i], v = gene(g, d.id);

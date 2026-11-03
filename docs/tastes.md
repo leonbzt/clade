@@ -43,6 +43,8 @@ has to fit.
   deep-time road later. A basal ancestor (an early land plant) branching into liverworts and mosses. Lichens are an
   unlock. Groups are named base species (a slug you found is still a slug).
 - Later: partnership doors, new diets through genes.
+- **Growth forms play differently:** "moss vs herb vs tree should all play different" (3 Nov). More kingdoms
+  and species.
 
 ## The world
 - **A young volcanic island**, subtropical at home; progression follows **ecological succession**. Tile types change
@@ -87,6 +89,8 @@ has to fit.
 - **Grow toy, first build (2 Nov):** "fun in principle"; managing the growth and roots and directing the plant "is
   something I can imagine going forward with"; generations felt too short; the habitat should be shaped by its
   neighbours and its habitat type.
+- **Grow toy pass 2 (3 Nov):** herb and tree "play differently"; you liked the tree's look, the spring leaves and
+  cutting in winter; the tree "grew to little"; "still not a good feeling game", maybe less autogrowth.
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

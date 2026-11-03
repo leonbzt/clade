@@ -10,10 +10,11 @@ in [docs/ideas.md](docs/ideas.md). This file changes only on your call; AI may p
 
 **Goal:** find out whether growing a line in side view is fun on its own, then write the game down in one page.
 
-1. [ ] **The toy: grow a line** (`toys/`, built on the 26 Oct specimen toy). Up to 10 genes grow a side-view plant
+1. [x] **The toy: grow a line** (`toys/`, built on the 26 Oct specimen toy). Up to 10 genes grow a side-view plant
    (shoots for light, roots for water and nutrient pockets, stone in the way); the stats read out live; buds and
    pruning above ground and hidden soil below, with cost previews, and a switch that turns the verbs off; at the
-   season's end a brood of 3 seeds, drawn as bodies → pick the heir; 4–6 seasons. Spec: [docs/slices/00-grow-toy.md](docs/slices/00-grow-toy.md).
+   season's end a brood of 3 seeds, drawn as bodies → pick the heir; 4–6 seasons. Spec: [docs/slices/00-grow-toy.md](docs/slices/00-grow-toy.md). Pass 2, the tree beside the herb:
+   [docs/slices/00b-tree-and-herb.md](docs/slices/00b-tree-and-herb.md).
    **Question:** are there enough decisions, and do the heirs feel different? (The 26 Oct specimen toy: "there
    isn't a lot to decide.")
 2. [ ] **The spec** (`docs/spec.md`, at most 150 lines; it replaces v1's vision): the loop, the genetics layers, the

@@ -1,8 +1,8 @@
-// Grow toy (slice 00): the plant. A tree of nodes; a child's index is always above its parent's. Three stocks:
+// Grow toy (slices 00, 00b): the plant. A tree of nodes; a child's index is always above its parent's. Three stocks:
 // energy (leaves), water (roots in water pockets and loam), nutrient (roots in nutrient pockets, pays the verbs).
 // Each tick the net energy is shared among the active tips, so fewer tips grow faster. No DOM.
 
-import { GROUND, H, SPOTS, STAT_SCALE, T, TARGETS, W, gene, type Genes, type StatId } from './grow-data';
+import { GROUND, H, SPOTS, STAT_SCALE, T, TARGETS, W, gene, type FormId, type Genes, type StatId } from './grow-data';
 import { cellIndex, isPocket, light, reveal, type Pt, type Rng, type World } from './grow-world';
 
 export type Kind = 'shoot' | 'root';
@@ -11,30 +11,36 @@ export interface Node {
   x: number; y: number; parent: number; kind: Kind; state: State; heading: number; len: number;
   leaf: number; light: number; thick: number; progress: number; target: Pt | null; dead: boolean;
   order: number; // 0 = the main stem or root, +1 per branching
+  side: number; // ±1: the side of this stem's next bud (alternates along the stem)
+  wood: number; // tree: thickness added by past winters
+  born: number; // the season this segment grew in
 }
 export interface Flow { energyIn: number; energyUp: number; waterIn: number; waterUse: number; nutrientIn: number; wilting: boolean }
 export interface Plant {
-  genes: Genes; spot: number; x: number; nodes: Node[]; rng: Rng;
+  genes: Genes; spot: number; x: number; nodes: Node[]; rng: Rng; form: FormId; season: number;
   energy: number; water: number; nutrient: number; flow: Flow;
+  canGrow: ((p: Plant, tip: number) => boolean) | null; // the form's limit on a tip extending (tree: wood carries height)
 }
 
 export const UP = -Math.PI / 2, DOWN = Math.PI / 2;
+/** Energy per tick to keep a segment alive. */
+export const upkeepOf = (n: Node) => (T.upkeep * (n.thick - n.wood * (1 - T.tree.woodUpkeep)) * Math.max(n.len, 4)) / 8;
 const turn = (a: number, to: number, k: number) => a + Math.atan2(Math.sin(to - a), Math.cos(to - a)) * k;
 
 function mk(p: Partial<Node> & Pick<Node, 'x' | 'y' | 'parent' | 'kind'>): Node {
-  return { state: 'tip', heading: p.kind === 'shoot' ? UP : DOWN, len: 0, leaf: 0, light: 1, thick: 1, progress: 0, target: null, dead: false, order: 0, ...p };
+  return { state: 'tip', heading: p.kind === 'shoot' ? UP : DOWN, len: 0, leaf: 0, light: 1, thick: 1, progress: 0, target: null, dead: false, order: 0, side: 1, wood: 0, born: 1, ...p };
 }
 
-export function newPlant(genes: Genes, spot: number, world: World | null, rng: Rng): Plant {
+export function newPlant(genes: Genes, spot: number, world: World | null, rng: Rng, form: FormId = 'herb'): Plant {
   const x = SPOTS[spot];
   const nodes = [
     mk({ x, y: GROUND, parent: -1, kind: 'shoot', state: 'seg' }),
-    mk({ x, y: GROUND - 4, parent: 0, kind: 'shoot', len: 4, leaf: 2 }),
+    mk({ x, y: GROUND - 4, parent: 0, kind: 'shoot', len: 4, leaf: 2, side: rng() < 0.5 ? 1 : -1 }),
     mk({ x, y: GROUND + 4, parent: 0, kind: 'root', len: 4 }),
   ];
   if (world) reveal(world, x, GROUND + 4);
   return {
-    genes, spot, x, nodes, rng, ...T.start,
+    genes, spot, x, nodes, rng, form, season: 1, canGrow: null, ...T.start,
     flow: { energyIn: 0, energyUp: 0, waterIn: 0, waterUse: 0, nutrientIn: 0, wilting: false },
   };
 }
@@ -51,9 +57,9 @@ export function segCost(p: Plant, kind: Kind, world: World | null, at?: Node): n
 
 // ---- growth ----
 
-export function addBud(p: Plant, at: number, heading: number, kind: Kind = 'shoot', state: State = 'bud'): number {
+export function addBud(p: Plant, at: number, heading: number, kind: Kind = 'shoot', state: State = 'bud', side = 1): number {
   const n = p.nodes[at];
-  p.nodes.push(mk({ x: n.x, y: n.y, parent: at, kind, state, heading, order: n.order + 1 }));
+  p.nodes.push(mk({ x: n.x, y: n.y, parent: at, kind, state, heading, order: n.order + 1, side, born: p.season }));
   return p.nodes.length - 1;
 }
 
@@ -62,17 +68,19 @@ export function extendShoot(p: Plant, world: World | null, i: number): number {
   const t = p.nodes[i], len = gene(p.genes, 'internode'), rng = p.rng;
   for (let tries = 0; tries < 3; tries++) {
     let h = turn(t.heading + (rng() - 0.5) * 0.5, UP, (t.order ? 0.06 : 0.18) + tries * 0.3); // side shoots keep their angle
-    if (world) { // lean toward the brighter side
+    if (world) { // lean toward the brighter side, only when it's clearly brighter
       const l = light(world, t.x - 12, t.y), r = light(world, t.x + 12, t.y);
-      if (l !== r) h = turn(h, l > r ? Math.PI : 0, 0.12);
+      if (Math.abs(l - r) > T.leanMin) h = turn(h, l > r ? Math.PI : 0, T.lean);
     }
     const x = t.x + Math.cos(h) * len, y = t.y + Math.sin(h) * len;
     if (y > GROUND - 3 || y < 4 || x < 4 || x > W - 4) continue;
     t.state = 'seg';
-    p.nodes.push(mk({ x, y, parent: i, kind: 'shoot', heading: h, len, leaf: gene(p.genes, 'leaf'), order: t.order }));
+    p.nodes.push(mk({ x, y, parent: i, kind: 'shoot', heading: h, len, leaf: gene(p.genes, 'leaf'), order: t.order, born: p.season }));
     const k = p.nodes.length - 1, ang = (gene(p.genes, 'angle') * Math.PI) / 180;
     const buds = Math.floor(gene(p.genes, 'buds') + rng());
-    for (let b = 0; b < buds; b++) addBud(p, k, h + ((k + b) % 2 ? ang : -ang));
+    let side = t.side; // buds alternate sides along their own stem
+    for (let b = 0; b < buds; b++) { addBud(p, k, h + side * ang, 'shoot', 'bud', side); side = -side; }
+    p.nodes[k].side = side;
     return k;
   }
   t.state = 'seg';
@@ -95,7 +103,7 @@ function extendRoot(p: Plant, world: World | null, i: number): number {
     if (world && c >= 0 && world.cells[c].kind === 'stone') { world.cells[c].seen = true; continue; }
     const target = t.target && Math.hypot(t.target.x - x, t.target.y - y) > len ? t.target : null;
     t.state = 'seg'; t.target = null;
-    p.nodes.push(mk({ x, y, parent: i, kind: 'root', heading: a, len, target, order: t.order }));
+    p.nodes.push(mk({ x, y, parent: i, kind: 'root', heading: a, len, target, order: t.order, born: p.season }));
     const k = p.nodes.length - 1;
     if (world) reveal(world, x, y);
     if (!target && rng() < T.rootBranch + 0.12 * gene(p.genes, 'buds')) addBud(p, k, a + (rng() < 0.5 ? 0.9 : -0.9), 'root', 'tip');
@@ -137,7 +145,7 @@ function grow(p: Plant, world: World | null) {
       n.progress += Math.max(0, add);
       p.energy += (pool * weight(i)) / total - Math.max(0, add);
       const water = kind === 'shoot' ? T.segWater : 0;
-      if (n.progress >= cost && p.water >= water) {
+      if (n.progress >= cost && p.water >= water && (!p.canGrow || p.canGrow(p, i))) {
         p.water -= water;
         const carry = n.progress - cost, k = extend(p, world, i);
         n.progress = 0;
@@ -159,14 +167,14 @@ function shade(p: Plant, world: World | null) {
   }
 }
 
-/** Pipe model: stems thicken with the leaves they carry. */
-function thicken(p: Plant) {
+/** Pipe model: stems thicken with the leaves they carry; a tree adds its wood. */
+export function thicken(p: Plant) {
   const carried = new Float32Array(p.nodes.length), th = gene(p.genes, 'thickness');
   for (let i = p.nodes.length - 1; i > 0; i--) {
     const n = p.nodes[i];
     if (n.dead) continue;
     carried[i] += n.leaf > 0 || n.kind === 'root' ? 1 : 0;
-    n.thick = th * (1 + (n.kind === 'shoot' ? 0.18 : 0.1) * Math.sqrt(carried[i]));
+    n.thick = th * (1 + (n.kind === 'shoot' ? 0.18 : 0.1) * Math.sqrt(carried[i])) + n.wood;
     if (n.parent >= 0) carried[n.parent] += carried[i];
   }
 }
@@ -179,7 +187,7 @@ export function tick(p: Plant, world: World, t: number) {
   const perCell = new Map<number, number>();
   for (const n of p.nodes) {
     if (n.dead || n.state === 'bud') continue;
-    eUp += (T.upkeep * n.thick * Math.max(n.len, 4)) / 8;
+    eUp += upkeepOf(n);
     if (n.kind === 'shoot' && n.leaf > 0) {
       eIn += n.leaf * n.light * T.leafRate;
       wUse += n.leaf * n.light * T.leafThirst * thirst;

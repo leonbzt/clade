@@ -49,6 +49,16 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Better names; bigger tiles with sprites the same size (you).
 
 - Grow toy: the dead parent's leaves and roots feed the soil (litter) for its heir (AI, 2 Nov).
+- Zoom layers beyond M1: a close-up of the soil (bacteria, hyphae, insects; maybe fungi's layer) and a world map
+  (continents, climate zones; maybe the archipelago or eras) (friend + you, 2 Nov). Frame: P36.
+- Telomeres and DNA stabilization: control over mutation (lock a pip, smaller or bigger steps) (friend, 2 Nov).
+- The released species goes wild and you manage it too (friend, 2 Nov); today the garden is idle.
+- Adaptive resolution (you, 3 Nov): compute detail only where you look. AI verdict: the patch model is the coarse
+  truth; a zoomed layer runs a detail sim seeded from it, for looks; settled patches sleep. Fits the zoom frame.
+- Plant-model references (you, 3 Nov): PlantGL, Virtual Plant Lab, PlantStudio-js → docs/research/plant-models.md.
+- Less autogrowth: you decide each grow step, or similar (you, 3 Nov, after playtest 3: "still not a good
+  feeling game"). Weigh in the spec: it's the core verb of the side view.
+- Tree pacing: it grew too little (playtest 3); `T.tree` in toys/grow-data.ts (carry, wood, woodUpkeep, shell).
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
@@ -76,3 +86,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - "Minigames wait until the garden core is fun" (26 Oct) → v2 reverses it: the activity comes first.
 - v1's first-session script (seabirds in session 2, mosses via the leafy shoot, a cliffhanger) → the vent start
   stays (tastes.md).
+- Breeding with dominance (PlantStudio): genes pass on with one version winning (you: interesting, 3 Nov).

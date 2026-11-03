@@ -101,8 +101,8 @@ export function light(w: World, x: number, y: number): number {
 }
 
 /** Each tick: the neighbours grow toward full size by mid-season and drain the pockets in their root zones. */
-export function worldTick(w: World, t: number) {
-  w.grow = Math.min(1, 0.6 + (0.4 * t) / (T.seasonTicks / 2));
+export function worldTick(w: World, t: number, seasonTicks: number) {
+  w.grow = Math.min(1, 0.6 + (0.4 * t) / (seasonTicks / 2));
   w.zones.forEach((zone) => {
     for (const i of zone) {
       const c = w.cells[i];

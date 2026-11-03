@@ -1,10 +1,17 @@
-// Grow toy (slice 00): numbers and content. Tuning sits here on purpose. 1 px = 1 cm.
+// Grow toy (slices 00, 00b): numbers and content. Tuning sits here on purpose. 1 px = 1 cm.
 
 export const W = 960, GROUND = 250, CELL = 20, COLS = W / CELL, ROWS = 14, H = GROUND + ROWS * CELL;
 
+// ---- forms: the form changes the rules, not the genome ----
+
+export type FormId = 'herb' | 'tree';
+export const FORMS: { id: FormId; name: string; blurb: string; seasons: number; seasonTicks: number }[] = [
+  { id: 'herb', name: 'Herb', blurb: '5 seasons of 90 s. Each season ends in seeds: pick the heir. A good season earns a 4th seed.', seasons: 5, seasonTicks: 900 },
+  { id: 'tree', name: 'Tree', blurb: 'One body for 8 seasons of 60 s. Leaves fall each winter, wood thickens, cuts re-sprout. Seeds at the end.', seasons: 8, seasonTicks: 600 },
+];
+export const formOf = (id: FormId) => FORMS.find((f) => f.id === id)!;
+
 export const T = {
-  seasons: 5,
-  seasonTicks: 900, // 90 s at ×1
   tickMs: 100,
   start: { energy: 10, water: 10, nutrient: 8 },
   // growth (energy and water per segment)
@@ -28,7 +35,7 @@ export const T = {
   wakeChance: 0.008, // per dormant bud per tick at Dominance 1
   rootBranch: 0.06, // + Buds × 0.12, per root segment
   rootLen: 6,
-  maxNodes: 1800,
+  maxNodes: 2600,
   // verbs (nutrient)
   wakeCost: 3,
   cutBack: 0.08, // nutrient back per segment cut
@@ -42,6 +49,14 @@ export const T = {
   pocketNutrientAmt: [20, 45] as const,
   neighbourDrain: { water: 0.012, nutrient: 0.004 }, // per pocket in a root zone per tick
   ghostSteps: 14,
+  // shoots lean toward light only when one side is clearly brighter
+  leanMin: 0.25, lean: 0.05,
+  tree: {
+    carry: 26, // cm of stem a segment can carry above it, per unit of thickness
+    wood: 0.22, // wood added per winter × Thickness gene × √(leaves carried); roots half
+    woodUpkeep: 0.3, // wood costs this share of a living stem's upkeep (heartwood is mostly dead)
+    shell: 5, // spring leaves come back on segments at most this many from their stem's end
+  },
 };
 
 export const SPOTS = [150, 330, 500, 680, 850];
@@ -50,15 +65,16 @@ export const SPOTS = [150, 330, 500, 680, 850];
 
 export type GeneId = 'internode' | 'angle' | 'buds' | 'dominance' | 'leaf' | 'rootShare' | 'dive' | 'thickness';
 export const PIPS = 9;
-export const GENES: { id: GeneId; name: string; lo: number; hi: number; help: string }[] = [
-  { id: 'internode', name: 'Internode', lo: 4, hi: 12, help: 'segment length: reach fast, cost more per segment' },
-  { id: 'angle', name: 'Angle', lo: 15, hi: 80, help: 'branch angle: narrow or wide crown' },
-  { id: 'buds', name: 'Buds', lo: 0.15, hi: 1, help: 'buds per segment (and side roots)' },
-  { id: 'dominance', name: 'Dominance', lo: 0, hi: 1, help: 'high: buds stay dormant (one stem); low: bushy' },
-  { id: 'leaf', name: 'Leaf', lo: 1, hi: 5, help: 'leaf size: more light, more water, more shade below' },
-  { id: 'rootShare', name: 'Root share', lo: 0.15, hi: 0.7, help: 'share of growth energy sent below ground' },
-  { id: 'dive', name: 'Dive', lo: 0, hi: 1, help: 'roots go sideways (low) or down (high)' },
-  { id: 'thickness', name: 'Thickness', lo: 0.6, hi: 2, help: 'Toughness; costs more, pushes through hard soil' },
+// plus / minus: what more pips gain and lose, in one line each
+export const GENES: { id: GeneId; name: string; lo: number; hi: number; help: string; plus: string; minus: string }[] = [
+  { id: 'internode', name: 'Internode', lo: 4, hi: 12, help: 'segment length', plus: 'reach, fast', minus: 'energy per segment, fewer buds per cm' },
+  { id: 'angle', name: 'Angle', lo: 15, hi: 80, help: 'branch angle', plus: 'spread, less self-shade', minus: 'branches add no reach' },
+  { id: 'buds', name: 'Buds', lo: 0.15, hi: 1, help: 'buds per segment (and side roots)', plus: 'branches, side roots', minus: 'energy split over more tips' },
+  { id: 'dominance', name: 'Dominance', lo: 0, hi: 1, help: 'how long buds stay dormant', plus: 'one fast stem: reach', minus: 'narrow, branches only by verbs' },
+  { id: 'leaf', name: 'Leaf', lo: 1, hi: 5, help: 'leaf size', plus: 'light: energy', minus: 'water, energy per segment, shade below' },
+  { id: 'rootShare', name: 'Root share', lo: 0.15, hi: 0.7, help: 'share of growth energy sent below ground', plus: 'roots: water, nutrient', minus: 'slower shoots' },
+  { id: 'dive', name: 'Dive', lo: 0, hi: 1, help: 'roots go sideways (low) or down (high)', plus: 'deep pockets', minus: 'misses shallow ones' },
+  { id: 'thickness', name: 'Thickness', lo: 0.6, hi: 2, help: 'stem thickness (tree: how fast wood builds)', plus: 'toughness, hard soil, tall wood', minus: 'energy per segment, upkeep' },
 ];
 export type Genes = number[]; // pips 1..PIPS, in GENES order
 const IDX = Object.fromEntries(GENES.map((g, i) => [g.id, i])) as Record<GeneId, number>;
@@ -121,7 +137,7 @@ export const HABITATS: Habitat[] = [
 export type StatId = 'reach' | 'spread' | 'roots' | 'toughness' | 'growth' | 'upkeep';
 export const STAT_SCALE: Record<StatId, number> = { reach: 300, spread: 260, roots: 8, toughness: 3.5, growth: 10, upkeep: 12 };
 export const TARGETS: { id: string; name: string; blurb: string; w: Partial<Record<StatId, number>> }[] = [
-  { id: 'tall', name: 'Tall herb', blurb: 'Reach over everything, on a tough stem.', w: { reach: 0.55, toughness: 0.25, growth: 0.2 } },
+  { id: 'tall', name: 'Tall', blurb: 'Reach over everything, on a tough stem.', w: { reach: 0.55, toughness: 0.25, growth: 0.2 } },
   { id: 'cover', name: 'Low cover', blurb: 'Wide and low, cheap to keep.', w: { spread: 0.65, growth: 0.25, roots: 0.1, reach: -0.25, upkeep: -0.1 } },
   { id: 'deep', name: 'Deep rooter', blurb: 'Tap many pockets, stay tough.', w: { roots: 0.6, toughness: 0.2, growth: 0.2 } },
 ];

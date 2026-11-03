@@ -38,3 +38,19 @@ Your calls, dated, in your words where possible. Only explicit calls; AI proposa
   directing the plant "is something I can imagine going forward with".
 - **Generations are too short** → longer seasons.
 - **The habitat is shaped by its neighbours and its habitat type** → added to the toy spec.
+
+## 3 Nov, after playtest 2 and P36 ([playtests/00-grow-toy.md](playtests/00-grow-toy.md))
+- **"I like the planned rebuild."** Next: a second toy pass, then the calls go into the spec.
+- **Plants must feel different: "moss vs herb vs tree should all play different."** Maybe more kingdoms and species.
+- **Zoom layers (P36.1):** M1 builds only the side view and the island; later milestones each open a layer.
+- **Area (P36.2):** "maybe more complex calculation with biomass and so on, but display as a clear goal."
+- **Skills (P36.3):** "active skills, 'shell cracking', 'efficient photosynthesis'… like unlockable perks or ways
+  of life." Not OSRS levels; the keys and doors (parts) shown as skills.
+- **Toy pass 2: add the tree beside the herb.** **Moss is in M1.** The plant-model research is good
+  ([research/plant-models.md](research/plant-models.md)); breeding with dominance is interesting.
+- **Slice 00b approved:** the tree runs 8 seasons of 60 s; a good herb season earns a 4th seed.
+
+## 3 Nov, after playtest 3 ([playtests/00-grow-toy.md](playtests/00-grow-toy.md))
+- **The toy is done: "I want to go on to the next phase now to see the vision."** → M0 step 2, the spec.
+- Kept from toy pass 2 (you liked them): the tree's look, the spring leaves, cutting during winter. Herb and tree
+  "play differently".
