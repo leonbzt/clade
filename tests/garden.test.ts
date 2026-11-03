@@ -1,6 +1,6 @@
 // Model tests: the island, habitats, the garden over hours, saves and offline, all under budget.
 import { describe, expect, it } from 'vitest';
-import { BASE_GENES } from '../src/data/genes';
+import { FOUNDER_GENES } from '../src/data/genes';
 import { LAVA, WET } from '../src/data/island';
 import { gameStep, newGame, release, startRun, tierList } from '../src/sim/game';
 import { catchUp, fromSave, toSave, yourArea } from '../src/sim/save';
@@ -10,7 +10,7 @@ const moss = [8, 300, 10, 1.1, 2.5, 1.5]; // raw stats of a fair moss
 function released(seed = 7) {
   const g = newGame(seed);
   expect(startRun(g, g.sprouts[0].id, g.sprouts[0].patch)).toBeNull();
-  release(g, moss, BASE_GENES, null);
+  release(g, moss, FOUNDER_GENES, null);
   return g;
 }
 

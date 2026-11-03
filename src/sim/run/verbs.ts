@@ -1,6 +1,6 @@
 // What a pick or a click does to the plant: wake a bud, root toward a cell, a leaf flush, cut; the tree's rules
-// (wood carries height, winter and spring, cuts re-sprout); and the brood. From the toy's verbs and tree. No DOM.
-import { FORMS, GENES, PIPS, gene, type Genes } from '../../data/genes';
+// (wood carries height, winter and spring, cuts re-sprout); and the brood: each seed is a level-up. From the toy's verbs and tree. No DOM.
+import { ATTRS, FORMS, MAX_PIPS, shape, type Genes } from '../../data/genes';
 import { CELL, PULSE, T } from '../../data/run';
 import { seeded, type Rng } from '../rng';
 import { addBud, measure, newPlant, thicken, tick, wakeBelow, type Body, type Plant } from './plant';
@@ -26,7 +26,7 @@ export function cut(p: Plant, i: number) {
   p.nutrient += pr.back;
   wakeBelow(p, i);
   if (pr.sprout) { // a tree's stump sprouts a new shoot
-    const side = p.rng() < 0.5 ? 1 : -1, ang = (gene(p.genes, 'angle') * Math.PI) / 180;
+    const side = p.rng() < 0.5 ? 1 : -1, ang = (shape(p.genes, 'angle') * Math.PI) / 180;
     addBud(p, at, n.heading + side * ang * 0.5, 'shoot', 'tip', side);
   }
   if (p.focus >= 0 && p.nodes[p.focus].dead) p.focus = -1;
@@ -76,7 +76,7 @@ export function rootToward(p: Plant, plot: Plot, x: number, y: number): number {
 
 /** The leafless or small-leafed segments near a node that a flush would fill. */
 export function flushTargets(p: Plant, at: number): number[] {
-  const a = p.nodes[at], max = gene(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1) + 1;
+  const a = p.nodes[at], max = shape(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1) + 1;
   return p.nodes.map((n, i) => [n, i] as const)
     .filter(([n]) => !n.dead && n.kind === 'shoot' && n.len > 0 && n.leaf < max)
     .sort((x, y) => Math.hypot(x[0].x - a.x, x[0].y - a.y) - Math.hypot(y[0].x - a.x, y[0].y - a.y))
@@ -84,10 +84,10 @@ export function flushTargets(p: Plant, at: number): number[] {
 }
 export const flushCost = (p: Plant, at: number) => flushTargets(p, at).length * PULSE.leafFlush.cost;
 export function leafFlush(p: Plant, at: number): boolean {
-  const ts = flushTargets(p, at), cost = ts.length * PULSE.leafFlush.cost, max = gene(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1) + 1;
+  const ts = flushTargets(p, at), cost = ts.length * PULSE.leafFlush.cost, max = shape(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1) + 1;
   if (!ts.length || p.energy < cost) return false;
   p.energy -= cost;
-  for (const i of ts) p.nodes[i].leaf = Math.min(max, Math.max(p.nodes[i].leaf, gene(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1)) + 1);
+  for (const i of ts) p.nodes[i].leaf = Math.min(max, Math.max(p.nodes[i].leaf, shape(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1)) + 1);
   return true;
 }
 
@@ -95,7 +95,7 @@ export function leafFlush(p: Plant, at: number): boolean {
 
 /** Winter: every living segment lays down wood with its load, then the leaves fall. The frame and buds stay. */
 export function winter(p: Plant) {
-  const load = new Float32Array(p.nodes.length), th = gene(p.genes, 'thickness');
+  const load = new Float32Array(p.nodes.length), th = shape(p.genes, 'thickness');
   for (let i = p.nodes.length - 1; i > 0; i--) {
     const n = p.nodes[i];
     if (n.dead || n.state === 'bud') continue;
@@ -111,7 +111,7 @@ export function winter(p: Plant) {
 export function spring(p: Plant) {
   p.season++;
   p.acc = { net: 0, cost: 0, n: 0 };
-  const leaf = gene(p.genes, 'leaf'), toEnd = new Float32Array(p.nodes.length).fill(Infinity);
+  const leaf = shape(p.genes, 'leaf'), toEnd = new Float32Array(p.nodes.length).fill(Infinity);
   for (let i = p.nodes.length - 1; i > 0; i--) {
     const n = p.nodes[i];
     if (n.dead || n.kind !== 'shoot' || !n.len) continue;
@@ -123,19 +123,31 @@ export function spring(p: Plant) {
 }
 
 // ---- the brood ----
-export function mutate(g: Genes, rng: Rng): { genes: Genes; changed: number[] } {
-  const genes = [...g], changed: number[] = [], k = 1 + Math.floor(rng() * 3);
-  for (let tries = 0; changed.length < k && tries < 50; tries++) {
-    const i = Math.floor(rng() * GENES.length);
-    if (changed.includes(i)) continue;
-    const v = Math.max(1, Math.min(PIPS, genes[i] + (rng() < 0.5 ? -1 : 1) * (rng() < 0.2 ? 2 : 1)));
-    if (v === genes[i]) continue;
-    genes[i] = v; changed.push(i);
+export interface LevelUp { genes: Genes; changed: number[]; sport: boolean }
+
+/** One more pip in attribute i; a sport instead puts +2 there and takes 1 from another attribute. */
+export function bumped(g: Genes, i: number, sport: boolean, rng: Rng): LevelUp {
+  const genes = [...g], changed = [i];
+  if (sport && genes[i] + 2 <= MAX_PIPS) {
+    const from = ATTRS.map((_, j) => j).filter((j) => j !== i && genes[j] > 0);
+    if (from.length) {
+      const j = from[Math.floor(rng() * from.length)];
+      genes[i] += 2; genes[j]--; changed.push(j);
+      return { genes, changed, sport: true };
+    }
   }
-  return { genes, changed };
+  genes[i]++;
+  return { genes, changed, sport: false };
 }
 
-export interface Seed { genes: Genes; changed: number[]; spot: number; body: Plant; stats: Body }
+/** n level-ups, each +1 pip in a different attribute; one of them is a sport (+2 / −1). */
+export function levelUps(g: Genes, rng: Rng, n: number): LevelUp[] {
+  const open = ATTRS.map((_, i) => i).filter((i) => g[i] < MAX_PIPS).sort(() => rng() - 0.5).slice(0, n);
+  const sport = Math.floor(rng() * open.length);
+  return open.map((i, k) => bumped(g, i, k === sport, rng));
+}
+
+export interface Seed extends LevelUp { spot: number; body: Plant; stats: Body }
 
 /** A season grown with no picks, on what you've seen of the soil (hidden cells count as loam). */
 export function predict(genes: Genes, spot: number, plot: Plot, seed: number, form: Plant['form']): { body: Plant; stats: Body } {
@@ -148,9 +160,7 @@ export function predict(genes: Genes, spot: number, plot: Plot, seed: number, fo
 /** n seeds on different spots, each one season predicted. */
 export function brood(parent: Plant, plot: Plot, rng: Rng, n: number): Seed[] {
   const spots = [0, 1, 2, 3, 4].sort(() => rng() - 0.5).slice(0, n).sort((a, b) => a - b);
-  return spots.map((spot, i) => {
-    const { genes, changed } = mutate(parent.genes, rng);
-    return { genes, changed, spot, ...predict(genes, spot, plot, plot.seed * 7 + i + parent.season * 13, parent.form) };
-  });
+  const ups = levelUps(parent.genes, rng, n);
+  return ups.map((u, i) => ({ ...u, spot: spots[i], ...predict(u.genes, spots[i], plot, plot.seed * 7 + i + parent.season * 13, parent.form) }));
 }
 

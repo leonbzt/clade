@@ -1,6 +1,7 @@
 // The run in side view: sky, the neighbours, the hidden soil, the plant, the offers. Plain lines and blobs, from the
 // grow toy's view. A camera zooms in on small bodies (moss).
 import { CELL, COLS, GROUND, H, SPOTS, W, type Neighbour } from '../data/run';
+import { shape } from '../data/genes';
 import type { Node, Plant } from '../sim/run/plant';
 import type { Plot } from '../sim/run/plot';
 import type { Offer } from '../sim/run/pulse';
@@ -77,8 +78,12 @@ function drawNeighbour(c: Ctx, nb: Neighbour, grow: number) {
   c.fillStyle = 'rgba(255,255,255,0.75)'; c.font = '10px system-ui'; c.fillText(nb.name, x, g - h - 8);
 }
 
-export function drawPlant(c: Ctx, p: Plant, alpha = 1, color = '#3f6e2c') {
+/** Mix two #rrggbb colours (t: 0 → a, 1 → b). */
+const mix = (a: string, b: string, t: number) => '#' + [1, 3, 5].map((k) => Math.round(parseInt(a.slice(k, k + 2), 16) * (1 - t) + parseInt(b.slice(k, k + 2), 16) * t).toString(16).padStart(2, '0')).join('');
+
+export function drawPlant(c: Ctx, p: Plant, alpha = 1, base = '#3f6e2c') {
   c.globalAlpha = alpha; c.lineCap = 'round';
+  const color = mix(base, '#7a3a28', 0.8 * shape(p.genes, 'tint')), breadth = shape(p.genes, 'breadth'); // Defence; Shade
   for (const n of p.nodes) {
     if (n.dead || n.parent < 0 || n.len === 0) continue;
     const q = p.nodes[n.parent];
@@ -92,7 +97,7 @@ export function drawPlant(c: Ctx, p: Plant, alpha = 1, color = '#3f6e2c') {
     if (n.leaf && n.len) {
       const g = Math.round(100 + 120 * n.light);
       c.fillStyle = wilt ? `rgb(${150 + 40 * n.light},${g},60)` : `rgb(${50 + 30 * n.light},${g},50)`;
-      c.beginPath(); c.ellipse(n.x + 2, n.y, 1.5 + n.leaf * 1.1, 1 + n.leaf * 0.55, n.x > p.x ? -0.5 : 0.5, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.ellipse(n.x + 2, n.y, 1.5 + n.leaf * 1.1, (1 + n.leaf * 0.55) * breadth, n.x > p.x ? -0.5 : 0.5, 0, Math.PI * 2); c.fill();
     }
     if (n.state === 'tip') { c.fillStyle = n.kind === 'shoot' ? '#b5f07a' : '#fff1c4'; c.fillRect(n.x - 1, n.y - 1, 2, 2); }
     if (n.target) {

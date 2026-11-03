@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { FORMS, tierOf } from '../data/genes';
+  import { FORMS, level, tierOf } from '../data/genes';
+  import Csr from './Csr.svelte';
   import { gramsBySpecies } from '../sim/game';
   import type { Species } from '../sim/species';
   import { S, ui } from './state.svelte';
@@ -22,7 +23,8 @@
   <div class="item" class:gone={it.sp.id !== S.game.founder && it.kg === 0} style:padding-left="{it.depth * 14}px">
     <span class="dot" style:background={it.sp.color}></span>
     <span>{it.sp.name}</span>
-    <span class="muted">{FORMS[it.sp.form].name.toLowerCase()}{it.best >= 0 ? ` · ${tierOf(it.best)} ${it.best}` : ''}{it.kg ? ` · ${it.kg.toFixed(it.kg < 10 ? 1 : 0)} kg` : ''}</span>
+    <Csr genes={it.sp.genes} size={13} />
+    <span class="muted">{FORMS[it.sp.form].name.toLowerCase()} · lv {level(it.sp.genes)}{it.best >= 0 ? ` · ${tierOf(it.best)} ${it.best}` : ''}{it.kg ? ` · ${it.kg.toFixed(it.kg < 10 ? 1 : 0)} kg` : ''}</span>
   </div>
 {/each}
 

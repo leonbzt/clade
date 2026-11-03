@@ -1,16 +1,19 @@
 // A run: a sprout grown in side view on a garden patch, pulse by pulse, season by season. Herb and moss pick an
-// heir from a brood of 3 each season; the tree keeps one body (winter: cuts only). The final body is released.
+// heir from a brood of 3 each season (each seed a level-up); the tree keeps one body and levels up each winter.
+// The final body is released.
 // A state machine the UI drives: pick → grow (animated) → pick … → brood / winter → … → end. No DOM.
 import { FORMS, type FormId, type Genes } from '../../data/genes';
 import { NICHES } from '../../data/niches';
 import { NEIGHBOUR_LOOK, PLOT, PULSE, SPOTS, T, type Neighbour } from '../../data/run';
 import { BARE, FOREST, WET } from '../../data/island';
 import { seeded, type Rng } from '../rng';
-import { nicheScore, scaled } from '../species';
-import { measure, newPlant, tick, type Plant } from './plant';
+import { fullScore, scaled } from '../species';
+import { measure, newPlant, reserveOf, tick, type Plant } from './plant';
 import { makePlot, plotTick, rain, type Plot } from './plot';
 import { applyOffer, makeOffers, type Offer } from './pulse';
-import { brood, cut, spring, winter, type Seed } from './verbs';
+import { brood, cut, levelUps, spring, winter, type LevelUp, type Seed } from './verbs';
+import { armoured } from '../species';
+import { PRESSURE } from '../../data/niches';
 
 export type Phase = 'pick' | 'grow' | 'winter' | 'brood' | 'end';
 export interface SeasonRow { season: number; raw: number[]; score: number; genes: Genes; changed: number[] }
@@ -18,6 +21,7 @@ export interface Run {
   form: FormId; niche: number; plot: Plot; plant: Plant; rng: Rng;
   season: number; pulse: number; t: number; ticksLeft: number; phase: Phase;
   offers: Offer[]; picked: number; seeds: Seed[] | null; history: SeasonRow[]; changed: number[];
+  ups: LevelUp[] | null; // tree: the winter's level-ups (pick one for spring)
 }
 
 /** What the garden patch puts beside you: its holders per layer, sized by their cover. */
@@ -33,7 +37,7 @@ export function neighboursFor(kind: number, beside: Beside[], rng: Rng): Neighbo
 }
 
 export const pulseTicks = (form: FormId) => FORMS[form].seasonTicks / PULSE.perSeason;
-export const runScore = (r: Run, raw: number[]) => nicheScore(scaled(r.form, raw), NICHES[r.niche]);
+export const runScore = (r: Run, raw: number[], genes = r.plant.genes) => fullScore(scaled(r.form, raw), genes, NICHES[r.niche]);
 
 /** The open spot nearest the middle: where a line starts. */
 function startSpot(plot: Plot): number {
@@ -44,7 +48,7 @@ function startSpot(plot: Plot): number {
 export function newRun(form: FormId, genes: Genes, kind: number, niche: number, moisture: number, beside: Beside[], seed: number): Run {
   const rng = seeded(seed), plot = makePlot(kind, PLOT[kind], moisture, neighboursFor(kind, beside, rng), seed);
   const plant = newPlant([...genes], startSpot(plot), plot, rng, form);
-  const r: Run = { form, niche, plot, plant, rng, season: 1, pulse: 0, t: 0, ticksLeft: 0, phase: 'pick', offers: [], picked: -1, seeds: null, history: [], changed: [] };
+  const r: Run = { form, niche, plot, plant, rng, season: 1, pulse: 0, t: 0, ticksLeft: 0, phase: 'pick', offers: [], picked: -1, seeds: null, history: [], changed: [], ups: null };
   startPulse(r);
   return r;
 }
@@ -54,6 +58,7 @@ function startPulse(r: Run) {
     const i = [2, 3, 4, 5].indexOf(r.plot.kind);
     r.plot.dry = r.pulse > 0 && r.rng() < T.moss.dryChance[Math.max(0, i)];
   }
+  r.plant.reserve = reserveOf(r.plant.genes);
   r.offers = makeOffers(r.plant, r.plot, pulseTicks(r.form), (r.season * 100 + r.pulse) * 7919 + r.plot.seed);
   r.picked = -1;
   r.phase = 'pick';
@@ -102,7 +107,7 @@ function endSeason(r: Run) {
   r.plot.dry = false;
   if (r.season >= FORMS[r.form].seasons) { r.phase = 'end'; return; }
   rain(r.plot);
-  if (r.form === 'tree') { winter(r.plant); r.phase = 'winter'; return; }
+  if (r.form === 'tree') { winter(r.plant); r.ups = levelUps(r.plant.genes, r.rng, 3); r.phase = 'winter'; return; }
   r.seeds = brood(r.plant, r.plot, r.rng, 3);
   r.phase = 'brood';
 }
@@ -115,8 +120,14 @@ export function chooseSeed(r: Run, i: number) {
   nextSeason(r);
 }
 
-/** Tree: spring after winter. */
-export function springRun(r: Run) {
+/** Tree: spring after winter, with one of the winter's level-ups. */
+export function springRun(r: Run, up = 0) {
+  const u = r.ups?.[up];
+  if (u) {
+    r.plant.genes = u.genes; r.changed = u.changed;
+    r.plant.harm = PRESSURE.runShare * (1 - armoured(u.genes, NICHES[r.niche]));
+  }
+  r.ups = null;
   spring(r.plant);
   nextSeason(r);
 }

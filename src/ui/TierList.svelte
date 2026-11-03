@@ -1,6 +1,8 @@
 <script lang="ts">
   import { TIERS, tierOf } from '../data/genes';
-  import { NICHES } from '../data/niches';
+  import { ATTRS } from '../data/genes';
+  import { NICHES, PRESSURES } from '../data/niches';
+  import Csr from './Csr.svelte';
   import { tierList } from '../sim/game';
   import { S, ui } from './state.svelte';
 
@@ -14,11 +16,12 @@
     <thead><tr><th>Niche</th>{#each cols as c}<th class="c">{c}</th>{/each}<th>Holder</th><th class="r">Your area</th></tr></thead>
     <tbody>
       {#each rows as r (r.niche)}
+        {@const n = NICHES[r.niche]}
         <tr class:locked={!r.open}>
-          <td><b>{NICHES[r.niche].name}</b><div class="muted">{r.open ? NICHES[r.niche].hint : r.why}</div></td>
+          <td><b>{n.name}</b> <span class="press" title={`${PRESSURES[n.pressure].name}: ${ATTRS.find((a) => a.id === PRESSURES[n.pressure].armour)!.name} ${n.need} for the full score`}>{PRESSURES[n.pressure].icon}</span><div class="muted">{r.open ? n.hint : r.why}</div></td>
           {#each cols as c}
             <td class="c cell">
-              {#if r.best && tierOf(r.bestScore) === c}<span class="chip mine" title="your best here"><span class="dot" style:background={r.best.color}></span>{r.best.name} {r.bestScore}</span>{/if}
+              {#if r.best && tierOf(r.bestScore) === c}<span class="chip mine" title="your best here"><span class="dot" style:background={r.best.color}></span>{r.best.name} {r.bestScore}<Csr genes={r.best.genes} size={13} /></span>{/if}
               {#if tierOf(r.native.scores[r.niche]) === c}<span class="chip native" title="the native">{r.native.name} {r.native.scores[r.niche]}</span>{/if}
             </td>
           {/each}
@@ -35,6 +38,7 @@
   .r { text-align: right; white-space: nowrap; }
   .cell .chip { margin: 1px 0; }
   .native { opacity: .55; }
+  .press { cursor: help; }
   .mine { background: #34402c; }
   tr.locked { opacity: .4; }
 </style>

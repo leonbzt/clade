@@ -18,9 +18,12 @@ wins (and the code is the truth for what's built).
 **Reference** (open when a spec needs it):
 - `design/`: [rebuild.md](design/rebuild.md) (the v1 review and the v2 plan, with the grid vs patch benchmark,
   2 Nov) · [references.md](design/references.md) (games to learn from) · [m1-build-report.md](design/m1-build-report.md)
-  (M1 build: defaults, review, options, 3 Nov).
+  (M1 build: defaults, review, options, 3 Nov) ·
+  [diverse-evolution.md](design/diverse-evolution.md) (how to make evolution feel diverse, 3 Nov) ·
+  [builds.md](design/builds.md) (the axes of plant life, a build system, 3 Nov) ·
+  [after-playtest-02.md](design/after-playtest-02.md) (why it reads as a toy, steering, the new course, 3 Nov).
 - `research/`: sourced facts from the `researcher` agent (Mycelarium, Hatched, real evolution, mosses, the tree of
-  life, layer sims, progression games, the virtual plant lab).
+  life, layer sims, progression games, the virtual plant lab, diverse evolution in games).
 - `playtests/`: your notes after playing each slice (v2 starts empty).
 
 Outside `docs/`: `toys/` holds throwaway prototypes. `_v1/` is v1 (code, tests and docs, 25 Oct – 2 Nov);

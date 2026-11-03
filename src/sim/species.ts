@@ -1,6 +1,6 @@
 // Species: a released line (or a native). Stats come from the run's final body; each niche of its layer gets a score.
-import { FORMS, STATS, STAT_NAMES, STAT_SCALE, type FormId, type Genes, type Layer, type StatId } from '../data/genes';
-import { NATIVES, NICHES, type Niche } from '../data/niches';
+import { ATTRS, FORMS, STATS, STAT_NAMES, STAT_SCALE, attr, type FormId, type Genes, type Layer, type StatId } from '../data/genes';
+import { NATIVES, NICHES, PRESSURE, PRESSURES, type Niche } from '../data/niches';
 
 export interface Species {
   id: number; name: string; form: FormId; layer: Layer; genes: Genes;
@@ -23,8 +23,29 @@ export function nicheScore(sn: number[], n: Niche): number {
   return Math.max(0, Math.min(100, Math.round(v * 100)));
 }
 
-export function scoresFor(form: FormId, sn: number[]): number[] {
-  return NICHES.map((n) => (n.layer === FORMS[form].layer ? nicheScore(sn, n) : -1));
+/** The pressure's multiplier: PRESSURE.floor with no armour, a smooth ramp to 1 at the niche's need. */
+export function ramp(genes: Genes, n: Niche): number {
+  return PRESSURE.floor + (1 - PRESSURE.floor) * armoured(genes, n);
+}
+/** How armoured a genome is against the niche's pressure: 0 → 1 (smooth, 1 at the need). */
+export function armoured(genes: Genes, n: Niche): number {
+  const x = Math.min(1, attr(genes, PRESSURES[n.pressure].armour) / n.need);
+  return x * x * (3 - 2 * x);
+}
+/** A body's score in a niche: its fit × the pressure's ramp. */
+export const fullScore = (sn: number[], genes: Genes, n: Niche) => Math.round(nicheScore(sn, n) * ramp(genes, n));
+
+/** The body's fit × the pressure's ramp, per niche of the form's layer (-1 elsewhere). */
+export function scoresFor(form: FormId, sn: number[], genes: Genes): number[] {
+  return NICHES.map((n) => (n.layer === FORMS[form].layer ? fullScore(sn, genes, n) : -1));
+}
+
+/** The CSR position: the share of pips per corner, each corner normalised by its number of attributes. */
+export function csr(genes: Genes): [number, number, number] {
+  const sum = { C: 0, S: 0, R: 0 }, size = { C: 0, S: 0, R: 0 };
+  ATTRS.forEach((a, i) => { sum[a.corner] += genes[i] ?? 0; size[a.corner]++; });
+  const v = [sum.C / size.C, sum.S / size.S, sum.R / size.R], t = v[0] + v[1] + v[2] || 1;
+  return [v[0] / t, v[1] / t, v[2] / t];
 }
 
 /** The stat a body is best at (its scaled value), for names. */
@@ -35,7 +56,7 @@ export function bestStat(sn: number[]): StatId {
 }
 
 const WORDS: Record<StatId, string[]> = {
-  reach: ['Tall', 'Tower', 'Spire'], spread: ['Wide', 'Creeping', 'Sprawl'], roots: ['Deep', 'Grip', 'Delver'],
+  reach: ['Tall', 'Tower', 'Spire'], cover: ['Wide', 'Creeping', 'Sprawl'], roots: ['Deep', 'Grip', 'Delver'],
   toughness: ['Stout', 'Iron', 'Hardy'], growth: ['Quick', 'Lush', 'Rapid'], upkeep: ['Lean', 'Thrifty', 'Spare'],
 };
 export function autoName(form: FormId, sn: number[], taken: Set<string>): string {

@@ -26,6 +26,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   (substrate, wetness, height) to make habitats; the rest later.
 - More landmarks (waterfalls, rivers); fixed flows of water and nutrients downhill → cheap along the patch graph.
 - More run islands (salt, ash, caves), the archipelago map, outposts.
+- Sun and cold as pressures (you, 3 Nov), once a niche has them (alpine, open dunes, other islands).
 - Two zoom levels: the garden and a close view of one habitat (possibly in side view) (you + AI).
 - **Morphs:** rare looks (a colour, a pattern, a left-coiled snail); cheap with bodies drawn from genes.
 - **"Resembles…":** a body close to a real species' shape names it, with a fact and a source (you + AI). Strong fit.
@@ -57,6 +58,14 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   truth; a zoomed layer runs a detail sim seeded from it, for looks; settled patches sleep. Fits the zoom frame.
 - Plant-model references (you, 3 Nov): PlantGL, Virtual Plant Lab, PlantStudio-js → docs/research/plant-models.md.
 - Tree pacing: it grew too little (playtest 3); `T.tree` in toys/grow-data.ts (carry, wood, woodUpkeep, shell).
+- Breeding with dominance (PlantStudio): genes pass on with one version winning (you: interesting, 3 Nov).
+- Chromosome duplication: a new attribute bar to stack, like polyploidy (AI, 3 Nov; builds.md).
+- A full C/S/R skill tree per form, and grazers as a pressure with defence branches (you: "grazers soon", 3 Nov).
+- Neighbour strategies as tree nodes: climbers, parasites, nurse plants, allelopathy (AI, 3 Nov; builds.md §5).
+- A pixel-art world as a third look, if neither low-poly look wins (dropped from the look toy, AI, 3 Nov).
+- Steering as a scarce resource (nutrient or attention) so auto stays naive (AI, 3 Nov; after-playtest-02.md).
+- 3D, or 3D-drawn plants, if it can be stable (you: "if it could be stable it were great", 3 Nov; look toy).
+- Steam and phone releases (you: "cool", 3 Nov): via Godot or a wrapped web app (P42).
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
@@ -84,4 +93,3 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - "Minigames wait until the garden core is fun" (26 Oct) → v2 reverses it: the activity comes first.
 - v1's first-session script (seabirds in session 2, mosses via the leafy shoot, a cliffhanger) → the vent start
   stays (tastes.md).
-- Breeding with dominance (PlantStudio): genes pass on with one version winning (you: interesting, 3 Nov).

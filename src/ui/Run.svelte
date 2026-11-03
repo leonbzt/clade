@@ -2,6 +2,8 @@
   // The run screen: the side view (animated pulses), the offers, cuts, the brood, winter and the release.
   import { onMount } from 'svelte';
   import { FORMS, tierOf } from '../data/genes';
+  import { NICHES, PRESSURES } from '../data/niches';
+  import { upText } from './text';
   import { H, PULSE, W } from '../data/run';
   import { cancelRun } from '../sim/game';
   import { measure } from '../sim/run/plant';
@@ -24,7 +26,7 @@
   /** A snapshot of the run for the template (the run itself is a plain object, not reactive). */
   const v = $derived.by(() => {
     rv;
-    return { phase: r.phase, season: r.season, pulse: r.pulse, offers: [...r.offers], history: [...r.history], genes: [...r.plant.genes], changed: r.changed, e: r.plant.energy, w: r.plant.water, n: r.plant.nutrient };
+    return { phase: r.phase, season: r.season, pulse: r.pulse, offers: [...r.offers], history: [...r.history], genes: [...r.plant.genes], changed: r.changed, e: r.plant.energy, w: r.plant.water, n: r.plant.nutrient, harm: r.plant.harm, reserve: r.plant.reserve, ups: r.ups };
   });
   const cutInfo = $derived.by(() => { rv; return cutNode > 0 ? cutPreview(r.plant, cutNode) : null; });
   const changed = () => { rv++; pickSince = performance.now(); };
@@ -93,6 +95,7 @@
     <div class="bar row">
       <span><b>{FORMS[r.form].name}</b> · season {v.season}/{FORMS[r.form].seasons} · pulse {Math.min(v.pulse + 1, PULSE.perSeason)}/{PULSE.perSeason}{v.phase === 'grow' ? ' · growing…' : ''}</span>
       <span class="muted">energy {v.e.toFixed(1)} · water {v.w.toFixed(1)} · nutrient {v.n.toFixed(1)}</span>
+      <span class="muted" title="the patch's pressure takes this share of the energy income; Health's reserve takes it first">{PRESSURES[NICHES[r.niche].pressure].icon} {v.harm > 0.005 ? `−${Math.round(v.harm * 100)}% energy${v.reserve > 0.05 ? ` (reserve ${v.reserve.toFixed(1)})` : ''}` : 'armoured'}</span>
       <span>
         <button class:on={ui.auto} onclick={() => (ui.auto = !ui.auto)} title="pick the best previewed offer">auto</button>
         <button class:on={fast} onclick={() => (fast = !fast)}>fast</button>
@@ -116,15 +119,17 @@
         {/each}
         <button onclick={() => choose(-1)}>Let the genes decide</button>
       {:else if v.phase === 'winter'}
-        <p>Winter: the leaves fell, the wood thickened. Cut if you like; spring brings leaves on the outer twigs.</p>
-        <button class="primary" onclick={() => { springRun(r); cutting = false; changed(); }}>Spring</button>
+        <p>Winter: the leaves fell, the wood thickened. Cut if you like; spring brings leaves on the outer twigs and a level.</p>
+        {#each v.ups ?? [] as u, i}
+          <button class="primary" class:gold={u.sport} onclick={() => { springRun(r, i); cutting = false; changed(); }}>Spring: {upText(u, v.genes)}</button>
+        {/each}
       {:else if v.phase === 'grow'}<p class="muted">Growing…</p>
       {:else if v.phase === 'brood'}<p class="muted">Pick the heir below.</p>
       {:else}<p class="muted">The run is over: release it.</p>{/if}
       {#if cutting}<p class="muted">{cutInfo ? `Cut ${cutInfo.segs} segments (${cutInfo.leaves} leaves), +${cutInfo.back.toFixed(1)} nutrient${cutInfo.wakes ? `, wakes ${cutInfo.wakes} buds` : ''}${cutInfo.sprout ? ', the stump sprouts' : ''}` : 'Hover a shoot to cut it.'}</p>{/if}
     </div>
-    <div class="panel"><h2>Body</h2><Stats raw={live} form={r.form} niche={r.niche} after={hoverAfter} /></div>
-    <div class="panel"><h2>Genes</h2><Genes genes={v.genes} changed={v.changed} form={r.form} /></div>
+    <div class="panel"><h2>Body</h2><Stats raw={live} form={r.form} niche={r.niche} genes={v.genes} after={hoverAfter} /></div>
+    <div class="panel"><h2>Attributes</h2><Genes genes={v.genes} changed={v.changed} /></div>
     {#if v.history.length}
       <div class="panel"><h2>Seasons</h2>{#each v.history as h}<div class="row muted"><span>season {h.season}</span><span>{h.score}</span></div>{/each}</div>
     {/if}

@@ -11,7 +11,7 @@ import type { FormId } from '../data/genes';
 import { NICHE_AT } from '../data/niches';
 
 export const SAVE_KEY = 'clade.v2.save';
-const VERSION = 1;
+const VERSION = 2; // 2: attributes replace the shape genes (slice 01)
 
 interface SaveV1 {
   v: number; at: number; seed: number; t: number; soil: number[];
@@ -47,7 +47,7 @@ export function fromSave(json: string): { game: Game; at: number } | null {
   hab.patches.forEach((p, k) => { for (let l = 0; l < 3; l++) life[k].slots[l] = nicheAt(p.kind, l) ? [] : null; });
   for (const [p, l, sp, g] of s.life) life[p]?.slots[l]?.push({ sp, g, w: 0 });
   const game: Game = {
-    seed: s.seed, isl, hab, garden: { t: s.t, life }, species, biomass: s.biomass, sprouts: s.sprouts, sproutClock: s.sproutClock,
+    seed: s.seed, isl, hab, garden: { t: s.t, life, seedy: 0 }, species, biomass: s.biomass, sprouts: s.sprouts, sproutClock: s.sproutClock,
     nextSprout: s.nextSprout, forms: s.forms, firsts: s.firsts, news: s.news, yours: 0, founder: s.founder, run: s.run, holders: [],
     rng: seeded(s.seed * 31 + s.t),
   };

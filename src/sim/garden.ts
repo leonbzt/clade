@@ -2,9 +2,10 @@
 // (mat, herb, canopy) where the patch's kind has that niche. Inside a slot, species share the capacity by
 // (score × fit)³ and grams move toward their share at a steady rate. Spread flows along borders. No DOM.
 import { GARDEN } from '../data/garden';
-import { NATIVES, NICHE_AT } from '../data/niches';
+import { FOUNDER_LEVEL, RULES, attr, level } from '../data/genes';
+import { NATIVES, NICHES, NICHE_AT, PRESSURES } from '../data/niches';
 import type { Habitats, Patch } from './habitats';
-import type { Species } from './species';
+import { ramp, type Species } from './species';
 
 export interface Entry { sp: number; g: number; w: number } // w: the cached weight, (effective score / 100)³
 export interface Life {
@@ -12,7 +13,23 @@ export interface Life {
   cap: number[]; // grams the slot holds at most, per layer
   light: number[]; water: number; nutrient: number;
 }
-export interface Garden { t: number; life: Life[] }
+export interface Garden {
+  t: number; life: Life[];
+  seedy: number; // your grams × Spread, for the sprout clock
+  fx?: Float64Array; // per species: Pace's speed, Health's hold, Spread's sprout weight (a cache, not saved)
+}
+
+/** The per-species factors the step reads, rebuilt when a species is added. */
+function factors(g: Garden, species: Species[]): Float64Array {
+  if (g.fx && g.fx.length === species.length * 3) return g.fx;
+  const fx = new Float64Array(species.length * 3);
+  species.forEach((sp, i) => {
+    fx[i * 3] = 1 + RULES.pace.garden * attr(sp.genes, 'pace');
+    fx[i * 3 + 1] = 1 / (1 + RULES.health.garden * attr(sp.genes, 'health'));
+    fx[i * 3 + 2] = 1 + RULES.spread.sprouts * attr(sp.genes, 'spread');
+  });
+  return (g.fx = fx);
+}
 
 export const NATIVE_OF: number[] = []; // niche → native species id
 NATIVES.forEach((nv, id) => (NATIVE_OF[nv.niche] = id));
@@ -20,24 +37,29 @@ NATIVES.forEach((nv, id) => (NATIVE_OF[nv.niche] = id));
 /** Water × (1 ± swing) over the half-year; > 1 is the wet half. */
 export const halfYear = (t: number) => 1 + GARDEN.halfYear.swing * Math.sin((2 * Math.PI * t) / GARDEN.halfYear.period);
 
-/** How well a species does on this patch's stocks (1 = all stocks full). Low upkeep bears shade; roots find water. */
-export function fitParts(sp: Species, light: number, water: number, nutrient: number): [number, number, number] {
-  const sn = sp.sn;
+/** How well a species does on this patch's stocks (1 = all stocks full). Low upkeep and Shade bear shade; roots
+ * find water; each pip above the founder's level costs on poor stocks (a big genome starves there). */
+export function fitParts(sp: Species, light: number, water: number, nutrient: number): [number, number, number, number] {
+  const sn = sp.sn, g = sp.genes, bear = Math.min(1, 0.7 * (1 - sn[5]) + RULES.shade.neighbour * attr(g, 'shade'));
+  const poor = Math.max(0, Math.min(1, 1 - (Math.min(1, water) + Math.min(1, nutrient)) / 2));
   return [
-    light + (1 - light) * 0.7 * (1 - sn[5]),
+    light + (1 - light) * bear,
     0.5 + 0.5 * Math.min(1, water * (0.6 + 0.8 * sn[2])),
     0.6 + 0.4 * Math.min(1, nutrient + 0.5 * sn[2]),
+    Math.max(0.3, 1 - RULES.upkeep.garden * Math.max(0, level(g) - FOUNDER_LEVEL) * poor),
   ];
 }
 export function fit(sp: Species, light: number, water: number, nutrient: number): number {
-  const [a, b, c] = fitParts(sp, light, water, nutrient);
-  return a * b * c;
+  const [a, b, c, d] = fitParts(sp, light, water, nutrient);
+  return a * b * c * d;
 }
 
-/** Why a species scores less here than its base: the stock that costs it most ("shaded −20%"), or ''. */
-export function why(sp: Species, life: Life, layer: number): string {
+/** Why a species scores less here: the pressure ("heat −40%") or the stock that costs it most ("shaded −20%"). */
+export function why(sp: Species, life: Life, layer: number, niche = -1): string {
   const f = fitParts(sp, life.light[layer], life.water, life.nutrient), k = f.indexOf(Math.min(...f));
-  return f[k] > 0.93 ? '' : `${['shaded', 'dry', 'poor soil'][k]} −${Math.round((1 - f[k]) * 100)}%`;
+  const n = niche >= 0 && !sp.native ? NICHES[niche] : null, r = n ? ramp(sp.genes, n) : 1;
+  if (n && r < 0.93 && r <= f[k]) return `${PRESSURES[n.pressure].icon} ${n.pressure} −${Math.round((1 - r) * 100)}%`;
+  return f[k] > 0.93 ? '' : `${['shaded', 'dry', 'poor soil', 'costly genome'][k]} −${Math.round((1 - f[k]) * 100)}%`;
 }
 
 /** The score a species has here, after the stocks. */
@@ -100,7 +122,7 @@ export function seedNatives(g: Garden, hab: Habitats, species: Species[]) {
 }
 
 export function newGarden(hab: Habitats, species: Species[]): Garden {
-  const g: Garden = { t: 0, life: hab.patches.map(emptyLife) };
+  const g: Garden = { t: 0, life: hab.patches.map(emptyLife), seedy: 0 };
   seedNatives(g, hab, species);
   return g;
 }
@@ -111,7 +133,8 @@ export function gardenStep(g: Garden, hab: Habitats, species: Species[]): number
   if (g.t % GARDEN.stockEvery === 0) refreshStocks(g, hab, species);
   if (g.t % GARDEN.spreadEvery === 0) spread(g, hab, species);
   const { rate, maxGrow, seedGrow, dieBelow } = GARDEN;
-  let yours = 0;
+  const fx = factors(g, species);
+  let yours = 0, seedy = 0;
   for (let pi = 0; pi < g.life.length; pi++) {
     const life = g.life[pi];
     for (let l = 0; l < 3; l++) {
@@ -123,17 +146,18 @@ export function gardenStep(g: Garden, hab: Habitats, species: Species[]): number
       // Losers give way only as the slot fills: a small newcomer doesn't empty a patch, it crowds it.
       const crowd = Math.min(1, Math.max(0, (sg / (life.cap[l] || 1) - GARDEN.crowd) / (1 - GARDEN.crowd)));
       for (let k = slot.length - 1; k >= 0; k--) {
-        const e = slot[k];
-        let dg = rate * (e.w * per - e.g);
-        if (dg > 0) { const most = e.g * maxGrow + seedGrow; if (dg > most) dg = most; } else dg *= crowd;
+        const e = slot[k], sp = species[e.sp], pace = fx[e.sp * 3]; // Pace: faster both ways; Health: loses slower
+        let dg = rate * pace * (e.w * per - e.g);
+        if (dg > 0) { const most = (e.g * maxGrow + seedGrow) * pace; if (dg > most) dg = most; }
+        else dg *= crowd * fx[e.sp * 3 + 1];
         e.g += dg;
-        const sp = species[e.sp];
         if (sp.native) { if (e.g < dieBelow) e.g = dieBelow; }
         else if (e.g < dieBelow) { slot.splice(k, 1); continue; }
-        else yours += e.g;
+        else { yours += e.g; seedy += e.g * fx[e.sp * 3 + 2]; }
       }
     }
   }
+  g.seedy = seedy;
   return yours;
 }
 
@@ -149,7 +173,7 @@ function spread(g: Garden, hab: Habitats, species: Species[]) {
       for (const e of slot) {
         const sp = species[e.sp];
         if (sp.native) continue;
-        const out = e.g * k * (0.3 + sp.sn[1]);
+        const out = e.g * k * (0.3 + sp.sn[1]) * (1 + RULES.spread.garden * attr(sp.genes, 'spread'));
         let sent = 0;
         for (let j = 0; j < p.nb.length; j++) {
           const q = p.nb[j];

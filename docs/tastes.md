@@ -22,6 +22,9 @@ has to fit.
   to learn, then a midgame where the real game starts.
 - **Things push back.** Progression is clear and decisions matter; you choose where to put resources but are never
   locked out. Pressure is good: newcomers compete with the species already in a niche.
+- **Builds like game characters:** "like levelling a specific pure OSRS character, or making a Dark Souls build"
+  (3 Nov). All-rounders are bad; there is always pressure ("damage") and armour, or a locked reward.
+- **"Fast climb means noticeable improvement"** (3 Nov). The speed of M1 was right.
 - **Adapting has to feel like adapting.** Buying every trait isn't it. Not every stat can be improved: some choices
   trade ("more spread while drying out more", 26 Oct).
 - **Tiers like a game tier list** (S, A, B…), not bronze/gold or stars (26 Oct). Niches × tiers with "some light
@@ -65,6 +68,10 @@ has to fit.
 - **Art matters:** the garden looks good and reads clearly from the start, without a lot of manual art work.
 - **Menus:** old-school pixel UI like OSRS and Idle Obelisk Miner. **World:** Stardew-like 2D pixel art, or OSRS-like
   low-res low-poly. 2D for now. **Terra Nil** (barren → lush) is a main reference.
+- **"I'd really like to go towards a low-res low-poly look"** (3 Nov), with pixel-art references: bold outlined
+  pixel fonts, segmented bars, framed cards, a "VS" favour bar.
+- **The look toy** (3 Nov): **2D low-poly, for now** ("least buggy and weird", its shadows "make sense to use");
+  3D "if it could be stable it were great". Menus calm (fewer colours), font Pixelify.
 - The growth toys: "a cool feeling and look of growth… organic" (patch); "looks really cool… the look and feel is
   very nice" (specimen). Voronoi and reaction-diffusion looks.
 - **Hatched's staged assembly** for creatures (2 Nov). **Mycelarium's side view** (2 Nov).
@@ -91,6 +98,8 @@ has to fit.
   neighbours and its habitat type.
 - **Grow toy pass 2 (3 Nov):** herb and tree "play differently"; you liked the tree's look, the spring leaves and
   cutting in winter; the tree "grew to little"; "still not a good feeling game", maybe less autogrowth.
+- **Playtest 02 (3 Nov):** liked the attributes, pressures and genome upkeep; "I just auto every time" (pulses);
+  "still seems like a toy somehow, not like a serious approach that's well thought through."
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

@@ -15,6 +15,12 @@ the next run.
 - **How:** one build pass, loop first (decided 3 Nov), not a slice per part.
 - **Done when:** a fresh start reaches its first B tier in 30–60 min; a second run makes a visibly different build;
   you want a third run.
+- **Part 2** (after playtest 01, decided 3 Nov; course changed after playtest 02, 3 Nov): 1. builds, part A:
+  [docs/slices/01-builds.md](docs/slices/01-builds.md) (played) · 2. the look toy:
+  [docs/slices/02-look.md](docs/slices/02-look.md) (played: 2D low-poly) · 3. the stand:
+  [docs/slices/03-stand.md](docs/slices/03-stand.md) (the run: a few saplings, roots hunting hidden soil, shoots
+  cut and fed, levels from growth) · 4. variants in the garden, hunted on the map (P40) · then part B (the tree) and
+  the map with income, order set later.
 
 ## Done: M0, the toy and the spec (26 Oct – 3 Nov)
 

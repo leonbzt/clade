@@ -71,9 +71,9 @@ export function eachNear(i: number, r: number, f: (k: number) => void) {
   }
 }
 
-export function reveal(w: Plot, x: number, y: number) {
+export function reveal(w: Plot, x: number, y: number, r = T.reveal) {
   const i = cellIndex(x, y);
-  if (i >= 0) eachNear(i, T.reveal, (k) => (w.cells[k].seen = true));
+  if (i >= 0) eachNear(i, r, (k) => (w.cells[k].seen = true));
 }
 
 /** Sky light at a point after the neighbours' crowns (own leaves are shaded in the plant). */

@@ -10,7 +10,7 @@ export const GARDEN = {
   maxGrow: 0.0012, seedGrow: 0.5,
   /** A species above its target share shrinks only once the slot is fuller than this (crowding). */
   crowd: 0.85,
-  /** Spread: share of grams per second flowing out along borders, × (0.3 + Spread). Runs every `spreadEvery` s. */
+  /** Spread: share of grams per second flowing out along borders, × (0.3 + Cover) × the Spread attribute. Runs every `spreadEvery` s. */
   spread: 0.00012, spreadEvery: 30,
   /** Below this a species dies out in a patch. Natives stay at least this (a seed bank). */
   dieBelow: 1,
@@ -29,7 +29,7 @@ export const ECONOMY = {
   /** Biomass per second per kilogram your lines hold (0.1 g/s per kg). */
   perKg: 0.1,
   /** Sprouts: one per `every` seconds at `refKg` held (× held/refKg, clamped to `min`…`max`). */
-  sprout: { every: 900, refKg: 200, min: 0.5, max: 1.2, hold: 3, jump: [2, 3] as const, formChance: 0.4 },
+  sprout: { every: 900, refKg: 200, min: 0.5, max: 1.2, hold: 3, sportChance: 1 / 3, formChance: 0.4 },
   /** Biomass a run costs, by form, in grams (moss, herb, tree). */
   cost: { moss: 10_000, herb: 50_000, tree: 1_000_000 },
   saveEvery: 10, // seconds

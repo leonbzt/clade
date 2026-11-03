@@ -1,6 +1,6 @@
 // The game state and its loop: the island, the garden, your species, biomass, sprouts and the ladder. No DOM.
 import { ECONOMY, GARDEN } from '../data/garden';
-import { BASE_GENES, B_TIER, FORMS, GENES, PIPS, tierOf, type FormId, type Genes } from '../data/genes';
+import { ATTRS, B_TIER, FORMS, FOUNDER_GENES, MAX_PIPS, tierOf, type FormId, type Genes } from '../data/genes';
 import { SUCCESSION } from '../data/island';
 import { NICHES, NICHE_AT } from '../data/niches';
 import { addGrams, gardenStep, newGarden, type Garden } from './garden';
@@ -9,6 +9,7 @@ import { makeIsland, type Island } from './island';
 import { seeded, type Rng } from './rng';
 import { autoName, makeNatives, scaled, scoresFor, speciesColor, type Species } from './species';
 import { succession } from './succession';
+import { bumped } from './run/verbs';
 
 export interface Sprout { id: number; sp: number; genes: Genes; form: FormId; patch: number; note: string; born: number }
 export interface News { t: number; text: string; big?: boolean }
@@ -25,7 +26,7 @@ export interface Game {
 export function newGame(seed: number): Game {
   const isl = makeIsland(seed), hab = findHabitats(isl), species = makeNatives();
   const founder: Species = {
-    id: species.length, name: 'The founder', form: 'moss', layer: 0, genes: [...BASE_GENES], stats: [], sn: [0, 0, 0, 0, 0, 0],
+    id: species.length, name: 'The founder', form: 'moss', layer: 0, genes: [...FOUNDER_GENES], stats: [], sn: [0, 0, 0, 0, 0, 0],
     scores: NICHES.map(() => -1), parent: -1, native: false, color: speciesColor(species.length, 'moss'), born: 0, niche: -1,
   };
   species.push(founder);
@@ -34,7 +35,7 @@ export function newGame(seed: number): Game {
     nextSprout: 1, forms: { moss: true, herb: false, tree: false }, firsts: {}, news: [], yours: 0, founder: founder.id, run: null, holders: [],
     rng: seeded(seed * 31 + 7),
   };
-  g.sprouts.push({ id: g.nextSprout++, sp: founder.id, genes: [...BASE_GENES], form: 'moss', patch: homePatch(g, 'moss'), note: 'the founder: a free first run', born: 0 });
+  g.sprouts.push({ id: g.nextSprout++, sp: founder.id, genes: [...FOUNDER_GENES], form: 'moss', patch: homePatch(g, 'moss'), note: 'the founder: a free first run', born: 0 });
   say(g, 'A young island. Your founder moss waits by the vent.', true);
   return g;
 }
@@ -68,7 +69,7 @@ export function gameStep(g: Game) {
   g.biomass += (g.yours / 1000) * ECONOMY.perKg;
   const S = ECONOMY.sprout, has = g.species.some((s) => !s.native && s.id !== g.founder);
   if (has) {
-    g.sproutClock += Math.min(S.max, Math.max(S.min, g.yours / 1000 / S.refKg)) / S.every;
+    g.sproutClock += Math.min(S.max, Math.max(S.min, g.garden.seedy / 1000 / S.refKg)) / S.every; // Spread: more often
     if (g.sproutClock >= 1) { g.sproutClock -= 1; gardenSprout(g); }
   }
   if (g.garden.t % SUCCESSION.every === 0) {
@@ -99,7 +100,7 @@ function watchHolders(g: Game) {
   g.holders = now;
 }
 
-/** The garden throws up a sprout where your lines hold grams: a seedling with a rare gene, or the next form. */
+/** The garden throws up a sprout where your lines hold grams: a seedling with a rare pip (or a sport), or the next form. */
 export function gardenSprout(g: Game) {
   const S = ECONOMY.sprout, rng = g.rng, picks: [number, number, number][] = []; // patch, species, grams
   let total = 0;
@@ -110,16 +111,16 @@ export function gardenSprout(g: Game) {
   if (!total) return;
   let r = rng() * total, at = picks[0];
   for (const x of picks) { r -= x[2]; if (r <= 0) { at = x; break; } }
-  const sp = g.species[at[1]], next = FORMS[sp.form].next, genes = [...sp.genes];
-  let form = sp.form, note: string;
+  const sp = g.species[at[1]], next = FORMS[sp.form].next;
+  let form = sp.form, note: string, genes = [...sp.genes];
+  const open = ATTRS.map((_, i) => i).filter((i) => genes[i] < MAX_PIPS);
   if (next && g.forms[next] && rng() < S.formChance) {
     form = next; note = `came up as a ${FORMS[next].name.toLowerCase()}`;
-  } else {
-    const k = Math.floor(rng() * GENES.length), jump = S.jump[0] + Math.floor(rng() * (S.jump[1] - S.jump[0] + 1));
-    const dir = genes[k] + jump > PIPS ? -1 : genes[k] - jump < 1 ? 1 : rng() < 0.5 ? -1 : 1;
-    genes[k] = Math.max(1, Math.min(PIPS, genes[k] + dir * jump));
-    note = `a rare gene: ${GENES[k].name} ${dir > 0 ? '+' : '−'}${Math.abs(genes[k] - sp.genes[k])}`;
-  }
+  } else if (open.length) {
+    const u = bumped(genes, open[Math.floor(rng() * open.length)], rng() < S.sportChance, rng);
+    genes = u.genes;
+    note = `${u.sport ? 'a sport' : 'a rare pip'}: ${u.changed.map((i) => `${ATTRS[i].name} ${genes[i] > sp.genes[i] ? '+' : '−'}${Math.abs(genes[i] - sp.genes[i])}`).join(', ')}`;
+  } else note = 'a seedling';
   addSprout(g, { id: g.nextSprout++, sp: sp.id, genes, form, patch: canGrowIn(g, form, at[0]) ? at[0] : homePatch(g, form, at[0]), note, born: g.garden.t });
 }
 
@@ -155,7 +156,7 @@ export function cancelRun(g: Game) {
 }
 
 /** The scores a body would get, per niche (for the release preview). */
-export const previewScores = (form: FormId, raw: number[]) => scoresFor(form, scaled(form, raw));
+export const previewScores = (form: FormId, raw: number[], genes: Genes) => scoresFor(form, scaled(form, raw), genes);
 
 /** Release the run's final body as a new species into the patch it grew in. Returns the new species. */
 export function release(g: Game, raw: number[], genes: Genes, name: string | null): Species {
@@ -163,13 +164,14 @@ export function release(g: Game, raw: number[], genes: Genes, name: string | nul
   const taken = new Set(g.species.map((x) => x.name));
   const sp: Species = {
     id, name: name?.trim() || autoName(s.form, sn, taken), form: s.form, layer, genes: [...genes], stats: [...raw], sn,
-    scores: scoresFor(s.form, sn), parent: s.sp, native: false, color: speciesColor(id, s.form), born: g.garden.t,
+    scores: scoresFor(s.form, sn, genes), parent: s.sp, native: false, color: speciesColor(id, s.form), born: g.garden.t,
     niche: NICHE_AT[g.hab.patches[s.patch].kind][layer],
   };
   g.species.push(sp);
   addGrams(g.garden, g.hab, g.species, s.patch, layer, id, GARDEN.releaseGrams[layer]);
   g.run = null;
-  say(g, `${sp.name} released in the ${NICHES[sp.niche].name}: ${sp.scores[sp.niche]} (${tierOf(sp.scores[sp.niche])})`, true);
+  const was = g.species[s.sp].scores[sp.niche] ?? -1, gain = was >= 0 && g.species[s.sp].form === s.form ? ` (${sp.scores[sp.niche] - was >= 0 ? '+' : '−'}${Math.abs(sp.scores[sp.niche] - was)})` : '';
+  say(g, `${sp.name} released in the ${NICHES[sp.niche].name}: ${sp.scores[sp.niche]} ${tierOf(sp.scores[sp.niche])}${gain}`, true);
   // First time at a tier in a row: a sprout.
   for (const n of NICHES) {
     const sc = sp.scores[n.id];

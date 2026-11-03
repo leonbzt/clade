@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FORMS, tierOf } from '../data/genes';
+  import { FORMS, level, tierOf } from '../data/genes';
   import { KIND_NAMES } from '../data/island';
   import { TILE_PX } from '../data/look';
   import { NICHES, NICHE_AT } from '../data/niches';
@@ -10,6 +10,7 @@
   import { S, bump, ui } from './state.svelte';
   import TierList from './TierList.svelte';
   import Clade from './Clade.svelte';
+  import Csr from './Csr.svelte';
 
   let cv: HTMLCanvasElement;
   let painter: IslandPainter | null = null, painted: Game | null = null;
@@ -29,7 +30,7 @@
       const slot = life.slots[l]!, total = slot.reduce((a, e) => a + e.g, 0), n = NICHE_AT[p.kind][l];
       return {
         niche: NICHES[n].name, fill: life.cap[l] ? total / life.cap[l] : 0, light: life.light[l],
-        who: [...slot].sort((a, b) => b.g - a.g).slice(0, 3).map((e) => ({ sp: g.species[e.sp], share: total ? e.g / total : 0, eff: Math.round(effScore(g.species[e.sp], p, life, l)), why: why(g.species[e.sp], life, l) })),
+        who: [...slot].sort((a, b) => b.g - a.g).slice(0, 3).map((e) => ({ sp: g.species[e.sp], share: total ? e.g / total : 0, eff: Math.round(effScore(g.species[e.sp], p, life, l)), why: why(g.species[e.sp], life, l, n) })),
       };
     });
     return { p, kind: KIND_NAMES[p.kind], layers, water: life.water, nutrient: life.nutrient };
@@ -105,6 +106,7 @@
       {#each sprouts as s (s.id)}
         <div class="card click" class:on={s.id === ui.choosing} role="button" tabindex="0" onclick={() => choose(s.id, s.patch)} onkeydown={(e) => e.key === 'Enter' && choose(s.id, s.patch)}>
           <div class="row"><b>{FORMS[s.form].name} of {s.name}</b><span class="muted">{s.cost ? `${s.cost / 1000} k` : 'free'}</span></div>
+          <div class="row"><span class="muted">level {level(s.genes)}</span><Csr genes={s.genes} /></div>
           <div class="muted">{s.note}</div>
         </div>
       {/each}

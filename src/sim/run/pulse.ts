@@ -1,7 +1,7 @@
 // Pulses and offers. Before each pulse, 2–4 offers light up on the body, each a place and an organ; the genes decide
-// which (Buds gives more offers, Dominance puts the main tip first). Each offer is previewed: the pulse grown with
+// which (Roots 5 adds a root offer, Stature's dominance puts the main tip first). Each offer is previewed: the pulse grown with
 // that pick, on what you've seen of the soil, and its stats measured. No DOM.
-import { gene, geneIndex } from '../../data/genes';
+import { RULES, attr, shape } from '../../data/genes';
 import { CELL, COLS, GROUND, T } from '../../data/run';
 import { seeded } from '../rng';
 import { addBud, measure, tick, type Plant } from './plant';
@@ -21,17 +21,15 @@ const LABEL: Record<OfferKind, string> = {
 };
 const MOSS_COST = { cushion: 1, rhizoid: 1 };
 
-/** How many offers the genes give: 2, +1 at Buds 4, +1 at Buds 7. */
-export const offerCount = (p: Plant) => {
-  const b = p.genes[geneIndex('buds')];
-  return 2 + (b >= 4 ? 1 : 0) + (b >= 7 ? 1 : 0);
-};
+/** Three offers; Roots 5+ adds one root offer (or rhizoids) for more control below ground. */
+export const OFFERS = 3;
+const extraRoot = (p: Plant) => attr(p.genes, 'roots') >= RULES.roots.offerAt;
 
 const alive = (p: Plant) => p.nodes.map((n, i) => [n, i] as const).filter(([n, i]) => i > 0 && !n.dead);
 
 /** The candidate offers, best first by a simple read of the body; then the count is taken. */
 export function makeOffers(p: Plant, plot: Plot, pulseTicks: number, seed: number): Offer[] {
-  const rng = seeded(seed), out: Offer[] = [], nodes = alive(p), dom = gene(p.genes, 'dominance');
+  const rng = seeded(seed), out: Offer[] = [], nodes = alive(p), dom = shape(p.genes, 'dominance');
   const add = (kind: OfferKind, node: number, extra: Partial<Offer> = {}) => {
     const n = p.nodes[node];
     if (out.some((o) => o.kind === kind && o.node === node)) return;
@@ -66,7 +64,12 @@ export function makeOffers(p: Plant, plot: Plot, pulseTicks: number, seed: numbe
   }
   const leafy = best(nodes.filter(([n]) => n.kind === 'shoot' && n.len > 0).map(([, i]) => i));
   if (leafy.length && flushTargets(p, leafy[0]).length) add('flush', leafy[0], { energy: flushCost(p, leafy[0]) });
-  const list = out.slice(0, offerCount(p));
+  const list = out.slice(0, OFFERS);
+  if (extraRoot(p)) { // a fourth offer: a root one if none is shown yet
+    const isRoot = (o: Offer) => o.kind === 'root' || o.kind === 'rhizoid', below = out.slice(OFFERS);
+    const more = list.some(isRoot) ? below[0] : below.find(isRoot) ?? below[0];
+    if (more) list.push(more);
+  }
   for (const o of list) {
     o.ok = p.nutrient >= o.nutrient && p.energy >= o.energy;
     o.after = o.ok ? preview(p, plot, o, pulseTicks, seed) : null;

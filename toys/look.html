@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: Look</title>
+    <style>
+      :root { --ink: #0a1013; --steel: #9fb2bd; --orange: #ff8c1a; --red: #ff5a3c; --yellow: #ffe14a; --green: #6cc644; --pink: #f59be0; --teal: #4fc0d0; --text: #eef2ee; --font: 'Pixelify Sans'; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: linear-gradient(#1f5562, #10313a 60%, #0c262d); color: var(--text); font: 400 16px/1.25 var(--font), monospace; }
+      .ol { text-shadow: -2px 0 var(--ink), 2px 0 var(--ink), 0 -2px var(--ink), 0 2px var(--ink), -2px -2px var(--ink), 2px -2px var(--ink), -2px 2px var(--ink), 2px 2px var(--ink), 2px 4px 0 var(--ink); }
+      .ol1 { text-shadow: -1px 0 var(--ink), 1px 0 var(--ink), 0 -1px var(--ink), 0 1px var(--ink), 1px 2px 0 var(--ink); }
+      header { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; padding: 10px 16px 4px; }
+      header .title { color: var(--yellow); font-weight: 700; font-size: 18px; margin-right: 8px; }
+      .grp { display: flex; gap: 4px; align-items: center; }
+      .grp > span { color: var(--steel); font-size: 13px; margin-right: 2px; }
+      button { font: 700 14px var(--font), monospace; color: #e8eef0; background: #2a3d44; border: 2px solid var(--ink); padding: 3px 9px 5px; cursor: pointer; text-shadow: 1px 1px 0 var(--ink); box-shadow: inset 0 -3px 0 #16242a, inset 0 2px 0 #4a646d; }
+      button:hover { background: #34505a; }
+      button.on { background: var(--orange); color: #1d0f04; text-shadow: none; box-shadow: inset 0 -3px 0 #b85a00, inset 0 2px 0 #ffc070; }
+      input[type='range'] { width: 130px; accent-color: var(--orange); }
+      main { display: flex; flex-wrap: wrap; gap: 18px; padding: 8px 16px 24px; align-items: flex-start; }
+      canvas { display: block; image-rendering: pixelated; }
+      /* frames: an ink rim, a coloured band, a dark core, corners cut */
+      .frame, .frame > div, .frame > div > div { clip-path: polygon(9px 0, calc(100% - 9px) 0, 100% 9px, 100% calc(100% - 9px), calc(100% - 9px) 100%, 9px 100%, 0 calc(100% - 9px), 0 9px); }
+      .frame { background: var(--ink); padding: 2px; }
+      .frame > div { background: var(--fc, var(--steel)); padding: 3px; }
+      .frame > div > div { background: rgba(7, 14, 17, 0.94); padding: 10px 12px; }
+      .frame.orange { --fc: var(--orange); }
+      #stage { cursor: pointer; }
+      .hint { color: var(--steel); font-size: 14px; margin-top: 6px; }
+      aside { width: 410px; max-width: 100%; display: flex; flex-direction: column; gap: 10px; }
+      .sub { color: var(--yellow); font-weight: 700; font-size: 19px; }
+      .head { font-weight: 700; font-size: 46px; line-height: 1; color: var(--red); white-space: nowrap; transform: scaleX(0.84); transform-origin: left; margin: 2px 0 4px; }
+      .head[data-f='good'] { color: var(--green); }
+      .card { display: flex; gap: 14px; align-items: center; }
+      #portrait { width: 144px; height: 120px; }
+      .cname { color: var(--orange); font-weight: 700; font-size: 25px; }
+      .cline { color: #ffb070; font-size: 16px; margin: 2px 0 8px; }
+      .tier { display: inline-block; width: 40px; height: 40px; line-height: 34px; text-align: center; font-weight: 700; font-size: 28px; border: 3px solid var(--ink); outline: 2px solid currentColor; color: var(--teal); background: #0d1a1e; }
+      .tier[data-t='S'] { color: var(--yellow); } .tier[data-t='A'] { color: var(--green); } .tier[data-t='C'] { color: #aab4ba; }
+      .label { color: #cfd9de; font-weight: 700; font-size: 15px; }
+      .attr { display: flex; align-items: center; justify-content: space-between; margin: 3px 0; font-size: 15px; }
+      .pips { display: inline-flex; gap: 2px; padding: 2px; background: var(--ink); border: 2px solid #b8c6cc; }
+      .pips i { width: 19px; height: 13px; background: #1b2a30; }
+      .pips.C i.on { background: var(--green); box-shadow: inset 0 -2px #3c8a2a; }
+      .pips.S i.on { background: var(--teal); box-shadow: inset 0 -2px #2a7f8c; }
+      .pips.R i.on { background: var(--pink); box-shadow: inset 0 -2px #b45fa2; }
+      .vsrow { display: flex; align-items: center; justify-content: space-between; font-size: 17px; }
+      .vs { color: var(--yellow); font-weight: 700; font-size: 44px; transform: scaleX(0.85); }
+      .favbar { height: 20px; border: 2px solid var(--ink); background: #b8321e; box-shadow: 0 0 0 2px #2c3a40; margin-top: 4px; }
+      #fav { height: 100%; background: var(--green); box-shadow: inset 0 -3px #3c8a2a; }
+      #favtxt { text-align: center; font-weight: 700; margin-top: 5px; color: var(--green); }
+      #favtxt[data-f='even'] { color: var(--yellow); } #favtxt[data-f='bad'] { color: var(--red); }
+      .legend { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; font-size: 13px; color: #cfd9de; }
+      /* calm menus: one frame colour, a drop shadow instead of the outline, colour only where it means something */
+      body[data-ui='calm'] .ol { text-shadow: 2px 2px 0 var(--ink); }
+      body[data-ui='calm'] .ol1 { text-shadow: 1px 1px 0 var(--ink); }
+      body[data-ui='calm'] .frame { --fc: #7d8f98; }
+      body[data-ui='calm'] .head, body[data-ui='calm'] .head[data-f='good'] { color: var(--text); }
+      body[data-ui='calm'] .cname { color: var(--yellow); }
+      body[data-ui='calm'] .cline { color: #c6d0d4; }
+      body[data-ui='calm'] button.on { background: #44606b; color: var(--yellow); text-shadow: 1px 1px 0 var(--ink); box-shadow: inset 0 -3px 0 #2a3d44, inset 0 2px 0 #6a8894; }
+      .legend i { display: inline-block; width: 10px; height: 10px; border: 1px solid var(--ink); margin-right: 4px; vertical-align: -1px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title ol1">Clade · look toy</span>
+      <div class="grp"><span>Look</span><button data-k="look" data-v="0">2D low-poly</button><button data-k="look" data-v="1">Simple 3D</button><button data-k="look" data-v="2">2D + 3D plants</button></div>
+      <div class="grp"><span>Width</span><button data-k="width" data-v="240">240</button><button data-k="width" data-v="320">320</button><button data-k="width" data-v="480">480</button></div>
+      <div class="grp"><span>Palette</span><button data-k="pal" data-v="0">Volcanic</button><button data-k="pal" data-v="1">Teal</button></div>
+      <div class="grp"><button data-k="shadows">Shadows</button></div>
+      <div class="grp"><span>Menus</span><button data-k="ui" data-v="0">Colourful</button><button data-k="ui" data-v="1">Calm</button></div>
+      <div class="grp"><span>Sun</span><input id="sun" type="range" min="0" max="1000" /><button data-k="loop">Day loop</button></div>
+      <div class="grp"><span>Growth</span><button data-k="speed" data-v="1">1×</button><button data-k="speed" data-v="4">4×</button><button data-k="speed" data-v="16">16×</button><button data-k="restart">Restart</button></div>
+    </header>
+    <main>
+      <section>
+        <div class="frame"><div><div style="padding: 6px"><div id="stage"></div></div></div></div>
+        <div class="hint" id="status"></div>
+      </section>
+      <aside>
+        <div>
+          <div class="sub ol1" id="sub"></div>
+          <div class="head ol" id="head"></div>
+        </div>
+        <div class="frame orange"><div><div class="card">
+          <canvas id="portrait" width="72" height="60"></canvas>
+          <div>
+            <div class="cname ol1" id="cname"></div>
+            <div class="cline" id="cline"></div>
+            <span class="tier" id="tier"></span>
+          </div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="label ol1">Attributes</div>
+          <div id="attrs"></div>
+        </div></div></div>
+        <div>
+          <div class="vsrow"><span class="ol1" id="vsl"></span><span class="vs ol">VS</span><span class="ol1" id="vsr"></span></div>
+          <div class="favbar"><div id="fav"></div></div>
+          <div class="ol1" id="favtxt"></div>
+        </div>
+        <div class="frame"><div><div>
+          <div class="label ol1">Home island</div>
+          <div id="isle" style="margin-top: 6px"></div>
+          <div class="legend" id="legend"></div>
+        </div></div></div>
+      </aside>
+    </main>
+    <script type="module" src="./look.ts"></script>
+  </body>
+</html>

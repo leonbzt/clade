@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BASE_GENES } from '../data/genes';
+  import { FOUNDER_GENES } from '../data/genes';
   import { homePatch } from '../sim/game';
   import type { FormId } from '../data/genes';
   import { S, bump, reset, skip, ui } from './state.svelte';
@@ -7,7 +7,7 @@
   /** A sprout of your newest species (or the founder) in a form, at its home patch. */
   function sprout(form: FormId) {
     const g = S.game, sp = [...g.species].reverse().find((s) => !s.native)!;
-    g.sprouts.push({ id: g.nextSprout++, sp: sp.id, genes: sp.genes.length ? [...sp.genes] : [...BASE_GENES], form, patch: homePatch(g, form), note: 'dev', born: g.garden.t });
+    g.sprouts.push({ id: g.nextSprout++, sp: sp.id, genes: sp.genes.length ? [...sp.genes] : [...FOUNDER_GENES], form, patch: homePatch(g, form), note: 'dev', born: g.garden.t });
     g.sprouts = g.sprouts.slice(-3);
     bump();
   }

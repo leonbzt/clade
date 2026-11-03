@@ -17,6 +17,14 @@ brood of 3 → heir → release       pays biomass, throws up sprouts      ↺ s
 ```
 
 ## 2. The run (side view)
+*Changing (decided 3 Nov, P38 and playtest 02):* **no pulses.** A few saplings grow at once, live, and you steer
+them; shade is drawn; at the year's end you pick one to found the next year (it + random mutations). Levels follow
+growth. **The run hunts** (P40, 3 Nov): roots reach into hidden soil; shoots take cutting in winter and extra energy
+sent into one shoot, toward lit gaps and away from shade, both drawn. *Decided 3 Nov (P43):* you steer by targets
+(a soil cell, a lit gap, a shoot to feed), paid in the sapling's nutrient, with no auto; moss and herb re-found each
+year from 3 saplings, while the tree's 3 stay the whole run and are thinned; XP is the whole stand's grams. The stand's
+slice ([slices/03-stand.md](slices/03-stand.md)) rewrites this section.
+
 - **Start** *(decided 3 Nov)*: spend a **sprout** (§5) and biomass, and pick the habitat patch to grow in. The
   run's soil, light, water and neighbours come from that patch: the natives and your garden species there
   stand beside you and shade or drink, as in the toy.
@@ -27,9 +35,9 @@ brood of 3 → heir → release       pays biomass, throws up sprouts      ↺ s
   the rest by Root share. Which offers come up is genetic too (Dominance favours the main tip, Buds gives more).
   **Cutting** is free between pulses and returns some nutrient. An **auto** toggle picks for you.
 - **Soil** stays hidden below: cells reveal around root tips; water and nutrient pockets, hard soil, stone.
-- **Seasons:** ~10 pulses each. **Brood:** 3 seeds (spores for moss), each the parent's genome with small random
+- **Seasons:** ~5 pulses each *(decided 3 Nov: fewer pulses)*. **Brood:** 3 seeds (spores for moss), each the parent's genome with small random
   steps, drawn as small bodies with stat changes; pick the heir. The run ends after the form's seasons.
-- **Release:** the final body's 6 stats become a new species (named by you or by its form and best stat), released
+- **Release:** the best season's body *(decided 3 Nov)*: its 6 stats become a new species (named by you or by its form and best stat), released
   into the patch it grew in, as a branch of the species it came from. The list shows its score in every niche it can enter before you confirm.
 
 ### Growth forms *(decided 3 Nov: moss, herb and tree in M1, along the ladder)*
@@ -46,6 +54,10 @@ running. Forms evolve along it: once the herb is open, a sprout of a moss specie
 carry over), and a herb's as a tree. *Proposal:* the tree view is plain in M1 (names, form, best tier).
 
 ## 3. Genetics
+*Being replaced (decided 3 Nov):* attributes, a skill tree per form, and pressures; see
+[design/builds.md](design/builds.md). The slice spec will rewrite this section. Pressure kinds in M1 *(decided 3 Nov)*:
+heat, drought, shade, wind, flooding.
+
 | Layer | M1 | Free or authored |
 | --- | --- | --- |
 | Genome | The toy's 8 genes, 1–9 pips: Internode, Angle, Buds, Dominance, Leaf, Root share, Dive, Thickness. Moss reads Root share as rhizoids and Dive as crack grip. | Free: brood steps |
@@ -76,6 +88,8 @@ carry over), and a herb's as a tree. *Proposal:* the tree view is plain in M1 (n
    ("Wet herb: shaded by your Oak line, B → C").
 4. **View:** v1's pixel painting carried over (`pixels.ts`, `terrain.ts`, `plants.ts`), each species painted over
    its patch's tiles by its area (grams ÷ density per tile), growing out from where it was released.
+   **The look** (*decided 3 Nov*, [playtest 03](playtests/03-look.md)): 2D low-res low-poly, as in the look toy;
+   calm menus, Pixelify font. The stack stays Svelte + TypeScript + Canvas 2D for now (when to switch: P42).
 
 **Niches (M1, 8):** Lava mat · Bare mat · Wet mat · Bare herb · Wet herb · Forest herb · Forest canopy · Wet
 canopy. Each is a habitat kind × layer with its own weights (lava mat wants Toughness and Roots; wet herb wants
@@ -89,6 +103,8 @@ start) show as locked.
 - **The ladder** *(proposal, after rebuild.md)*: mat rows are open at the start; B in any mat row opens the herb
   form and the herb rows; B in a herb row opens the tree and the canopy rows. First time at each tier: a sprout.
 - **Biomass** is the one currency: your lines' grams in the garden produce biomass per second (offline too).
+- *Changing (decided 3 Nov, P40):* sprouts become **variants the garden breeds by itself**, which you hunt on the
+  map and found (v1's variants back). Their slice rewrites this item.
 - **Sprouts: the chance to run** *(decided 3 Nov: the cost "coupled with an opportunity… a rare gene in the garden or
   some event or unlock"; the means are a proposal)*. A run needs a sprout and biomass. The garden throws up sprouts
   by itself, more often where your lines hold more grams: a seedling of one of your species with a **rare gene** (a
