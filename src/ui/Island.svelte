@@ -3,7 +3,7 @@
   import { KIND_NAMES } from '../data/island';
   import { TILE_PX } from '../data/look';
   import { NICHES, NICHE_AT } from '../data/niches';
-  import { effScore } from '../sim/garden';
+  import { effScore, why } from '../sim/garden';
   import { canGrowIn, runCost, type Game } from '../sim/game';
   import { beginRun } from '../sim/play';
   import { IslandPainter, dimExcept, markYours, outlinePatch } from '../view/island';
@@ -29,7 +29,7 @@
       const slot = life.slots[l]!, total = slot.reduce((a, e) => a + e.g, 0), n = NICHE_AT[p.kind][l];
       return {
         niche: NICHES[n].name, fill: life.cap[l] ? total / life.cap[l] : 0, light: life.light[l],
-        who: [...slot].sort((a, b) => b.g - a.g).slice(0, 3).map((e) => ({ sp: g.species[e.sp], share: total ? e.g / total : 0, eff: Math.round(effScore(g.species[e.sp], p, life, l)) })),
+        who: [...slot].sort((a, b) => b.g - a.g).slice(0, 3).map((e) => ({ sp: g.species[e.sp], share: total ? e.g / total : 0, eff: Math.round(effScore(g.species[e.sp], p, life, l)), why: why(g.species[e.sp], life, l) })),
       };
     });
     return { p, kind: KIND_NAMES[p.kind], layers, water: life.water, nutrient: life.nutrient };
@@ -90,7 +90,7 @@
         {#each info.layers as L}
           <div class="layer">
             <span class="muted">{L.niche}: {pct(Math.min(1, L.fill))} full{L.light < 0.95 ? `, light ${pct(L.light)}` : ''}</span>
-            {#each L.who as w}<span class="chip"><span class="dot" style:background={w.sp.color}></span>{w.sp.name} {pct(w.share)} · {w.eff} {tierOf(w.eff)}</span>{/each}
+            {#each L.who as w}<span class="chip"><span class="dot" style:background={w.sp.color}></span>{w.sp.name} {pct(w.share)} · {w.eff} {tierOf(w.eff)}{w.why ? ` (${w.why})` : ''}</span>{/each}
           </div>
         {/each}
       {:else}<span class="muted">Hover a patch to see who holds it. Your lines are the bright colours.</span>{/if}

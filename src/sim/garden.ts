@@ -21,12 +21,23 @@ NATIVES.forEach((nv, id) => (NATIVE_OF[nv.niche] = id));
 export const halfYear = (t: number) => 1 + GARDEN.halfYear.swing * Math.sin((2 * Math.PI * t) / GARDEN.halfYear.period);
 
 /** How well a species does on this patch's stocks (1 = all stocks full). Low upkeep bears shade; roots find water. */
-export function fit(sp: Species, light: number, water: number, nutrient: number): number {
+export function fitParts(sp: Species, light: number, water: number, nutrient: number): [number, number, number] {
   const sn = sp.sn;
-  const lightF = light + (1 - light) * 0.7 * (1 - sn[5]);
-  const waterF = 0.5 + 0.5 * Math.min(1, water * (0.6 + 0.8 * sn[2]));
-  const nutF = 0.6 + 0.4 * Math.min(1, nutrient + 0.5 * sn[2]);
-  return lightF * waterF * nutF;
+  return [
+    light + (1 - light) * 0.7 * (1 - sn[5]),
+    0.5 + 0.5 * Math.min(1, water * (0.6 + 0.8 * sn[2])),
+    0.6 + 0.4 * Math.min(1, nutrient + 0.5 * sn[2]),
+  ];
+}
+export function fit(sp: Species, light: number, water: number, nutrient: number): number {
+  const [a, b, c] = fitParts(sp, light, water, nutrient);
+  return a * b * c;
+}
+
+/** Why a species scores less here than its base: the stock that costs it most ("shaded −20%"), or ''. */
+export function why(sp: Species, life: Life, layer: number): string {
+  const f = fitParts(sp, life.light[layer], life.water, life.nutrient), k = f.indexOf(Math.min(...f));
+  return f[k] > 0.93 ? '' : `${['shaded', 'dry', 'poor soil'][k]} −${Math.round((1 - f[k]) * 100)}%`;
 }
 
 /** The score a species has here, after the stocks. */
@@ -106,13 +117,15 @@ export function gardenStep(g: Garden, hab: Habitats, species: Species[]): number
     for (let l = 0; l < 3; l++) {
       const slot = life.slots[l];
       if (!slot || !slot.length) continue;
-      let sw = 0;
-      for (let k = 0; k < slot.length; k++) sw += slot[k].w;
+      let sw = 0, sg = 0;
+      for (let k = 0; k < slot.length; k++) { sw += slot[k].w; sg += slot[k].g; }
       const per = sw > 0 ? life.cap[l] / sw : 0;
+      // Losers give way only as the slot fills: a small newcomer doesn't empty a patch, it crowds it.
+      const crowd = Math.min(1, Math.max(0, (sg / (life.cap[l] || 1) - GARDEN.crowd) / (1 - GARDEN.crowd)));
       for (let k = slot.length - 1; k >= 0; k--) {
         const e = slot[k];
         let dg = rate * (e.w * per - e.g);
-        if (dg > 0) { const most = e.g * maxGrow + seedGrow; if (dg > most) dg = most; }
+        if (dg > 0) { const most = e.g * maxGrow + seedGrow; if (dg > most) dg = most; } else dg *= crowd;
         e.g += dg;
         const sp = species[e.sp];
         if (sp.native) { if (e.g < dieBelow) e.g = dieBelow; }

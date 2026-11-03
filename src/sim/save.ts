@@ -48,7 +48,7 @@ export function fromSave(json: string): { game: Game; at: number } | null {
   for (const [p, l, sp, g] of s.life) life[p]?.slots[l]?.push({ sp, g, w: 0 });
   const game: Game = {
     seed: s.seed, isl, hab, garden: { t: s.t, life }, species, biomass: s.biomass, sprouts: s.sprouts, sproutClock: s.sproutClock,
-    nextSprout: s.nextSprout, forms: s.forms, firsts: s.firsts, news: s.news, yours: 0, founder: s.founder, run: s.run,
+    nextSprout: s.nextSprout, forms: s.forms, firsts: s.firsts, news: s.news, yours: 0, founder: s.founder, run: s.run, holders: [],
     rng: seeded(s.seed * 31 + s.t),
   };
   refreshStocks(game.garden, hab, species);
@@ -85,6 +85,6 @@ export function catchUp(g: Game, seconds: number): Away {
   const lost = [...before.keys()].filter((id) => !after.has(id)).map((id) => g.species[id].name);
   return {
     seconds: n, biomass: g.biomass - b0, areaBefore: a0, areaAfter: yourArea(g), lost, sprouts: g.nextSprout - sp0,
-    news: g.news.filter((x) => x.t > t0),
+    news: g.news.filter((x) => x.t > t0 && !x.text.includes('wilted')),
   };
 }

@@ -115,6 +115,11 @@ export class IslandPainter {
       }
     }
     ctx.putImageData(this.img, 0, 0);
+    for (const v of isl.vents) { // vents glow through any cover
+      const x = (v % isl.w + 0.5) * T, y = (((v / isl.w) | 0) + 0.5) * T;
+      ctx.fillStyle = '#b8502a'; ctx.beginPath(); ctx.arc(x, y, T * 0.6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f0a040'; ctx.beginPath(); ctx.arc(x, y, T * 0.3, 0, Math.PI * 2); ctx.fill();
+    }
     if (Math.abs(wet) > 0.05) {
       ctx.fillStyle = wet > 0 ? `rgba(60,120,160,${0.08 * wet})` : `rgba(200,160,80,${-0.08 * wet})`;
       ctx.fillRect(0, 0, this.w, this.h);

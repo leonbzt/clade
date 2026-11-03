@@ -17,6 +17,7 @@ export interface Game {
   biomass: number; sprouts: Sprout[]; sproutClock: number; nextSprout: number;
   forms: Record<FormId, boolean>; firsts: Record<string, true>; // `${niche}:${tier}`
   news: News[]; yours: number; founder: number;
+  holders: number[]; // per niche: the species with the most grams (not saved; for the news)
   run: { sprout: Sprout; cost: number } | null; // a run in progress (refunded if the page closes mid-run)
   rng: Rng;
 }
@@ -30,7 +31,7 @@ export function newGame(seed: number): Game {
   species.push(founder);
   const g: Game = {
     seed, isl, hab, garden: newGarden(hab, species), species, biomass: ECONOMY.startBiomass, sprouts: [], sproutClock: 0,
-    nextSprout: 1, forms: { moss: true, herb: false, tree: false }, firsts: {}, news: [], yours: 0, founder: founder.id, run: null,
+    nextSprout: 1, forms: { moss: true, herb: false, tree: false }, firsts: {}, news: [], yours: 0, founder: founder.id, run: null, holders: [],
     rng: seeded(seed * 31 + 7),
   };
   g.sprouts.push({ id: g.nextSprout++, sp: founder.id, genes: [...BASE_GENES], form: 'moss', patch: homePatch(g, 'moss'), note: 'the founder: a free first run', born: 0 });
@@ -71,6 +72,7 @@ export function gameStep(g: Game) {
     if (g.sproutClock >= 1) { g.sproutClock -= 1; gardenSprout(g); }
   }
   if (g.garden.t % SUCCESSION.every === 0) {
+    watchHolders(g);
     const r = succession(g.isl, g.hab, g.garden, g.species);
     if (r) {
       const at = g.sprouts.map((s) => g.hab.patches[s.patch]?.at ?? -1);
@@ -79,9 +81,22 @@ export function gameStep(g: Game) {
         const q = at[k] >= 0 ? g.hab.of[at[k]] : -1;
         s.patch = q >= 0 && canGrowIn(g, s.form, q) ? q : homePatch(g, s.form);
       });
-      for (const c of r.changes) say(g, `${c.tiles} tile${c.tiles > 1 ? 's' : ''} of ${c.from} turned to ${c.to}`, c.to === 'Forest floor');
+      for (const c of r.changes) if (c.tiles >= 4 || c.to === 'Forest floor') say(g, `${c.tiles} tile${c.tiles > 1 ? 's' : ''} of ${c.from} turned to ${c.to}`, c.to === 'Forest floor');
     }
   }
+}
+
+/** News when a row's holder changes to or from one of your lines. */
+function watchHolders(g: Game) {
+  const now = tierList(g).map((r) => r.holder?.id ?? -1), first = !g.holders.length;
+  now.forEach((h, n) => {
+    const was = g.holders[n] ?? -1;
+    if (first || h === was || h < 0) return;
+    const sp = g.species[h], old = was >= 0 ? g.species[was] : null;
+    if (!sp.native) say(g, `${NICHES[n].name}: ${sp.name} now holds the most${old ? `, ahead of ${old.name}` : ''}`, true);
+    else if (old && !old.native) say(g, `${NICHES[n].name}: ${sp.name} took the lead back from ${old.name}`);
+  });
+  g.holders = now;
 }
 
 /** The garden throws up a sprout where your lines hold grams: a seedling with a rare gene, or the next form. */
