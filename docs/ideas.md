@@ -56,8 +56,6 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Adaptive resolution (you, 3 Nov): compute detail only where you look. AI verdict: the patch model is the coarse
   truth; a zoomed layer runs a detail sim seeded from it, for looks; settled patches sleep. Fits the zoom frame.
 - Plant-model references (you, 3 Nov): PlantGL, Virtual Plant Lab, PlantStudio-js → docs/research/plant-models.md.
-- Less autogrowth: you decide each grow step, or similar (you, 3 Nov, after playtest 3: "still not a good
-  feeling game"). Weigh in the spec: it's the core verb of the side view.
 - Tree pacing: it grew too little (playtest 3); `T.tree` in toys/grow-data.ts (carry, wood, woodUpkeep, shell).
 
 ## Fits if reshaped

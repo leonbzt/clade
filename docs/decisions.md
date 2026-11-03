@@ -54,3 +54,27 @@ Your calls, dated, in your words where possible. Only explicit calls; AI proposa
 - **The toy is done: "I want to go on to the next phase now to see the vision."** → M0 step 2, the spec.
 - Kept from toy pass 2 (you liked them): the tree's look, the spring leaves, cutting during winter. Herb and tree
   "play differently".
+
+## 3 Nov, the spec's first calls (M0 step 2)
+- **Oneshot M1:** the spec, then M1 in one build pass instead of a slice per part. "If helpful ask some questions
+  first and build a very bare version, without full expanded rules and upgrade paths."
+- **The core verb: growth in pulses.** At each pulse a few tips light up; you pick where growth goes (tip, and shoot,
+  leaf or root); the genes decide how. Idle grows by itself.
+- **Growth forms in M1: moss, herb and tree,** unlocked along the tier ladder (moss → herb → tree).
+- **Pulses wait for your pick** (turn-based, ~8–12 a season; an auto toggle picks when idle).
+- **Tier: score, then area.** Stats × niche weights → score → tier, shown at release; the garden then decides the
+  area (biomass) the line holds, which pays and is the visible goal.
+- **Runs happen on a home-island habitat;** one island in M1.
+
+## 3 Nov, the spec draft ([spec.md](spec.md)): "sounds good"
+- **No "Scree" or "Loam"** ("don't like the names"). AI renamed them to your own words from tastes.md: Lava → Bare
+  ground → Forest floor.
+- **Garden competition: steady, "but needs to stay interesting".**
+- **"One line that evolves into lineages that you do the runs with."**
+- **Run cost: "maybe coupled with an opportunity to do the run, like a rare gene in the garden or some event or
+  unlock."**
+- The spec sets M1's scope; the roadmap points to it.
+
+## 3 Nov, M1 starts
+- **Commit the spec and docs; M1 moves to "Now".** "Go build step 1, keep going until M1 is built", then an
+  overview of the assumptions and defaults, a critical review and the other options.

@@ -6,7 +6,17 @@ in [docs/ideas.md](docs/ideas.md). This file changes only on your call; AI may p
 > **Approved 2 Nov.** v2, the rebuild: [docs/design/rebuild.md](docs/design/rebuild.md).
 > v1's roadmap is in `_v1/ROADMAP.md`.
 
-## Now: M0, the toy and the spec
+## Now: M1, the first playable (scope set in the spec)
+
+**Goal:** one turn of the loop from a fresh start: grow a line → release it → it takes a tier → the garden pays for
+the next run.
+- **Scope:** [docs/spec.md](docs/spec.md) §7, bare: one line that branches into lineages; moss, herb and tree; the
+  home island with 8 niches; the run with pulses; the tier list with the ladder; biomass, sprouts, saves, offline.
+- **How:** one build pass, loop first (decided 3 Nov), not a slice per part.
+- **Done when:** a fresh start reaches its first B tier in 30–60 min; a second run makes a visibly different build;
+  you want a third run.
+
+## Done: M0, the toy and the spec (26 Oct – 3 Nov)
 
 **Goal:** find out whether growing a line in side view is fun on its own, then write the game down in one page.
 
@@ -17,18 +27,8 @@ in [docs/ideas.md](docs/ideas.md). This file changes only on your call; AI may p
    [docs/slices/00b-tree-and-herb.md](docs/slices/00b-tree-and-herb.md).
    **Question:** are there enough decisions, and do the heirs feel different? (The 26 Oct specimen toy: "there
    isn't a lot to decide.")
-2. [ ] **The spec** (`docs/spec.md`, at most 150 lines; it replaces v1's vision): the loop, the genetics layers, the
-   sim's four layers, the tier list, the budgets, M1's scope. From design/rebuild.md, tastes.md and the toy's
-   playtest.
-
-## Next: M1, the first playable (scope set in the spec)
-
-**Goal:** one turn of the loop from a fresh start: grow a line → release it → it takes a tier → the garden pays for
-the next run.
-- **Draft scope:** one plant lineage; the home island (land from the generator, habitats, life per patch) with about
-  8 niches; the side-view run; the tier list with the succession ladder; idle income, saves and offline progress.
-- **Draft done when:** a fresh start reaches its first B tier in 30–60 min; a second run makes a visibly different
-  build; you want a third run.
+2. [x] **The spec** ([docs/spec.md](docs/spec.md), 3 Nov; it replaces v1's vision): the loop, the genetics layers,
+   the sim's four layers, the tier list, the budgets, M1's scope.
 
 ## Later (order and scope set when we get there)
 
