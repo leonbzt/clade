@@ -17,7 +17,8 @@ wins (and the code is the truth for what's built).
 
 **Reference** (open when a spec needs it):
 - `design/`: [rebuild.md](design/rebuild.md) (the v1 review and the v2 plan, with the grid vs patch benchmark,
-  2 Nov) · [references.md](design/references.md) (games to learn from).
+  2 Nov) · [references.md](design/references.md) (games to learn from) · [m1-build-report.md](design/m1-build-report.md)
+  (M1 build: defaults, review, options, 3 Nov).
 - `research/`: sourced facts from the `researcher` agent (Mycelarium, Hatched, real evolution, mosses, the tree of
   life, layer sims, progression games, the virtual plant lab).
 - `playtests/`: your notes after playing each slice (v2 starts empty).
