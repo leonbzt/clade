@@ -40,7 +40,7 @@ export const halfYear = (t: number) => 1 + GARDEN.halfYear.swing * Math.sin((2 *
 /** How well a species does on this patch's stocks (1 = all stocks full). Low upkeep and Shade bear shade; roots
  * find water; each pip above the founder's level costs on poor stocks (a big genome starves there). */
 export function fitParts(sp: Species, light: number, water: number, nutrient: number): [number, number, number, number] {
-  const sn = sp.sn, g = sp.genes, bear = Math.min(1, 0.7 * (1 - sn[5]) + RULES.shade.neighbour * attr(g, 'shade'));
+  const sn = sp.sn, g = sp.genes, bear = Math.min(1, 0.7 * (1 - sn[5]) + RULES.shade.lift * attr(g, 'shade'));
   const poor = Math.max(0, Math.min(1, 1 - (Math.min(1, water) + Math.min(1, nutrient)) / 2));
   return [
     light + (1 - light) * bear,

@@ -70,3 +70,13 @@ everything, which can cost more in total (a research agent was ~70–80k tokens)
 | --- | --- | --- |
 | `researcher` | `.claude/agents/researcher.md` | Web research; writes a sourced summary to `docs/research/`; replies in under 10 lines |
 | `Explore` | built in | Read-only search across the codebase |
+
+## Working preferences (copied from the local AI memory, so cloud sessions have them)
+- End every reply with whether now is a good moment for `/handoff` + `/clear`.
+- Big calls: 2–4 options with a lean, at most three questions; converge after the user reacts, then plan.
+- Big reviews: measured numbers, blunt critique, one plan with a lean.
+- Specs give headline timings only; the user tunes pacing by feel over several passes.
+- Keep test, sim and screenshot output small; usage is light.
+- The user knows boids, CA, L-systems and Lenia; they want critical, realistic takes.
+- A design analysis the user values goes in full to `docs/design/`; their calls go to the logs.
+- Design facts live in the repo docs (spec, tastes, decisions, ROADMAP), never only in memory.

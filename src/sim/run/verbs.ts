@@ -1,10 +1,10 @@
-// What a pick or a click does to the plant: wake a bud, root toward a cell, a leaf flush, cut; the tree's rules
-// (wood carries height, winter and spring, cuts re-sprout); and the brood: each seed is a level-up. From the toy's verbs and tree. No DOM.
-import { ATTRS, FORMS, MAX_PIPS, shape, type Genes } from '../../data/genes';
-import { CELL, PULSE, T } from '../../data/run';
-import { seeded, type Rng } from '../rng';
-import { addBud, measure, newPlant, thicken, tick, wakeBelow, type Body, type Plant } from './plant';
-import { cellIndex, knownCopy, plotTick, type Plot } from './plot';
+// The verbs on a sapling: a root or a shoot tip sent to a cell, a shoot fed, a cut; the tree's rules (winter and
+// spring, cuts re-sprout; part 2); and level-ups. From the toy's verbs and tree. No DOM.
+import { ATTRS, MAX_PIPS, shape, type Genes } from '../../data/genes';
+import { CELL, GROUND, STAND, T } from '../../data/run';
+import type { Rng } from '../rng';
+import { addBud, thicken, wakeBelow, type Plant } from './plant';
+import { cellCentre, cellIndex, type Plot } from './plot';
 
 export function subtree(p: Plant, i: number): number[] {
   const inside = new Set([i]);
@@ -12,7 +12,7 @@ export function subtree(p: Plant, i: number): number[] {
   return [...inside].filter((k) => !p.nodes[k].dead);
 }
 
-// ---- cut (free between pulses; some nutrient back) ----
+// ---- cut (free, any time; some nutrient back, its upkeep stops) ----
 export function cutPreview(p: Plant, i: number) {
   const gone = subtree(p, i).map((k) => p.nodes[k]).filter((n) => n.state !== 'bud');
   let wakes = 0;
@@ -29,69 +29,93 @@ export function cut(p: Plant, i: number) {
     const side = p.rng() < 0.5 ? 1 : -1, ang = (shape(p.genes, 'angle') * Math.PI) / 180;
     addBud(p, at, n.heading + side * ang * 0.5, 'shoot', 'tip', side);
   }
-  if (p.focus >= 0 && p.nodes[p.focus].dead) p.focus = -1;
+  if (p.feed && p.nodes[p.feed.node].dead) p.feed = null;
 }
 
-// ---- the offers' effects ----
-export function wake(p: Plant, bud: number): boolean {
-  if (p.nutrient < T.wakeCost) return false;
-  p.nutrient -= T.wakeCost;
-  p.nodes[bud].state = 'tip';
-  return true;
-}
+// ---- steering: a tip sent to a cell, a shoot fed (each costs the sapling's nutrient) ----
+/** A steer's preview: the node it starts from, whether a new tip branches off (or a bud wakes), its cost, the target. */
+export interface Steer { from: number; fresh: boolean; cost: number; ok: boolean; x: number; y: number }
 
-/** Send the nearest root (within reach) toward a seen cell. Hard soil costs double; stone blocks. */
-export function rootPreview(p: Plant, plot: Plot, x: number, y: number) {
+/** Branch a new root tip from the nearest root toward a soil cell (hidden or seen), so the rest of the roots grow on as
+ * they would. Seen stone can't be a target; seen hard soil costs double. */
+export function rootPreview(p: Plant, plot: Plot, x: number, y: number): Steer | null {
   const c = cellIndex(x, y);
-  if (c < 0 || !plot.cells[c].seen) return null;
-  let from = -1, bd = (T.digReach * CELL) ** 2;
+  if (c < 0 || (plot.cells[c].seen && plot.cells[c].kind === 'stone')) return null;
+  ({ x, y } = cellCentre(c));
+  let from = -1, bd = Infinity;
   p.nodes.forEach((n, i) => {
     if (i === 0 || n.dead || n.kind !== 'root' || n.state === 'bud') return;
-    const d = (n.x - x) ** 2 + (n.y - y) ** 2;
+    const d = Math.hypot(n.x - x, n.y - y);
     if (d < bd) { bd = d; from = i; }
   });
   if (from < 0) return null;
-  const n = p.nodes[from], fresh = n.state !== 'tip' || !!n.target;
+  const n = p.nodes[from], fresh = true;
   const steps = Math.max(1, Math.ceil(Math.hypot(x - n.x, y - n.y) / (CELL / 2))), seen = new Set<number>();
-  let cells = 0, hard = 0, blocked = false;
+  let cells = 0, hard = 0;
   for (let s = 1; s <= steps; s++) {
     const k = cellIndex(n.x + ((x - n.x) * s) / steps, n.y + ((y - n.y) * s) / steps);
     if (k < 0 || seen.has(k)) continue;
     seen.add(k); cells++;
-    if (plot.cells[k].seen && plot.cells[k].kind === 'stone') blocked = true;
     if (plot.cells[k].seen && plot.cells[k].kind === 'hard') hard++;
   }
-  return { from, fresh, blocked, cost: T.digBase + T.digPerCell * (cells + hard) + (fresh ? T.newRootTip : 0) };
+  const cost = T.digBase + T.digPerCell * (cells + hard);
+  return { from, fresh, cost, ok: p.nutrient >= cost, x, y };
 }
 /** Returns the root tip now heading there, or -1. */
 export function rootToward(p: Plant, plot: Plot, x: number, y: number): number {
   const d = rootPreview(p, plot, x, y);
-  if (!d || d.blocked || p.nutrient < d.cost) return -1;
+  if (!d || !d.ok) return -1;
   p.nutrient -= d.cost;
-  let i = d.from;
-  if (d.fresh) i = addBud(p, d.from, Math.atan2(y - p.nodes[i].y, x - p.nodes[i].x), 'root', 'tip');
-  p.nodes[i].target = { x, y };
+  const i = addBud(p, d.from, Math.atan2(d.y - p.nodes[d.from].y, d.x - p.nodes[d.from].x), 'root', 'tip');
+  p.nodes[i].target = { x: d.x, y: d.y };
   return i;
 }
 
-/** The leafless or small-leafed segments near a node that a flush would fill. */
-export function flushTargets(p: Plant, at: number): number[] {
-  const a = p.nodes[at], max = shape(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1) + 1;
-  return p.nodes.map((n, i) => [n, i] as const)
-    .filter(([n]) => !n.dead && n.kind === 'shoot' && n.len > 0 && n.leaf < max)
-    .sort((x, y) => Math.hypot(x[0].x - a.x, x[0].y - a.y) - Math.hypot(y[0].x - a.x, y[0].y - a.y))
-    .slice(0, PULSE.leafFlush.segs).map(([, i]) => i);
+/** Send the nearest shoot tip (or a bud, woken) to a point in the sky; moss: the nearest creeping edge along the ground. */
+export function shootPreview(p: Plant, x: number, y: number): Steer | null {
+  const moss = p.form === 'moss';
+  if (moss) y = GROUND - 2;
+  let from = -1, bd = Infinity;
+  p.nodes.forEach((n, i) => {
+    if (i === 0 || n.dead || n.kind !== 'shoot' || (n.state !== 'tip' && n.state !== 'bud') || (moss && !n.creep)) return;
+    const d = moss ? Math.abs(n.x - x) : Math.hypot(n.x - x, n.y - y) + (n.state === 'bud' ? CELL : 0);
+    if (d < bd) { bd = d; from = i; }
+  });
+  if (from < 0) return null;
+  const n = p.nodes[from], fresh = n.state === 'bud', dist = moss ? Math.abs(n.x - x) : Math.hypot(n.x - x, n.y - y);
+  const cost = STAND.lean.base + (STAND.lean.perCell * dist) / CELL + (fresh ? T.wakeCost : 0);
+  return { from, fresh, cost, ok: p.nutrient >= cost, x, y };
 }
-export const flushCost = (p: Plant, at: number) => flushTargets(p, at).length * PULSE.leafFlush.cost;
-export function leafFlush(p: Plant, at: number): boolean {
-  const ts = flushTargets(p, at), cost = ts.length * PULSE.leafFlush.cost, max = shape(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1) + 1;
-  if (!ts.length || p.energy < cost) return false;
-  p.energy -= cost;
-  for (const i of ts) p.nodes[i].leaf = Math.min(max, Math.max(p.nodes[i].leaf, shape(p.genes, 'leaf') * (p.form === 'moss' ? 0.6 : 1)) + 1);
+export function shootToward(p: Plant, x: number, y: number): boolean {
+  const d = shootPreview(p, x, y);
+  if (!d || !d.ok) return false;
+  p.nutrient -= d.cost;
+  const n = p.nodes[d.from];
+  if (n.state === 'bud') n.state = 'tip';
+  n.target = { x: d.x, y: d.y };
   return true;
 }
 
-// ---- the tree's rules ----
+/** Feed a shoot: its tips get most of the growth for a while (a shoot with no tips wakes up to 2 of its buds). */
+export function feedPreview(p: Plant, node: number) {
+  const n = p.nodes[node];
+  if (!n || n.dead || n.kind !== 'shoot') return null;
+  const inside = subtree(p, node).filter((k) => p.nodes[k].kind === 'shoot');
+  const tips = inside.filter((k) => p.nodes[k].state === 'tip');
+  const buds = tips.length ? [] : inside.filter((k) => p.nodes[k].state === 'bud').slice(0, 2);
+  const cost = STAND.feed.cost;
+  return { tips: tips.length + buds.length, buds, cost, ok: p.nutrient >= cost && tips.length + buds.length > 0 };
+}
+export function feed(p: Plant, node: number): boolean {
+  const f = feedPreview(p, node);
+  if (!f || !f.ok) return false;
+  p.nutrient -= f.cost;
+  for (const b of f.buds) p.nodes[b].state = 'tip';
+  p.feed = { node, left: STAND.feed.ticks };
+  return true;
+}
+
+// ---- the tree's rules (part 2) ----
 
 /** Winter: every living segment lays down wood with its load, then the leaves fall. The frame and buds stay. */
 export function winter(p: Plant) {
@@ -122,7 +146,7 @@ export function spring(p: Plant) {
   thicken(p);
 }
 
-// ---- the brood ----
+// ---- level-ups (until 1b's pips and mutations, each new sapling is the founder + one) ----
 export interface LevelUp { genes: Genes; changed: number[]; sport: boolean }
 
 /** One more pip in attribute i; a sport instead puts +2 there and takes 1 from another attribute. */
@@ -146,21 +170,3 @@ export function levelUps(g: Genes, rng: Rng, n: number): LevelUp[] {
   const sport = Math.floor(rng() * open.length);
   return open.map((i, k) => bumped(g, i, k === sport, rng));
 }
-
-export interface Seed extends LevelUp { spot: number; body: Plant; stats: Body }
-
-/** A season grown with no picks, on what you've seen of the soil (hidden cells count as loam). */
-export function predict(genes: Genes, spot: number, plot: Plot, seed: number, form: Plant['form']): { body: Plant; stats: Body } {
-  const w = knownCopy(plot), body = newPlant(genes, spot, w, seeded(seed), form), ticks = FORMS[form].seasonTicks;
-  w.dry = false;
-  for (let t = 1; t <= ticks; t++) { plotTick(w, t, ticks); tick(body, w, t); }
-  return { body, stats: measure(body, w) };
-}
-
-/** n seeds on different spots, each one season predicted. */
-export function brood(parent: Plant, plot: Plot, rng: Rng, n: number): Seed[] {
-  const spots = [0, 1, 2, 3, 4].sort(() => rng() - 0.5).slice(0, n).sort((a, b) => a - b);
-  const ups = levelUps(parent.genes, rng, n);
-  return ups.map((u, i) => ({ ...u, spot: spots[i], ...predict(u.genes, spots[i], plot, plot.seed * 7 + i + parent.season * 13, parent.form) }));
-}
-

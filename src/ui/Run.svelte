@@ -1,137 +1,133 @@
 <script lang="ts">
-  // The run screen: the side view (animated pulses), the offers, cuts, the brood, winter and the release.
+  // The run screen: the stand growing live in the 2D low-poly look, steered by clicks; the saplings' cards; winter's
+  // pick of the founder; the release after the last year. Space pauses, Tab cycles the saplings, 1/2/3 set the speed.
   import { onMount } from 'svelte';
-  import { FORMS, tierOf } from '../data/genes';
+  import { ATTRS, FORMS, tierOf } from '../data/genes';
   import { NICHES, PRESSURES } from '../data/niches';
-  import { upText } from './text';
-  import { H, PULSE, W } from '../data/run';
+  import { GROUND, STAND } from '../data/run';
   import { cancelRun } from '../sim/game';
   import { measure } from '../sim/run/plant';
-  import { advance, autoPick, cutAt, pick, pulseTicks, runScore, springRun } from '../sim/run/run';
-  import { cutPreview, subtree } from '../sim/run/verbs';
-  import { camFor, drawGhost, drawOffers, drawPlant, drawPlot, toWorld } from '../view/side';
+  import { advance, found, runScore, tickRate, yearTicks } from '../sim/run/run';
+  import { camFor, drawRun, newView, toCanvas, toWorld, type View } from '../view/side';
+  import { act, cutAt, hoverAt, type Hover } from './aim';
   import { S, bump, ui } from './state.svelte';
   import Stats from './Stats.svelte';
   import Genes from './Genes.svelte';
-  import Brood from './Brood.svelte';
   import Release from './Release.svelte';
 
   const r = S.run!;
-  let cv: HTMLCanvasElement;
-  let rv = $state(0), hover = $state(-1), cutting = $state(false), cutNode = $state(-1), fast = $state(false);
-  let pickSince = performance.now(), acc = 0, last = 0;
+  let cv: HTMLCanvasElement, view: View | null = null, mouse: { x: number; y: number } | null = null, acts = 0;
+  let rv = $state(0), paused = $state(false), speed = $state(1), hover = $state<Hover | null>(null), tip = $state({ x: 0, y: 0 });
 
-  const live = $derived.by(() => { rv; return measure(r.plant, r.plot).raw; });
-  const hoverAfter = $derived.by(() => { rv; return hover >= 0 ? r.offers[hover]?.after ?? null : null; });
   /** A snapshot of the run for the template (the run itself is a plain object, not reactive). */
   const v = $derived.by(() => {
     rv;
-    return { phase: r.phase, season: r.season, pulse: r.pulse, offers: [...r.offers], history: [...r.history], genes: [...r.plant.genes], changed: r.changed, e: r.plant.energy, w: r.plant.water, n: r.plant.nutrient, harm: r.plant.harm, reserve: r.plant.reserve, ups: r.ups };
+    const cam = camFor(r), lab = (x: number, y: number) => { const c = toCanvas(cam, x, y); return `left:${c.u * 100}%;top:${c.v * 100}%`; };
+    return {
+      phase: r.phase, year: r.year, sel: r.sel, dry: r.plot.dry, done: r.t / yearTicks(r.form), history: [...r.history],
+      saps: r.stand.map((s, k) => {
+        const p = s.plant, b = measure(p, r.plot), end = r.last?.[k];
+        return { grams: end?.grams ?? b.biomass, score: end?.score ?? runScore(r, b.raw, p.genes), raw: b.raw, genes: [...p.genes], changed: s.changed, sport: s.sport,
+          e: p.energy, w: p.water, n: p.nutrient, wilt: p.flow.wilting, fed: !!p.feed, at: lab(p.x, GROUND + 14) };
+      }),
+      natives: r.plot.neighbours.map((nb) => ({ name: nb.name, at: lab(nb.x, GROUND - nb.h * r.plot.grow - 10) })),
+    };
   });
-  const cutInfo = $derived.by(() => { rv; return cutNode > 0 ? cutPreview(r.plant, cutNode) : null; });
-  const changed = () => { rv++; pickSince = performance.now(); };
+  const cur = $derived(v.saps[v.sel]);
+  const change = (s: { changed: number[]; sport: boolean }) =>
+    s.changed.map((i, k) => `${ATTRS[i].name} ${k ? '−1' : s.sport ? '+2' : '+1'}`).join(', ');
 
   onMount(() => {
-    let raf = 0;
+    view = newView(cv);
+    if (import.meta.env.DEV) Object.assign(globalThis, { clade: { r, view, drawRun } }); // for timing in the console
+    let raf = 0, last = 0, acc = 0, lastRv = 0, drawn = 0;
     const loop = (now: number) => {
-      const dt = last ? now - last : 0;
+      const dt = last ? Math.min(100, now - last) : 0;
       last = now;
-      if (r.phase === 'grow') {
-        acc += (dt * pulseTicks(r.form)) / (PULSE.animMs / (fast ? 4 : 1));
+      if (!paused && r.phase === 'grow') {
+        acc += (dt / 1000) * tickRate(r.form) * speed;
         const n = Math.floor(acc);
-        if (n > 0) { acc -= n; const ph = r.phase; advance(r, n); if (r.phase !== ph) changed(); else if (Math.random() < 0.2) rv++; }
-      } else if (r.phase === 'pick' && ui.auto && now - pickSince > PULSE.autoDelayMs / (fast ? 3 : 1)) {
-        choose(autoPick(r));
+        if (n > 0) { acc -= n; const ph = r.phase; advance(r, n); if (r.phase !== ph) { rv++; aimAgain(); } }
       }
-      draw();
+      if (now - lastRv > 250) { lastRv = now; rv++; aimAgain(); }
+      if (view && now - drawn >= 33) { drawn = now; drawRun(view, r, hover?.aim ?? null, now / 1000, r.t + r.sel * 1e4 + acts * 1e5); }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    const key = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement) return;
+      if (e.code === 'Space') { e.preventDefault(); paused = !paused; }
+      else if (e.key === 'Tab') { e.preventDefault(); r.sel = (r.sel + (e.shiftKey ? r.stand.length - 1 : 1)) % r.stand.length; rv++; aimAgain(); }
+      else if (e.key >= '1' && e.key <= '3') speed = STAND.speeds[+e.key - 1];
+    };
+    addEventListener('keydown', key);
+    return () => { cancelAnimationFrame(raf); removeEventListener('keydown', key); };
   });
 
-  function draw() {
-    if (!cv) return;
-    const c = cv.getContext('2d')!, cam = camFor(r.plant);
-    c.setTransform(1, 0, 0, 1, 0, 0);
-    c.fillStyle = '#000'; c.fillRect(0, 0, W, H);
-    c.setTransform(cam.s, 0, 0, cam.s, -cam.ox * cam.s, -cam.oy * cam.s);
-    drawPlot(c, r.plot);
-    drawPlant(c, r.plant);
-    if (cutting && cutNode > 0) drawGhost(c, r.plant.nodes, subtree(r.plant, cutNode));
-    if (r.phase === 'pick' && !cutting) drawOffers(c, r.plant, r.offers, hover, cam.s);
-    c.setTransform(1, 0, 0, 1, 0, 0);
-    if (r.plot.dry) { c.fillStyle = '#7a5a20'; c.font = 'bold 14px system-ui'; c.textAlign = 'left'; c.fillText('Dry spell: the moss is dormant', 12, 22); }
-  }
-
-  function at(e: MouseEvent) {
-    const b = cv.getBoundingClientRect();
-    return toWorld(camFor(r.plant), ((e.clientX - b.left) / b.width) * W, ((e.clientY - b.top) / b.height) * H);
-  }
+  const radius = () => 9 / (r.form === 'moss' ? 2 : 1);
+  function aimAgain() { hover = mouse ? hoverAt(r, mouse.x, mouse.y, radius()) : null; }
   function move(e: MouseEvent) {
-    const p = at(e), s = camFor(r.plant).s;
-    if (cutting) {
-      let best = -1, bd = (10 / s) ** 2;
-      r.plant.nodes.forEach((n, i) => { if (i > 0 && !n.dead && n.len > 0 && n.kind === 'shoot') { const d = (n.x - p.x) ** 2 + (n.y - p.y) ** 2; if (d < bd) { bd = d; best = i; } } });
-      cutNode = best; return;
-    }
-    let best = -1, bd = (14 / s) ** 2;
-    r.offers.forEach((o, i) => { const d = (o.x - p.x) ** 2 + (o.y - p.y) ** 2; if (d < bd) { bd = d; best = i; } });
-    hover = r.phase === 'pick' ? best : -1;
+    const b = cv.getBoundingClientRect();
+    mouse = toWorld(camFor(r), (e.clientX - b.left) / b.width, (e.clientY - b.top) / b.height);
+    tip = { x: e.clientX - b.left, y: e.clientY - b.top };
+    aimAgain();
   }
-  function click() {
-    if (cutting) { if (cutNode > 0 && cutAt(r, cutNode)) { cutNode = -1; changed(); } return; }
-    if (hover >= 0) choose(hover);
-  }
-  function choose(i: number) { if (pick(r, i)) { hover = -1; acc = 0; changed(); } }
+  function leave() { mouse = null; hover = null; }
+  function click() { if (hover && act(r, hover)) { acts++; rv++; aimAgain(); } }
+  function rightClick(e: MouseEvent) { e.preventDefault(); if (hover && cutAt(r, hover)) { acts++; rv++; aimAgain(); } }
+  function pickFounder(k: number) { found(r, k); acts++; rv++; }
   function abandon() { if (!confirm('Abandon the run? The sprout and the biomass come back.')) return; cancelRun(S.game); S.run = null; ui.screen = 'island'; bump(); }
-  const cost = (o: { nutrient: number; energy: number }) => [o.nutrient ? `${o.nutrient.toFixed(1)} nutrient` : '', o.energy ? `${o.energy.toFixed(1)} energy` : ''].filter(Boolean).join(', ') || 'free';
-  const bestOffer = $derived.by(() => { rv; return autoPick(r); });
+  const season = (t: number) => (t < 0.25 ? 'spring' : t < 0.6 ? 'summer' : 'autumn');
 </script>
 
-<main>
+<main class="run">
   <section class="view">
-    <canvas bind:this={cv} width={W} height={H} onmousemove={move} onmouseleave={() => { hover = -1; cutNode = -1; }} onclick={click} class:cut={cutting}></canvas>
     <div class="bar row">
-      <span><b>{FORMS[r.form].name}</b> · season {v.season}/{FORMS[r.form].seasons} · pulse {Math.min(v.pulse + 1, PULSE.perSeason)}/{PULSE.perSeason}{v.phase === 'grow' ? ' · growing…' : ''}</span>
-      <span class="muted">energy {v.e.toFixed(1)} · water {v.w.toFixed(1)} · nutrient {v.n.toFixed(1)}</span>
-      <span class="muted" title="the patch's pressure takes this share of the energy income; Health's reserve takes it first">{PRESSURES[NICHES[r.niche].pressure].icon} {v.harm > 0.005 ? `−${Math.round(v.harm * 100)}% energy${v.reserve > 0.05 ? ` (reserve ${v.reserve.toFixed(1)})` : ''}` : 'armoured'}</span>
+      <span><b>{FORMS[r.form].name}</b> · year {v.year}/{FORMS[r.form].years} · {v.phase === 'grow' ? season(v.done) : v.phase === 'winter' ? 'winter' : 'the end'}</span>
+      <span class="year"><i style="width:{Math.min(100, v.done * 100)}%"></i></span>
       <span>
-        <button class:on={ui.auto} onclick={() => (ui.auto = !ui.auto)} title="pick the best previewed offer">auto</button>
-        <button class:on={fast} onclick={() => (fast = !fast)}>fast</button>
-        <button class:on={cutting} disabled={v.phase !== 'pick' && v.phase !== 'winter'} onclick={() => { cutting = !cutting; cutNode = -1; }}>cut</button>
+        <button class:on={paused} onclick={() => (paused = !paused)} title="Space">{paused ? 'paused' : 'pause'}</button>
+        {#each STAND.speeds as s, i}<button class:on={speed === s && !paused} onclick={() => { speed = s; paused = false; }} title="key {i + 1}">{s}×</button>{/each}
         <button onclick={abandon}>abandon</button>
       </span>
     </div>
-    {#if v.phase === 'brood'}<Brood {r} onpick={changed} />{/if}
-    {#if v.phase === 'end'}<Release {r} />{/if}
+    <div class="stage">
+      <canvas bind:this={cv} onmousemove={move} onmouseleave={leave} onclick={click} oncontextmenu={rightClick} class:aim={hover && hover.verb !== 'none'}></canvas>
+      {#each v.natives as nb}<span class="label native" style={nb.at}>{nb.name}</span>{/each}
+      {#each v.saps as s, k}<span class="label sap" class:sel={k === v.sel} style={s.at}>{k + 1}</span>{/each}
+      {#if v.dry}<div class="banner">Dry spell: the moss is dormant</div>{/if}
+      {#if v.phase === 'winter'}<div class="banner">Winter: pick the founder of next year's stand</div>{/if}
+      {#if hover && (hover.text || hover.cut)}
+        <div class="tip" style="left:{tip.x + 14}px;top:{tip.y + 12}px">
+          {#if hover.text}<div class:bad={!hover.ok}>{hover.text}</div>{/if}
+          {#if hover.cut}<div class="muted">{hover.cut}</div>{/if}
+        </div>
+      {/if}
+    </div>
+    <p class="muted">Click the soil: send a root · the sky: lean a shoot · a shoot: feed it · right-click: cut · Tab: next sapling · Space: pause</p>
+    {#if v.phase === 'end'}{#key v.sel}<Release {r} />{/key}{/if}
   </section>
 
   <aside>
     <div class="panel">
-      <h2>Offers</h2>
-      {#if v.phase === 'pick'}
-        {#each v.offers as o, i}
-          <div class="card click" class:on={hover === i} role="button" tabindex="0" onmouseenter={() => (hover = i)} onmouseleave={() => (hover = -1)} onclick={() => choose(i)} onkeydown={(e) => e.key === 'Enter' && choose(i)}>
-            <div class="row"><b>{i + 1}. {o.label}</b><span class:gold={i === bestOffer}>{o.after ? `→ ${tierOf(runScore(r, o.after))} ${runScore(r, o.after)}` : ''}</span></div>
-            <div class="muted">{o.ok ? cost(o) : `can't pay: ${cost(o)}`}</div>
-          </div>
-        {/each}
-        <button onclick={() => choose(-1)}>Let the genes decide</button>
-      {:else if v.phase === 'winter'}
-        <p>Winter: the leaves fell, the wood thickened. Cut if you like; spring brings leaves on the outer twigs and a level.</p>
-        {#each v.ups ?? [] as u, i}
-          <button class="primary" class:gold={u.sport} onclick={() => { springRun(r, i); cutting = false; changed(); }}>Spring: {upText(u, v.genes)}</button>
-        {/each}
-      {:else if v.phase === 'grow'}<p class="muted">Growing…</p>
-      {:else if v.phase === 'brood'}<p class="muted">Pick the heir below.</p>
-      {:else}<p class="muted">The run is over: release it.</p>{/if}
-      {#if cutting}<p class="muted">{cutInfo ? `Cut ${cutInfo.segs} segments (${cutInfo.leaves} leaves), +${cutInfo.back.toFixed(1)} nutrient${cutInfo.wakes ? `, wakes ${cutInfo.wakes} buds` : ''}${cutInfo.sprout ? ', the stump sprouts' : ''}` : 'Hover a shoot to cut it.'}</p>{/if}
+      <h2>The stand</h2>
+      {#each v.saps as s, k}
+        <div class="card click" class:on={k === v.sel} role="button" tabindex="0" onclick={() => { r.sel = k; rv++; }} onkeydown={(e) => e.key === 'Enter' && ((r.sel = k), rv++)}>
+          <div class="row"><b>Sapling {k + 1}</b><span>{s.grams.toFixed(0)} g · <span class="tier">{tierOf(s.score)}</span> {s.score}</span></div>
+          <div class="row muted"><span class:gold={s.sport}>{s.changed.length ? change(s) : 'the founder'}</span><span>{s.wilt ? 'wilting · ' : ''}{s.fed ? 'fed · ' : ''}n {s.n.toFixed(1)}</span></div>
+          {#if v.phase === 'winter'}<button class="primary" onclick={(e) => { e.stopPropagation(); pickFounder(k); }}>Found next year</button>{/if}
+        </div>
+      {/each}
+      {#if v.phase === 'end'}<p class="muted">The last year is over: pick the sapling to release.</p>{/if}
     </div>
-    <div class="panel"><h2>Body</h2><Stats raw={live} form={r.form} niche={r.niche} genes={v.genes} after={hoverAfter} /></div>
-    <div class="panel"><h2>Attributes</h2><Genes genes={v.genes} changed={v.changed} /></div>
+    <div class="panel">
+      <h2>Sapling {v.sel + 1}</h2>
+      <p class="muted">energy {cur.e.toFixed(1)} · water {cur.w.toFixed(1)} · nutrient {cur.n.toFixed(1)} · {PRESSURES[NICHES[r.niche].pressure].icon} {NICHES[r.niche].name}</p>
+      <Stats raw={cur.raw} form={r.form} niche={r.niche} genes={cur.genes} />
+    </div>
+    <div class="panel"><h2>Attributes</h2><Genes genes={cur.genes} changed={cur.changed} /></div>
     {#if v.history.length}
-      <div class="panel"><h2>Seasons</h2>{#each v.history as h}<div class="row muted"><span>season {h.season}</span><span>{h.score}</span></div>{/each}</div>
+      <div class="panel"><h2>Years</h2>{#each v.history as h}<div class="row muted"><span>year {h.year}</span><span>{h.results.map((x) => x.score).join(' · ')}</span></div>{/each}</div>
     {/if}
   </aside>
 </main>
@@ -139,8 +135,18 @@
 <style>
   main { display: flex; gap: 14px; padding: 12px 16px; align-items: flex-start; flex-wrap: wrap; }
   .view { flex: 1 1 640px; max-width: 980px; display: flex; flex-direction: column; gap: 8px; }
-  .view canvas { width: 100%; cursor: pointer; image-rendering: auto; }
-  .view canvas.cut { cursor: crosshair; }
-  .bar { flex-wrap: wrap; font-size: 13px; }
-  aside { width: 320px; display: flex; flex-direction: column; gap: 10px; }
+  .stage { position: relative; }
+  .stage canvas { width: 100%; image-rendering: pixelated; cursor: default; border-radius: 0; }
+  .stage canvas.aim { cursor: crosshair; }
+  .label { position: absolute; transform: translate(-50%, -50%); font-size: 12px; color: #cfd9de; text-shadow: 1px 1px 0 var(--ink); pointer-events: none; white-space: nowrap; }
+  .label.sap { font-weight: 700; color: #9fb2bd; }
+  .label.sap.sel { color: var(--gold); }
+  .banner { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(7, 14, 17, 0.9); border: 2px solid #7d8f98; padding: 3px 10px; font-weight: 700; pointer-events: none; }
+  .tip { position: absolute; background: rgba(7, 14, 17, 0.94); border: 2px solid #7d8f98; padding: 4px 8px; font-size: 13px; pointer-events: none; max-width: 300px; z-index: 2; }
+  .tip .bad { color: var(--bad); }
+  .bar { flex-wrap: wrap; font-size: 14px; }
+  .year { flex: 1; min-width: 80px; height: 8px; background: #1b2a30; border: 2px solid var(--ink); }
+  .year i { display: block; height: 100%; background: var(--gold); }
+  .tier { color: var(--gold); font-weight: 700; }
+  aside { width: 330px; display: flex; flex-direction: column; gap: 10px; }
 </style>

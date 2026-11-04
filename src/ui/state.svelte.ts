@@ -10,7 +10,7 @@ export const ui = $state({
   v: 0, // bumped whenever the game changes
   screen: 'island' as 'island' | 'run',
   speed: 1, away: null as Away | null, choosing: -1 as number, // a sprout id while you pick its patch
-  patch: -1, dev: false, auto: false,
+  patch: -1, dev: false,
 });
 export const bump = () => { ui.v++; };
 

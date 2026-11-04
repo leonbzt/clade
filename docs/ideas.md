@@ -28,6 +28,13 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - More run islands (salt, ash, caves), the archipelago map, outposts.
 - Sun and cold as pressures (you, 3 Nov), once a niche has them (alpine, open dunes, other islands).
 - Two zoom levels: the garden and a close view of one habitat (possibly in side view) (you + AI).
+- A small patch strategy map with the individuals visible, as one zoom layer; v1 had a map like it (you, 3 Nov; P44 b).
+- Battles in the style of monster-collecting RPGs: the pressures as types (heat, flood, shade, grazers), organs as
+  moves; better once animals come (you, 3 Nov).
+- After M1: v1 and v2 side by side, combined into one fresh game with every feature (you, 3 Nov).
+- An original bitmap font in the spirit of OSRS menus (small, proportional, 1-px black shadow); not a copy (you + AI,
+  3 Nov). Free ones to compare: `toys/fonts.html`.
+- Encounters as the tier ladder made visible: a build climbs a niche's encounters (AI, 3 Nov).
 - **Morphs:** rare looks (a colour, a pattern, a left-coiled snail); cheap with bodies drawn from genes.
 - **"Resembles…":** a body close to a real species' shape names it, with a fact and a source (you + AI). Strong fit.
 - Hindsight names for big groups; partnerships (lichen, mycorrhiza) as a partner that changes the side-view rules

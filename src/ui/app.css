@@ -23,3 +23,17 @@ th { color: var(--muted); font-weight: 600; font-size: 11px; }
 .card.click { cursor: pointer; } .card.click:hover, .card.on { border-color: var(--accent); }
 .modal { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: grid; place-items: center; z-index: 10; padding: 16px; }
 .modal > div { max-width: 520px; width: 100%; }
+
+/* The run in the 2D low-poly look (slice 02): Pixelify and calm menus (one frame colour, a drop shadow). The island
+   screen keeps the plain style until step 4. */
+:root { --ink: #0a1013; }
+.run { font: 400 15px/1.3 'Pixelify Sans', monospace; }
+.run h2 { font-size: 13px; color: #9fb2bd; letter-spacing: .03em; }
+.run .muted { font-size: 13px; color: #9fb2bd; }
+.run .panel { background: rgba(7, 14, 17, .94); border: 2px solid #7d8f98; box-shadow: 0 0 0 2px var(--ink); border-radius: 0; }
+.run .card { border: 2px solid #2c3a40; border-radius: 0; }
+.run .card.click:hover, .run .card.on { border-color: var(--gold); }
+.run button { font: 700 14px 'Pixelify Sans', monospace; color: #e8eef0; background: #2a3d44; border: 2px solid var(--ink); border-radius: 0; padding: 3px 9px 5px; text-shadow: 1px 1px 0 var(--ink); box-shadow: inset 0 -3px 0 #16242a, inset 0 2px 0 #4a646d; }
+.run button:hover:not(:disabled) { background: #34505a; border-color: var(--ink); }
+.run button.on, .run button.primary { background: #44606b; color: var(--gold); border-color: var(--ink); }
+.run input { font-family: 'Pixelify Sans', monospace; border-radius: 0; }

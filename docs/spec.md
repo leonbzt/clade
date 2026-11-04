@@ -23,7 +23,8 @@ growth. **The run hunts** (P40, 3 Nov): roots reach into hidden soil; shoots tak
 sent into one shoot, toward lit gaps and away from shade, both drawn. *Decided 3 Nov (P43):* you steer by targets
 (a soil cell, a lit gap, a shoot to feed), paid in the sapling's nutrient, with no auto; moss and herb re-found each
 year from 3 saplings, while the tree's 3 stay the whole run and are thinned; XP is the whole stand's grams. The stand's
-slice ([slices/03-stand.md](slices/03-stand.md)) rewrites this section.
+slice ([slices/03-stand.md](slices/03-stand.md)) rewrites this section. *Under test (3 Nov, after playtest 04):* the
+run's core play, in three toys ([slices/04-core-toys.md](slices/04-core-toys.md), P44).
 
 - **Start** *(decided 3 Nov)*: spend a **sprout** (§5) and biomass, and pick the habitat patch to grow in. The
   run's soil, light, water and neighbours come from that patch: the natives and your garden species there

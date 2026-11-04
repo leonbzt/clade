@@ -19,8 +19,9 @@ the next run.
   [docs/slices/01-builds.md](docs/slices/01-builds.md) (played) · 2. the look toy:
   [docs/slices/02-look.md](docs/slices/02-look.md) (played: 2D low-poly) · 3. the stand:
   [docs/slices/03-stand.md](docs/slices/03-stand.md) (the run: a few saplings, roots hunting hidden soil, shoots
-  cut and fed, levels from growth) · 4. variants in the garden, hunted on the map (P40) · then part B (the tree) and
-  the map with income, order set later.
+  cut and fed, levels from growth; part 1a built, played in [playtest 04](docs/playtests/04-stand.md)) · 3b. the
+  core-play toys: [docs/slices/04-core-toys.md](docs/slices/04-core-toys.md) (P44) · 4. variants in the garden,
+  hunted on the map (P40) · then part B (the tree) and the map with income, order set later.
 
 ## Done: M0, the toy and the spec (26 Oct – 3 Nov)
 

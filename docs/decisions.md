@@ -163,3 +163,8 @@ Your calls, dated, in your words where possible. Only explicit calls; AI proposa
   whole run; each winter the pips go on one and you may cut one. Herb first; the tree's thinning in a second part.
 - **XP, (a):** the whole stand's grams that year; about 1–2 pips a year.
 - **The sun is fixed per plot** (the spec's question 3, lean taken): the gaps hold still.
+
+## 3 Nov, after playtest 04 ([playtests/04-stand.md](playtests/04-stand.md), P44)
+- **Toys for the run's core play:** (a) turn-based growth on the plot, (b) a patch strategy map, (c1 + c2) a body
+  builder scored by balance, "to really feel out possible game": [slices/04-core-toys.md](slices/04-core-toys.md).
+- **Slice 03 part 1b:** you lean to pausing it ("but i also want to get to some point"); see the slice's question 1.

@@ -1,27 +1,30 @@
-// A run: a sprout grown in side view on a garden patch, pulse by pulse, season by season. Herb and moss pick an
-// heir from a brood of 3 each season (each seed a level-up); the tree keeps one body and levels up each winter.
-// The final body is released.
-// A state machine the UI drives: pick → grow (animated) → pick … → brood / winter → … → end. No DOM.
+// A run: a stand of saplings grown live for a few years on one garden patch. Each year 3 saplings grow side by side
+// among the patch's natives, steered by your verbs (verbs.ts); in winter you pick the founder of next year's 3. After
+// the last year you pick the one to release. The plot (the soil, what you revealed, drained pockets) carries over.
+// A state machine the UI drives: grow (live) → winter → grow … → end. No DOM.
 import { FORMS, type FormId, type Genes } from '../../data/genes';
 import { NICHES } from '../../data/niches';
-import { NEIGHBOUR_LOOK, PLOT, PULSE, SPOTS, T, type Neighbour } from '../../data/run';
+import { LIGHT, NEIGHBOUR_LOOK, PLOT, SPOTS, STAND, T, type Neighbour } from '../../data/run';
 import { BARE, FOREST, WET } from '../../data/island';
 import { seeded, type Rng } from '../rng';
 import { fullScore, scaled } from '../species';
 import { measure, newPlant, reserveOf, tick, type Plant } from './plant';
 import { makePlot, plotTick, rain, type Plot } from './plot';
-import { applyOffer, makeOffers, type Offer } from './pulse';
-import { brood, cut, levelUps, spring, winter, type LevelUp, type Seed } from './verbs';
-import { armoured } from '../species';
-import { PRESSURE } from '../../data/niches';
+import { buildLight } from './light';
+import { levelUps } from './verbs';
 
-export type Phase = 'pick' | 'grow' | 'winter' | 'brood' | 'end';
-export interface SeasonRow { season: number; raw: number[]; score: number; genes: Genes; changed: number[] }
+export type Phase = 'grow' | 'winter' | 'end';
+/** A sapling and what its seed changed from the founder. */
+export interface Sapling { plant: Plant; changed: number[]; sport: boolean }
+/** A sapling at the year's end. */
+export interface Result { raw: number[]; score: number; grams: number }
+export interface YearRow { year: number; results: Result[]; founder: number }
 export interface Run {
-  form: FormId; niche: number; plot: Plot; plant: Plant; rng: Rng;
-  season: number; pulse: number; t: number; ticksLeft: number; phase: Phase;
-  offers: Offer[]; picked: number; seeds: Seed[] | null; history: SeasonRow[]; changed: number[];
-  ups: LevelUp[] | null; // tree: the winter's level-ups (pick one for spring)
+  form: FormId; niche: number; plot: Plot; rng: Rng;
+  year: number; t: number; phase: Phase;
+  stand: Sapling[]; sel: number; // the selected sapling
+  last: Result[] | null; // the year's end (winter and the end)
+  history: YearRow[];
 }
 
 /** What the garden patch puts beside you: its holders per layer, sized by their cover. */
@@ -36,114 +39,76 @@ export function neighboursFor(kind: number, beside: Beside[], rng: Rng): Neighbo
   });
 }
 
-export const pulseTicks = (form: FormId) => FORMS[form].seasonTicks / PULSE.perSeason;
-export const runScore = (r: Run, raw: number[], genes = r.plant.genes) => fullScore(scaled(r.form, raw), genes, NICHES[r.niche]);
+export const yearTicks = (form: FormId) => FORMS[form].yearTicks;
+/** Ticks per second at 1×: a year takes STAND.yearSeconds. */
+export const tickRate = (form: FormId) => FORMS[form].yearTicks / STAND.yearSeconds;
+export const runScore = (r: Run, raw: number[], genes: Genes) => fullScore(scaled(r.form, raw), genes, NICHES[r.niche]);
+export const selected = (r: Run) => r.stand[r.sel].plant;
 
 /** The open spot nearest the middle: where a line starts. */
 function startSpot(plot: Plot): number {
   const open = [2, 1, 3, 0, 4].filter((s) => !plot.neighbours.some((nb) => Math.abs(SPOTS[s] - nb.x) < nb.w / 2));
   return open.length ? open[0] : 2;
 }
+/** A spot and its two neighbours (sowing by default: the founder's spot and beside it). */
+const around = (s: number) => { const a = Math.max(0, Math.min(SPOTS.length - STAND.saplings, s - 1)); return [a, a + 1, a + 2]; };
 
 export function newRun(form: FormId, genes: Genes, kind: number, niche: number, moisture: number, beside: Beside[], seed: number): Run {
   const rng = seeded(seed), plot = makePlot(kind, PLOT[kind], moisture, neighboursFor(kind, beside, rng), seed);
-  const plant = newPlant([...genes], startSpot(plot), plot, rng, form);
-  const r: Run = { form, niche, plot, plant, rng, season: 1, pulse: 0, t: 0, ticksLeft: 0, phase: 'pick', offers: [], picked: -1, seeds: null, history: [], changed: [], ups: null };
-  startPulse(r);
+  const spot = startSpot(plot), spots = around(spot);
+  const stand = spots.map((s) => ({ plant: newPlant([...genes], s, plot, rng, form), changed: [], sport: false }));
+  const r: Run = { form, niche, plot, rng, year: 1, t: 0, phase: 'grow', stand, sel: spots.indexOf(spot), last: null, history: [] };
+  refresh(r);
   return r;
 }
 
-function startPulse(r: Run) {
-  if (r.form === 'moss') {
-    const i = [2, 3, 4, 5].indexOf(r.plot.kind);
-    r.plot.dry = r.pulse > 0 && r.rng() < T.moss.dryChance[Math.max(0, i)];
-  }
-  r.plant.reserve = reserveOf(r.plant.genes);
-  r.offers = makeOffers(r.plant, r.plot, pulseTicks(r.form), (r.season * 100 + r.pulse) * 7919 + r.plot.seed);
-  r.picked = -1;
-  r.phase = 'pick';
+/** The light grid from the natives and the whole stand. */
+function refresh(r: Run) {
+  buildLight(r.plot.light, r.plot.neighbours, r.plot.grow, r.stand.map((s) => s.plant));
 }
 
-/** Pick an offer (or -1: let the genes decide). Returns false if it can't be paid. */
-export function pick(r: Run, i: number): boolean {
-  if (r.phase !== 'pick') return false;
-  if (i >= 0) {
-    const o = r.offers[i];
-    if (!o.ok || !applyOffer(r.plant, r.plot, o)) return false;
-  } else r.plant.focus = -1;
-  r.picked = i;
-  r.ticksLeft = pulseTicks(r.form);
-  r.phase = 'grow';
-  return true;
+/** A tenth of the year: Health's reserve refills; a moss plot may fall into a dry spell. */
+function tenth(r: Run) {
+  for (const s of r.stand) s.plant.reserve = reserveOf(s.plant.genes);
+  if (r.form === 'moss') r.plot.dry = r.t > 0 && r.rng() < T.moss.dryChance[Math.max(0, [2, 3, 4, 5].indexOf(r.plot.kind))];
 }
 
-/** The best offer by its previewed score (auto). */
-export function autoPick(r: Run): number {
-  let best = -1, bs = -1;
-  r.offers.forEach((o, i) => { if (o.ok && o.after) { const s = runScore(r, o.after); if (s > bs) { bs = s; best = i; } } });
-  return best;
-}
-
-/** Advance up to n ticks of the current pulse. */
+/** Advance up to n ticks of the year. */
 export function advance(r: Run, n: number) {
-  const st = FORMS[r.form].seasonTicks;
+  const yt = yearTicks(r.form), every = Math.round(yt / STAND.tenths);
   for (let k = 0; k < n && r.phase === 'grow'; k++) {
-    plotTick(r.plot, ++r.t, st);
-    tick(r.plant, r.plot, r.t);
-    if (--r.ticksLeft <= 0) afterPulse(r);
+    if (r.t % every === 0) tenth(r);
+    plotTick(r.plot, ++r.t, yt);
+    if (r.t % LIGHT.every === 0) refresh(r);
+    for (const s of r.stand) tick(s.plant, r.plot, r.t);
+    if (r.t >= yt) endYear(r);
   }
 }
 
-function afterPulse(r: Run) {
-  r.plant.focus = -1;
-  r.pulse++;
-  if (r.pulse >= PULSE.perSeason) endSeason(r); else startPulse(r);
-}
-
-function endSeason(r: Run) {
-  const b = measure(r.plant, r.plot);
-  r.history.push({ season: r.season, raw: b.raw, score: runScore(r, b.raw), genes: [...r.plant.genes], changed: r.changed });
-  r.changed = [];
+function endYear(r: Run) {
   r.plot.dry = false;
-  if (r.season >= FORMS[r.form].seasons) { r.phase = 'end'; return; }
+  r.last = r.stand.map((s) => {
+    const b = measure(s.plant, r.plot);
+    return { raw: b.raw, score: runScore(r, b.raw, s.plant.genes), grams: b.biomass };
+  });
+  r.sel = r.last.reduce((b, x, i, a) => (x.score > a[b].score ? i : b), 0);
+  r.history.push({ year: r.year, results: r.last, founder: -1 });
+  r.phase = r.year >= FORMS[r.form].years ? 'end' : 'winter';
+}
+
+/** Winter: sapling i founds next year's stand, sown on its spot and beside it (each seed the founder + one level). */
+export function found(r: Run, i: number) {
+  if (r.phase !== 'winter') return;
+  const f = r.stand[i].plant, ups = levelUps(f.genes, r.rng, STAND.saplings), spots = around(f.spot);
+  while (ups.length < STAND.saplings) ups.push({ genes: [...f.genes], changed: [], sport: false }); // all maxed
+  r.history[r.history.length - 1].founder = i;
   rain(r.plot);
-  if (r.form === 'tree') { winter(r.plant); r.ups = levelUps(r.plant.genes, r.rng, 3); r.phase = 'winter'; return; }
-  r.seeds = brood(r.plant, r.plot, r.rng, 3);
-  r.phase = 'brood';
+  r.stand = ups.map((u, k) => ({ plant: newPlant(u.genes, spots[k], r.plot, r.rng, r.form), changed: u.changed, sport: u.sport }));
+  for (const s of r.stand) s.plant.season = r.year + 1;
+  r.sel = spots.indexOf(f.spot);
+  r.year++; r.t = 0; r.last = null; r.phase = 'grow';
+  refresh(r);
 }
 
-/** Herb and moss: the heir grows the next season. */
-export function chooseSeed(r: Run, i: number) {
-  const s = r.seeds![i];
-  r.plant = newPlant(s.genes, s.spot, r.plot, r.rng, r.form);
-  r.changed = s.changed;
-  nextSeason(r);
-}
-
-/** Tree: spring after winter, with one of the winter's level-ups. */
-export function springRun(r: Run, up = 0) {
-  const u = r.ups?.[up];
-  if (u) {
-    r.plant.genes = u.genes; r.changed = u.changed;
-    r.plant.harm = PRESSURE.runShare * (1 - armoured(u.genes, NICHES[r.niche]));
-  }
-  r.ups = null;
-  spring(r.plant);
-  nextSeason(r);
-}
-
-function nextSeason(r: Run) {
-  r.season++; r.plant.season = r.season; r.t = 0; r.pulse = 0; r.seeds = null;
-  startPulse(r);
-}
-
-/** Cutting is free between pulses (and in winter). */
-export function cutAt(r: Run, node: number): boolean {
-  if (r.phase !== 'pick' && r.phase !== 'winter') return false;
-  cut(r.plant, node);
-  if (r.phase === 'pick') r.offers = makeOffers(r.plant, r.plot, pulseTicks(r.form), (r.season * 100 + r.pulse) * 7919 + r.plot.seed + node);
-  return true;
-}
-
-/** The final body: the last season's stats and the genes. */
-export const finalBody = (r: Run) => ({ raw: r.history[r.history.length - 1].raw, genes: r.plant.genes });
+/** The final body: the selected sapling's last-year stats and its genes. */
+export const finalBody = (r: Run) => ({ raw: r.last![r.sel].raw, genes: r.stand[r.sel].plant.genes });

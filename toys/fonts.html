@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clade: pixel fonts</title>
+    <!-- one link per family, so one bad name can't break the rest -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jersey+10&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jersey+15&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Micro+5&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bytesized&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Workbench&display=swap" />
+    <style>
+      body { margin: 0; padding: 16px; background: #0a1013; color: #cfd9de; font: 14px system-ui, sans-serif; }
+      .bar { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 12px; }
+      .f { background: #142227; border: 2px solid #7d8f98; box-shadow: 0 0 0 2px #05090b; padding: 10px 12px; }
+      .f h3 { margin: 0 0 6px; font: 12px system-ui, sans-serif; color: #7d8f98; }
+      .f p { margin: 4px 0; line-height: 1.25; }
+      .shadow .f p { text-shadow: 1px 1px 0 #000; }
+      .y { color: #ffe14a; } .w { color: #ffffff; } .c { color: #5ccbe8; } .o { color: #ff8a1e; } .g { color: #6cc644; }
+    </style>
+  </head>
+  <body>
+    <div class="bar">
+      <b>Pixel fonts (all free, Google Fonts)</b>
+      <label>size <input id="size" type="range" min="10" max="32" value="16" /> <span id="sv">16</span> px</label>
+      <label><input id="sh" type="checkbox" checked /> 1-px black drop shadow</label>
+      <a href="./" style="color: #5ccbe8">back to the toys</a>
+    </div>
+    <div id="grid" class="grid shadow"></div>
+    <script>
+      const FONTS = ['Pixelify Sans', 'Silkscreen', 'Press Start 2P', 'VT323', 'Jersey 10', 'Jersey 15', 'Tiny5', 'Micro 5', 'Handjet', 'Bytesized', 'Workbench'];
+      const grid = document.getElementById('grid');
+      grid.innerHTML = FONTS.map((f) => `<div class="f"><h3>${f}</h3><div style="font-family:'${f}'">
+        <p class="y">Winter: pick the founder of next year's stand</p>
+        <p class="w">Sapling 2 · 468 g · <span class="y">D 29</span> · wilting</p>
+        <p class="c">feed: its 4 tips grow first for 12 s · 2.0 nutrient</p>
+        <p class="o">Dry spell: the moss is dormant</p>
+        <p class="g">Reach +40  Cover −30  Roots +20  0123456789</p>
+        <p class="w">The quick brown fox jumps over the lazy dog.</p></div></div>`).join('');
+      const size = document.getElementById('size'), sv = document.getElementById('sv');
+      const set = () => { sv.textContent = size.value; grid.style.fontSize = size.value + 'px'; };
+      size.oninput = set; set();
+      document.getElementById('sh').onchange = (e) => grid.classList.toggle('shadow', e.target.checked);
+    </script>
+  </body>
+</html>

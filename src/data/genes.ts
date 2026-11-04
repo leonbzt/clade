@@ -6,7 +6,7 @@ export type Corner = 'C' | 'S' | 'R';
 export const MAX_PIPS = 10;
 export const ATTRS: { id: AttrId; name: string; corner: Corner; help: string }[] = [
   { id: 'stature', name: 'Stature', corner: 'C', help: 'longer segments, a stronger main tip' },
-  { id: 'roots', name: 'Roots', corner: 'C', help: 'more growth below ground, a wider soil reveal; an extra root offer at 5' },
+  { id: 'roots', name: 'Roots', corner: 'C', help: 'more growth below ground, a wider soil reveal' },
   { id: 'shade', name: 'Shade', corner: 'S', help: 'broad leaves, less light lost to shade; armour against shade' },
   { id: 'endurance', name: 'Endurance', corner: 'S', help: 'armour against heat, drought and flooding' },
   { id: 'defence', name: 'Defence', corner: 'S', help: 'thicker, darker stems; armour against wind' },
@@ -26,9 +26,9 @@ export const FOUNDER_LEVEL = level(FOUNDER_GENES);
 /** What a pip does, beyond the look. Per pip unless said. Tuned by feel. */
 export const RULES = {
   pace: { leafRate: 0.06, upkeep: 0.04, garden: 0.08 }, // run: leaf energy and upkeep ×(1 + k·pips); garden speed
-  roots: { revealAt: [4, 8], offerAt: 5 }, // the soil reveal grows by a cell at each; an extra root offer
-  shade: { self: 0.015, neighbour: 0.06 }, // own leaves: 0.8 → 0.8 + k·pips per leaf above; the sky: share of shade lifted
-  health: { reserve: 0.6, garden: 0.1 }, // energy per pip per pulse that takes pressure damage first; slower loss
+  roots: { revealAt: [4, 8] }, // the soil reveal grows by a cell at each
+  shade: { lift: 0.06 }, // the share of the light grid's shade lifted per pip
+  health: { reserve: 0.6, garden: 0.1 }, // energy per pip per tenth of a year that takes pressure damage first; slower loss
   spread: { garden: 0.15, sprouts: 0.08 }, // spread along borders and the sprout clock ×(1 + k·pips)
   upkeep: { run: 0.04, garden: 0.03 }, // each pip above the founder's level: run upkeep +k; garden fit −k × poorness
 };
@@ -37,7 +37,7 @@ export const RULES = {
 export type ShapeId = 'internode' | 'angle' | 'buds' | 'dominance' | 'leaf' | 'breadth' | 'rootShare' | 'dive' | 'thickness' | 'tint';
 export const SHAPES: Record<ShapeId, { from: AttrId | null; lo: number; hi: number }> = {
   internode: { from: 'stature', lo: 6, hi: 14 }, // segment length
-  dominance: { from: 'stature', lo: 0.3, hi: 1 }, // buds stay dormant; the main tip is offered from 0.5
+  dominance: { from: 'stature', lo: 0.3, hi: 1 }, // buds stay dormant
   leaf: { from: 'pace', lo: 2.4, hi: 5.5 }, // leaf size
   buds: { from: 'pace', lo: 0.45, hi: 0.9 }, // buds per segment
   breadth: { from: 'shade', lo: 0.6, hi: 1.7 }, // leaf breadth (look only)
@@ -57,11 +57,12 @@ export type FormId = 'moss' | 'herb' | 'tree';
 export type Layer = 0 | 1 | 2; // mat, herb, canopy
 export const LAYER_NAMES = ['mat', 'herb', 'canopy'] as const;
 export const FORMS: Record<FormId, {
-  name: string; layer: Layer; seasons: number; seasonTicks: number; next: FormId | null; blurb: string;
+  name: string; layer: Layer; years: number; yearTicks: number; next: FormId | null; blurb: string;
 }> = {
-  moss: { name: 'Moss', layer: 0, seasons: 4, seasonTicks: 600, next: 'herb', blurb: 'A low mat: creeps and stacks cushions. Spores each season.' },
-  herb: { name: 'Herb', layer: 1, seasons: 5, seasonTicks: 900, next: 'tree', blurb: 'Shoots, leaves, roots. Seeds each season.' },
-  tree: { name: 'Tree', layer: 2, seasons: 8, seasonTicks: 600, next: null, blurb: 'One body: wood each winter, leaves each spring.' },
+  moss: { name: 'Moss', layer: 0, years: 3, yearTicks: 600, next: 'herb', blurb: 'A low mat: creeps and stacks cushions. Spores each year.' },
+  herb: { name: 'Herb', layer: 1, years: 4, yearTicks: 900, next: 'tree', blurb: 'Shoots, leaves, roots. Seeds each year.' },
+  // until part 2 (the tree thins), a tree runs like the herb
+  tree: { name: 'Tree', layer: 2, years: 4, yearTicks: 600, next: null, blurb: 'Wood and leaves. Seeds each year (for now).' },
 };
 export const FORM_IDS: FormId[] = ['moss', 'herb', 'tree'];
 

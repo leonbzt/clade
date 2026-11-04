@@ -100,6 +100,9 @@ has to fit.
   cutting in winter; the tree "grew to little"; "still not a good feeling game", maybe less autogrowth.
 - **Playtest 02 (3 Nov):** liked the attributes, pressures and genome upkeep; "I just auto every time" (pulses);
   "still seems like a toy somehow, not like a serious approach that's well thought through."
+- **The stand, part 1a (3 Nov):** the shade "makes everything a lot more readable"; growing the saplings "still not
+  really fun", "maybe three at once is too much"; "more puzzle style with tiles or settler or something strategic";
+  "a solid foundation but i don't like it as a final product"
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

@@ -1,12 +1,14 @@
 // The plant in side view: a tree of nodes (a child's index is always above its parent's). Three stocks: energy
-// (leaves), water (roots, or the surface for moss), nutrient (pockets; pays the offers). Each tick the net energy is
-// shared among the active tips; the pulse's pick (the focus) gets most of it. From the toy's grow-sim. No DOM.
+// (leaves), water (roots, or the surface for moss), nutrient (pockets; pays the verbs). Each tick the net energy is
+// shared among the active tips; a fed shoot's tips get most of it. Leaves read the light grid. From the toy's
+// grow-sim. No DOM.
 import { FORMS, FOUNDER_LEVEL, RULES, attr, level, shape, type FormId, type Genes } from '../../data/genes';
 import { NICHES, NICHE_AT, PRESSURE } from '../../data/niches';
 import { armoured } from '../species';
-import { GROUND, H, PULSE, SPOTS, T, W } from '../../data/run';
+import { GROUND, H, LIGHT, SPOTS, STAND, T, W } from '../../data/run';
 import type { Rng } from '../rng';
-import { cellIndex, isPocket, light, reveal, type Plot, type Pt } from './plot';
+import { lightAt, skyCell } from './light';
+import { cellIndex, isPocket, reveal, type Plot, type Pt } from './plot';
 
 export type Kind = 'shoot' | 'root';
 export type NodeState = 'tip' | 'bud' | 'seg';
@@ -19,10 +21,11 @@ export interface Node {
 export interface Flow { energyIn: number; energyUp: number; waterIn: number; waterUse: number; nutrientIn: number; wilting: boolean; harmed: number }
 export interface Plant {
   genes: Genes; spot: number; x: number; nodes: Node[]; rng: Rng; form: FormId; season: number;
-  energy: number; water: number; nutrient: number; flow: Flow; focus: number;
+  energy: number; water: number; nutrient: number; flow: Flow;
+  feed: { node: number; left: number } | null; // a fed shoot: its tips get most of the growth for a while
   harm: number; // the share of energy income the patch's pressure takes (0 when armoured)
-  reserve: number; // Health: energy that takes the pressure's damage first; refilled each pulse
-  acc: { net: number; cost: number; n: number }; // this season's energy flows, for the Growth and Upkeep stats
+  reserve: number; // Health: energy that takes the pressure's damage first; refilled each tenth of the year
+  acc: { net: number; cost: number; n: number }; // this year's energy flows, for the Growth and Upkeep stats
 }
 
 export const UP = -Math.PI / 2, DOWN = Math.PI / 2;
@@ -50,7 +53,7 @@ export function newPlant(genes: Genes, spot: number, plot: Plot | null, rng: Rng
   if (plot) reveal(plot, x, GROUND + 4, revealOf(genes));
   const niche = plot ? NICHE_AT[plot.kind][FORMS[form].layer] : -1;
   return {
-    genes, spot, x, nodes, rng, form, season: 1, ...T.start, focus: -1, acc: { net: 0, cost: 0, n: 0 },
+    genes, spot, x, nodes, rng, form, season: 1, ...T.start, feed: null, acc: { net: 0, cost: 0, n: 0 },
     harm: niche >= 0 ? PRESSURE.runShare * (1 - armoured(genes, NICHES[niche])) : 0, reserve: reserveOf(genes),
     flow: { energyIn: 0, energyUp: 0, waterIn: 0, waterUse: 0, nutrientIn: 0, wilting: false, harmed: 0 },
   };
@@ -100,19 +103,22 @@ export function extendShoot(p: Plant, plot: Plot | null, i: number): number {
   const t = p.nodes[i], len = segLen(p), rng = p.rng, moss = p.form === 'moss';
   for (let tries = 0; tries < 3; tries++) {
     let h: number;
-    if (moss && t.creep) h = turn(t.heading + (rng() - 0.5) * 0.6, t.side > 0 ? 0 : Math.PI, 0.3 + tries * 0.3);
+    const tg = t.target;
+    if (moss && t.creep) h = turn(t.heading + (rng() - 0.5) * 0.6, (tg ? tg.x > t.x : t.side > 0) ? 0 : Math.PI, 0.3 + tries * 0.3);
+    else if (tg) h = turn(t.heading + (rng() - 0.5) * 0.3, Math.atan2(tg.y - t.y, tg.x - t.x), 0.6 + tries * 0.2);
     else h = turn(t.heading + (rng() - 0.5) * 0.5, UP, (t.order ? 0.06 : 0.18) + tries * 0.3);
-    if (!moss && plot) { // lean toward the brighter side, only when it's clearly brighter
-      const l = light(plot, t.x - 12, t.y), r = light(plot, t.x + 12, t.y);
+    if (!moss && !tg && plot) { // lean toward the brighter side, only when it's clearly brighter
+      const l = lightAt(plot.light, t.x - 20, t.y), r = lightAt(plot.light, t.x + 20, t.y);
       if (Math.abs(l - r) > T.leanMin) h = turn(h, l > r ? Math.PI : 0, T.lean);
     }
     let x = t.x + Math.cos(h) * len, y = t.y + Math.sin(h) * len;
     if (moss && t.creep) y = Math.min(GROUND - 1, Math.max(GROUND - 4, y));
     if (moss && y < GROUND - cushionCap(p)) continue;
     if (y > GROUND - 1 || y < 4 || x < 4 || x > W - 4) continue;
-    t.state = 'seg';
+    t.state = 'seg'; t.target = null;
     const leaf = shape(p.genes, 'leaf') * (moss ? 0.6 : 1);
-    p.nodes.push(mk({ x, y, parent: i, kind: 'shoot', heading: h, len, leaf, order: t.order, born: p.season, creep: t.creep, side: t.side }));
+    const target = tg && (moss && t.creep ? Math.abs(tg.x - x) : Math.hypot(tg.x - x, tg.y - y)) > len ? tg : null;
+    p.nodes.push(mk({ x, y, parent: i, kind: 'shoot', heading: h, len, leaf, target, order: t.order, born: p.season, creep: t.creep, side: t.side }));
     const k = p.nodes.length - 1, ang = (shape(p.genes, 'angle') * Math.PI) / 180;
     const buds = Math.floor(shape(p.genes, 'buds') + rng());
     let side = t.side;
@@ -127,7 +133,7 @@ export function extendShoot(p: Plant, plot: Plot | null, i: number): number {
     else if (t.creep && rng() < T.moss.rhizoidChance * shape(p.genes, 'rootShare')) addBud(p, k, Math.PI / 2, 'root', 'tip');
     return k;
   }
-  t.state = 'seg';
+  t.state = 'seg'; t.target = null;
   return -1;
 }
 
@@ -145,15 +151,20 @@ function extendRoot(p: Plant, plot: Plot | null, i: number): number {
     if (y < GROUND + 1 || y > floor || x < 3 || x > W - 3) continue;
     const c = cellIndex(x, y);
     if (plot && c >= 0 && plot.cells[c].kind === 'stone') { plot.cells[c].seen = true; continue; }
-    const target = t.target && Math.hypot(t.target.x - x, t.target.y - y) > len ? t.target : null;
+    const target = t.target && Math.hypot(t.target.x - x, t.target.y - y) > len ? t.target : null, arrived = !!t.target && !target;
     t.state = 'seg'; t.target = null;
     p.nodes.push(mk({ x, y, parent: i, kind: 'root', heading: a, len, target, order: t.order, born: p.season }));
     const k = p.nodes.length - 1;
     if (plot) reveal(plot, x, y, revealOf(p.genes));
-    if (!moss && !target && rng() < T.rootBranch + 0.12 * shape(p.genes, 'buds')) addBud(p, k, a + (rng() < 0.5 ? 0.9 : -0.9), 'root', 'tip');
+    if (!moss && rng() < T.rootBranch + 0.12 * shape(p.genes, 'buds')) addBud(p, k, a + (rng() < 0.5 ? 0.9 : -0.9), 'root', 'tip');
+    if (arrived && plot && c >= 0 && isPocket(plot.cells[c])) for (const s of [-1, 1]) addBud(p, k, a + s * 1.2, 'root', 'tip'); // roots proliferate in a pocket
     return k;
   }
-  t.state = 'seg'; t.target = null;
+  // blocked (stone, the floor): crawl sideways along it and try again later; a steered tip gives up its target; now
+  // and then it stops
+  t.target = null;
+  if (rng() < T.rootStuck) t.state = 'seg';
+  else t.heading = rng() < 0.5 ? 0.15 : Math.PI - 0.15;
   return -1;
 }
 
@@ -165,22 +176,32 @@ export function wakeBelow(p: Plant, i: number) {
   for (let k = 0; k < 3 && n >= 0; k++, n = p.nodes[n].parent) for (const b of p.nodes) if (b.parent === n && b.state === 'bud' && !b.dead) b.state = 'tip';
 }
 
-/** Share the growth energy among the active tips (the focus gets PULSE.focus ×); tips that reach a segment's cost extend. */
+/** Is node i in the subtree of node `of`? */
+export function under(p: Plant, i: number, of: number): boolean {
+  for (; i >= of; i = p.nodes[i].parent) if (i === of) return true;
+  return false;
+}
+
+/** Share the growth energy among the active tips (a fed shoot's tips get STAND.feed.weight ×, a steered tip 3 ×, a
+ * shoot tip more in light); tips that reach a segment's cost extend. */
 function grow(p: Plant, plot: Plot | null) {
   if (p.nodes.length >= T.maxNodes) return;
   const tips = { shoot: [] as number[], root: [] as number[] };
   p.nodes.forEach((n, i) => { if (!n.dead && n.state === 'tip') tips[n.kind].push(i); });
   if (!tips.shoot.length && !tips.root.length) return;
-  const spend = Math.max(0, p.energy) * 0.5;
+  const spend = Math.max(0, p.energy) * 0.5, fed = p.feed;
   let share = shape(p.genes, 'rootShare');
-  const focusKind = p.focus >= 0 && p.nodes[p.focus]?.state === 'tip' ? p.nodes[p.focus].kind : null;
-  if (focusKind) share = focusKind === 'root' ? Math.max(share, 0.75) : Math.min(share, 0.25);
+  if (fed && tips.shoot.some((i) => under(p, i, fed.node))) share = Math.min(share, 0.25);
   if (!tips.root.length) share = 0;
   if (!tips.shoot.length) share = 1;
   p.energy -= spend;
   for (const kind of ['shoot', 'root'] as Kind[]) {
     const list = tips[kind], pool = spend * (kind === 'root' ? share : 1 - share);
-    const weight = (i: number) => (i === p.focus ? PULSE.focus : 1) * (p.nodes[i].target ? 3 : 1);
+    const w = new Map(list.map((i) => {
+      const n = p.nodes[i];
+      return [i, (fed && kind === 'shoot' && under(p, i, fed.node) ? STAND.feed.weight : 1) * (n.target ? 3 : 1) * (kind === 'shoot' ? 0.4 + 0.6 * n.light : 1)];
+    }));
+    const weight = (i: number) => w.get(i)!;
     const total = list.reduce((s, i) => s + weight(i), 0);
     for (const i of list) {
       const n = p.nodes[i], cost = segCost(p, kind, plot, n);
@@ -192,7 +213,7 @@ function grow(p: Plant, plot: Plot | null) {
         p.water -= water;
         const carry = n.progress - cost, k = extend(p, plot, i);
         n.progress = 0;
-        if (k >= 0) { p.nodes[k].progress = carry; if (p.focus === i) p.focus = k; }
+        if (k >= 0) p.nodes[k].progress = carry;
         else if (kind === 'shoot' && p.form !== 'moss') wakeBelow(p, i);
       }
     }
@@ -200,15 +221,13 @@ function grow(p: Plant, plot: Plot | null) {
 }
 
 // ---- the tick ----
-/** Each leaf's light: the sky after the neighbours, × the own leaves above it. Shade lifts a share of both. */
-function shade(p: Plant, plot: Plot | null) {
-  const leaves = p.nodes.filter((n) => !n.dead && n.kind === 'shoot' && n.leaf > 0), sh = attr(p.genes, 'shade');
-  const self = Math.min(0.95, T.selfShade + RULES.shade.self * sh), lift = Math.min(1, RULES.shade.neighbour * sh);
-  for (const a of leaves) {
-    let above = 0;
-    for (const b of leaves) if (b !== a && b.y < a.y - 2 && Math.abs(b.x - a.x) < 2 + b.leaf * 1.5) above++;
-    const sky = plot ? light(plot, a.x, a.y) : 1;
-    a.light = (sky + (1 - sky) * lift) * self ** above;
+/** Each leaf's light from the light grid (less its own share in its cell). Shade lifts a share of the shade. */
+export function shade(p: Plant, plot: Plot) {
+  const lift = Math.min(1, RULES.shade.lift * attr(p.genes, 'shade')), L = plot.light;
+  for (const n of p.nodes) {
+    if (n.dead || n.kind !== 'shoot' || n.leaf <= 0) continue;
+    const c = skyCell(n.x, n.y), l = c < 0 ? 1 : Math.exp(-Math.max(0, L.depth[c] - n.leaf * LIGHT.leaf * LIGHT.own));
+    n.light = l + (1 - l) * lift;
   }
 }
 
@@ -226,7 +245,8 @@ export function thicken(p: Plant) {
 
 export function tick(p: Plant, plot: Plot, t: number) {
   if (p.form === 'moss' && plot.dry) return; // a dry spell: the moss is dormant
-  if (t % 5 === 0) shade(p, plot);
+  if (t % LIGHT.every === 0) shade(p, plot);
+  if (p.feed && --p.feed.left <= 0) p.feed = null;
   if (t % 10 === 0) thicken(p);
   const thirst = plot.look.thirst, moss = p.form === 'moss', upk = upkeepMult(p.genes);
   const rate = T.leafRate * (1 + RULES.pace.leafRate * attr(p.genes, 'pace')) * (moss ? T.moss.light : 1);
@@ -287,7 +307,7 @@ export function measure(p: Plant, plot: Plot | null): Body {
     }
   }
   const a = p.acc, n = a.n || 1, roots = p.form === 'moss' ? rhiz : tapped.size;
-  // Growth and Upkeep: this season's mean net energy and running cost, per second
+  // Growth and Upkeep: this year's mean net energy and running cost, per second
   const raw = [GROUND - top, Math.max(0, hi - lo), roots, segs ? th / segs : 0, (a.net / n) * 10, (a.cost / n) * 10];
   return { raw, leaves, depth: deep - GROUND, biomass: bio };
 }
