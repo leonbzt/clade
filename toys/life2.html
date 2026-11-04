@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: A Life, v2</title>
+    <link rel="stylesheet" href="./core.css" />
+    <link rel="stylesheet" href="./life2.css" />
+    <style>
+      #gardenView { padding: 8px 16px 24px; max-width: 1040px; }
+      #garden { width: 100%; cursor: pointer; }
+      .habs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+      @media (max-width: 800px) { .habs { grid-template-columns: 1fr; } }
+      .hab, .hab > div, .hab > div > div { height: 100%; }
+      .hab h2 { margin: 0 0 2px; font-size: 18px; color: var(--gold); }
+      .hab .threats { margin: 6px 0; }
+      .hab .rec { display: flex; align-items: center; gap: 6px; margin-top: 4px; min-height: 26px; }
+      .hab .rec .mini { display: inline-block; width: 22px; height: 22px; line-height: 19px; text-align: center; font-weight: 700; border: 2px solid currentColor; background: #0d1a1e; color: #aab4ba; flex: none; }
+      .hab .rec .mini[data-t='S'] { color: var(--gold); } .hab .rec .mini[data-t='A'] { color: var(--good); } .hab .rec .mini[data-t='B'] { color: #4fc0d0; }
+      .hab .rec .mini[data-t='D'], .hab .rec .mini[data-t='F'] { color: var(--bad); }
+      .hab .icons { display: flex; gap: 2px; flex-wrap: wrap; }
+      .hab button { width: 100%; margin-top: 8px; }
+      .found { margin-top: 6px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title sh1">Clade · a Life, v2</span>
+      <div class="grp"><button id="toGarden">Back to the garden <kbd>G</kbd></button></div>
+      <a href="./">all toys</a>
+    </header>
+
+    <div id="gardenView">
+      <div class="frame"><div><div style="padding: 6px"><canvas id="garden"></canvas></div></div></div>
+      <div class="habs" id="habs"></div>
+      <div class="frame" style="margin-top: 8px"><div><div>
+        <div class="row"><span class="label sh1">Your lineage</span><button id="reset">Reset</button></div>
+        <div class="muted" id="lineage"></div>
+        <div class="muted" style="margin-top: 6px">The three boards are one stretch of seafloor, from the sunlit reef down to the dead basin. Pick where to
+        live. Nothing here runs on its own yet: the population is just your eggs added up.</div>
+      </div></div></div>
+    </div>
+
+    <main id="lifeView" hidden></main>
+    <script type="module" src="./life2.ts"></script>
+  </body>
+</html>

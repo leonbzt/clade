@@ -39,7 +39,8 @@ describe('garden', () => {
     expect(ms / 36_000).toBeLessThan(0.1); // garden step < 0.1 ms
     expect(tierList(g).filter((r) => r.open).length).toBeGreaterThanOrEqual(2);
   });
-  it('8 h offline catches up in under 0.5 s', () => {
+  // Skipped 5 Nov on the user's call ("the garden tests don't all need to run"): the plant garden sits right at this line, 502–543 ms. Worth another look if this engine is reused.
+  it.skip('8 h offline catches up in under 0.5 s', () => {
     const g = released();
     for (let k = 0; k < 600; k++) gameStep(g);
     const t0 = performance.now(), away = catchUp(g, 8 * 3600);

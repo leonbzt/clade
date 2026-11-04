@@ -1,0 +1,22 @@
+/* The Life screen, shared by toys/life2.html and toys/garden.html. */
+.track i.pred { border-color: var(--bad); }
+.track i.low { border-color: var(--water); }
+.card { display: grid; grid-template-columns: 28px 1fr; gap: 0 8px; text-align: left; font-weight: 400; padding: 4px 8px 6px; }
+.card canvas { grid-row: span 3; image-rendering: pixelated; margin-top: 2px; }
+.card b { font-size: 14px; }
+.card small { font-size: 12px; color: var(--steel); text-shadow: none; }
+.card.rare { border-color: var(--pink); background: #3b2438; }
+.card.rare b { color: var(--pink); }
+#parts { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 8px; }
+#parts:empty { display: none; }
+.danger { color: var(--bad); font-size: 13px; min-height: 17px; margin-top: 6px; }
+.passed { color: var(--pink); }
+.pad { display: grid; grid-template-columns: repeat(3, 34px); gap: 2px; }
+.pad button { padding: 2px 0 4px; }
+#body { width: 348px; max-width: 100%; cursor: pointer; }
+#board { cursor: pointer; }
+.eggs { font-size: 30px; font-weight: 700; color: var(--gold); line-height: 1; }
+#lifeView section { width: 550px; max-width: 100%; }
+#hover { min-height: 52px; }
+#log { min-height: 88px; }
+[hidden] { display: none !important; }

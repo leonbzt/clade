@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: Body builder</title>
+    <link rel="stylesheet" href="./core.css" />
+    <style>
+      .offers { display: flex; gap: 6px; flex-wrap: wrap; }
+      .offer { flex: 1; min-width: 104px; padding: 6px; background: #13212a; border: 2px solid #2c3a40; cursor: pointer; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+      .offer:hover { border-color: var(--frame); }
+      .offer.on { border-color: var(--gold); }
+      .offer b { font-size: 15px; }
+      .offer small { font-size: 12px; color: var(--steel); }
+      .wt { font-size: 12px; color: var(--steel); text-align: right; }
+      .result { font-size: 15px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title sh1">Clade · body builder</span>
+      <div class="grp" id="niches"><span>Niche</span></div>
+      <div class="grp"><button id="again">Same board</button><button id="fresh">New board <kbd>N</kbd></button></div>
+      <a href="./">all toys</a>
+    </header>
+    <main>
+      <section>
+        <div class="frame"><div><div style="padding: 6px"><canvas id="board"></canvas></div></div></div>
+        <div class="hover sh1" id="hover" style="max-width: 410px"></div>
+      </section>
+      <aside>
+        <div class="frame"><div><div>
+          <div class="row"><span class="label sh1" id="pick"></span><span class="muted" id="nichename"></span></div>
+          <div class="muted" id="ground"></div>
+          <div style="margin-top: 6px"><span class="down sh1" id="encname"></span> <span class="muted" id="enctext"></span></div>
+        </div></div></div>
+        <div class="frame" id="draftbox"><div><div>
+          <div class="label sh1">Pick one, place it <span class="muted">(R or right-click rotates)</span></div>
+          <div class="offers" id="offers"></div>
+          <div class="row" style="margin-top: 8px">
+            <div class="grp"><button id="skip">Skip pick</button><button id="reroll">Reroll</button></div>
+            <button id="undo">Undo <kbd>Z</kbd></button>
+          </div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="stocks" id="flows"></div>
+          <div class="down sh1" id="short" style="margin-top: 4px"></div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="label sh1">Stats <span class="muted">(the niche's weight on the right)</span></div>
+          <div class="bars" id="stats"></div>
+        </div></div></div>
+        <div class="frame" id="scorebox"><div><div>
+          <div class="row">
+            <div class="result" id="result"></div>
+            <span class="tier" id="tier"></span>
+          </div>
+        </div></div></div>
+        <details class="muted">
+          <summary>Rules</summary>
+          <p>10 picks: each time pick one of three organ pieces and place it on the body (or skip). Shoot pieces touch a
+          stem or wood; roots and tubers touch a root. Each piece makes or costs energy, water and nutrient each
+          season: keep all three at 0 or more, or the body wilts (−15% score per unit short). The body's 6 stats are
+          scored by the niche's real weights (a negative weight rewards a low stat). A body needs a flower to make
+          seeds. When the picks are done, the encounter hits and the final tier is taken after it.</p>
+        </details>
+      </aside>
+    </main>
+    <script type="module" src="./body.ts"></script>
+  </body>
+</html>

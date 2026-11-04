@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: Grow by turns</title>
+    <link rel="stylesheet" href="./core.css" />
+  </head>
+  <body>
+    <header>
+      <span class="title sh1">Clade · grow by turns</span>
+      <div class="grp" id="plots"><span>Plot</span></div>
+      <div class="grp"><button id="again">Same board</button><button id="fresh">New board <kbd>N</kbd></button></div>
+      <a href="./">all toys</a>
+    </header>
+    <main>
+      <section>
+        <div class="frame"><div><div style="padding: 6px"><canvas id="board"></canvas></div></div></div>
+        <div class="hover sh1" id="hover"></div>
+      </section>
+      <aside>
+        <div class="frame"><div><div>
+          <div class="row"><span class="label sh1" id="turn"></span><span class="muted" id="plotname"></span></div>
+          <div class="track" id="track"></div>
+          <div class="muted" id="drought" style="margin-top: 6px"></div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="stocks" id="stocks"></div>
+          <div id="wilt" class="down sh1" style="margin-top: 4px"></div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="label sh1">Place <span class="muted">(click soil for a root)</span></div>
+          <div class="tools" id="tools"></div>
+          <div class="row" style="margin-top: 8px">
+            <button id="undo">Undo <kbd>Z</kbd></button>
+            <button id="end" class="big">End turn <kbd>Space</kbd></button>
+          </div>
+          <div class="log" id="log" style="margin-top: 8px"></div>
+        </div></div></div>
+        <div class="frame" id="scorebox"><div><div>
+          <div class="row">
+            <div><div class="label sh1" id="scorehead">Score so far</div><div id="score"></div></div>
+            <span class="tier" id="tier"></span>
+          </div>
+        </div></div></div>
+        <details class="muted">
+          <summary>Rules</summary>
+          <p>Each turn your leaves make energy by their light (2 in open sun; each leaf or native cell between a leaf
+          and the sun takes 1). Roots draw water (2) and nutrient (1) from pockets they sit on. Rain adds water. Every
+          leaf drinks 1 water a turn: for each water short, your darkest leaf wilts. Roots reveal the soil next to
+          them; blue specks count hidden damp pockets in the 8 cells around, orange specks rich ones. Natives drink
+          from pockets their roots touch. One drought turn: no rain, roots draw 1, leaves drink 2. After 12 turns:
+          10 points per flower plus 1 per part (grams).</p>
+        </details>
+      </aside>
+    </main>
+    <script type="module" src="./turns.ts"></script>
+  </body>
+</html>

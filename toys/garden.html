@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: The living garden</title>
+    <link rel="stylesheet" href="./core.css" />
+    <link rel="stylesheet" href="./life2.css" />
+    <style>
+      #gardenView { padding: 8px 16px 24px; max-width: 1180px; }
+      #strip { width: 100%; cursor: pointer; }
+      .clock { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: 8px; }
+      .clock b { color: var(--gold); }
+      .habs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+      @media (max-width: 900px) { .habs { grid-template-columns: 1fr; } }
+      .hab, .hab > div, .hab > div > div { height: 100%; }
+      .hab h2 { margin: 0; font-size: 18px; color: var(--gold); }
+      .bars { grid-template-columns: 62px 1fr; margin-top: 6px; font-size: 12px; }
+      .bar .norm { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #eef2ee; }
+      .role { margin-top: 6px; font-size: 13px; }
+      .role > span.name { color: var(--steel); font-size: 12px; display: block; }
+      .res { display: inline-flex; align-items: center; gap: 4px; margin: 2px 8px 0 0; }
+      .res.mine { color: var(--pink); }
+      .mini { display: inline-block; width: 19px; height: 19px; line-height: 15px; text-align: center; font-weight: 700; font-size: 13px; border: 2px solid currentColor; background: #0d1a1e; color: #aab4ba; flex: none; }
+      .mini[data-t='S'] { color: var(--gold); } .mini[data-t='A'] { color: var(--good); } .mini[data-t='B'] { color: #4fc0d0; }
+      .mini[data-t='D'], .mini[data-t='F'] { color: var(--bad); }
+      .next { margin-top: 8px; font-size: 13px; }
+      .changed { margin-top: 4px; font-size: 13px; color: var(--gold); }
+      .hab button { width: 100%; margin-top: 8px; }
+      .hab button.variant { border-color: var(--pink); background: #3b2438; color: var(--pink); font-size: 13px; }
+      .news { font-size: 13px; }
+      .news div { padding: 2px 0; }
+      .news .why { color: var(--steel); }
+      .news .mine { color: var(--pink); }
+      .news .gen { color: var(--steel); font-size: 11px; margin-right: 6px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title sh1">Clade · the living garden</span>
+      <div class="grp"><button id="toGarden" hidden>Back to the garden <kbd>G</kbd></button></div>
+      <a href="./">all toys</a>
+    </header>
+    <div id="gardenView">
+      <div class="clock">
+        <span>The Cambrian, off the volcanic island · Generation <b id="gen"></b></span>
+        <span class="muted" id="clock"></span>
+        <div class="grp"><button id="skip1">Skip a generation</button><button id="skip5">Skip 5</button></div>
+        <span class="muted" id="line"></span>
+        <button id="reset">Reset</button>
+      </div>
+      <div class="frame"><div><div style="padding: 6px"><canvas id="strip"></canvas></div></div></div>
+      <div class="habs" id="habs"></div>
+      <div class="frame" style="margin-top: 8px"><div><div>
+        <div class="label sh1" id="newsTitle">News</div>
+        <div class="news" id="news"></div>
+      </div></div></div>
+    </div>
+    <main id="lifeView" hidden></main>
+    <script type="module" src="./garden.ts"></script>
+  </body>
+</html>

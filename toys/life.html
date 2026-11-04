@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: A Life</title>
+    <link rel="stylesheet" href="./core.css" />
+    <style>
+      .track i.pred { border-color: var(--bad); }
+      .track i.low { border-color: var(--water); }
+      .cards { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; max-height: 240px; overflow-y: auto; }
+      .cards.open { max-height: none; }
+      .card { flex-shrink: 0; }
+      .card { display: grid; grid-template-columns: 28px 1fr; gap: 0 8px; text-align: left; font-weight: 400; padding: 4px 8px 6px; }
+      .card canvas { grid-row: span 3; image-rendering: pixelated; margin-top: 2px; }
+      .card b { font-size: 14px; }
+      .card small { font-size: 12px; color: var(--steel); text-shadow: none; }
+      .card.rare { border-color: var(--pink); background: #3b2438; }
+      .card.rare b { color: var(--pink); }
+      .danger { color: var(--bad); font-size: 13px; min-height: 17px; margin-top: 6px; }
+      .passed { color: var(--pink); }
+      .pad { display: grid; grid-template-columns: repeat(3, 34px); gap: 2px; }
+      .pad button { padding: 2px 0 4px; }
+      #body { width: 348px; max-width: 100%; cursor: pointer; }
+      #board { cursor: pointer; }
+      .eggs { font-size: 30px; font-weight: 700; color: var(--gold); line-height: 1; }
+      section { width: 550px; max-width: 100%; }
+      #hover { min-height: 52px; }
+      #log { min-height: 88px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span class="title sh1">Clade · a Life</span>
+      <div class="grp"><button id="again">Same board</button><button id="fresh">New board <kbd>N</kbd></button></div>
+      <a href="./">all toys</a>
+    </header>
+    <main>
+      <section>
+        <div class="frame"><div><div style="padding: 6px"><canvas id="board"></canvas></div></div></div>
+        <div class="hover sh1" id="hover"></div>
+        <div class="frame" style="margin-top: 8px"><div><div><div class="log" id="log"></div></div></div></div>
+      </section>
+      <aside>
+        <div class="frame"><div><div>
+          <div class="row"><span class="label sh1" id="turn"></span><span class="muted">Goal: lay eggs before the season ends</span></div>
+          <div class="track" id="track"></div>
+          <div class="muted" id="forecast" style="margin-top: 6px"></div>
+        </div></div></div>
+        <div class="frame" id="scorebox"><div><div>
+          <div class="row">
+            <div><div class="label sh1">Eggs</div><span class="eggs sh" id="eggs"></span> <span class="muted" id="next"></span></div>
+            <span class="tier" id="tier"></span>
+          </div>
+          <div class="stocks" id="stocks" style="margin-top: 8px"></div>
+          <div class="muted" id="stats" style="margin-top: 6px"></div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="label sh1" id="bodyname"></div>
+          <canvas id="body"></canvas>
+          <div class="muted">Top row: your left side. Bottom row: your right side.</div>
+          <div id="panel"></div>
+        </div></div></div>
+        <div class="frame"><div><div>
+          <div class="row"><span class="label sh1">Your lineage</span><button id="reset">Reset</button></div>
+          <div class="muted" id="lineage"></div>
+        </div></div></div>
+        <details class="muted">
+          <summary>Rules</summary>
+          <p>Each turn: move (click a marked tile), lay eggs, or stay and turn. Then you pay upkeep, the rival grazes, and
+          the predator acts. Landing on food eats it unless it's locked. Moulting costs food, adds a segment and gives you
+          a part; it doesn't use your turn.</p>
+          <p>A lay costs 4 food and gives (1 + pouches) × (1 + size ÷ 2, rounded down) eggs. Out of food: your body absorbs
+          its newest part, then you lose health. Out of oxygen: you lose health.</p>
+          <p>The predator hunts you and marks the tiles it will strike next. A strike from your side tears off a part on
+          that side, or costs 1 health if the side is bare. A guard on that side blocks it. You face the way you last
+          moved, so how you arrive decides which side it hits.</p>
+          <p>Eggs you laid count even if you die. A rare part only joins your lineage if you lay an egg after getting it.</p>
+        </details>
+      </aside>
+    </main>
+    <script type="module" src="./life.ts"></script>
+  </body>
+</html>
