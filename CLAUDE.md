@@ -1,13 +1,19 @@
 # Clade
 
-An idle / incremental evolution game. You grow a plant line in short side-view runs, release it into an idle island
-garden that the sim runs per habitat, and a niche × tier list ranks your builds. Web: Svelte 5, TypeScript, Vite.
-**v2, a rebuild since 2 Nov: M0 (the toy, then the spec) in `ROADMAP.md`.**
+An idle / incremental evolution game. Web: Svelte 5, TypeScript, Vite. You live one creature's Life at a time on a real habitat board: walk, eat, grow up,
+lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
+garden becomes is the next board you walk on.
+
+**Start here: `docs/status.md`, then `docs/design/big-picture.md`. Planning the real build: `docs/planning/README.md`.** Playable now: `toys/garden.html` and
+`toys/life2.html`. The plant game in `docs/spec.md` and `src/` is on hold; its island, habitat and garden code may be reused.
+
+**The guardrails against tangling (big-picture §12) are defaults, not laws (the user's words, 5 Nov: don't take them too seriously or stop thinking outside them).**
+They were written for one toy. If one blocks a better idea, say so and propose changing it; the tests that check them can change too.
 
 ## Where things are
 - `ROADMAP.md`: milestones, the current steps, the budgets. **The current milestone is the only thing we build for.**
 - `docs/status.md`: the last handoff. `docs/README.md`: the docs index (open only what the task needs).
-- `docs/spec.md` (after the toy): the game in one page. Until it exists, `docs/design/rebuild.md` is the plan.
+- `docs/design/big-picture.md`: the current plan, decided and proposed items labelled. `docs/spec.md`: the plant version, out of date; the user is drafting a new one.
 - `docs/tastes.md`: the user's tastes, wishes and lessons. `docs/decisions.md`: the dated log of their calls.
 - `docs/proposals.md`: open AI proposals (three at most). `docs/ideas.md`: the parking lot.
 - `docs/slices/`: one spec per slice (`_template.md`); `docs/playtests/`: the user's notes after playing.

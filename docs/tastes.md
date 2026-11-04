@@ -12,6 +12,9 @@ has to fit.
 - **"Always adapt to your surroundings"** (2 Nov).
 - **The side view and "the feeling you grow everything"** (2 Nov).
 - **"It feels alive"** and the gram amounts everywhere (11e playtest).
+- **"The 'living' ecosystem is also really important to me to have the feeling"** (4 Nov).
+- **The big picture "sounds really cool",** and the example of a booming worm changing the place "is just what i had in mind" (4 Nov).
+- **"I like to be the little creature and chase things around"** (4 Nov). You want to feel "really a part of that habitat".
 
 ## How it should play
 - **"A lot of feel with simple mechanics that can get done, instead of overly complicated and not fitting
@@ -35,6 +38,12 @@ has to fit.
 - **Swings are wanted** (grazers that eat plants to death, species dying out). Chains are features: tune them, don't
   cut them. Balance by feel; abstract multipliers are fine; feeling right beats everything being readable.
 - **Readable:** show why something is winning; important news stands out.
+- **"Simple and impactful" decisions, budgets and moving for rewards:** "a great little minigame to solve" (4 Nov). "In this simple
+  setup its easy to introduce lots of different mechanics."
+- **Rare drops, the most efficient route, milestones you worked for, getting mechanically better at bosses** (4 Nov), from Idle
+  Obelisk Miner and Dark Souls; a build where many things stack into one strong attack; IdleOn-style placing of effects.
+- **Tier talk is the voice of the game:** "no upkeep in mud was a gamechanger for the worm and brought it to s tier. i think this is
+  exactly the way someone should talk about the game" (4 Nov).
 
 ## Evolution and life
 - **Genes appear and spread by themselves**, and that stays at the heart. Mutations can be an unexpected reward.
@@ -103,9 +112,18 @@ has to fit.
 - **The stand, part 1a (3 Nov):** the shade "makes everything a lot more readable"; growing the saplings "still not
   really fun", "maybe three at once is too much"; "more puzzle style with tiles or settler or something strategic";
   "a solid foundation but i don't like it as a final product"
+- **Cradle of Life (4 Nov):** tangled systems and a new idea pulling away ended it. You liked the core and the RPG body doll with
+  rarity materials and genes, but bare menus gave "no real fun or sense of improvement or pull".
+- **Toys A and C (4 Nov):** clear limits felt good, "a little bit like a drafting game"; threats "felt really cool"; placing pieces
+  "wasn't fun yet and felt clunky".
+- **The Life (4 Nov):** you started new rounds without deciding to. Rare mutations: "i like it a lot this way, and felt really
+  compelled to go on".
+- **The living garden toy (5 Nov):** no big pull to wait, but "really felt sad i couldn't play to fill the other niches" and "really wanted to play as a predator". Liked the creatures roaming, the overview, the
+  bars, skipping to see changes, variant offers. "i don't really recognize the creatures... that can come later."
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 
 ## Audience and production
+- **A hobby with about 100 nerds on Discord;** about 3 h a day (4 Nov). Hand-writing 20 mutations feels a bit like a chore.
 - Idle/RPG players who like nature (think Tierzoo). Learn from Stardew Valley and other games that worked.
 - Web stack; itch.io first, app stores later.

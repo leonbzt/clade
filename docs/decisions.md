@@ -168,3 +168,53 @@ Your calls, dated, in your words where possible. Only explicit calls; AI proposa
 - **Toys for the run's core play:** (a) turn-based growth on the plot, (b) a patch strategy map, (c1 + c2) a body
   builder scored by balance, "to really feel out possible game": [slices/04-core-toys.md](slices/04-core-toys.md).
 - **Slice 03 part 1b:** you lean to pausing it ("but i also want to get to some point"); see the slice's question 1.
+
+## 4 Nov, slice 04's questions ([slices/04-core-toys.md](slices/04-core-toys.md))
+- **Q1: pause slice 03 part 1b** for the core-play toys ("q1 pause yes"), time-boxed to slice 04's two parts.
+- **Q3: toy C is scored by the real niche weights** ("q3: yes"): the 6 stats → `nicheScore` → the tier list's tiers.
+
+## 4 Nov, the direction ([design/big-picture.md](design/big-picture.md))
+Logged on your call ("Document and save everything"). You had asked to hold logging while you thought it through.
+- **Toys A and C:** "they actually seem really fun"; clear limits made "clear and visible choices"; [playtest 05](playtests/05-core-toys.md).
+- **The sim isn't the game:** "not having sim as the game might be a good move to save time."
+- **Animals first:** "most of my vision came from animals"; plants "feel like they should be the baseline".
+- **Moving a creature:** body plans move differently, "like chess". "Just building bodies sounds kind of boring, its important you
+  can see the uses as well."
+- **The Life's shape:** a simple game of roaming for food; nodes locked by a stat or an unlocked skill ("body locks and skill locks
+  souds great"); the body grows during the Life from a plan and starter parts ("mix is perfect"); eggs are the goal.
+- **The activity "should be how the build proves itself".**
+- **Species:** "keep it until you choose to branch". **At release** you choose whether this body becomes the species' form; eggs
+  add population either way.
+- **The tier list:** the species shapes the biome, the rank is set by the tier list, and the tier list gives the environment
+  ("sounds great"). Capped biomes, ranked within trophic role. High overall tiers can be bad in a specific biome.
+- **Bosses:** S tier needn't be the best. An apex predator slot that determines the era "is nice"; "i love the boss idea". What the
+  slot does is open (P45).
+- **Eras:** the next era resets to a real one. "It should still be free do evolve your own things, but the environment should promote
+  that it resolves naturally in the next real era."
+- **Authoring:** "make the rules of nature authored and then have more freedom"; "selection of real things is what drives authoring".
+- **Goal:** "a hobby with 100 nerds on discord"; about 3 h a day. Harshness: "can be harsh". Tone still open: Terra Nil wonder plus
+  gamey slang.
+
+## 4 Nov, after playing the Life ([playtests/06-life.md](playtests/06-life.md))
+- **The Life is the core, P44 closed:** "i think i want to go on with this as a core." "This is a perfect first zoom stage."
+- **Habitats are areas in the garden,** and v2's habitats should come from the garden. **"The 'living' ecosystem is also really
+  important to me."**
+- **Life v2 as proposed:** fixed habitats; **fewer slots for now**, not longer runs; **a body you finish** ("like growing up");
+  **lay only later** ("maybe"); worm tunnels. **More feel and UI: "only later".**
+- **Not answered:** whether left and right sides stay. They stay for now, since nobody called it.
+
+## 4 Nov, P45 ([design/big-picture.md](design/big-picture.md))
+- **Next step: build the living garden toy** ([slices/07-living-garden.md](slices/07-living-garden.md)).
+- **The apex slot sets one era-wide rule, and your species can take it** ("one era wide rule, my species can take it").
+- **The world: the shallow sea around the existing volcanic island.**
+- **The overview:** "the how this fits together overview sounds really cool and the examply is just what i had in mind."
+- **"The single maps could still split."** AI's reading, to confirm: one habitat's map can later become more than one board.
+- **"Take good measures so it doesn't get tangled":** the rules are in big-picture §12 and CLAUDE.md.
+
+## 5 Nov, after playing the living garden toy ([playtests/08-garden.md](playtests/08-garden.md))
+- **The real build:** "i want to go down this route with the actual build." "so the plan sounds good."
+- **The guardrails aren't law:** "measures sound good but make sure its not taken to seriously by future ai and they don't think outside this rule."
+- **Tests:** "the garden tests don't all need to run." AI's reading: the plant garden's 8 h timing test, now skipped.
+- **Planning and research happen next,** in cloud sessions: [planning/README.md](planning/README.md).
+- **Wishes, not yet calls:** to play the other niches; to play as a predator; "your predator behaviour would later chase you"; an island view; recognisable creatures ("can come later").
+

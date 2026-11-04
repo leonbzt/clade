@@ -1,5 +1,8 @@
 # Clade: the spec
 
+> **4 Nov: out of date.** The animal Life is the core, and you're drafting the new spec yourself. Until then the direction is in
+> [design/big-picture.md](design/big-picture.md). Below is the plant version; its garden sections (§4, §5) still describe code that exists.
+
 **Draft, 3 Nov (AI, from your calls; "sounds good", 3 Nov).** It changes only on your call. Labels: *decided (date)* is yours, *proposal*
 is AI's. It replaces v1's vision; [tastes.md](tastes.md) is the taste it has to fit. M1 is **bare** *(decided 3 Nov)*:
 the whole loop, few rules, no upgrade paths.

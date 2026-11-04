@@ -72,6 +72,8 @@ everything, which can cost more in total (a research agent was ~70–80k tokens)
 | `Explore` | built in | Read-only search across the codebase |
 
 ## Working preferences (copied from the local AI memory, so cloud sessions have them)
+- The user is a biologist and solo hobby developer who owns the design; AI critiques, asks and labels its ideas as hypotheses. See the brief in `planning/README.md`.
+- Guardrails and process here are defaults. Say so when one gets in the way of a better idea (5 Nov).
 - End every reply with whether now is a good moment for `/handoff` + `/clear`.
 - Big calls: 2–4 options with a lean, at most three questions; converge after the user reacts, then plan.
 - Big reviews: measured numbers, blunt critique, one plan with a lean.

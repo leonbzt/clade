@@ -5,6 +5,8 @@ wins (and the code is the truth for what's built).
 
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |
+| [design/big-picture.md](design/big-picture.md) | **The current direction (4 Nov): Life, garden, era.** Decided and proposed, labelled | You (AI drafts) | Every design session |
+| [planning/README.md](planning/README.md) | **The kit for research and planning the real build in cloud sessions (5 Nov)** | AI, you | When planning |
 | [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, the budgets | You (AI drafts) | Every session |
 | [status.md](status.md) | The last handoff: done, decided, next, open | AI at `/handoff` | Every session |
 | `spec.md` (after the toy) | The game in one page; replaces v1's vision. Until then: [design/rebuild.md](design/rebuild.md) | You (AI drafts) | Design sessions, slice specs |

@@ -22,6 +22,12 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Old growth and update rates (AI) · a bigger island (AI) → moot as performance work: the patch model is cheap.
 
 ## Fits v2, later
+- **From playing the garden toy (you, 5 Nov):** playing to fill each niche · playing as a predator · your own predator's behaviour chasing you later.
+- **From the 4 Nov planning (AI unless marked), see [design/big-picture.md](design/big-picture.md):** door tiles, so a Life can cross
+  into the next habitat and found a population · your role set by what you ate · your descendants on the board as rivals · other
+  players' species as residents, through share codes · boards as plain text, so the community can make them · a third body plan
+  with a different move shape (a swimmer that can't stop short) · a predator with its own move pattern per species · stacking
+  synergies between parts (you) · plants with their own verb, growing instead of walking (you).
 - **Geology** (ground units, slope, island recipes; you: leaning yes) → the land layer. M1 needs a small part
   (substrate, wetness, height) to make habitats; the rest later.
 - More landmarks (waterfalls, rivers); fixed flows of water and nutrients downhill → cheap along the patch graph.

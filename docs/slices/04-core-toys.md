@@ -1,5 +1,8 @@
 # Slice 04: the core-play toys
 
+**Closed 4 Nov.** A and C were built and played ([playtest 05](../playtests/05-core-toys.md)); B was not built. They led to
+the animal Life, which became the core ([slice 05](05-life.md)).
+
 **Milestone:** M1, part 2, step 3 (the run's core play, before the stand's part 1b)
 **Question:** which core play is fun enough to build the run on: (a) turn-based growth on the plot, (b) a patch
 strategy map, or (c) a body builder scored by balance?
@@ -51,6 +54,6 @@ All turn-based, one plant or one line, solo; drawn as flat palette cells (Teal p
 - Fits one or two sessions? Two parts: **part 1** A and C (side view, close kin) · **part 2** B.
 
 ## Open questions
-1. Pause slice 03 part 1b for these toys? You lean yes; AI agrees, time-boxed to these two parts, then a call.
+1. Pause slice 03 part 1b for these toys? *Decided (4 Nov): yes*, time-boxed to these two parts, then a call.
 2. B's turns: a season per turn (lean), or real-time with pause?
-3. C scored by the real niche weights (6 stats → the tier list's score; lean yes), so a winner plugs straight in?
+3. C scored by the real niche weights (6 stats → the tier list's score)? *Decided (4 Nov): yes.*

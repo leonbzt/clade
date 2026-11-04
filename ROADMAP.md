@@ -5,8 +5,17 @@ in [docs/ideas.md](docs/ideas.md). This file changes only on your call; AI may p
 
 > **Approved 2 Nov.** v2, the rebuild: [docs/design/rebuild.md](docs/design/rebuild.md).
 > v1's roadmap is in `_v1/ROADMAP.md`.
+>
+> **4 Nov, your call: the animal Life is the core.** The plant M1 below is on hold.
 
-## Now: M1, the first playable (scope set in the spec)
+## Now: plan the real build
+
+**Goal:** turn the toys into the actual game ("i want to go down this route with the actual build", 5 Nov).
+- **The plan so far:** [docs/design/big-picture.md](docs/design/big-picture.md). **Played:** [Life](docs/playtests/06-life.md) and the [living garden](docs/playtests/08-garden.md).
+- **How:** research, then a planning session, in cloud sessions: [docs/planning/README.md](docs/planning/README.md).
+- **Done when:** `docs/planning/plan.md` exists, you've made the calls in it, and this file names the first build milestone. Its order comes from the planning session.
+
+## On hold: M1, the plant game (scope set in the spec)
 
 **Goal:** one turn of the loop from a fresh start: grow a line → release it → it takes a tier → the garden pays for
 the next run.
