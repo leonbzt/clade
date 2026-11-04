@@ -218,3 +218,10 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Planning and research happen next,** in cloud sessions: [planning/README.md](planning/README.md).
 - **Wishes, not yet calls:** to play the other niches; to play as a predator; "your predator behaviour would later chase you"; an island view; recognisable creatures ("can come later").
 
+
+## 5 Nov, planning session turn 1 ([planning/plan.md](planning/plan.md))
+- **A fresh start:** "i think i want to do a fresh start from this point with the current standing and ideas. maybe copy some useful code but try to think it from the beginning stack wise."
+- **Playstyles:** "there need to be multiple different playstyles proven." **Verbs from equipment:** "the verbs can also come from the equipment, walk and eat is also vey basic. but many verbs/skills would be cool."
+- **Filling a niche:** C, you pick the gap and it counts only if you lived that way; "pick should still give the selected base body".
+- **Roles first:** "grazer and predator first good. maybe different grazer playstyles." Filter feeders: "maybe stacking up to get to efficent current flow?"
+- **A Life's cost:** "at first no." **"There should also be some kind of lootbox feeling maybe."**

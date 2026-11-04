@@ -20,13 +20,20 @@ before porting the garden.
 ## Topics
 | Topic | State |
 | --- | --- |
-| The pull, filling a niche, cost of a Life | open (turn 1) |
-| Playing a predator, ghosts | open |
+| The pull, filling a niche, cost of a Life | decided (5 Nov), below |
+| Playing a predator, ghosts, verbs | open (turn 2) |
 | Body plans | open |
 | The island view | open |
 | The garden model | open |
 | Species and the tree | open |
 | Era and apex | open |
 | The look | open |
-| Code and process | open; R7 leans web |
+| Code and process | fresh start decided (5 Nov); stack open (turn 2) |
 | Community and scope | open |
+
+## Calls so far
+- **Fresh start** *(decided 5 Nov)*: from the current standing and ideas; copy useful code; rethink the stack from the beginning.
+- **Several playstyles must be proven** *(decided 5 Nov)*, not one verb. **Verbs can come from equipment (parts); many verbs and skills** *(decided 5 Nov)*.
+- **Filling a niche = C** *(decided 5 Nov)*: you pick the gap and get that role's base body; it counts only if you lived that way.
+- **First roles: grazer and predator** *(decided 5 Nov)*, maybe several grazer playstyles. Filter feeders: stacking up to reach efficient current flow *(idea, yours)*.
+- **A Life costs nothing at first** *(decided 5 Nov)*. **A lootbox feeling** *(wish, 5 Nov)*: where is open (turn 2).
