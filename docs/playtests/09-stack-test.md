@@ -11,6 +11,11 @@ landing squash, eat bursts with a floating +food, stock bars that tick pip by pi
 shake and a red flash on a hit, pan, pinch and wheel zoom. Portrait layout with thumb-sized buttons; on desktop the same
 column sits in the middle. Pixelify, one frame colour.
 
+**Where to play:** on the phone, the private page https://claude.ai/artifact/MG9hUEo96KYvYqew9x95GQ (the engine is split into
+three parts there because of the host's file limit; it ran locally, but the AI couldn't open the hosted page itself, so if it
+shows an error, use the next route). Locally: `npm run dev -- --host`, then `/spikes/godot-life/build/web/index.html`.
+Android: the APK was sent in the session's chat (not committed).
+
 **Measured** (headless Chromium, software WebGL, so on the slow side):
 | | |
 | --- | --- |

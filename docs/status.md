@@ -14,7 +14,7 @@ background; where they disagree with `plan.md`, `plan.md` wins.
 ## Done: slice 08, the Godot half (5 Nov)
 [`spikes/godot-life/`](../spikes/godot-life/README.md): the mud flats Life in Godot 4.7.2, phone first, with the five feel values
 as inspector sliders on **Main**. The web build is committed in `spikes/godot-life/build/web/` (single-threaded); an Android APK
-was built and signed in the cloud (not committed). 37 rule tests run headless in about 10 ms. Workflow log and load numbers:
+was built and signed in the cloud (sent in the chat, not committed). Phone link: https://claude.ai/artifact/MG9hUEo96KYvYqew9x95GQ (private). 37 rule tests run headless in about 10 ms. Workflow log and load numbers:
 [playtests/09-stack-test.md](playtests/09-stack-test.md).
 
 ## Next
