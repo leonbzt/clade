@@ -63,7 +63,7 @@
 
 {#if ui.open}
 <div id="meta" class="panel">
-  <div class="metaTop"><h2>Clade</h2><span class="gen">Generation {g.gen}</span><button class="small" onclick={() => { ctx.skip(); bump(); }}>Skip +10</button></div>
+  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {g.gen}</span><button class="small" onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button></div>
   <canvas bind:this={cv} class="isle" onclick={tapMap}></canvas>
   <div class="habList">
     {#each HAB_ORDER as id}

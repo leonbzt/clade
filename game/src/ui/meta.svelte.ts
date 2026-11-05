@@ -12,6 +12,7 @@ export const ui = $state({
   open: false, hab: null as HabitatId | null, niche: null as Role | null,
   away: null as null | { gens: number; news: News[] }, tick: 0,
   notice: null as null | { title: string; text: string },
+  menu: false,
   clutch: null as null | { cards: Card[]; hab: HabitatId; role: Role; plan: PlanId; eggs: number; tier: string },
 });
 export const ctx = {
@@ -19,5 +20,7 @@ export const ctx = {
   start: (_hab: HabitatId, _niche: Role, _verbs: VerbId[], _plan: PlanId) => {},
   skip: () => {},
   keep: (_card: number) => {},
+  code: (_hab: HabitatId, _role: Role) => '', paste: (_code: string) => '',
+  exportSave: () => '', importSave: (_text: string) => '', reset: () => {}, backup: () => '',
 };
 export const bump = () => { ui.tick++; };

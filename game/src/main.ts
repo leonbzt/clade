@@ -15,9 +15,11 @@ import { useVerb } from './sim/verbs';
 import { BODY_FOR, boardFor, resultOf } from './sim/door';
 import { release, step, tierName } from './sim/garden';
 import { habitatSpots, makeIsland } from './sim/island';
-import { SAVE_KEY, advance, freshSave, parseSave } from './sim/save';
+import { BACKUP_KEY, SAVE_KEY, advance, freshSave, parseSave } from './sim/save';
+import { addVisitor, decode, encode } from './sim/share';
 import Meta from './ui/Meta.svelte';
 import Clutch from './ui/Clutch.svelte';
+import Menu from './ui/Menu.svelte';
 import { rollClutch } from './sim/clutch';
 import { bump, ctx, ui } from './ui/meta.svelte';
 import { S, centre, dirAngle, screen } from './scene';
@@ -93,15 +95,40 @@ app.ticker.add((tk) => {
 });
 
 // ---- the garden and the island (slice 13) ----
-const save = ctx.save = parseSave(localStorage.getItem(SAVE_KEY)) ?? freshSave((Math.random() * 2 ** 31) | 0, Date.now());
+const raw = (() => { try { return localStorage.getItem(SAVE_KEY); } catch { return null; } })(), parsed = parseSave(raw);
+if (parsed.problem === 'broken' || parsed.problem === 'newer') { // never lose a save silently: keep it as a backup
+  try { localStorage.setItem(BACKUP_KEY, raw!); } catch { /* nowhere to keep it */ }
+  ui.notice = { title: 'Your save could not be read', text: `${parsed.problem === 'newer' ? 'It comes from a newer version of Clade.' : 'It looks damaged.'} It is kept as a backup (Menu, then Save); this is a new island.` };
+}
+let save = ctx.save = parsed.save ?? freshSave((Math.random() * 2 ** 31) | 0, Date.now());
 ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl);
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch { /* private mode: this visit only */ } };
 { const away = advance(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
 ctx.start = (hab, role, vs, body) => { habId = hab; niche = role; plan = body ?? BODY_FOR[role]; verbs = vs; ui.open = false; newLife(); };
 ctx.skip = () => { for (let k = 0; k < MODEL.skip; k++) step(save.garden); persist(); };
+ctx.code = (hab, role) => {
+  const line = save.garden.habs[hab].entries.find((e) => e.line && e.role === role);
+  return line ? encode({ plan: line.line!, role, hab, eggs: Math.round(line.score), form: save.forms[`${hab}:${role}`], verbs: [], name: `${line.name.replace('Your ', 'Our ')}` }) : '';
+};
+ctx.paste = (code) => {
+  const sp = decode(code);
+  if (!sp) return "That isn't a Clade species code.";
+  const n = addVisitor(save.garden, sp); persist(); bump();
+  return `${n.text}: ${n.why}.`;
+};
+ctx.exportSave = () => JSON.stringify(save);
+ctx.importSave = (text) => {
+  const p = parseSave(text.trim());
+  if (!p.save) return p.problem === 'newer' ? 'That save is from a newer version.' : "That isn't a Clade save.";
+  save = ctx.save = p.save; ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl); persist(); bump();
+  return 'Save loaded.';
+};
+ctx.reset = () => { save = ctx.save = freshSave((Math.random() * 2 ** 31) | 0, Date.now()); ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl); persist(); bump(); };
+ctx.backup = () => { try { return localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return ''; } };
 setInterval(() => { if (ui.open && advance(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
 mount(Clutch, { target: document.getElementById('metaRoot')! });
+mount(Menu, { target: document.getElementById('metaRoot')! });
 
 function choose() { ui.open = true; bump(); }
 
