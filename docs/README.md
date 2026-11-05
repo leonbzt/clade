@@ -5,7 +5,8 @@ wins (and the code is the truth for what's built).
 
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |
-| [design/big-picture.md](design/big-picture.md) | **The current direction (4 Nov): Life, garden, era.** Decided and proposed, labelled | You (AI drafts) | Every design session |
+| [planning/plan.md](planning/plan.md) | **The plan for the real build (5 Nov): your calls, M1's slices, what's ported, cuts** | You (AI drafts) | Every session |
+| [design/big-picture.md](design/big-picture.md) | The direction before planning (4 Nov); `plan.md` wins where they differ | You (AI drafts) | Background |
 | [planning/README.md](planning/README.md) | **The kit for research and planning the real build in cloud sessions (5 Nov)** | AI, you | When planning |
 | [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, the budgets | You (AI drafts) | Every session |
 | [status.md](status.md) | The last handoff: done, decided, next, open | AI at `/handoff` | Every session |

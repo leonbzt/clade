@@ -1,25 +1,23 @@
 # Status
 
-Updated 2026-11-05. Branch `v2` on GitHub (`leonbzt/clade`, public); v1 is on `slice-11e` and in `_v1/`.
-**Cloud sessions:** a hook installs npm dependencies; the brief is in [planning/README.md](planning/README.md).
+Updated 2026-11-05. Work is on branch `claude/project-thread-cy8ptv` (from `v2`) on GitHub (`leonbzt/clade`).
 
-**Direction (your call):** the animal Life is the core, and you want to build this for real: [design/big-picture.md](design/big-picture.md). The plant game in `src/` and `spec.md` is on hold.
+**Direction (your calls, 5 Nov):** a fresh start for the real build. The plan: [planning/plan.md](planning/plan.md). The roadmap
+is adopted: [../ROADMAP.md](../ROADMAP.md), M1 "the first playable sea". `src/` (the plant game) and `big-picture.md` are now
+background; where they disagree with `plan.md`, `plan.md` wins.
 
-## Done (4–5 Nov)
-- **Toys played:** A and C ([playtest 05](playtests/05-core-toys.md)), Life v1 ([06](playtests/06-life.md)), the living garden on Life v2's rules ([08](playtests/08-garden.md)). Open them from `/toys/`.
-- **Calls logged:** [decisions.md](decisions.md): the world, apex rule, guardrails as defaults.
-- **The planning kit:** [planning/README.md](planning/README.md): how to run it, the brief, 7 research tracks, the planning session, 3 optional spikes.
-- `npm run check` passes. The plant garden's 8 h timing test is skipped on your call.
+## Done (5 Nov)
+- **Research:** seven tracks in `research/`, digest in [planning/research-digest.md](planning/research-digest.md). All ran short
+  of web fetches; unverified lines are marked (most of R2's species table).
+- **Planning session:** your calls in [decisions.md](decisions.md) (5 Nov, turns 1–6) and [planning/plan.md](planning/plan.md).
 
-## Next
-1. Run part 1 of the kit (research), then part 2 (planning). First set the cloud environment's network to Full.
-2. Your calls become `docs/planning/plan.md` and a new `ROADMAP.md`, naming the first build milestone.
+## Next: slice 08, the stack test
+[slices/08-stack-test.md](slices/08-stack-test.md). Godot half first, in a fresh cloud session on this branch:
+```
+Follow docs/slices/08-stack-test.md: build the Godot half. Read docs/status.md first.
+```
+Then the PixiJS half in another session, then you play both and pick.
 
 ## Open
-- What pulls: playtest 08 says filling niches more than waiting. Rests on one session.
-- Playing a predator, and your own predator chasing you. Not built.
-- Does "the single maps could still split" mean one habitat's map can become more than one board? (AI's reading, unconfirmed.)
-- What the apex rules are; how your species takes the slot.
-- P38 (one line taking a whole row); P42 (when to switch the stack).
-- Slice 06's questions: sides, lay from size 3, the worm's strength. The basin doesn't favour the arthropod yet.
-- Biology in the toys is from memory; research track R2 fact-checks it.
+- R2's [K] biology lines need a check before they go into text the player sees.
+- Hallucigenia, the brachiopod and generated habitats wait for M2 (see ROADMAP).

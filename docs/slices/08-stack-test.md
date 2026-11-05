@@ -39,6 +39,18 @@ Both throwaway; nothing goes into `src/`. One session each.
 - Two sessions, one per half. Godot first, since it's the lean. The Godot session needs the Godot 4 binary in the cloud
   environment (headless export); if it can't get one, it says so and you run the export locally.
 
+## Setup notes for the session
+- **Godot in the cloud:** checked 5 Nov that GitHub releases are reachable. Download `Godot_v4.5.1-stable_linux.x86_64.zip` (or the
+  latest 4.x stable) from `github.com/godotengine/godot/releases`, unzip into `~/.local/bin`, run with `--headless` for tests and
+  `--export-release` for builds. Web and Android exports need the matching export templates (`*_export_templates.tpz`, large);
+  install them into `~/.local/share/godot/export_templates/<version>/`. If disk or time runs short, ship the web build only and
+  say so.
+- **Phone link:** the web build has to be served somewhere you can open on your phone. Simplest: commit the build to the branch
+  and say how to run it locally, or publish it as a preview the session can host. Godot's web build needs cross-origin isolation
+  headers unless exported single-threaded; export single-threaded.
+- **Fresh start:** new folders `spikes/godot-life/` and `spikes/pixi-life/`. Port rules from `toys/life2-sim.ts`, data from
+  `toys/life2-data.ts` and `life2-habitats.ts` with R2's corrections (`docs/research/cambrian-world.md`).
+
 ## Open questions (three at most)
 1. If both feel fine, which wins: the editor (Godot) or the AI's smoother hand (Pixi)? *AI lean:* the one you tuned faster.
 2. Does Godot's web build load fast enough on your phone for itch? (The session measures it.)

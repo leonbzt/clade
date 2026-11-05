@@ -4,7 +4,7 @@ An idle / incremental evolution game. Web: Svelte 5, TypeScript, Vite. You live 
 lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
 garden becomes is the next board you walk on.
 
-**Start here: `docs/status.md`, then `docs/design/big-picture.md`. Planning the real build: `docs/planning/README.md`.** Playable now: `toys/garden.html` and
+**Start here: `docs/status.md`, then `docs/planning/plan.md` (the plan for the real build, 5 Nov; it wins over `big-picture.md`) and `ROADMAP.md`.** Playable now: `toys/garden.html` and
 `toys/life2.html`. The plant game in `docs/spec.md` and `src/` is on hold; its island, habitat and garden code may be reused.
 
 **The guardrails against tangling (big-picture §12) are defaults, not laws (the user's words, 5 Nov: don't take them too seriously or stop thinking outside them).**

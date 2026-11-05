@@ -249,3 +249,4 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Coming back:** "a with news": open and contested niches first, news underneath. "keep garden and prevent bad behaviour" (keep the toy's garden, stop one winner).
 - **Era and apex:** "one era apex later is okay, keep open for both".
 - **First release to the community:** "after first milestone."
+- **The roadmap:** "adopt the roadmap" (M1, the first playable sea, slices 08–15). "set everything up to start the next slice in a fresh sessn".
