@@ -19,3 +19,5 @@ the board you play next is what the garden became. Take the hunter row and your 
 
 **Upload:** `npm run build:game`, then upload `game/dist/clade.html` as an HTML game ("This file will be played in the
 browser"), viewport 420 × 860 or "click to launch in fullscreen" for phones.
+
+**Keep off this page and out of the game:** the RuneScape name, and Jagex in general. The font is called Clade Text in our files ([why](research/font-licences.md)).

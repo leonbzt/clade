@@ -308,3 +308,8 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Not settled for release (AI flag):** RuneStar's CC0 covers only RuneStar's own rights, and its README says the glyphs are exactly as
   in the game, so Jagex's rights aren't cleared by it. The repo is public, so a push publishes the font files too. Decide before pushing or the itch release.
 - **The bars' names:** "map specififc names are okay but maybe general names are easier long term? or maybe show the kind of food types." Not yet changed.
+
+## 5 Nov, the bars and the release font
+- **The bars:** "build slice 17 and pick the bars to use." Picked by AI at your request: **Surface, Buried, Prey, Oxygen**, each with this habitat's real foods beside it ("grazers eat mats, shell beds"; "hunters eat Wiwaxia, Olenoides"). In the game's card and the sea toy.
+- **The font:** "i like runescape best, release it if possible with this otherwise gnf." Checked ([research](research/font-licences.md), not legal advice): it can ship with a small risk, so **the RuneScape font stays**. Likely outcome nothing; worst realistic case a takedown request, then we swap the font. GNF is the fallback, embedded only and never in the repo. Jagex's fan policy gives no permission, so don't cite it.
+- **Done because of that (AI):** the files, family and internal names are now Clade Text, and "RuneScape" stays out of the UI and the itch page.

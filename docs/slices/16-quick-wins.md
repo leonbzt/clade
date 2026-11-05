@@ -6,13 +6,13 @@
 [review](../design/world-and-body-review.md) §2 and §7, step 0; "the order sounds good" (decisions.md, 5 Nov).
 
 ## In
-- **Resource bars on the habitat card:** Mats (grazers), Buried (burrowers), Prey (hunters), Oxygen (everyone), each with a white
-  "normal here" mark. Built with your question in mind (5 Nov): one bar for what each role eats. *Proposal, yours to change.* Prey is
-  counted from grazers and burrowers, so it's no new stock; Buried is the `rot` stock under the board's own word.
+- **Resource bars on the habitat card:** Surface (grazers), Buried (burrowers), Prey (hunters), Oxygen (everyone), each with a white
+  "normal here" mark and this habitat's real foods beside it. *Decided 5 Nov.* Prey is counted from grazers and burrowers, so it's no
+  new stock; Surface is the `mats` stock and Buried the `rot` stock.
 - **"Next board" line on the card:** "11 mats · 15 buried · 2 carcasses · Anomalocaris on turn 7 · rivals: Wiwaxia". Port
   `boardFacts` from `toys/garden-board.ts:98` to `sim/door.ts`; it reads `boardFor`, so the line can't disagree with the board you get.
-- **The new font:** Plain 12 and Bold 12 from [RuneStar](https://github.com/RuneStar/fonts), your first choice (5 Nov), replacing Pixelify. It has
-  a real bold. Crisp at 16 and 32 px, so all text uses only those sizes. `scripts/build-font.py` makes the woff2 files. `toys/fonts.html`
+- **The new font:** Plain 12 and Bold 12 from [RuneStar](https://github.com/RuneStar/fonts), your first choice (5 Nov), replacing Pixelify, in
+  `ui/fonts/CladeText-*`. It has a real bold. Crisp at 16 and 32 px, so all text uses only those sizes. `scripts/build-font.py` makes the woff2 files. `toys/fonts.html`
   compares 21 fonts on this game's panel. Licence question before release: see `decisions.md`.
 - **Map labels stay inside the map.** Today they run past the canvas edge on about 176 of 200 seeds (computed from an estimated text
   width). Clamp the label in `drawIsland`, using the measured width; if there's no room below the disc, it goes above. Any other clipped
@@ -37,6 +37,6 @@
 - Touches sim structure? No: read-only functions in `door.ts` and `garden.ts`.
 - Fits one session.
 
-## Open questions
-1. Before a push or the itch release: keep the RuneScape font, or GNF, or our own? *AI lean:* our own, drawn in that spirit.
-2. Bars' names: general, with the kinds of food shown? *AI lean:* Surface, Buried, Prey, Oxygen, with this habitat's real foods beside them.
+## Answered (5 Nov)
+1. The font: the RuneScape font, renamed Clade Text; GNF as fallback ([research](../research/font-licences.md)).
+2. The bars: Surface, Buried, Prey, Oxygen, with this habitat's real foods beside them.

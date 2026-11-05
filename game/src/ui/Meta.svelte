@@ -112,7 +112,7 @@
         {#each (void ui.tick, stockBars(g, id)) as b}
           <span>{b.name}</span>
           <div class="habStock"><i style:width={`${Math.round(b.value * 100)}%`}></i><u style:left={`${Math.round(b.normal * 100)}%`}></u></div>
-          <small>{b.feeds}</small>
+          <small>{b.food}</small>
         {/each}
       </div>
       <p class="pitch next"><b>Next board:</b> {(void ui.tick, nextBoard(boardFor(g, id, ctx.save.forms)))}</p>

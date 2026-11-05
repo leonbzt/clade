@@ -34,14 +34,19 @@ export function capacity(h: HabState): Record<Role, number> {
   return { grazer: MODEL.perMat * h.mats * oxy, burrower: MODEL.perRot * h.rot * oxy, predator: prey * MODEL.perPrey };
 }
 
-/** The card's bars: what each role eats here, plus the water, as 0–1 with a "normal" mark. Prey is the only one that's a count, so its scale is twice normal. */
+const SURFACE: [string, string][] = [['m', 'mats'], ['o', 'sulfur mats'], ['s', 'shell beds']];
+/** What grazers find on this habitat's ground, read from its board's map. */
+const surfaceFoods = (id: HabitatId) => SURFACE.filter(([c]) => HABITATS[id].map.some((row) => row.includes(c))).map(([, name]) => name).join(', ');
+
+/** The card's bars (decided 5 Nov): general names, this habitat's real foods beside them, as 0–1 with a "normal" mark. Prey is the only one that's a count, so its scale is twice normal. */
 export function stockBars(g: Garden, id: HabitatId) {
   const h = g.habs[id], n = g.normal[id], np = n.pops.grazer + n.pops.burrower, scale = 2 * np || 1;
+  const prey = h.entries.filter((e) => e.role !== 'predator').sort((a, b) => b.pop - a.pop).slice(0, 2).map((e) => e.name).join(', ') || 'nothing now';
   return [
-    { name: 'Mats', feeds: 'grazers', value: h.mats / 100, normal: n.mats / 100 },
-    { name: 'Buried', feeds: 'burrowers', value: h.rot / 100, normal: n.rot / 100 },
-    { name: 'Prey', feeds: 'hunters', value: Math.min(1, (popOf(h, 'grazer') + popOf(h, 'burrower')) / scale), normal: np / scale },
-    { name: 'Oxygen', feeds: 'everyone', value: h.oxygen / 100, normal: n.oxygen / 100 },
+    { name: 'Surface', food: `grazers eat ${surfaceFoods(id)}`, value: h.mats / 100, normal: n.mats / 100 },
+    { name: 'Buried', food: 'burrowers eat buried food', value: h.rot / 100, normal: n.rot / 100 },
+    { name: 'Prey', food: `hunters eat ${prey}`, value: Math.min(1, (popOf(h, 'grazer') + popOf(h, 'burrower')) / scale), normal: np / scale },
+    { name: 'Oxygen', food: 'everyone breathes it', value: h.oxygen / 100, normal: n.oxygen / 100 },
   ];
 }
 

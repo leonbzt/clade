@@ -1,11 +1,11 @@
-@font-face { font-family: 'RS Plain'; src: url('./fonts/RuneScape-Plain-12.woff2') format('woff2'); font-weight: 400; font-display: block; }
-@font-face { font-family: 'RS Plain'; src: url('./fonts/RuneScape-Bold-12.woff2') format('woff2'); font-weight: 700; font-display: block; }
+@font-face { font-family: 'Clade Text'; src: url('./fonts/CladeText-Plain.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Clade Text'; src: url('./fonts/CladeText-Bold.woff2') format('woff2'); font-weight: 700; font-display: block; }
 /* The menus: carved stone panels in a brass frame, yellow numbers, outlined pixel text, in the spirit of
    old-school RPG interfaces. Phone first; on a wide screen the phone's column stays in the middle. */
 :root {
   --deep: #16120d; --panel: #3a3023; --panel2: #4a3d2c; --edge: #6b5a40; --edge-hi: #9c8458; --edge-lo: #231c13; --ink: #0d0a06;
   --brass: #b8913f; --text: #f3e9cc; --dim: #c2b08a; --gold: #ffe033; --title: #ff9a2e; --red: #ff5a3c; --good: #7fd14e;
-  --font: 'RS Plain', system-ui, sans-serif; /* crisp only at 16 and 32 px: use no other sizes */
+  --font: 'Clade Text', system-ui, sans-serif; /* crisp only at 16 and 32 px: use no other sizes */
   --food: #f2b33d; --oxy: #5ec4d6; --hp: #e04a3a;
   --outline: 1px 1px 0 var(--ink);
 }
@@ -152,8 +152,8 @@ button.small { min-height: 34px; font-size: 16px; padding: 2px 10px; color: var(
 .habCard .metaTop button { margin-left: auto; }
 .pitch { margin: 0; font-size: 16px; color: var(--text); }
 .pitch.next b { color: var(--dim); }
-.habStocks { display: grid; grid-template-columns: auto 1fr auto; gap: 3px 8px; align-items: center; font-size: 16px; }
-.habStocks small { color: var(--dim); font-size: 16px; }
+.habStocks { display: grid; grid-template-columns: auto 1fr; gap: 1px 8px; align-items: center; font-size: 16px; }
+.habStocks small { grid-column: 2; color: var(--dim); font-size: 16px; margin-bottom: 3px; }
 .habStock { position: relative; height: 12px; background: var(--ink); }
 .habStock i { position: absolute; inset: 0 auto 0 0; background: var(--oxy); }
 .habStock u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; }

@@ -1,11 +1,17 @@
 # Turns a RuneStar TTF into the game's woff2: keeps Latin-1 and maps the few characters our text uses that the font lacks.
-#   python3 scripts/build-font.py <in.ttf> <out.woff2>
+#   python3 scripts/build-font.py <in.ttf> <out.woff2> <Plain|Bold>
+# The output's family name is Clade Text: Jagex's mark stays out of our files (docs/research/font-licences.md).
 import sys
 from fontTools.subset import Subsetter, Options
 from fontTools.ttLib import TTFont
 
-src, dst = sys.argv[1:3]
+src, dst, weight = sys.argv[1:4]
 f = TTFont(src)
+for rec in f['name'].names:
+    if rec.nameID in (1, 3, 4):
+        rec.string = f'Clade Text {weight}'
+    if rec.nameID == 6:
+        rec.string = f'CladeText-{weight}'
 for table in f['cmap'].tables:
     if not table.isUnicode():
         continue
