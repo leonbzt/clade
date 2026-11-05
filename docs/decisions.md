@@ -250,3 +250,9 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Era and apex:** "one era apex later is okay, keep open for both".
 - **First release to the community:** "after first milestone."
 - **The roadmap:** "adopt the roadmap" (M1, the first playable sea, slices 08–15). "set everything up to start the next slice in a fresh sessn".
+
+## 5 Nov, stack test: the Godot half played
+- **Godot half (slice 08):** "everything seems a lot smoother for the animation and board but the look in general is really
+  rough and looks more like from a template."
+- **AI freedom:** "i feel more freedom for ai is also good."
+- "get ready and commit so i can start a new session to continue after this stack test." No stack picked yet.

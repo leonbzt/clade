@@ -51,10 +51,11 @@ serves the wasm compressed is not checked yet. A custom engine build without 3D 
 - Moulting: tap a part; it goes in the first free slot it fits (no parts screen). The body is drawn 1.5× the toy's pixels so a
   hatchling shows on a phone.
 
-**Your notes** (after playing)
-- Values you settled on: glide_time __ · squash __ · particle_count __ · shake __ · zoom_speed __
-- How tuning in the inspector went:
-- On the phone:
+**Your notes** (5 Nov)
+- "everything seems a lot smoother for the animation and board but the look in general is really rough and looks more like
+  from a template."
+- "i feel more freedom for ai is also good."
+- Not noted yet: the feel values you settled on, how tuning in the inspector went, the phone.
 
 ## PixiJS half
 Next session.

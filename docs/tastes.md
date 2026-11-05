@@ -84,6 +84,8 @@ has to fit.
 - The growth toys: "a cool feeling and look of growth… organic" (patch); "looks really cool… the look and feel is
   very nice" (specimen). Voronoi and reaction-diffusion looks.
 - **Hatched's staged assembly** for creatures (2 Nov). **Mycelarium's side view** (2 Nov).
+- **The Godot stack test** (5 Nov): animation and board "a lot smoother", but the look "really rough and looks more like
+  from a template". "More freedom for AI is also good."
 
 ## Methods and mechanics you like (26 Oct)
 - **Sim methods:** cellular automata, forest fire, L-systems, space colonization, physarum agents, boids, ant

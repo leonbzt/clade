@@ -79,6 +79,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Steering as a scarce resource (nutrient or attention) so auto stays naive (AI, 3 Nov; after-playtest-02.md).
 - 3D, or 3D-drawn plants, if it can be stable (you: "if it could be stable it were great", 3 Nov; look toy).
 - Steam and phone releases (you: "cool", 3 Nov): via Godot or a wrapped web app (P42).
+- Portrait boards for phones: author maps 8 wide × 11 tall, as the Godot spike's turned mud flats (AI, 5 Nov).
+- Shrink Godot's 40 MB web engine with a custom build without 3D; check whether itch serves it compressed (AI, 5 Nov).
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the

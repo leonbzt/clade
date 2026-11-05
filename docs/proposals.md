@@ -8,23 +8,9 @@ milestone goes to [ideas.md](ideas.md) as one line.
 Numbers continue from P35. P1–P33 in full are archived (`_archive/2026-11-01/systems.md`, reads blocked). Only the
 open parts needed for M1 are kept here; the rest is parked in ideas.md.
 
-(P36–P40 were decided 3 Nov, except P38's garden question: see decisions.md. P41 went to the toy: see decisions.md. P42's timing is open. P43 was decided 3 Nov.)
+(P36–P40 were decided 3 Nov, except P38's garden question: see decisions.md. P41 went to the toy: see decisions.md. P42 closed 5 Nov: the stack is picked by playing (slice 08, the stack test). P43 was decided 3 Nov.)
 P44 (the run's core play) and P45 (next step, apex slot, world) were decided 4 Nov: see decisions.md.
 
 ## P38 left open: the garden
 (From P37.) May one good line take most of a row? (a) replicator growth, newcomers earn ground in S-curves ·
 (b) winner takes a patch · (c) keep score³ shares with crowding. **Lean: (a)**, and split the lava row.
-
-
-
-
-## P42 left open: when to switch the stack
-(a) stays for now (decided 3 Nov). Steam and phones don't need Godot: web idle games ship there as wrapped web
-apps (Cookie Clicker on Steam, Melvor Idle on Steam and phones). Godot pays for stable 3D and engine tools.
-Measured: `src` is about 3,200 lines today (sim 1,870, view and UI 1,050); a port means the sim rewritten in
-GDScript and every view and menu rebuilt, and it grows with each milestone.
-- **(a) At the end of M1**, once its done-when passes (the loop is fun, the rules settle), after a 1–2 session
-  Godot spike: the look toy's scene and the island in Godot, judged on stability, look and how well AI work goes.
-- **(b) Now**, before the stand: the least code to port, but the run's core is still changing.
-- **(c) Never:** stay web, wrap it for Steam (Tauri or Electron) and phones (Capacitor).
-- **Lean: (a).** Until then keep the sim free of the DOM and the numbers in `src/data`, so a port stays mechanical.
