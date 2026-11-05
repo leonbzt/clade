@@ -244,3 +244,8 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Fourth body plan:** C, the trilobite, "maybe evolve from arthropods". Hallucigenia "only with sponges"; the brachiopod next milestone.
 - **The island:** "should maybe change a little depending on the living species there. but basic starting habitats these three sound good." "it would be good if the island/garden still gave you the habitats within some range. still authoring like sand shallows or volcanic rock or mud flats is a good starting base geology wise. should be geology given life evolves. maybe to complicated for the start"
 - **Predator rules:** ambush and frenzy.
+
+## 5 Nov, planning session turn 6
+- **Coming back:** "a with news": open and contested niches first, news underneath. "keep garden and prevent bad behaviour" (keep the toy's garden, stop one winner).
+- **Era and apex:** "one era apex later is okay, keep open for both".
+- **First release to the community:** "after first milestone."
