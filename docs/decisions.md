@@ -234,3 +234,8 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 ## 5 Nov, planning session turn 3
 - **Stack:** "lean godot, but pixi as alternative sounds good. i dont trust ai to get the feel right without help. want smooth workflow. will test, write it as a slice." → [slices/08-stack-test.md](slices/08-stack-test.md).
 - **The predator:** "you see next step (maybe as upgrade) and you can change your movement and speed. also differnt undergrounds change escape. also armour."
+
+## 5 Nov, planning session turn 4
+- **Your predator chases you:** A, your best predator body in a habitat becomes that board's hunter once it ranks top; "maybe some special rules or mechanics for the predator would also be cool".
+- **Grounds:** mud, sand and reef for the first boards, but they "should be the same as the natural map, so maybe should go together with this".
+- **Body plans:** worm, arthropod, swimmer, "but maybe one extra role or body plan? what woud fit from the time? clam/brachipod? something cute or exciting or memorable".

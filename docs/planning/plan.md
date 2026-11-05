@@ -40,3 +40,6 @@ before porting the garden.
 - **Verbs:** the body plan keeps its move (chess piece); parts give verbs; **1–3 verb slots you pick** per Life *(decided 5 Nov, open to minigames later)*.
 - **Stack** *(decided 5 Nov: lean Godot, PixiJS the alternative; test first)*: [slice 08, the stack test](../slices/08-stack-test.md) builds the mud-flats Life twice, with feel values you tune yourself.
 - **The predator** *(decided 5 Nov)*: seeing the prey's next step, maybe as an upgrade; you can change your movement and speed; the substrate changes how prey escape; armour matters.
+- **Your predator chases you** *(decided 5 Nov)*: your best predator body in a habitat becomes that board's hunter once it ranks top. Special predator rules or mechanics welcome *(wish)*.
+- **Grounds** *(decided 5 Nov, first boards)*: mud, sand, reef, matching the natural map's ground.
+- **Body plans, first milestone** *(decided 5 Nov)*: worm, arthropod, swimmer, plus maybe one memorable extra (turn 5).
