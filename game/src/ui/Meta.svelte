@@ -4,8 +4,8 @@
   import { ROLES, ROLE_IDS, type Role } from '../data/garden';
   import { HABITATS, HAB_ORDER, type HabitatId } from '../data/habitats';
   import { HUNT, MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type GrazerId, type PlanId, type StyleId, type VerbId } from '../data/life';
-  import { BODY_FOR } from '../sim/door';
-  import { capacity, rowOf, tierName } from '../sim/garden';
+  import { BODY_FOR, boardFor, nextBoard } from '../sim/door';
+  import { capacity, rowOf, stockBars, tierName } from '../sim/garden';
   import { newLife, partsFor, startParts } from '../sim/life';
   import { drawIsland, spotAt } from '../view/islandmap';
   import { bump, ctx, ui } from './meta.svelte';
@@ -108,6 +108,14 @@
     <div class="metaTop"><h2>{HABITATS[id].name}</h2><button class="small" onclick={() => (ui.hab = null)}>Map</button></div>
     {#if !ui.niche}
       <p class="pitch">{HABITATS[id].pitch}</p>
+      <div class="habStocks">
+        {#each (void ui.tick, stockBars(g, id)) as b}
+          <span>{b.name}</span>
+          <div class="habStock"><i style:width={`${Math.round(b.value * 100)}%`}></i><u style:left={`${Math.round(b.normal * 100)}%`}></u></div>
+          <small>{b.feeds}</small>
+        {/each}
+      </div>
+      <p class="pitch next"><b>Next board:</b> {(void ui.tick, nextBoard(boardFor(g, id, ctx.save.forms)))}</p>
       {#each niches(id) as n}
         <div class="niche {n.state}">
           <div class="nHead"><b>{ROLES[n.role].call}</b><span>{n.call}</span></div>

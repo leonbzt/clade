@@ -295,3 +295,9 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   Replaces 8 h < 0.5 s; the old 0.1 ms step limit goes with it (5 s over 160 generations is about 30 ms each).
 - **Tracking trade-offs:** "i like the comparison table, maybe keep something like this to follow where tradoffs have been made
   and what they achieved." → [design/tradeoffs.md](design/tradeoffs.md).
+
+## 5 Nov, the sea toy's numbers and the bars
+- **A generation:** 3 min, "yes for now." **Crash pace:** "depends on real dynamics but every 5-50 gens." **Patches:** about 70, "sounds good."
+- **Asked, not decided:** "do mats rot and oxygen make sense? what about mats/plants, animals/prey, and oxygen or similar." Slice 16
+  builds Mats, Buried, Prey, Oxygen as a proposal (the rot stock stays underneath).
+- **The font is still open:** "are there more pixel fonts? can we build one?" Jersey 15 is a placeholder.

@@ -34,6 +34,17 @@ export function capacity(h: HabState): Record<Role, number> {
   return { grazer: MODEL.perMat * h.mats * oxy, burrower: MODEL.perRot * h.rot * oxy, predator: prey * MODEL.perPrey };
 }
 
+/** The card's bars: what each role eats here, plus the water, as 0–1 with a "normal" mark. Prey is the only one that's a count, so its scale is twice normal. */
+export function stockBars(g: Garden, id: HabitatId) {
+  const h = g.habs[id], n = g.normal[id], np = n.pops.grazer + n.pops.burrower, scale = 2 * np || 1;
+  return [
+    { name: 'Mats', feeds: 'grazers', value: h.mats / 100, normal: n.mats / 100 },
+    { name: 'Buried', feeds: 'burrowers', value: h.rot / 100, normal: n.rot / 100 },
+    { name: 'Prey', feeds: 'hunters', value: Math.min(1, (popOf(h, 'grazer') + popOf(h, 'burrower')) / scale), normal: np / scale },
+    { name: 'Oxygen', feeds: 'everyone', value: h.oxygen / 100, normal: n.oxygen / 100 },
+  ];
+}
+
 /** Each species' share of its role: by score², none above the self-limit (the excess goes to the others). */
 export function shares(row: Entry[]): number[] {
   const w = row.map((e) => Math.max(0.01, e.score) ** MODEL.power), sum = w.reduce((n, x) => n + x, 0) || 1;

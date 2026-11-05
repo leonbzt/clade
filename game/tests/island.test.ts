@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { SEA } from '../src/data/island';
 import { habitatSpots, makeIsland, type SpotId } from '../src/sim/island';
-import { spotAt } from '../src/view/islandmap';
+import { labelAt, spotAt } from '../src/view/islandmap';
 
 const IDS: SpotId[] = ['sand', 'mud', 'rock'];
 
@@ -37,5 +37,19 @@ describe('island', () => {
     const spots = habitatSpots(makeIsland(3));
     for (const id of IDS) expect(spotAt(spots, spots[id].x, spots[id].y)).toBe(id);
     expect(spotAt(spots, -50, -50)).toBeNull();
+  });
+
+  it('map labels stay inside the map on 200 seeds', () => {
+    const S = 4, textW = 110, textH = 15; // wider than the longest label, "Volcanic rock A"
+    for (let seed = 1; seed <= 200; seed++) {
+      const isl = makeIsland(seed), W = isl.w * S, H = isl.h * S;
+      for (const s of Object.values(habitatSpots(isl))) {
+        const at = labelAt((s.x + 0.5) * S, (s.y + 0.5) * S, s.r * S, textW, textH, W, H);
+        expect(at.x - textW / 2).toBeGreaterThanOrEqual(0);
+        expect(at.x + textW / 2).toBeLessThanOrEqual(W);
+        expect(at.y).toBeGreaterThanOrEqual(0);
+        expect(at.y + textH).toBeLessThanOrEqual(H);
+      }
+    }
   });
 });

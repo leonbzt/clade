@@ -2,6 +2,13 @@
 
 Newest first, written for players. *AI draft (5 Nov), yours to change.*
 
+## Reading a habitat (5 Nov 2026)
+
+- Each habitat card shows what its roles live on: mats, buried food, prey and oxygen, each marked against what's normal there.
+- The card tells you what your next board holds before you start.
+- A new font, still on trial.
+- Map labels no longer run off the edge of the map.
+
 ## The first playable sea (M1 run, 5 Nov 2026)
 
 Clade was a plant game; it is now a Cambrian sea you live in, one creature at a time.

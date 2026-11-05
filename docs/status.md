@@ -1,8 +1,8 @@
 # Status
 
-Updated 2026-11-05. Branch `claude/project-thread-cy8ptv`. **Everything below is uncommitted.** The plan: [ROADMAP](../ROADMAP.md).
+Updated 2026-11-05. Branch `claude/project-thread-cy8ptv`. The plan: [ROADMAP](../ROADMAP.md).
 
-**Milestone:** M2, the living sea, step 1 (quick wins), not started. M1 is built; only its itch release and Discord are left.
+**Milestone:** M2, the living sea, step 1 (quick wins) built, waiting for your play; slice 16 is uncommitted. M1 is built; only its itch release and Discord are left.
 
 **Done**
 - Trust fixes, tried with real clicks: a form is really on the body (`sim/life.ts`, `ui/Meta.svelte`); a finished Life and its clutch survive a
@@ -17,8 +17,8 @@ Updated 2026-11-05. Branch `claude/project-thread-cy8ptv`. **Everything below is
 - 8 h catch-up about 5 s (up to 10): "better fewer time savings and better map and game".
 
 **Next**
-1. `/spec` the quick wins: the resource bars and "next board" line from `toys/garden-view.ts`, a font from `toys/fonts.html`, clipped labels.
-2. `/spec` the toy of patches with real populations and crashes, seen on a map; one question: "does the map feel alive?"
+1. Play [slice 16](slices/16-quick-wins.md): pick a font in `toys/fonts.html` (Jersey 15 is a placeholder), say if the four bars are right.
+2. Build [slice 17, the sea toy](slices/17-sea-toy.md): one question, "does the map feel alive?"; its numbers are answered.
 3. Your further play notes go in playtest 10, any time. The phone page still has the old build: https://claude.ai/artifact/M6LoHUuraYzC5bTdf2SjEn
 
 **Open**

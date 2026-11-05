@@ -71,6 +71,19 @@ export function boardFor(g: Garden, id: HabitatId, forms: Record<string, PartId>
   };
 }
 
+const count = (b: Habitat, nodes: string) => [...b.map.join('')].filter((c) => nodes.includes(c)).length;
+/** What's on a board, counted from the board itself. */
+export const boardFacts = (b: Habitat) => ({
+  mats: count(b, 'mo'), buried: count(b, 'b'), shells: count(b, 's'), carcasses: count(b, 'cC'), prey: b.prey.length,
+  predator: b.predatorAt === NO_PREDATOR ? null : { name: b.predator, turn: b.predatorAt }, rivals: [...new Set(b.rivals.map((v) => v.name))],
+});
+/** The card's "Next board" line, read from the board you'd get, so the two can't disagree. */
+export function nextBoard(b: Habitat): string {
+  const f = boardFacts(b), many = (n: number, one: string, more = `${one}s`) => (n ? `${n} ${n === 1 ? one : more}` : '');
+  return [many(f.mats, 'mat'), f.buried ? `${f.buried} buried` : '', many(f.shells, 'shell bed'), many(f.carcasses, 'carcass', 'carcasses'), `${f.prey} prey`,
+    f.predator ? `${f.predator.name} on turn ${f.predator.turn}` : 'no hunter', f.rivals.length ? `rivals: ${f.rivals.join(', ')}` : ''].filter(Boolean).join(' · ');
+}
+
 /** The predator Life's prey follow the prey populations: worms the burrowers, trilobites and Wiwaxia the grazers. */
 function preyFor(g: Garden, id: HabitatId): Habitat['prey'] {
   const base = HABITATS[id].prey, h = g.habs[id], n = g.normal[id];

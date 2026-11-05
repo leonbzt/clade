@@ -1,7 +1,6 @@
 // Clade: the app, the layers, the flow of a Life (pick, start, moult, end) and the input. The turn's events play
 // back in playback.ts; the shared pieces live in scene.ts. Feel values: ui/feel.ts and the dev panel (Feel, or `).
-import '@fontsource/pixelify-sans/latin-400.css';
-import '@fontsource/pixelify-sans/latin-700.css';
+import '@fontsource/jersey-15/latin-400.css'; // the one place to change the font, with --font in ui/style.css
 import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
 import { mount } from 'svelte';
@@ -126,6 +125,7 @@ ctx.importSave = (text) => {
 };
 ctx.reset = () => { save = ctx.save = freshSave((Math.random() * 2 ** 31) | 0, Date.now()); ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl); persist(); bump(); };
 ctx.backup = () => { try { return localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return ''; } };
+void document.fonts?.ready.then(bump); // the map's labels are drawn on a canvas: redraw once the font is in
 setInterval(() => { if (ui.open && advance(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
 mount(Clutch, { target: document.getElementById('metaRoot')! });

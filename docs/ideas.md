@@ -39,7 +39,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   moves; better once animals come (you, 3 Nov).
 - After M1: v1 and v2 side by side, combined into one fresh game with every feature (you, 3 Nov).
 - An original bitmap font in the spirit of OSRS menus (small, proportional, 1-px black shadow); not a copy (you + AI,
-  3 Nov). Free ones to compare: `toys/fonts.html`.
+  3 Nov). Free ones to compare: `toys/fonts.html`. How (5 Nov, *proposal*): letters as small text grids, a script with fonttools builds regular and
+  real bold; drawn so V/U, 5/S, 8/B and 0/O differ. About one session plus your taste passes.
 - Encounters as the tier ladder made visible: a build climbs a niche's encounters (AI, 3 Nov).
 - **Morphs:** rare looks (a colour, a pattern, a left-coiled snail); cheap with bodies drawn from genes.
 - **"Resembles…":** a body close to a real species' shape names it, with a fact and a source (you + AI). Strong fit.

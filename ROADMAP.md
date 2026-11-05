@@ -12,8 +12,8 @@ map; a body you build and a climb to go with it (*decided 5 Nov*; the steps are 
 build a body you recognise; the skill tree gives you a climb you want to go on with.
 Design: [docs/design/world-and-body-review.md](docs/design/world-and-body-review.md).
 
-1. [ ] Quick wins: the toy's resource bars and "next board" line, a new font, clipped labels
-2. [ ] Toy: patches with real populations and crashes, seen on a map ("does the map feel alive?")
+1. [ ] [16 Quick wins](docs/slices/16-quick-wins.md): the toy's resource bars and "next board" line, a new font, clipped labels
+2. [ ] [17 The sea toy](docs/slices/17-sea-toy.md): patches with real populations and crashes, seen on a map ("does the map feel alive?")
 3. [ ] The overview map in the game; boards come from patches
 4. [ ] The few named rules, and "what changed" on the start card
 5. [ ] The body screen: big drawing, visible slots, inventory; verbs from plug-ins; a role guess, settled by body and diet

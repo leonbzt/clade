@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { MODEL } from '../src/data/garden';
 import { HABITATS, HAB_ORDER } from '../src/data/habitats';
 import * as L from '../src/sim/life';
-import { boardFor, boardIsValid, resultOf, roleFromDiet } from '../src/sim/door';
-import { capacity, catchUp, newGarden, popOf, release, rowOf, shares, step, type Entry } from '../src/sim/garden';
+import { boardFacts, boardFor, boardIsValid, nextBoard, resultOf, roleFromDiet } from '../src/sim/door';
+import { capacity, catchUp, newGarden, popOf, release, rowOf, shares, step, stockBars, type Entry } from '../src/sim/garden';
 import { advance, freshSave } from '../src/sim/save';
 
 const e = (score: number): Entry => ({ sp: `s${score}`, name: 'x', role: 'grazer', pop: 1, score, proven: true });
@@ -43,6 +43,19 @@ describe('the garden', () => {
     expect(roleFromDiet({ prey: 30 }, 'swimmer')).toBe('predator');
     expect(roleFromDiet({}, 'worm')).toBe('burrower');
     expect(boardFor(g, 'sand').prey.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('the card: the next-board line counts what the Life really gets; bars stay in range and move', () => {
+    const g = newGarden(9), first = stockBars(g, 'rock').map((b) => b.value);
+    for (let k = 0; k < 40; k++) step(g);
+    for (const id of HAB_ORDER) {
+      const b = boardFor(g, id), f = boardFacts(b), nodes = L.newLife(1, 'worm', b).tiles.map((t) => t.node);
+      const n = (...ks: (string | null)[]) => nodes.filter((x) => ks.includes(x)).length;
+      expect([f.mats, f.buried, f.shells, f.carcasses]).toEqual([n('mat', 'bloom'), n('buried'), n('shell'), n('carcass')]);
+      expect(nextBoard(b)).toContain(f.predator ? `${f.predator.name} on turn ${f.predator.turn}` : 'no hunter');
+      for (const bar of stockBars(g, id)) for (const v of [bar.value, bar.normal]) expect(v).toBeGreaterThanOrEqual(0), expect(v).toBeLessThanOrEqual(1);
+    }
+    expect(stockBars(g, 'rock').map((b) => b.value)).not.toEqual(first);
   });
 
   it('budgets: a step under 0.1 ms; 8 h offline under 0.5 s', () => {
