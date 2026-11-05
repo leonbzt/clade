@@ -41,3 +41,8 @@ Next: steps 2–8 in one long session, [the M1 run](planning/m1-run.md).
 - **11 The predator Life** ([spec](slices/11-predator-life.md)): the swimmer (you hunt; no hunter on your board); worms burrow,
   trilobites run, Wiwaxia hunkers; lurk = ambush ×2, frenzy +1 speed per catch in a row; compound eyes preview the prey's next
   step (tap to aim, tap again). *Judge:* prey notice you only when you moved; Wiwaxia cuts only if it saw you; respawn in 3.
+- **13 The garden and the island** ([spec](slices/13-garden-island.md)): the island map (ported generator), a card per habitat
+  with niche rows (open and contested first, ranks to beat, bars, news); a niche gives its body (grazer → arthropod,
+  burrower → worm, hunter → swimmer); the garden (ported) with a 60% self-limit; the garden writes the board; eggs count in
+  the niche you ate like; a generation every 3 min, Skip +10, 8 h offline, a browser save. *Judge:* the mapping, the
+  self-limit, one tier scale (S 40, A 28, B 18, C 10, D 4), the natives. Built before 12, as plan.md allows.

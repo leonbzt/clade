@@ -4,12 +4,20 @@ import '@fontsource/pixelify-sans/latin-400.css';
 import '@fontsource/pixelify-sans/latin-700.css';
 import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
+import { mount } from 'svelte';
 import { NODES, PARTS, PLANS, RULE, TERRAIN, VERBS, type PartId, type PlanId, type VerbId } from './data/life';
 import { HABITATS, type HabitatId } from './data/habitats';
+import { MODEL, ROLES, type Role } from './data/garden';
 import { PREY } from './data/prey';
 import * as L from './sim/life';
 import { predict } from './sim/hunt';
 import { useVerb } from './sim/verbs';
+import { BODY_FOR, boardFor, resultOf } from './sim/door';
+import { release, step, tierName } from './sim/garden';
+import { habitatSpots, makeIsland } from './sim/island';
+import { SAVE_KEY, advance, freshSave, parseSave } from './sim/save';
+import Meta from './ui/Meta.svelte';
+import { bump, ctx, ui } from './ui/meta.svelte';
 import { S, centre, dirAngle, screen } from './scene';
 import { bounce, play } from './playback';
 import { feel, onFeel } from './ui/feel';
@@ -24,7 +32,6 @@ import { Worm, type Creature } from './view/worm';
 import { Arthropod } from './view/arthropod';
 import { Swimmer } from './view/swimmer';
 import { preyBody } from './view/preyview';
-import { Pick } from './ui/pick';
 import { Hud } from './ui/hud';
 import { devPanel } from './ui/dev';
 import { skin } from './ui/skin';
@@ -44,14 +51,13 @@ world.addChild(floor.root, fx.under, shadowLayer, marks.g, bodies, above, fx.ove
 app.stage.addChild(world);
 
 const BODIES: Record<PlanId, Creature> = { worm: new Worm(PAL.you), arthropod: new Arthropod(PAL.you, 1.2), swimmer: new Swimmer(PAL.you) };
-const pick = new Pick();
 const hud = new Hud({ wait: () => act(() => L.stay(S.life)), moult: () => doMoult(), lay: () => act(() => L.lay(S.life)), verb: (v) => doVerb(v) });
 const cam = new Camera(world, app.canvas, (x, y) => tap(x, y), (x, y) => hover(x, y));
 Object.assign(S, { app, floor, fx, marks, cam, hud, hunter: new Hunter(), you: BODIES.worm, rival: new Worm(PAL.rival, true, 0.85), prey: [], busy: false });
 devPanel();
 skin();
 
-let habId: HabitatId = 'mud', plan: PlanId = 'worm';
+let habId: HabitatId = 'mud', plan: PlanId = 'worm', niche: Role = 'burrower', verbs: VerbId[] = [];
 const inMud = (x: number, y: number) => { const tx = Math.floor(x / C), ty = Math.floor(y / C); return L.inB(tx, ty) && L.tile(S.life, tx, ty).t === 'mud'; };
 
 function applyFeel() {
@@ -83,11 +89,30 @@ app.ticker.add((tk) => {
   hunter.draw(above, shadows);
 });
 
-// ---- a Life ----
-function choose() { pick.show((h, p) => { habId = h; plan = p; newLife(); }); }
+// ---- the garden and the island (slice 13) ----
+const save = ctx.save = parseSave(localStorage.getItem(SAVE_KEY)) ?? freshSave((Math.random() * 2 ** 31) | 0, Date.now());
+ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl);
+const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch { /* private mode: this visit only */ } };
+{ const away = advance(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
+ctx.start = (hab, role, vs) => { habId = hab; niche = role; plan = BODY_FOR[role]; verbs = vs; ui.open = false; newLife(); };
+ctx.skip = () => { for (let k = 0; k < MODEL.skip; k++) step(save.garden); persist(); };
+setInterval(() => { if (ui.open && advance(save, Date.now()).gens) { bump(); persist(); } }, 5000);
+mount(Meta, { target: document.getElementById('metaRoot')! });
+
+function choose() { ui.open = true; bump(); }
+
+/** The Life's eggs go to the garden, in the niche you lived; a couple of generations pass; back to the habitat's card. */
+function finishLife() {
+  const r = resultOf(S.life), key = `${r.hab}:${r.role}`, tier = tierName(r.hab, r.eggs);
+  if (r.eggs > 0) release(save.garden, r);
+  for (let k = 0; k < MODEL.afterLife; k++) step(save.garden);
+  if (!save.best[key] || 'SABCDF'.indexOf(tier) < 'SABCDF'.indexOf(save.best[key])) save.best[key] = tier;
+  save.lives++; persist();
+  ui.open = true; ui.hab = r.hab; ui.niche = null; bump();
+}
 
 function newLife() {
-  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, HABITATS[habId], L.partsFor(plan, pick.verbs));
+  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, boardFor(save.garden, habId), L.partsFor(plan, verbs));
   S.you = BODIES[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
@@ -100,9 +125,10 @@ function newLife() {
   hud.refresh(life, true);
   hud.info('Tap a lit tile to move.');
   const h = life.hab, P = PLANS[plan];
-  const who = plan === 'swimmer'
+  const role = `You came to fill the ${ROLES[niche].name} niche. `;
+  const who = role + (plan === 'swimmer'
     ? `You are the hunter here. ${P.blurb}\nLurk a turn and prey won't notice you; your next swim goes twice as far. Each catch in a row adds speed.`
-    : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predator} comes on turn ${h.predatorAt}.`;
+    : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predatorAt > 20 ? 'No hunter here this time.' : `${h.predator} comes on turn ${h.predatorAt}.`}`);
   hud.showCard(h.name, `${h.blurb}\n\n${who} ${h.event.name} on turns ${h.event.from}–${h.event.to}: ${h.event.text}.`, [{ label: 'Start', on: () => hud.hideCard() }]);
 }
 
@@ -119,7 +145,7 @@ function sync(instant = false) {
 
 async function act(f: () => void) {
   const life = S.life;
-  if (S.busy || life.phase !== 'play' || hud.cardOpen || pick.open) return;
+  if (S.busy || life.phase !== 'play' || hud.cardOpen || ui.open) return;
   S.busy = true; marks.dests = new Map(); marks.hover = -1; marks.aim = -1; marks.preview = [];
   f();
   const evs = life.events.slice();
@@ -133,7 +159,7 @@ async function act(f: () => void) {
 
 function doVerb(v: VerbId) {
   const life = S.life;
-  if (S.busy || hud.cardOpen || pick.open || !L.ready(life, v)) return;
+  if (S.busy || hud.cardOpen || ui.open || !L.ready(life, v)) return;
   if (VERBS[v].free) { // no world turn: play its look, stay ready to move
     if (!useVerb(life, v)) { hud.info(life.lines.at(-1) ?? ''); return; }
     const evs = life.events.slice();
@@ -170,12 +196,11 @@ function pickPart(id: PartId) {
 }
 
 function endCard() {
-  const life = S.life, tier = L.tierOf(life.hab, life.eggs), nt = L.nextTier(life.hab, life.eggs);
-  pick.record(habId, plan, tier);
+  const life = S.life, r = resultOf(life), tier = L.tierOf(life.hab, life.eggs), nt = L.nextTier(life.hab, life.eggs);
+  const lived = r.role === niche ? `You lived as a ${ROLES[r.role].name}.` : `You came as a ${ROLES[niche].name} but ate like a ${ROLES[r.role].name}: the eggs count there.`;
   hud.showCard(life.cause === 'season' ? 'The season ends' : `You died on turn ${life.turn}`,
-    `You laid ${life.eggs} eggs: tier ${tier} as a ${PLANS[plan].name.toLowerCase()} in the ${life.hab.name.toLowerCase()}.${nt ? `\n${nt[0]} needs ${nt[1]}.` : ''}`,
-    [{ label: 'Live again', note: `${life.hab.name}, ${PLANS[plan].name.toLowerCase()}`, on: () => { hud.hideCard(); newLife(); } },
-      { label: 'Choose another', on: () => { hud.hideCard(); choose(); } }]);
+    `You laid ${life.eggs} eggs: tier ${tier} in the ${life.hab.name.toLowerCase()}. ${lived}${nt ? `\n${nt[0]} needs ${nt[1]}.` : ''}`,
+    [{ label: life.eggs ? 'Release your eggs' : 'Back to the island', note: life.eggs ? `They join the ${ROLES[r.role].plural.toLowerCase()} of the ${life.hab.name.toLowerCase()}.` : undefined, on: () => { hud.hideCard(); finishLife(); } }]);
 }
 
 // ---- input ----
@@ -184,7 +209,7 @@ const eyes = () => S.life.plan === 'swimmer' && L.has(S.life, 'lenses');
 
 function tap(x: number, y: number) {
   const i = tileAt(x, y), life = S.life;
-  if (S.busy || i < 0 || hud.cardOpen || pick.open) return;
+  if (S.busy || i < 0 || hud.cardOpen || ui.open) return;
   if (life.phase === 'play' && L.dests(life).has(i)) {
     if (eyes() && marks.aim !== i) { marks.aim = i; marks.preview = predict(life, i); hud.info('Your eyes show where the prey will go. Tap again to swim there.'); return; }
     act(() => L.move(life, i));
@@ -229,5 +254,6 @@ window.addEventListener('keydown', (e) => {
 Object.assign(window, { __game: { get life() { return S.life; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)), get zoom() { return cam.zoom; }, fps: () => app.ticker.FPS } });
 
 S.life = L.newLife(1, plan, HABITATS[habId]); floor.set(S.life); sync(true);
+
 choose();
 performance.mark('first-board'); // read by the spike's load check

@@ -48,7 +48,7 @@ export function swimMove(l: Life, d: Dest) {
 function catchPrey(l: Life, k: number) {
   const p = l.prey[k], P = PREY[p.kind], gain = P.food + count(l, 'gut') * RULE.gutFood;
   p.alive = false; p.back = l.turn + PREY_BACK;
-  l.food += gain; l.xp += gain; l.eaten += gain; l.caught = true; l.catches++;
+  l.food += gain; l.xp += gain; l.eaten += gain; l.caught = true; l.catches++; l.ate.prey = (l.ate.prey ?? 0) + gain;
   say(l, `${P.name} caught: +${gain} food.`);
   emit(l, { k: 'catch', idx: k, i: at(p.x, p.y), kind: p.kind, gain, food: l.food });
   if (P.armour && p.alarmed && !has(l, 'spikes')) { // spines up: it saw you coming

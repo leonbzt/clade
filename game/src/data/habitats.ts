@@ -23,6 +23,10 @@ export interface Habitat {
   prey: { kind: PreyKind; at: [number, number] }[]; // the predator Life's prey
 }
 
+/** One tier scale for every habitat, in eggs (slice 13). */
+export const TIERS: [string, number][] = [['S', 40], ['A', 28], ['B', 18], ['C', 10], ['D', 4], ['F', 0]];
+export const NO_PREDATOR = 99;
+
 export const MUD_FLATS: Habitat = {
   id: 'mud', name: 'Mud flats', ground: 'mud', pitch: 'Hidden food in soft mud. Mudslide on turns 12–15.',
   blurb: 'Soft mud full of hidden food. Burrowers rule until the mudslide, when the mud has no oxygen.',
@@ -45,7 +49,7 @@ export const MUD_FLATS: Habitat = {
   event: { from: 12, to: 15, where: 'mud', name: 'Mudslide', text: 'no oxygen in the mud', look: 'murk' },
   rares: { arthropod: ['compound', 'progenesis'], worm: ['deep', 'progenesis'], swimmer: ['fan', 'progenesis'] },
   prey: [{ kind: 'worm', at: [1, 3] }, { kind: 'worm', at: [6, 4] }, { kind: 'worm', at: [2, 9] }, { kind: 'trilobite', at: [6, 1] }, { kind: 'wiwaxia', at: [4, 7] }],
-  tiers: [['S', 56], ['A', 40], ['B', 26], ['C', 14], ['D', 5], ['F', 0]],
+  tiers: TIERS,
 };
 
 export const SAND_SHALLOWS: Habitat = {
@@ -70,7 +74,7 @@ export const SAND_SHALLOWS: Habitat = {
   event: { from: 9, to: 12, where: 'all', rows: [0, 2], name: 'Low tide', text: 'the three rows by the shore run dry', look: 'dry' },
   rares: { arthropod: ['enrol', 'progenesis'], worm: ['hook', 'progenesis'], swimmer: ['fan', 'progenesis'] },
   prey: [{ kind: 'trilobite', at: [1, 1] }, { kind: 'trilobite', at: [6, 2] }, { kind: 'trilobite', at: [3, 9] }, { kind: 'worm', at: [4, 5] }, { kind: 'wiwaxia', at: [6, 7] }],
-  tiers: [['S', 48], ['A', 34], ['B', 22], ['C', 12], ['D', 4], ['F', 0]],
+  tiers: TIERS,
 };
 
 export const VOLCANIC_ROCK: Habitat = {
@@ -95,7 +99,7 @@ export const VOLCANIC_ROCK: Habitat = {
   event: { from: 8, to: 10, where: 'all', name: 'Vent surge', text: 'warm water, oxygen falls everywhere', look: 'haze' },
   rares: { arthropod: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'], swimmer: ['fan', 'progenesis'] },
   prey: [{ kind: 'trilobite', at: [1, 0] }, { kind: 'trilobite', at: [6, 9] }, { kind: 'wiwaxia', at: [1, 5] }, { kind: 'wiwaxia', at: [6, 1] }, { kind: 'worm', at: [4, 6] }],
-  tiers: [['S', 44], ['A', 32], ['B', 22], ['C', 12], ['D', 4], ['F', 0]],
+  tiers: TIERS,
 };
 
 export const HABITATS: Record<HabitatId, Habitat> = { mud: MUD_FLATS, sand: SAND_SHALLOWS, rock: VOLCANIC_ROCK };

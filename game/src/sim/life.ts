@@ -57,6 +57,7 @@ export interface Life {
   pred: Predator | null; cause: 'season' | 'died' | null; lines: string[]; events: Ev[];
   recharge: Partial<Record<VerbId, number>>; dash: boolean; braced: boolean; dug: boolean;
   prey: Prey[]; frenzy: number; still: boolean; caught: boolean; catches: number; // the predator Life
+  ate: Partial<Record<NodeId | 'prey', number>>; // food by source: the garden reads your role from it
 }
 
 export function rnd(l: { r: number }) { // the toy's mulberry32
@@ -150,7 +151,7 @@ export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat 
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, xp: 0, eaten: 0,
     size: 1, slots, order: [], phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
     moulted: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
-    recharge: {}, dash: false, braced: false, dug: false, prey: [], frenzy: 0, still: false, caught: false, catches: 0,
+    recharge: {}, dash: false, braced: false, dug: false, prey: [], frenzy: 0, still: false, caught: false, catches: 0, ate: {},
   };
   preyInit(l);
   l.rareAt = 2 + Math.floor(rnd(l) * 2);
@@ -252,7 +253,7 @@ export function eat(l: Life, i: number, force = false, bonus = 0) {
   if (lock) { say(l, `${NODES[t.node].name} ${lock}.`); emit(l, { k: 'locked', i, node: t.node, why: lock }); return; }
   const f = foodOf(l, t.node) + bonus;
   say(l, `${NODES[t.node].name}: +${f} food.`);
-  l.food += f; l.xp += f; l.eaten += f;
+  l.food += f; l.xp += f; l.eaten += f; l.ate[t.node] = (l.ate[t.node] ?? 0) + f;
   emit(l, { k: 'eat', i, node: t.node, gain: f, food: l.food });
   cleared(l, t);
 }
