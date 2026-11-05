@@ -2,7 +2,7 @@
 // plain data (boardFor); the Life hands back a result (resultOf). The only file that knows both sides.
 import { BOARD, ROLE_OF_FOOD, type Role } from '../data/garden';
 import { HABITATS, NO_PREDATOR, type Habitat, type HabitatId } from '../data/habitats';
-import { COLS, ROWS, TURNS, type NodeId, type PlanId } from '../data/life';
+import { COLS, ROWS, TURNS, type NodeId, type PartId, type PlanId } from '../data/life';
 import type { PreyKind } from '../data/prey';
 import { popOf, type Garden, type LifeResult } from './garden';
 import type { Life } from './life';
@@ -40,7 +40,7 @@ function shiftVents(grid: Grid, by: number, safe: (x: number, y: number) => bool
 }
 
 /** The board this habitat gives right now. The map is the habitat's; what's on it comes from the garden. */
-export function boardFor(g: Garden, id: HabitatId): Habitat {
+export function boardFor(g: Garden, id: HabitatId, forms: Record<string, PartId> = {}): Habitat {
   const base = HABITATS[id], h = g.habs[id], normal = g.normal[id], grid: Grid = base.map.map((row) => [...row]);
   const share = (now: number, was: number) => (was > 0 ? clamp(now / was, BOARD.minShare, BOARD.maxShare) : 1);
   const safe = (x: number, y: number) => dist(x, y, base.start[0], base.start[1]) <= BOARD.safeRange || (x === base.entry[0] && y === base.entry[1]);
@@ -59,11 +59,15 @@ export function boardFor(g: Garden, id: HabitatId): Habitat {
     if (!top || P < BOARD.rivalAt || P < normal.pops[role] * BOARD.rivalGone) return [];
     return [{ ...v, name: top.line ? `your own ${top.name.replace('Your ', '')}` : top.name }];
   });
-  const hunter = byPop('predator').find((e) => !e.line), P = popOf(h, 'predator'), hunted = !!hunter && hunter.pop >= BOARD.predatorAt;
+  // the hunter: your own line once it ranks top in the hunter row (slice 14), else the top native by numbers
+  const top = h.entries.filter((e) => e.role === 'predator').sort((a, b) => b.score - a.score || b.pop - a.pop)[0];
+  const mine = top?.line && top.pop >= BOARD.predatorAt ? top : null, form = forms[`${id}:predator`];
+  const hunter = mine ?? byPop('predator').find((e) => !e.line), P = popOf(h, 'predator'), hunted = !!hunter && hunter.pop >= BOARD.predatorAt;
   const shift = normal.pops.predator > 0 ? Math.round(Math.log2(Math.max(P, 0.5) / normal.pops.predator) * BOARD.spread) : 0;
   return {
     ...base, map: grid.map((row) => row.join('')), rivals, prey: preyFor(g, id),
     predator: hunted ? hunter!.name : 'none', predatorAt: hunted ? clamp(base.predatorAt - shift, BOARD.earliest, Math.min(BOARD.latest, TURNS)) : NO_PREDATOR,
+    hunter: mine ? { yours: true, parts: form ? [form] : [] } : undefined,
   };
 }
 

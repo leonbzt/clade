@@ -7,16 +7,16 @@ import {
 import { CELL, MUD_FLATS, type Habitat } from '../data/habitats';
 import type { PreyKind } from '../data/prey';
 import { preyInit, preyStep, swimDests, swimMove, type Prey } from './hunt';
+import { predatorStep } from './threat';
+export { hitOn } from './threat';
 
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
 export { DX, DY, at, dist, inB, xy, type Dir } from './grid';
 export type Side = 'front' | 'right' | 'back' | 'left';
-const SIDES: Side[] = ['front', 'right', 'back', 'left'];
-const DIR_NAMES = ['north', 'east', 'south', 'west'];
 
 export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number } }
 export interface Slot { kind: SlotKind; side: Side; seg: number; part: PartId | null }
-export interface Predator { x: number; y: number; state: 'hunt' | 'strike' | 'rest'; rest: number; marks: number[]; dir: Dir; lx: number; ly: number }
+export interface Predator { x: number; y: number; state: 'hunt' | 'strike' | 'rest'; rest: number; marks: number[]; dir: Dir; lx: number; ly: number; lurked: boolean; bonus: number }
 export interface Dest { i: number; dir: Dir; grab: boolean; path: number[] }
 export interface Hit { side: Side; kind: 'buried' | 'enrolled' | 'blocked' | 'hit'; part: PartId | null; tear: number; damage: number }
 
@@ -36,6 +36,7 @@ export type Ev =
   | { k: 'rival'; idx: number; from: number; to: number; ate: boolean }
   | { k: 'pred_arrive'; at: number }
   | { k: 'pred_move'; from: number; to: number }
+  | { k: 'pred_lurk'; at: number }
   | { k: 'marks'; marks: number[]; dir: Dir }
   | ({ k: 'strike'; at: number; dir: Dir; marks: number[]; health: number } & (Hit | { kind: 'miss' }))
   | { k: 'event'; name: string; text: string }
@@ -223,15 +224,16 @@ export function dests(l: Life): Map<number, Dest> {
   const worm = l.plan === 'worm', predAt = l.pred ? at(l.pred.x, l.pred.y) : -1;
   for (let d = 0 as Dir; d < 4; d = (d + 1) as Dir) {
     const path: number[] = [];
-    let x = l.x, y = l.y;
-    for (let k = 1; k <= (worm ? 1 : range(l)); k++) {
+    let x = l.x, y = l.y, budget = worm ? 1 : range(l);
+    while (budget > 0) {
       x += DX[d]; y += DY[d];
       if (!inB(x, y)) break;
-      const i = at(x, y), t = l.tiles[i];
-      if (t.t === 'rock' || i === predAt) break;
+      const i = at(x, y), t = l.tiles[i], cost = l.plan === 'trilobite' && t.t === 'mud' ? 2 : 1; // a trilobite ploughs: mud costs double
+      if (t.t === 'rock' || i === predAt || cost > budget) break;
+      budget -= cost;
       path.push(i);
       out.set(i, { i, dir: d, grab: false, path: path.slice() });
-      if (!worm && t.t === 'mud') break;
+      if (l.plan === 'arthropod' && t.t === 'mud') break;
     }
   }
   if (worm && onMud(l)) tunnels(l, out, predAt);
@@ -286,81 +288,6 @@ export function stay(l: Life, dir: Dir = l.facing) {
   l.facing = dir; l.moved = false;
   emit(l, { k: 'stay', dir });
   world(l);
-}
-
-// ---- strikes ----
-/** What a strike from `dir` would do to you at (x, y), facing `facing`. */
-export function hitOn(l: Life, dir: Dir, facing: Dir, x: number, y: number): Hit {
-  const side = SIDES[(dir - facing + 4) % 4];
-  if (buriedAt(l, x, y)) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
-  if (l.dug) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
-  if (has(l, 'enrol') && !l.moved) return { side, kind: 'enrolled', part: 'enrol', tear: -1, damage: 0 };
-  if (l.braced && l.plan !== 'swimmer') return { side, kind: 'blocked', part: VERB_PART[l.plan].brace, tear: -1, damage: 0 };
-  const guard = l.slots.find((s) => s.side === side && s.part && PARTS[s.part].guard);
-  if (guard) return { side, kind: 'blocked', part: guard.part, tear: -1, damage: 0 };
-  let tear = -1;
-  l.slots.forEach((s, k) => { if (s.side === side && s.part) tear = k; });
-  return { side, kind: 'hit', part: tear >= 0 ? l.slots[tear].part : null, tear, damage: (tear < 0 ? 1 : 0) + (l.soft ? 1 : 0) };
-}
-
-function strike(l: Life) {
-  const p = l.pred!, marks = p.marks, here = at(l.x, l.y);
-  p.state = 'rest'; p.rest = RULE.restAfterStrike; p.marks = [];
-  if (!marks.includes(here)) {
-    say(l, 'The strike misses.');
-    emit(l, { k: 'strike', kind: 'miss', at: here, dir: p.dir, marks, health: l.health });
-    return;
-  }
-  const h = hitOn(l, p.dir, l.facing, l.x, l.y);
-  if (h.kind === 'buried') say(l, 'You are buried: the strike misses.');
-  else if (h.kind === 'enrolled') say(l, 'You roll up: the strike glances off.');
-  else if (h.kind === 'blocked') {
-    say(l, `Your ${PARTS[h.part!].name.toLowerCase()} blocks a strike on your ${h.side}.`);
-    if (h.part === 'spine' || l.braced) p.rest = RULE.restAfterSpine;
-  } else {
-    if (h.tear >= 0) { const n = PARTS[h.part!].name.toLowerCase(); say(l, `Hit on your ${h.side}: your ${n} ${n.endsWith('s') ? 'are' : 'is'} torn off.`); l.slots[h.tear].part = null; l.order = l.order.filter((k) => k !== h.tear); }
-    if (h.damage) { say(l, `Hit on your ${h.side}: −${h.damage} health${l.soft ? ' (soft from moulting)' : ''}.`); l.health -= h.damage; }
-  }
-  emit(l, { k: 'strike', ...h, at: here, dir: p.dir, marks, health: l.health });
-}
-
-/** One step toward (tx, ty), swimming over rock but never into dead water: it heads for the nearest tile it can reach. */
-function predatorMove(l: Life, p: Predator, tx: number, ty: number) {
-  const start = at(p.x, p.y), from = new Map<number, number>([[start, -1]]), open = [start];
-  let goal = start, gd = dist(p.x, p.y, tx, ty);
-  while (open.length) {
-    const i = open.shift()!, [x, y] = xy(i), dd = dist(x, y, tx, ty);
-    if (dd < gd) { gd = dd; goal = i; }
-    for (let d = 0; d < 4; d++) {
-      const nx = x + DX[d], ny = y + DY[d];
-      if (!inB(nx, ny)) continue;
-      const n = at(nx, ny);
-      if (from.has(n) || l.tiles[n].t === 'dead') continue;
-      from.set(n, i); open.push(n);
-    }
-  }
-  let step = goal;
-  while (from.get(step) !== -1 && from.get(step) !== start) step = from.get(step)!;
-  if (step !== start) [p.x, p.y] = xy(step);
-}
-
-function predatorStep(l: Life) {
-  const p = l.pred;
-  if (!p) return;
-  if (p.state === 'strike') { strike(l); return; }
-  if (p.state === 'rest') { if (--p.rest <= 0) p.state = 'hunt'; return; }
-  const hidden = buriedAt(l, l.x, l.y), from = at(p.x, p.y);
-  if (!hidden) { p.lx = l.x; p.ly = l.y; }
-  for (let k = 0; k < RULE.predatorSteps && dist(p.x, p.y, p.lx, p.ly) > 1; k++) predatorMove(l, p, p.lx, p.ly);
-  if (at(p.x, p.y) !== from) emit(l, { k: 'pred_move', from, to: at(p.x, p.y) });
-  if (hidden || dist(p.x, p.y, l.x, l.y) !== 1) return;
-  p.dir = (p.y < l.y ? 0 : p.x > l.x ? 1 : p.y > l.y ? 2 : 3) as Dir;
-  const across = p.dir % 2 === 0 ? 1 : 0; // the strike sweeps sideways: step away along its line, or get clear of it
-  p.marks = [[0, 0], [DX[across], DY[across]], [-DX[across], -DY[across]]]
-    .map(([ox, oy]) => [l.x + ox, l.y + oy]).filter(([x, y]) => inB(x, y) && tile(l, x, y).t !== 'rock').map(([x, y]) => at(x, y));
-  p.state = 'strike';
-  say(l, `${l.hab.predator} marks a strike from the ${DIR_NAMES[p.dir]}.`);
-  emit(l, { k: 'marks', marks: p.marks, dir: p.dir });
 }
 
 function rivalStep(l: Life, idx: number) {
@@ -420,7 +347,7 @@ export function world(l: Life) {
     t.node = t.grow.node; t.grow = undefined; emit(l, { k: 'grow', i, node: t.node });
   });
   if (l.turn === l.hab.predatorAt && l.plan !== 'swimmer') {
-    l.pred = { x: l.hab.entry[0], y: l.hab.entry[1], state: 'hunt', rest: 0, marks: [], dir: 1, lx: l.x, ly: l.y };
+    l.pred = { x: l.hab.entry[0], y: l.hab.entry[1], state: 'hunt', rest: 0, marks: [], dir: 1, lx: l.x, ly: l.y, lurked: false, bonus: 0 };
     say(l, `${l.hab.predator} arrives.`); emit(l, { k: 'pred_arrive', at: at(l.pred.x, l.pred.y) });
   }
   if (ev.name && l.turn === ev.from) { say(l, `${ev.name}: ${ev.text}.`); emit(l, { k: 'event', name: ev.name, text: ev.text }); }

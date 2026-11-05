@@ -101,6 +101,7 @@ export async function play(evs: L.Ev[]) {
         tween(hunter.swim, { v: 0.4 }, 0.4);
         break;
       }
+      case 'pred_lurk': { const s = screen(hunter.pos); hud.floater(s.x, s.y, 'lurking…', '#ff9a2e'); tween(hunter.lift, { v: 6 }, g * 2); await wait(g * 2); break; }
       case 'marks': {
         const d = (e.dir + 2) % 4;
         tween(hunter.look, { a: turnTo(hunter.look.a, dirAngle(d)) }, 0.2);

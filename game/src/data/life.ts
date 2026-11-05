@@ -13,9 +13,9 @@ export const RULE = {
 };
 export const STAGES = ['Hatchling', 'Juvenile', 'Adult', 'Adult', 'Full grown'];
 
-export type PlanId = 'worm' | 'arthropod' | 'swimmer';
-export type GrazerId = 'worm' | 'arthropod';
-export const PLAN_IDS: PlanId[] = ['worm', 'arthropod', 'swimmer'];
+export type PlanId = 'worm' | 'arthropod' | 'swimmer' | 'trilobite';
+export type GrazerId = 'worm' | 'arthropod' | 'trilobite';
+export const PLAN_IDS: PlanId[] = ['worm', 'arthropod', 'trilobite', 'swimmer'];
 export const PLANS: Record<PlanId, { name: string; pitch: string; head: number; pairs: number; range: number; sense: number; moultExtra: number; soft: boolean; blurb: string; real: string }> = {
   worm: {
     name: 'Worm', pitch: 'Tunnels in mud, where strikes miss it.', head: 1, pairs: 2, range: 1, sense: 2, moultExtra: 2, soft: false,
@@ -26,6 +26,11 @@ export const PLANS: Record<PlanId, { name: string; pitch: string; head: number; 
     name: 'Arthropod', pitch: 'Runs 2 tiles in a line; mud stops it.', head: 1, pairs: 2, range: 2, sense: 1, moultExtra: 3, soft: true,
     blurb: 'Moves 2 tiles in a line, more with legs. Mud stops it. Soft for the turn it moults.',
     real: 'Like Sidneyia, a Cambrian arthropod that ate shelled prey.',
+  },
+  trilobite: {
+    name: 'Trilobite', pitch: 'Ploughs through mud; rolls up when it stays put.', head: 1, pairs: 3, range: 2, sense: 2, moultExtra: 3, soft: true,
+    blurb: 'Moves 2 tiles in a line; mud costs double instead of stopping it. Staying put, it rolls up and strikes glance off.',
+    real: 'Like Olenoides, a spiny trilobite; trilobite furrows (Cruziana) cross Cambrian sediments.',
   },
   swimmer: {
     name: 'Swimmer', pitch: 'The hunter: swims 2 tiles any way, over rock.', head: 2, pairs: 2, range: 2, sense: 3, moultExtra: 3, soft: false,
@@ -60,6 +65,7 @@ export const STYLES: Record<StyleId, { name: string; blurb: string }> = {
 export const VERB_PART: Record<GrazerId, Record<VerbId, PartId>> = {
   worm: { graze: 'tentacles', dash: 'chaetae', dig: 'bulb', sense: 'eye', brace: 'sclerite', crush: 'proboscis' },
   arthropod: { graze: 'rake', dash: 'leg', dig: 'digger', sense: 'eye', brace: 'spine', crush: 'claw' },
+  trilobite: { graze: 'rake', dash: 'leg', dig: 'digger', sense: 'eye', brace: 'spine', crush: 'claw' },
 };
 export const STYLE_VERBS: Record<StyleId, VerbId[]> = { sweeper: ['graze', 'dash'], digger: ['dig', 'sense'], tank: ['brace', 'crush'] };
 
@@ -67,7 +73,7 @@ export type SlotKind = 'head' | 'side' | 'tail';
 export type PartId = 'claw' | 'shield' | 'eye' | 'spine' | 'leg' | 'digger' | 'gill' | 'gut' | 'pouch' | 'proboscis' | 'rake' | 'tentacles' | 'bulb'
   | 'arms' | 'spikes' | 'lenses' | 'flap' | 'fan'
   | 'chaetae' | 'sclerite' | 'compound' | 'enrol' | 'blood' | 'hook' | 'deep' | 'symbiont' | 'progenesis';
-const BOTH: PlanId[] = ['worm', 'arthropod'], ART: PlanId[] = ['arthropod'], WORM: PlanId[] = ['worm'], ALL: PlanId[] = ['worm', 'arthropod', 'swimmer'], SWIM: PlanId[] = ['swimmer'];
+const BOTH: PlanId[] = ['worm', 'arthropod', 'trilobite'], ART: PlanId[] = ['arthropod', 'trilobite'], WORM: PlanId[] = ['worm'], ALL: PlanId[] = ['worm', 'arthropod', 'trilobite', 'swimmer'], SWIM: PlanId[] = ['swimmer'];
 export const PARTS: Record<PartId, { name: string; upkeep: number; slots: SlotKind[]; plans: PlanId[]; does: string; rare?: boolean; guard?: boolean; verb?: VerbId }> = {
   claw: { name: 'Crushing claw', upkeep: 1, slots: ['head'], plans: ART, verb: 'crush', does: 'Opens shell beds. Grabs food ahead without moving.' },
   shield: { name: 'Head shield', upkeep: 0, slots: ['head'], plans: ART, guard: true, does: 'Blocks strikes from the front.' },

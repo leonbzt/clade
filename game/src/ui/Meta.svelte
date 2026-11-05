@@ -3,7 +3,7 @@
 <script lang="ts">
   import { ROLES, ROLE_IDS, type Role } from '../data/garden';
   import { HABITATS, HAB_ORDER, type HabitatId } from '../data/habitats';
-  import { HUNT, MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type GrazerId, type StyleId, type VerbId } from '../data/life';
+  import { HUNT, MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type GrazerId, type PlanId, type StyleId, type VerbId } from '../data/life';
   import { BODY_FOR } from '../sim/door';
   import { capacity, rowOf, tierName } from '../sim/garden';
   import { newLife, partsFor } from '../sim/life';
@@ -13,6 +13,7 @@
   let cv: HTMLCanvasElement | undefined = $state();
   let verbs: VerbId[] = $state([...STYLE_VERBS.digger]);
   let note = $state('');
+  let body: PlanId | null = $state(null);
   const g = $derived((ui.tick, ctx.save.garden));
   const TINK: Record<string, string> = { S: '#ffe033', A: '#7fd14e', B: '#5ec4d6', C: '#f3e9cc', D: '#c9a26a', F: '#ff6a4c' };
 
@@ -23,7 +24,7 @@
     const beat = row.find((e) => !e.line);
     const state = !mine ? 'open' : mine === top ? 'held' : 'contested';
     const call = !mine ? `None of yours.${beat ? ` Rank to beat: ${tierName(id, beat.score)}.` : ' Empty!'}`
-      : mine === top ? `Yours lead at ${tierName(id, mine.score)}.` : `Yours rank ${tierName(id, mine.score)}; ${top.name} hold ${tierName(id, top.score)}.`;
+      : mine === top ? `Yours lead at ${tierName(id, mine.score)}.${role === 'predator' ? ' They hunt your grazers and burrowers here now.' : ''}` : `Yours rank ${tierName(id, mine.score)}; ${top.name} hold ${tierName(id, top.score)}.`;
     return { role, state, call, rows: row.map((e) => ({ e, tier: tierName(id, e.score), bar: Math.min(1, e.pop / cap) })) };
   }
   const order = { open: 0, contested: 1, held: 2 };
@@ -44,9 +45,9 @@
     if (id) openHab(id);
   }
   function openHab(id: HabitatId) { ui.hab = id; ui.niche = null; }
-  function live(role: Role) { ui.niche = role; note = ''; verbs = [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']]; }
+  function live(role: Role, as: PlanId | null = null) { ui.niche = role; body = as; note = ''; verbs = [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']]; }
 
-  const plan = $derived(ui.niche ? BODY_FOR[ui.niche] : 'worm');
+  const plan: PlanId = $derived(body ?? (ui.niche ? BODY_FOR[ui.niche] : 'worm'));
   function fits(vs: VerbId[]) { const l = newLife(1, plan, HABITATS[ui.hab ?? 'mud'], partsFor(plan, vs)); return l.order.length === vs.length; }
   function toggle(v: VerbId) {
     note = '';
@@ -57,7 +58,7 @@
     verbs = next;
   }
   const upkeep = $derived(RULE.baseUpkeep + partsFor(plan, verbs).reduce((n, p) => n + PARTS[p].upkeep, 0));
-  function start() { if (ui.hab && ui.niche) ctx.start(ui.hab, ui.niche, verbs); }
+  function start() { if (ui.hab && ui.niche) ctx.start(ui.hab, ui.niche, verbs, plan); }
 </script>
 
 {#if ui.open}
@@ -94,6 +95,7 @@
           {/each}
           {#if ctx.save.forms[`${id}:${n.role}`]}<div class="form">Your form here: {PARTS[ctx.save.forms[`${id}:${n.role}`]].name}</div>{/if}
           <button class="liveBtn" onclick={() => live(n.role)}>Live it as {BODY_FOR[n.role] === "arthropod" ? "an" : "a"} {PLANS[BODY_FOR[n.role]].name.toLowerCase()}</button>
+          {#if n.role === 'grazer' && ctx.save.unlocks.trilobite}<button class="liveBtn" onclick={() => live(n.role, 'trilobite')}>Live it as a trilobite</button>{/if}
         </div>
       {/each}
       <h3>News here</h3>
@@ -115,6 +117,16 @@
       {/if}
       <div class="row2"><button onclick={() => (ui.niche = null)}>Back</button><button class="go" onclick={start}>Start the Life</button></div>
     {/if}
+  </div>
+</div>
+{/if}
+
+{#if ui.notice}
+<div class="metaWrap">
+  <div class="panel habCard">
+    <h2>{ui.notice.title}</h2>
+    <p class="pitch">{ui.notice.text}</p>
+    <button class="go" onclick={() => (ui.notice = null)}>Back to the island</button>
   </div>
 </div>
 {/if}

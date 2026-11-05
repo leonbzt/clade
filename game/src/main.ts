@@ -28,7 +28,7 @@ import { Floor } from './view/floor';
 import { Fx } from './view/fx';
 import { Hunter } from './view/hunter';
 import { Marks } from './view/marks';
-import { C, PAL, type Ramp } from './view/shade';
+import { C, PAL, mixRamp, type Ramp } from './view/shade';
 import { startTweens, wait } from './view/tween';
 import { Worm, type Creature } from './view/worm';
 import { Arthropod } from './view/arthropod';
@@ -52,10 +52,11 @@ shadowLayer.addChild(shadows); shadowLayer.filters = [new AlphaFilter({ alpha: 0
 world.addChild(floor.root, fx.under, shadowLayer, marks.g, bodies, above, fx.over);
 app.stage.addChild(world);
 
-const BODIES: Record<PlanId, Creature> = { worm: new Worm(PAL.you), arthropod: new Arthropod(PAL.you, 1.2), swimmer: new Swimmer(PAL.you) };
+const BODIES: Record<PlanId, Creature> = { worm: new Worm(PAL.you), arthropod: new Arthropod(PAL.you, 1.2), trilobite: new Arthropod(PAL.you, 1.1, true), swimmer: new Swimmer(PAL.you) };
 const hud = new Hud({ wait: () => act(() => L.stay(S.life)), moult: () => doMoult(), lay: () => act(() => L.lay(S.life)), verb: (v) => doVerb(v) });
 const cam = new Camera(world, app.canvas, (x, y) => tap(x, y), (x, y) => hover(x, y));
-Object.assign(S, { app, floor, fx, marks, cam, hud, hunter: new Hunter(), you: BODIES.worm, rival: new Worm(PAL.rival, true, 0.85), prey: [], busy: false });
+const HUNTERS = { native: new Hunter(), yours: new Hunter(mixRamp(PAL.you, 0x2a0f2e, 0.45)) }; // yours: your colours, darker
+Object.assign(S, { app, floor, fx, marks, cam, hud, hunter: HUNTERS.native, you: BODIES.worm, rival: new Worm(PAL.rival, true, 0.85), prey: [], busy: false });
 devPanel();
 skin();
 
@@ -96,7 +97,7 @@ const save = ctx.save = parseSave(localStorage.getItem(SAVE_KEY)) ?? freshSave((
 ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl);
 const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch { /* private mode: this visit only */ } };
 { const away = advance(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
-ctx.start = (hab, role, vs) => { habId = hab; niche = role; plan = BODY_FOR[role]; verbs = vs; ui.open = false; newLife(); };
+ctx.start = (hab, role, vs, body) => { habId = hab; niche = role; plan = body ?? BODY_FOR[role]; verbs = vs; ui.open = false; newLife(); };
 ctx.skip = () => { for (let k = 0; k < MODEL.skip; k++) step(save.garden); persist(); };
 setInterval(() => { if (ui.open && advance(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
@@ -118,13 +119,19 @@ function settle(r: ReturnType<typeof resultOf>, tier: string) {
   if (r.eggs > 0) release(save.garden, r);
   for (let k = 0; k < MODEL.afterLife; k++) step(save.garden);
   if (!save.best[key] || 'SABCDF'.indexOf(tier) < 'SABCDF'.indexOf(save.best[key])) save.best[key] = tier;
+  if (r.plan === 'arthropod' && (tier === 'A' || tier === 'S') && !save.unlocks.trilobite) { // the first branch (slice 14)
+    save.unlocks.trilobite = true;
+    save.garden.news.unshift({ gen: save.garden.gen, hab: r.hab, yours: true, text: 'Your arthropods branched: the trilobite', why: `a first ${tier} tier as an arthropod. Grazer niches now offer it` });
+    ui.notice = { title: 'A new branch: the trilobite', text: `Your ${tier} tier as an arthropod opened a new body. ${PLANS.trilobite.blurb} Grazer niches now offer it beside the arthropod.` };
+  }
   save.lives++; persist();
   ui.open = true; ui.hab = r.hab; ui.niche = null; bump();
 }
 
 function newLife() {
   const form = save.forms[`${habId}:${niche}`], parts = L.partsFor(plan, verbs);
-  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, boardFor(save.garden, habId), form && PARTS[form].plans.includes(plan) ? [...parts, form] : parts);
+  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, boardFor(save.garden, habId, save.forms), form && PARTS[form].plans.includes(plan) ? [...parts, form] : parts);
+  S.hunter = life.hab.hunter?.yours ? HUNTERS.yours : HUNTERS.native;
   S.you = BODIES[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
@@ -140,7 +147,9 @@ function newLife() {
   const role = `You came to fill the ${ROLES[niche].name} niche.${form ? ` Your line here carries ${PARTS[form].name.toLowerCase()}.` : ''} `;
   const who = role + (plan === 'swimmer'
     ? `You are the hunter here. ${P.blurb}\nLurk a turn and prey won't notice you; your next swim goes twice as far. Each catch in a row adds speed.`
-    : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predatorAt > 20 ? 'No hunter here this time.' : `${h.predator} comes on turn ${h.predatorAt}.`}`);
+    : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predatorAt > 20 ? 'No hunter here this time.' : h.hunter?.yours
+      ? `${h.predator} hunt here now, your own line, and they hunt like you: they lurk a turn, then swim twice as far, and grow bolder with every hit. They come on turn ${h.predatorAt}.`
+      : `${h.predator} comes on turn ${h.predatorAt}.`}`);
   hud.showCard(h.name, `${h.blurb}\n\n${who} ${h.event.name} on turns ${h.event.from}–${h.event.to}: ${h.event.text}.`, [{ label: 'Start', on: () => hud.hideCard() }]);
 }
 
@@ -263,7 +272,7 @@ window.addEventListener('keydown', (e) => {
 });
 
 // A hook for the browser check (scripts/look.mjs): drive the game with real taps and read the state.
-Object.assign(window, { __game: { get life() { return S.life; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)), get zoom() { return cam.zoom; }, fps: () => app.ticker.FPS } });
+Object.assign(window, { __game: { get life() { return S.life; }, get save() { return save; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)), get zoom() { return cam.zoom; }, fps: () => app.ticker.FPS } });
 
 S.life = L.newLife(1, plan, HABITATS[habId]); floor.set(S.life); sync(true);
 

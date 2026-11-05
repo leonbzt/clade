@@ -11,11 +11,12 @@ import type { Save } from '../sim/save';
 export const ui = $state({
   open: false, hab: null as HabitatId | null, niche: null as Role | null,
   away: null as null | { gens: number; news: News[] }, tick: 0,
+  notice: null as null | { title: string; text: string },
   clutch: null as null | { cards: Card[]; hab: HabitatId; role: Role; plan: PlanId; eggs: number; tier: string },
 });
 export const ctx = {
   save: null as unknown as Save, isl: null as unknown as Island, spots: null as unknown as Record<SpotId, Spot>,
-  start: (_hab: HabitatId, _niche: Role, _verbs: VerbId[]) => {},
+  start: (_hab: HabitatId, _niche: Role, _verbs: VerbId[], _plan: PlanId) => {},
   skip: () => {},
   keep: (_card: number) => {},
 };

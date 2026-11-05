@@ -21,6 +21,7 @@ export interface Habitat {
   start: [number, number]; entry: [number, number]; predatorAt: number; predator: string; rivals: Rival[];
   event: BoardEvent; rares: Record<PlanId, PartId[]>; tiers: [string, number][];
   prey: { kind: PreyKind; at: [number, number] }[]; // the predator Life's prey
+  hunter?: { yours: boolean; parts: PartId[] }; // set by the garden when your own line is the hunter (slice 14)
 }
 
 /** One tier scale for every habitat, in eggs (slice 13). */
@@ -47,7 +48,7 @@ export const MUD_FLATS: Habitat = {
   start: [3, 1], entry: [1, 10], predatorAt: 6, predator: 'Anomalocaris',
   rivals: [{ at: [4, 9], name: 'a rival priapulid worm', eats: 'buried' }],
   event: { from: 12, to: 15, where: 'mud', name: 'Mudslide', text: 'no oxygen in the mud', look: 'murk' },
-  rares: { arthropod: ['compound', 'progenesis'], worm: ['deep', 'progenesis'], swimmer: ['fan', 'progenesis'] },
+  rares: { arthropod: ['compound', 'progenesis'], trilobite: ['compound', 'progenesis'], worm: ['deep', 'progenesis'], swimmer: ['fan', 'progenesis'] },
   prey: [{ kind: 'worm', at: [1, 3] }, { kind: 'worm', at: [6, 4] }, { kind: 'worm', at: [2, 9] }, { kind: 'trilobite', at: [6, 1] }, { kind: 'wiwaxia', at: [4, 7] }],
   tiers: TIERS,
 };
@@ -72,7 +73,7 @@ export const SAND_SHALLOWS: Habitat = {
   start: [4, 6], entry: [7, 10], predatorAt: 4, predator: 'Anomalocaris',
   rivals: [{ at: [1, 8], name: 'Wiwaxia, a scaled grazer', eats: 'mat' }],
   event: { from: 9, to: 12, where: 'all', rows: [0, 2], name: 'Low tide', text: 'the three rows by the shore run dry', look: 'dry' },
-  rares: { arthropod: ['enrol', 'progenesis'], worm: ['hook', 'progenesis'], swimmer: ['fan', 'progenesis'] },
+  rares: { arthropod: ['enrol', 'progenesis'], trilobite: ['enrol', 'progenesis'], worm: ['hook', 'progenesis'], swimmer: ['fan', 'progenesis'] },
   prey: [{ kind: 'trilobite', at: [1, 1] }, { kind: 'trilobite', at: [6, 2] }, { kind: 'trilobite', at: [3, 9] }, { kind: 'worm', at: [4, 5] }, { kind: 'wiwaxia', at: [6, 7] }],
   tiers: TIERS,
 };
@@ -97,7 +98,7 @@ export const VOLCANIC_ROCK: Habitat = {
   start: [5, 5], entry: [0, 5], predatorAt: 5, predator: 'Anomalocaris',
   rivals: [{ at: [7, 10], name: 'a rival bristle worm', eats: 'bloom' }],
   event: { from: 8, to: 10, where: 'all', name: 'Vent surge', text: 'warm water, oxygen falls everywhere', look: 'haze' },
-  rares: { arthropod: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'], swimmer: ['fan', 'progenesis'] },
+  rares: { arthropod: ['blood', 'progenesis'], trilobite: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'], swimmer: ['fan', 'progenesis'] },
   prey: [{ kind: 'trilobite', at: [1, 0] }, { kind: 'trilobite', at: [6, 9] }, { kind: 'wiwaxia', at: [1, 5] }, { kind: 'wiwaxia', at: [6, 1] }, { kind: 'worm', at: [4, 6] }],
   tiers: TIERS,
 };

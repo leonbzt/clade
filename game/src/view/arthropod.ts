@@ -20,11 +20,11 @@ export class Arthropod implements Creature {
   private step = 0;
   private last = { x: 0, y: 0 };
 
-  constructor(private ramp: Ramp, private scale = 1) {}
+  constructor(private ramp: Ramp, private scale = 1, private trilo = false) {} // trilo: a broad shield, three lobes, a tail shield
 
   private plates() { return 2 + this.size; } // thorax plates
   private len() { return C * (0.5 + 0.09 * this.size) * this.scale; }
-  private half() { return C * (0.2 + 0.03 * this.size) * this.scale; }
+  private half() { return C * (0.2 + 0.03 * this.size) * this.scale * (this.trilo ? 1.2 : 1); }
 
   place(x: number, y: number, heading: number) { this.head.x = this.last.x = x; this.head.y = this.last.y = y; this.heading = heading; }
   setBody(size: number, slots: BodySlot[], soft: boolean) { this.size = size; this.slots = slots.map((s) => ({ ...s })); this.soft = soft; }
@@ -100,9 +100,16 @@ export class Arthropod implements Creature {
       const a = this.P(f1 * L, -this.width(f1)), c = this.P(f1 * L, this.width(f1)); // the seam between plates
       g.moveTo(a[0], a[1]).lineTo(c[0], c[1]).stroke({ width: 0.7, color: PAL.ink, alpha: 0.7 });
     }
-    const fan: P3[] = [this.P(tailF * L, -this.width(tailF), 0.5), this.P(L + 2, -W * 0.45, 0.5), this.P(L + 3, 0, 1), this.P(L + 2, W * 0.45, 0.5), this.P(tailF * L, this.width(tailF), 0.5)];
-    for (let k = 0; k < fan.length - 1; k++) tri(g, this.P(tailF * L, 0, 3), fan[k], fan[k + 1], ramp, 0.4 - k * 0.2);
-    const shieldW = has('shield').length ? 1.22 : 1;
+    if (this.trilo) { // the tail shield, and the furrows that split the body into three lobes
+      const pyg: P3[] = [];
+      for (let k = 0; k <= 6; k++) { const a = -Math.PI / 2 + (k / 6) * Math.PI; pyg.push(this.P(tailF * L + Math.cos(a) * W * 0.55, Math.sin(a) * this.width(tailF) * 1.05, 0.5)); }
+      for (let k = 0; k < pyg.length - 1; k++) tri(g, this.P(tailF * L, 0, 3), pyg[k], pyg[k + 1], ramp, 0.3);
+      for (const side of [-1, 1]) { const a = this.P(0.3 * L, side * W * 0.34), b = this.P((tailF + 0.08) * L, side * W * 0.22); g.moveTo(a[0], a[1]).lineTo(b[0], b[1]).stroke({ width: 0.8, color: PAL.ink, alpha: 0.75 }); }
+    } else {
+      const fan: P3[] = [this.P(tailF * L, -this.width(tailF), 0.5), this.P(L + 2, -W * 0.45, 0.5), this.P(L + 3, 0, 1), this.P(L + 2, W * 0.45, 0.5), this.P(tailF * L, this.width(tailF), 0.5)];
+      for (let k = 0; k < fan.length - 1; k++) tri(g, this.P(tailF * L, 0, 3), fan[k], fan[k + 1], ramp, 0.4 - k * 0.2);
+    }
+    const shieldW = has('shield').length || this.trilo ? 1.22 : 1;
     const shield: P3[] = [];
     for (let k = 0; k <= 8; k++) { const a = -Math.PI / 2 + (k / 8) * Math.PI; shield.push(this.P(0.3 * L * (1 - Math.cos(a)) * 0.95, Math.sin(a) * W * 1.05 * shieldW, 0.5)); }
     if (shieldW > 1) for (const side of [-1, 1]) { // genal spines at the shield's corners

@@ -49,3 +49,7 @@ Next: steps 2–8 in one long session, [the M1 run](planning/m1-run.md).
 - **12 Open your clutch** ([spec](slices/12-open-your-clutch.md)): 2–5 eggs hatch as cards (common, rare from the habitat,
   epic from another; better odds at higher tiers); keep one form: its part rides along in every later Life in that niche.
   *Judge:* card count and odds; a form = one inherited part.
+- **14 Your predator hunts you, and the trilobite** ([spec](slices/14-your-predator.md)): once your swimmers top a hunter
+  row, they are that habitat's hunter (dark wine in your colours): they lurk then dash ×2, gain a step per hit; your form
+  changes them (compound eyes see into mud, flaps +1 step, arm spines tear through guards). A first A tier as an arthropod
+  opens the trilobite (ploughs mud at double cost, rolls up when still, 3 side pairs). *Judge:* those rules; the unlock.

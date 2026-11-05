@@ -6,13 +6,13 @@ import { catchUp, newGarden, type Garden, type News } from './garden';
 
 export const SAVE_KEY = 'clade.m1.save';
 export const SAVE_VERSION = 1;
-export interface Save { v: number; seed: number; at: number; garden: Garden; best: Record<string, string>; lives: number; forms: Record<string, PartId> }
+export interface Save { v: number; seed: number; at: number; garden: Garden; best: Record<string, string>; lives: number; forms: Record<string, PartId>; unlocks: Record<string, boolean> }
 
-export function freshSave(seed: number, now: number): Save { return { v: SAVE_VERSION, seed, at: now, garden: newGarden(seed), best: {}, lives: 0, forms: {} }; }
+export function freshSave(seed: number, now: number): Save { return { v: SAVE_VERSION, seed, at: now, garden: newGarden(seed), best: {}, lives: 0, forms: {}, unlocks: {} }; }
 
 export function parseSave(json: string | null): Save | null {
   if (!json) return null;
-  try { const s = JSON.parse(json) as Save; if (!s || s.v !== SAVE_VERSION || !s.garden?.habs) return null; s.forms ??= {}; return s; } catch { return null; }
+  try { const s = JSON.parse(json) as Save; if (!s || s.v !== SAVE_VERSION || !s.garden?.habs) return null; s.forms ??= {}; s.unlocks ??= {}; return s; } catch { return null; }
 }
 
 /** Run the garden up to now: whole generations since `at`, and keep the remainder for next time. */
