@@ -24,13 +24,8 @@ Updated 2026-11-05. Branch `claude/project-thread-cy8ptv` on GitHub (`leonbzt/cl
   garden), a Menu, `game/dist/clade.html` (764 KB, 60 fps), [itch page text](itch.md). Discord is yours.
 
 ## Open
-- Balance is unplayed: a throwaway heuristic player survived every board after the regrow fix, but laid few eggs; an A tier
-  may be too far for a fresh start (tiers or egg counts are the knob).
-- The feel values are still the stack test's defaults. Pixelify's 2, 3 and 5 read like 8 or S at small sizes.
-- `life.ts`, `hunt.ts` and `threat.ts` import each other (works; split further if it bites).
-- R2's [K] biology lines still need a check before they show as text.
+- Balance is unplayed: a heuristic player survived every board after the regrow fix but laid few eggs; a first A tier may be
+  too far (tiers or egg counts are the knob). The feel values are the stack test's. Pixelify's 2, 3, 5 read like 8 or S.
+- `life`, `hunt` and `threat` import each other (works). R2's [K] biology lines need a check before they show as text.
 
-## Next
-```
-/kickoff play the M1 run: I played it, my notes are in docs/playtests/10-m1-run.md
-```
+**Next:** `/kickoff play the M1 run: my notes are in docs/playtests/10-m1-run.md`
