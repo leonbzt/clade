@@ -1,26 +1,32 @@
 // The look: one palette, one non-black outline, one sun from the upper left. Every facet is shaded by its angle to
 // the sun and takes a step on its ramp (dark → light), so the world reads as low-poly without any textures.
-import type { Graphics } from 'pixi.js';
+import type { Graphics, Texture } from 'pixi.js';
 
 export const C = 24; // world units per tile
 export type Ramp = number[]; // dark → light, 5 steps; flat facets take the middle
 
-export const PAL = {
-  deep: 0x0a1c24, ink: 0x0c1a20, gold: 0xffd75e, red: 0xe5462c, ember: 0xff8a3a,
-  sand: [0x1f4b52, 0x2d6567, 0x3f807c, 0x5e9d8f, 0x8cc0a8],
-  mudSeen: [0x231a1d, 0x34261f, 0x4a3526, 0x664a32, 0x86663f],
-  mudDark: [0x15111a, 0x1d171e, 0x2a1f22, 0x3a2a27, 0x4d382c],
-  mudSlide: [0x110d12, 0x18121a, 0x221a1e, 0x2e2223, 0x3d2c28],
-  rock: [0x1b2831, 0x2b3e49, 0x435a64, 0x688289, 0x9bb3b0],
-  leaf: [0x183f2a, 0x266b35, 0x449a3e, 0x7cc653, 0xbfec78],
-  shell: [0x4c5559, 0x76817f, 0xa4ac9f, 0xcdd2bd, 0xf1efd8],
-  flesh: [0x5a2a33, 0x8a4148, 0xb86560, 0xdb9a84, 0xf6cfb2],
+export const PAL = { // earthy and real under blue-green water (slice 09: "more realistic in the textures")
+  deep: 0x0b2730, ink: 0x15110d, gold: 0xffd34a, red: 0xe5462c, ember: 0xff8a3a, water: 0x2f8c8a,
+  sand: [0x6e5f3f, 0x968258, 0xbba571, 0xd8c28a, 0xf0dca6],
+  dry: [0x8a7a58, 0xae9c70, 0xcdb986, 0xe4d19c, 0xf6e8bc],
+  mudSeen: [0x35281d, 0x4a3727, 0x614a33, 0x7a5f41, 0x967a54],
+  mudDark: [0x201912, 0x2c2218, 0x392c20, 0x473829, 0x574634],
+  mudSlide: [0x121010, 0x191515, 0x211c1a, 0x2b2421, 0x372e29],
+  rock: [0x1c1d21, 0x2b2d33, 0x3f434a, 0x5a5f66, 0x80868c],
+  ash: [0x27251f, 0x38352d, 0x4c483d, 0x655f50, 0x827a66],
+  basalt: [0x18191c, 0x24262a, 0x33363b, 0x464a50, 0x5f646a],
+  vent: [0x2a2219, 0x3f3122, 0x5a452c, 0x7a5e36, 0x9e7c45],
+  leaf: [0x233418, 0x37501f, 0x506e2a, 0x6f8f37, 0x97b24e],
+  bloom: [0x6a6448, 0x958d5e, 0xbfb575, 0xded38e, 0xf6eeb8],
+  shell: [0x5a5248, 0x80766a, 0xa89c8a, 0xcbc0a8, 0xede4cb],
+  flesh: [0x5a2a2e, 0x8a4144, 0xb6645c, 0xd99a82, 0xf4cfb0],
   amber: [0x6a3410, 0xa45616, 0xd9861f, 0xf6b843, 0xffe48a],
-  you: [0x5b2140, 0x8f3757, 0xc65a6c, 0xec8c80, 0xffc3a2],
-  rival: [0x31284a, 0x4f4373, 0x7a6ca3, 0xa898cc, 0xd6cbec],
+  you: [0x6a1f2e, 0xa0303f, 0xd24f4f, 0xf3866a, 0xffc39c],
+  rival: [0x2f2a40, 0x4a4264, 0x716794, 0x9d93bf, 0xcfc7e6],
   hunter: [0x3f1410, 0x6e2116, 0xa3361c, 0xd65a27, 0xff9446],
   gill: [0x17485e, 0x226b86, 0x3797ad, 0x63c3cf, 0xa7ecea],
-  pale: [0x55636b, 0x7d8d93, 0xa9b8b8, 0xd2dccf, 0xf3f6e8],
+  pale: [0x5a5d5a, 0x83887f, 0xaeb2a4, 0xd4d6c4, 0xf4f3e4],
+  blue: [0x1d2f5a, 0x2c4a86, 0x416bb0, 0x6a95d2, 0xa6c6ee],
 };
 
 const L = (() => { const v = [-0.45, -0.62, 0.64], n = Math.hypot(...v); return v.map((a) => a / n); })();
@@ -51,6 +57,11 @@ export function step(a: P3, b: P3, c: P3, bias = 0) {
 
 export function tri(g: Graphics, a: P3, b: P3, c: P3, ramp: Ramp, bias = 0, alpha = 1) {
   g.poly([a[0], a[1], b[0], b[1], c[0], c[1]]).fill({ color: ramp[step(a, b, c, bias)], alpha });
+}
+
+/** A facet with a texture: the ramp step tints the texture's grey detail. */
+export function ttri(g: Graphics, a: P3, b: P3, c: P3, ramp: Ramp, texture: Texture, bias = 0, alpha = 1) {
+  g.poly([a[0], a[1], b[0], b[1], c[0], c[1]]).fill({ color: ramp[step(a, b, c, bias)], alpha, texture, textureSpace: 'global' });
 }
 
 /** A ring of `n` points around (x, y): an ellipse rx × ry turned by `rot`, jittered by `seed` (-1: none). */

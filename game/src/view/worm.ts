@@ -6,9 +6,18 @@ import type { PartId, SlotKind } from '../data/life';
 import { C, PAL, SHADOW, dome, flat, mixRamp, ring, tri, type Ramp } from './shade';
 
 export interface BodySlot { kind: SlotKind; side: string; seg: number; part: PartId | null }
-interface Seg { x: number; y: number; r: number; a: number }
+export interface Seg { x: number; y: number; r: number; a: number }
+/** What main needs from a body on the board: you, a rival, later the prey. */
+export interface Creature {
+  head: { x: number; y: number }; stretch: { v: number }; reach: { v: number }; flash: { v: number }; moving: { v: number }; squash: number;
+  place(x: number, y: number, heading: number): void;
+  setBody(size: number, slots: BodySlot[], soft: boolean): void;
+  update(dt: number): void;
+  segs(): Seg[];
+  draw(g: Graphics, sh: Graphics, inMud: (x: number, y: number) => boolean): void;
+}
 
-export class Worm {
+export class Worm implements Creature {
   head = { x: 0, y: 0 };
   stretch = { v: 0 }; // -1 squashed … 1 stretched
   reach = { v: 0 }; // the proboscis, 0 in … 1 out

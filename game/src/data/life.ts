@@ -26,13 +26,14 @@ export const PLANS: Record<PlanId, { name: string; head: number; pairs: number; 
   },
 };
 
-/** The one fixed starter body for this spike (no parts screen). */
+/** Each body plan's starting parts (slice 10 turns these into picked verbs). */
 export const STARTER_PLAN: PlanId = 'worm';
-export const STARTER_PARTS: PartId[] = ['gut', 'sclerite'];
+export const STARTERS: Record<PlanId, PartId[]> = { worm: ['gut', 'sclerite'], arthropod: ['claw', 'gill'] };
+export const STARTER_PARTS: PartId[] = STARTERS.worm;
 
 export type SlotKind = 'head' | 'side' | 'tail';
 export type PartId = 'claw' | 'shield' | 'eye' | 'spine' | 'leg' | 'digger' | 'gill' | 'gut' | 'pouch' | 'proboscis'
-  | 'chaetae' | 'sclerite' | 'compound' | 'deep' | 'progenesis';
+  | 'chaetae' | 'sclerite' | 'compound' | 'enrol' | 'blood' | 'hook' | 'deep' | 'symbiont' | 'progenesis';
 const BOTH: PlanId[] = ['worm', 'arthropod'], ART: PlanId[] = ['arthropod'], WORM: PlanId[] = ['worm'];
 export const PARTS: Record<PartId, { name: string; upkeep: number; slots: SlotKind[]; plans: PlanId[]; does: string; rare?: boolean; guard?: boolean }> = {
   claw: { name: 'Crushing claw', upkeep: 1, slots: ['head'], plans: ART, does: 'Opens shell beds. Grabs food ahead without moving.' },
@@ -48,18 +49,23 @@ export const PARTS: Record<PartId, { name: string; upkeep: number; slots: SlotKi
   chaetae: { name: 'Bristles', upkeep: 0, slots: ['side'], plans: WORM, does: 'Tunnel 1 tile further through mud.' },
   sclerite: { name: 'Sclerites', upkeep: 0, slots: ['side', 'tail'], plans: WORM, guard: true, does: 'Blocks strikes on this side.' },
   compound: { name: 'Compound eye', upkeep: 1, slots: ['head'], plans: ART, rare: true, does: 'See all hidden food.' },
+  enrol: { name: 'Enrolment', upkeep: 0, slots: ['tail'], plans: ART, rare: true, does: 'If you stay put, every strike glances off.' },
+  blood: { name: 'Blue blood', upkeep: 0, slots: ['side'], plans: ART, rare: true, does: 'Dead water and low oxygen cost you no oxygen.' },
+  hook: { name: 'Hooked proboscis', upkeep: 1, slots: ['head'], plans: WORM, rare: true, does: 'Opens shell beds. Grabs food ahead without moving.' },
+  symbiont: { name: 'Sulfur symbionts', upkeep: 0, slots: ['side'], plans: WORM, rare: true, does: 'Sulfur mats feed you double.' },
   deep: { name: 'Deep burrow', upkeep: 0, slots: ['tail'], plans: WORM, rare: true, does: 'In mud: no upkeep, +1 egg per lay.' },
   progenesis: { name: 'Progenesis', upkeep: 0, slots: ['side', 'tail'], plans: BOTH, rare: true, does: 'Lay at any size.' },
 };
 export const PART_IDS = Object.keys(PARTS) as PartId[];
 
-export type NodeId = 'mat' | 'buried' | 'shell' | 'carcass';
+export type NodeId = 'mat' | 'buried' | 'shell' | 'carcass' | 'bloom';
 export const NODES: Record<NodeId, { name: string; food: number }> = {
   mat: { name: 'Microbial mat', food: 5 },
   buried: { name: 'Buried food', food: 6 },
   shell: { name: 'Shell bed', food: 9 },
   carcass: { name: 'Carcass', food: 14 },
+  bloom: { name: 'Sulfur mat', food: 7 },
 };
 
 export type Terrain = 'sand' | 'mud' | 'rock' | 'dead';
-export const TERRAIN: Record<Terrain, string> = { sand: 'Open sand', mud: 'Mud', rock: 'Rock', dead: 'Dead water' };
+export const TERRAIN: Record<Terrain, string> = { sand: 'Open sand', mud: 'Mud', rock: 'Rock', dead: 'Vent water: costs 1 oxygen a turn, and the hunter stays out' };

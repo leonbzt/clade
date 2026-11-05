@@ -4,7 +4,8 @@ import '@fontsource/pixelify-sans/latin-400.css';
 import '@fontsource/pixelify-sans/latin-700.css';
 import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
-import { COLS, NODES, PARTS, PLANS, RULE, TERRAIN, type NodeId, type PartId } from './data/life';
+import { COLS, NODES, PARTS, PLANS, RULE, TERRAIN, type NodeId, type PartId, type PlanId } from './data/life';
+import { HABITATS, type HabitatId } from './data/habitats';
 import * as L from './sim/life';
 import { feel, onFeel } from './ui/feel';
 import { Camera } from './view/camera';
@@ -14,11 +15,14 @@ import { Hunter } from './view/hunter';
 import { Marks } from './view/marks';
 import { C, PAL, type Ramp } from './view/shade';
 import { ease, startTweens, tween, wait } from './view/tween';
-import { Worm } from './view/worm';
+import { Worm, type Creature } from './view/worm';
+import { Arthropod } from './view/arthropod';
+import { Pick } from './ui/pick';
 import { Hud } from './ui/hud';
 import { devPanel } from './ui/dev';
+import { skin } from './ui/skin';
 
-const NODE_RAMP: Record<NodeId, Ramp> = { mat: PAL.leaf, buried: PAL.amber, shell: PAL.shell, carcass: PAL.flesh };
+const NODE_RAMP: Record<NodeId, Ramp> = { mat: PAL.leaf, buried: PAL.amber, shell: PAL.shell, carcass: PAL.flesh, bloom: PAL.bloom };
 const PART_RAMP: Partial<Record<string, Ramp>> = { gill: PAL.gill, gut: PAL.amber, pouch: PAL.amber, sclerite: PAL.pale, chaetae: PAL.pale, eye: PAL.pale, proboscis: PAL.flesh };
 const RED = '#ff6a4c', GOLD = '#ffd75e';
 const centre = (i: number) => ({ x: (i % COLS) * C + C / 2, y: Math.floor(i / COLS) * C + C / 2 });
@@ -37,12 +41,15 @@ shadowLayer.addChild(shadows); shadowLayer.filters = [new AlphaFilter({ alpha: 0
 world.addChild(floor.root, fx.under, shadowLayer, marks.g, bodies, above, fx.over);
 app.stage.addChild(world);
 
-const you = new Worm(PAL.you), rival = new Worm(PAL.rival, true, 0.85), hunter = new Hunter();
+const bodies2: Record<PlanId, Creature> = { worm: new Worm(PAL.you), arthropod: new Arthropod(PAL.you, 1.2) };
+let you: Creature = bodies2.worm;
+const rival = new Worm(PAL.rival, true, 0.85), hunter = new Hunter(), pick = new Pick();
 const hud = new Hud({ wait: () => act(() => L.stay(life)), moult: () => doMoult(), lay: () => act(() => L.lay(life)) });
 const cam = new Camera(world, app.canvas, (x, y) => tap(x, y), (x, y) => hover(x, y));
 devPanel();
+skin();
 
-let life: L.Life, busy = false;
+let life: L.Life, busy = false, habId: HabitatId = 'mud', plan: PlanId = 'worm';
 const inMud = (x: number, y: number) => { const tx = Math.floor(x / C), ty = Math.floor(y / C); return L.inB(tx, ty) && L.tile(life, tx, ty).t === 'mud'; };
 const screen = (w: { x: number; y: number }) => cam.toScreen(w.x, w.y);
 
@@ -73,8 +80,11 @@ app.ticker.add((tk) => {
 });
 
 // ---- a Life ----
+function choose() { pick.show((h, p) => { habId = h; plan = p; newLife(); }); }
+
 function newLife() {
-  life = L.newLife((Math.random() * 2 ** 31) | 0);
+  life = L.newLife((Math.random() * 2 ** 31) | 0, plan, HABITATS[habId]);
+  you = bodies2[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
   you.setBody(life.size, life.slots, false); you.place(s.x, s.y, dirAngle(life.facing));
@@ -86,7 +96,7 @@ function newLife() {
   hud.refresh(life, true);
   hud.info('Tap a lit tile to move.');
   const h = life.hab;
-  hud.showCard(h.name, `${h.blurb}\n\nYou are a worm. In mud you tunnel and strikes miss you. Grow to size ${RULE.adultSize} to lay eggs.\n` +
+  hud.showCard(h.name, `${h.blurb}\n\nYou are a${plan === 'arthropod' ? 'n' : ''} ${PLANS[plan].name.toLowerCase()}. ${PLANS[plan].blurb} Grow to size ${RULE.adultSize} to lay eggs.\n` +
     `${h.predator} comes on turn ${h.predatorAt}. ${h.event.name} on turns ${h.event.from}–${h.event.to}: ${h.event.text}.`, [{ label: 'Start', on: () => hud.hideCard() }]);
 }
 
@@ -101,7 +111,7 @@ function sync(instant = false) {
 }
 
 async function act(f: () => void) {
-  if (busy || life.phase !== 'play' || hud.cardOpen) return;
+  if (busy || life.phase !== 'play' || hud.cardOpen || pick.open) return;
   busy = true; marks.dests = new Map(); marks.hover = -1;
   f();
   const evs = life.events.slice();
@@ -138,9 +148,11 @@ function pickPart(id: PartId) {
 
 function endCard() {
   const tier = L.tierOf(life.hab, life.eggs), nt = L.nextTier(life.hab, life.eggs);
+  pick.record(habId, plan, tier);
   hud.showCard(life.cause === 'season' ? 'The season ends' : `You died on turn ${life.turn}`,
-    `You laid ${life.eggs} eggs: tier ${tier} on the mud flats.${nt ? `\n${nt[0]} needs ${nt[1]}.` : ''}`,
-    [{ label: 'Live again', on: () => { hud.hideCard(); newLife(); } }]);
+    `You laid ${life.eggs} eggs: tier ${tier} as a ${PLANS[plan].name.toLowerCase()} in the ${life.hab.name.toLowerCase()}.${nt ? `\n${nt[0]} needs ${nt[1]}.` : ''}`,
+    [{ label: 'Live again', note: `${life.hab.name}, ${PLANS[plan].name.toLowerCase()}`, on: () => { hud.hideCard(); newLife(); } },
+      { label: 'Choose another', on: () => { hud.hideCard(); choose(); } }]);
 }
 
 // ---- feel: playing the events back ----
@@ -268,6 +280,8 @@ async function strike(e: Extract<L.Ev, { k: 'strike' }>) {
     hud.floater(s.x, s.y, e.part ? `−${PARTS[e.part].name.toLowerCase()}` : `−${e.damage} health`, RED);
   } else if (e.kind === 'blocked') {
     cam.shake(0.55); fx.burst(h.x, h.y, PAL.pale, feel.particles, 1.1); hud.floater(s.x, s.y, 'blocked', '#d2dccf');
+  } else if (e.kind === 'enrolled') {
+    cam.shake(0.4); fx.burst(h.x, h.y, PAL.amber, feel.particles, 0.9); hud.floater(s.x, s.y, 'rolled up', '#ffd34a');
   } else if (e.kind === 'buried') {
     cam.shake(0.3); fx.burst(c.x, c.y, PAL.mudSeen, Math.ceil(feel.particles / 2), 0.8); hud.floater(s.x, s.y, 'buried', '#c9a26a');
   } else { cam.shake(0.3); hud.floater(s.x, s.y, 'miss', '#9fb2bd'); }
@@ -279,7 +293,7 @@ function tileAt(x: number, y: number) { const tx = Math.floor(x / C), ty = Math.
 
 function tap(x: number, y: number) {
   const i = tileAt(x, y);
-  if (busy || i < 0 || hud.cardOpen) return;
+  if (busy || i < 0 || hud.cardOpen || pick.open) return;
   if (life.phase === 'play' && L.dests(life).has(i)) act(() => L.move(life, i));
   else hud.info(tileText(i));
 }
@@ -288,17 +302,17 @@ function hover(x: number, y: number) { marks.hover = busy ? -1 : tileAt(x, y); }
 
 function tileText(i: number) {
   const t = life.tiles[i], [x, y] = L.xy(i);
-  if (life.pred && L.at(life.pred.x, life.pred.y) === i) return `${life.hab.predator}, the hunter. It swims over rock and strikes the tiles it marks; mud hides you.`;
+  if (life.pred && L.at(life.pred.x, life.pred.y) === i) return `${life.hab.predator}, the hunter. It swims over rock and strikes the tiles it marks; mud hides a worm, and it won't enter vent water.`;
   const v = life.rivals.find((r) => L.at(r.x, r.y) === i);
   if (v) return `${v.name[0].toUpperCase()}${v.name.slice(1)}. It eats ${NODES[v.eats].name.toLowerCase()}.`;
   if (life.x === x && life.y === y) return `You: ${PLANS[life.plan].name.toLowerCase()}, size ${life.size}. Wait to stay put.`;
   if (t.t === 'mud' && !t.seen) return "Mud. You can't see what's buried here yet.";
   let s: string = TERRAIN[t.t];
   if (t.node) {
-    s = `${NODES[t.node].name}, ${NODES[t.node].food + L.count(life, 'gut') * RULE.gutFood} food`;
+    s = `${NODES[t.node].name}, ${L.foodOf(life, t.node)} food`;
     const lock = L.lockOf(life, t.node);
     if (lock) s += `: ${lock}`;
-  } else if (t.t === 'mud') s += ': you tunnel through it, and strikes miss you here';
+  } else if (t.t === 'mud') s += life.plan === 'worm' ? ': you tunnel through it, and strikes miss you here' : ': it stops you';
   else if (t.t === 'rock') s += ': only the hunter crosses it';
   return life.phase === 'play' ? `${s}. Out of reach this turn.` : `${s}.`;
 }
@@ -314,5 +328,6 @@ window.addEventListener('keydown', (e) => {
 // A hook for the browser check (scripts/look.mjs): drive the game with real taps and read the state.
 Object.assign(window, { __game: { get life() { return life; }, get busy() { return busy; }, tile: (i: number) => screen(centre(i)), get zoom() { return cam.zoom; }, fps: () => app.ticker.FPS } });
 
-newLife();
+life = L.newLife(1, plan, HABITATS[habId]); floor.set(life); sync(true);
+choose();
 performance.mark('first-board'); // read by the spike's load check

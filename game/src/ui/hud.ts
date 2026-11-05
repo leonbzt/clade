@@ -4,7 +4,7 @@ import { PLANS, RULE, TURNS } from '../data/life';
 import * as L from '../sim/life';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-const TIER_INK: Record<string, string> = { S: '#ffd75e', A: '#8fd35a', B: '#63c3cf', C: '#d2dccf' };
+const TIER_INK: Record<string, string> = { S: '#ffe033', A: '#7fd14e', B: '#5ec4d6', C: '#f3e9cc' };
 
 /** A stock as a row of pips that ticks one pip at a time toward its value, with the number on the right. */
 class PipBar {
@@ -74,7 +74,7 @@ export class Hud {
     this.oxy.set(l.oxygen, L.oxygenMax(l), instant);
     this.hp.set(l.health, RULE.health, instant);
     const nt = L.nextTier(l.hab, l.eggs);
-    $('body').textContent = `${PLANS[l.plan].name}, size ${l.size} (${L.stage(l)}) · upkeep ${L.upkeep(l)} a turn` +
+    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${l.size} (${L.stage(l)}) · upkeep ${L.upkeep(l)}` +
       (!L.mature(l) ? ` · lay from size ${RULE.adultSize}` : nt ? ` · ${nt[0]} at ${nt[1]} eggs` : '');
     const play = l.phase === 'play' && !busy;
     $<HTMLButtonElement>('wait').disabled = !play;

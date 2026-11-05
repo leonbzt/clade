@@ -1,25 +1,31 @@
-// The habitat boards, ported from toys/life2-habitats.ts with R2's corrections. Plain data; the garden will write them.
+// The habitat boards: plain data (the garden will write them). The mud flats are ported from toys/life2-habitats.ts
+// with R2's corrections; the sand shallows and volcanic rock are new for slice 09 (geology, plan.md 5 Nov).
+// Maps are 8 columns × 11 rows, the shore at the top. x and y count from 0 at the top left.
 import type { NodeId, PartId, PlanId, Terrain } from './life';
 
-//   . sand   ~ mud   # rock   m microbial mat   s shell bed   c carcass (on sand)   b buried food (in mud)
+//   . sand   ~ mud   # rock   % vent water (dead water)
+//   m microbial mat   s shell bed   c carcass (on sand)   b buried food (in mud)   o sulfur mat (in vent water)
 export const CELL: Record<string, [Terrain, NodeId | null]> = {
-  '.': ['sand', null], '~': ['mud', null], '#': ['rock', null],
-  m: ['sand', 'mat'], s: ['sand', 'shell'], c: ['sand', 'carcass'], b: ['mud', 'buried'],
+  '.': ['sand', null], '~': ['mud', null], '#': ['rock', null], '%': ['dead', null],
+  m: ['sand', 'mat'], s: ['sand', 'shell'], c: ['sand', 'carcass'], b: ['mud', 'buried'], o: ['dead', 'bloom'],
 };
 
+export type HabitatId = 'mud' | 'sand' | 'rock';
+export type Ground = 'mud' | 'sand' | 'basalt';
 export interface Rival { at: [number, number]; name: string; eats: NodeId }
+/** A board event: from turn to turn, on one terrain or all, optionally only in rows [top, bottom]. */
+export interface BoardEvent { from: number; to: number; where: 'all' | Terrain; rows?: [number, number]; name: string; text: string; look: 'murk' | 'dry' | 'haze' }
 export interface Habitat {
-  id: string; name: string; blurb: string; real: string; map: string[];
+  id: HabitatId; name: string; ground: Ground; blurb: string; real: string; map: string[];
   start: [number, number]; entry: [number, number]; predatorAt: number; predator: string; rivals: Rival[];
-  event: { from: number; to: number; where: 'all' | Terrain; name: string; text: string };
-  rares: Record<PlanId, PartId[]>; tiers: [string, number][];
+  event: BoardEvent; rares: Record<PlanId, PartId[]>; tiers: [string, number][];
 }
 
 export const MUD_FLATS: Habitat = {
-  id: 'mud', name: 'Mud flats',
+  id: 'mud', name: 'Mud flats', ground: 'mud',
   blurb: 'Soft mud full of hidden food. Burrowers rule until the mudslide, when the mud has no oxygen.',
   real: 'Mud slumps swept animals from banks beside a reef cliff into deeper water and buried them.',
-  map: [ // the toy's 11 x 8 map turned a quarter (x and y swapped) to fill a phone held upright
+  map: [
     'm.m.sm.s',
     '.m..#.m.',
     '~~~~~~~m',
@@ -34,7 +40,58 @@ export const MUD_FLATS: Habitat = {
   ],
   start: [3, 1], entry: [1, 10], predatorAt: 6, predator: 'Anomalocaris',
   rivals: [{ at: [4, 9], name: 'a rival priapulid worm', eats: 'buried' }],
-  event: { from: 12, to: 15, where: 'mud', name: 'Mudslide', text: 'no oxygen in the mud' },
+  event: { from: 12, to: 15, where: 'mud', name: 'Mudslide', text: 'no oxygen in the mud', look: 'murk' },
   rares: { arthropod: ['compound', 'progenesis'], worm: ['deep', 'progenesis'] },
   tiers: [['S', 56], ['A', 40], ['B', 26], ['C', 14], ['D', 5], ['F', 0]],
 };
+
+export const SAND_SHALLOWS: Habitat = {
+  id: 'sand', name: 'Sand shallows', ground: 'sand',
+  blurb: 'Open rippled sand: long moves, nowhere to hide. The richest mats grow by the shore, which runs dry at low tide.',
+  real: 'Cambrian shores were sandy shallows; trilobites left their trackways in the ripples.',
+  map: [
+    'mm.m.mm.',
+    '.m.m..m.',
+    'm..s.m.m',
+    '....#...',
+    '.s.~~..s',
+    '...~b.m.',
+    'm.s....s',
+    '..#..m..',
+    '.s...~~.',
+    'm..s.~b.',
+    '..c...s.',
+  ],
+  start: [4, 6], entry: [7, 10], predatorAt: 4, predator: 'Anomalocaris',
+  rivals: [{ at: [1, 8], name: 'Wiwaxia, a scaled grazer', eats: 'mat' }],
+  event: { from: 9, to: 12, where: 'all', rows: [0, 2], name: 'Low tide', text: 'the three rows by the shore run dry', look: 'dry' },
+  rares: { arthropod: ['enrol', 'progenesis'], worm: ['hook', 'progenesis'] },
+  tiers: [['S', 48], ['A', 34], ['B', 22], ['C', 12], ['D', 4], ['F', 0]],
+};
+
+export const VOLCANIC_ROCK: Habitat = {
+  id: 'rock', name: 'Volcanic rock', ground: 'basalt',
+  blurb: 'Basalt lanes cut your moves short. Warm vents grow rich sulfur mats in water with no oxygen, where the hunter will not follow.',
+  real: 'Sulfur-eating microbes grow thick mats where warm, oxygen-poor water seeps out of volcanic rock.',
+  map: [
+    'm.#..#.m',
+    '.s#.m#s.',
+    '..#%o#..',
+    'm..o%...',
+    '##.%%.##',
+    '.m....m.',
+    's#.~b.#s',
+    '.#.~~.#.',
+    'm..#%o..',
+    '.s.#o%m.',
+    '..m#..s.',
+  ],
+  start: [4, 5], entry: [0, 5], predatorAt: 5, predator: 'Anomalocaris',
+  rivals: [{ at: [7, 10], name: 'a rival bristle worm', eats: 'bloom' }],
+  event: { from: 8, to: 10, where: 'all', name: 'Vent surge', text: 'warm water, oxygen falls everywhere', look: 'haze' },
+  rares: { arthropod: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'] },
+  tiers: [['S', 44], ['A', 32], ['B', 22], ['C', 12], ['D', 4], ['F', 0]],
+};
+
+export const HABITATS: Record<HabitatId, Habitat> = { mud: MUD_FLATS, sand: SAND_SHALLOWS, rock: VOLCANIC_ROCK };
+export const HAB_ORDER: HabitatId[] = ['sand', 'mud', 'rock'];

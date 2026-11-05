@@ -1,7 +1,7 @@
 // A Life, the rules (no DOM, no Pixi). Ported from toys/life2-sim.ts: move, eat, moult, lay, the predator's hunt,
 // mark, strike and rest. Every action records `events`, which the view plays back in order.
 import {
-  COLS, NODES, PARTS, PART_IDS, PLANS, ROWS, RULE, STAGES, STARTER_PARTS, STARTER_PLAN, TURNS,
+  COLS, NODES, PARTS, PART_IDS, PLANS, ROWS, RULE, STAGES, STARTERS, STARTER_PLAN, TURNS,
   type NodeId, type PartId, type PlanId, type SlotKind, type Terrain,
 } from '../data/life';
 import { CELL, MUD_FLATS, type Habitat } from '../data/habitats';
@@ -20,7 +20,7 @@ export interface Tile { t: Terrain; node: NodeId | null; seen: boolean }
 export interface Slot { kind: SlotKind; side: Side; seg: number; part: PartId | null }
 export interface Predator { x: number; y: number; state: 'hunt' | 'strike' | 'rest'; rest: number; marks: number[]; dir: Dir; lx: number; ly: number }
 export interface Dest { i: number; dir: Dir; grab: boolean; path: number[] }
-export interface Hit { side: Side; kind: 'buried' | 'blocked' | 'hit'; part: PartId | null; tear: number; damage: number }
+export interface Hit { side: Side; kind: 'buried' | 'enrolled' | 'blocked' | 'hit'; part: PartId | null; tear: number; damage: number }
 
 /** What the last action did, in order, for the view to play back. */
 export type Ev =
@@ -67,6 +67,13 @@ export const tile = (l: Life, x = l.x, y = l.y) => l.tiles[at(x, y)];
 const onMud = (l: Life) => tile(l).t === 'mud';
 export const buriedAt = (l: Life, x: number, y: number) => l.plan === 'worm' && tile(l, x, y).t === 'mud';
 export const eventOn = (l: Life) => l.turn >= l.hab.event.from && l.turn <= l.hab.event.to;
+/** Whether the board's event covers tile (x, y): its terrain and its rows. Ignores the turn. */
+export function eventArea(l: Life, x: number, y: number) {
+  const ev = l.hab.event, t = l.tiles[at(x, y)].t;
+  return (ev.where === 'all' || ev.where === t) && (!ev.rows || (y >= ev.rows[0] && y <= ev.rows[1]));
+}
+/** Whether standing on (x, y) costs oxygen this turn: vent water, or the event's area while it lasts. */
+export const airless = (l: Life, x = l.x, y = l.y) => !has(l, 'blood') && (l.tiles[at(x, y)].t === 'dead' || (eventOn(l) && eventArea(l, x, y)));
 export const upkeep = (l: Life) => (has(l, 'deep') && onMud(l) ? 0 : RULE.baseUpkeep + l.slots.reduce((n, s) => n + (s.part ? PARTS[s.part].upkeep : 0), 0));
 export const oxygenMax = (l: Life) => RULE.oxygen + count(l, 'gill') * RULE.gillOxygen;
 export const range = (l: Life) => Math.min(RULE.maxRange, PLANS[l.plan].range + count(l, 'leg'));
@@ -81,13 +88,16 @@ export const stage = (l: Life) => STAGES[l.size - 1];
 export const foraging = (xp: number) => (xp >= RULE.foragingAt ? 2 : 1);
 export const tierOf = (h: Habitat, eggs: number) => h.tiers.find(([, n]) => eggs >= n)![0];
 export const nextTier = (h: Habitat, eggs: number) => [...h.tiers].reverse().find(([, n]) => eggs < n) ?? null;
-const hasReach = (l: Life) => has(l, 'claw') || has(l, 'proboscis');
+const hasReach = (l: Life) => has(l, 'claw') || has(l, 'proboscis') || has(l, 'hook');
 export const known = (t: Tile) => t.t !== 'mud' || t.seen;
+
+/** What a node feeds you, with your parts. */
+export const foodOf = (l: Life, node: NodeId) => NODES[node].food * (node === 'bloom' && has(l, 'symbiont') ? 2 : 1) + count(l, 'gut') * RULE.gutFood;
 
 /** What stops you eating this node, or null. */
 export function lockOf(l: Life, node: NodeId): string | null {
   if (node === 'buried') return l.plan === 'worm' || has(l, 'digger') ? null : 'needs a digging limb';
-  if (node === 'shell') return has(l, 'claw') ? null : l.plan === 'worm' ? 'needs a hooked proboscis (rare)' : 'needs a crushing claw';
+  if (node === 'shell') return has(l, 'claw') || has(l, 'hook') ? null : l.plan === 'worm' ? 'needs a hooked proboscis (rare)' : 'needs a crushing claw';
   if (node === 'carcass') return l.size >= RULE.carcassSize ? null : `needs size ${RULE.carcassSize}, you are ${l.size}`;
   return null;
 }
@@ -107,7 +117,7 @@ export function freeSlotFor(l: Life, part: PartId) {
 }
 
 // ---- starting a Life ----
-export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, starters: PartId[] = STARTER_PARTS): Life {
+export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, starters: PartId[] = STARTERS[plan]): Life {
   const P = PLANS[plan], slots: Slot[] = [];
   for (let k = 0; k < P.head; k++) slots.push({ kind: 'head', side: 'front', seg: -1, part: null });
   slots.push({ kind: 'tail', side: 'back', seg: 99, part: null });
@@ -215,7 +225,7 @@ function eat(l: Life, i: number) {
   if (!t.node) return;
   const lock = lockOf(l, t.node);
   if (lock) { say(l, `${NODES[t.node].name} ${lock}.`); emit(l, { k: 'locked', i, node: t.node, why: lock }); return; }
-  const f = NODES[t.node].food + count(l, 'gut') * RULE.gutFood;
+  const f = foodOf(l, t.node);
   say(l, `${NODES[t.node].name}: +${f} food.`);
   l.food += f; l.xp += f; l.eaten += f;
   emit(l, { k: 'eat', i, node: t.node, gain: f, food: l.food });
@@ -256,6 +266,7 @@ export function stay(l: Life, dir: Dir = l.facing) {
 export function hitOn(l: Life, dir: Dir, facing: Dir, x: number, y: number): Hit {
   const side = SIDES[(dir - facing + 4) % 4];
   if (buriedAt(l, x, y)) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
+  if (has(l, 'enrol') && !l.moved) return { side, kind: 'enrolled', part: 'enrol', tear: -1, damage: 0 };
   const guard = l.slots.find((s) => s.side === side && s.part && PARTS[s.part].guard);
   if (guard) return { side, kind: 'blocked', part: guard.part, tear: -1, damage: 0 };
   let tear = -1;
@@ -273,6 +284,7 @@ function strike(l: Life) {
   }
   const h = hitOn(l, p.dir, l.facing, l.x, l.y);
   if (h.kind === 'buried') say(l, 'You are buried: the strike misses.');
+  else if (h.kind === 'enrolled') say(l, 'You roll up: the strike glances off.');
   else if (h.kind === 'blocked') {
     say(l, `Your ${PARTS[h.part!].name.toLowerCase()} blocks a strike on your ${h.side}.`);
     if (h.part === 'spine') p.rest = RULE.restAfterSpine;
@@ -355,8 +367,8 @@ function world(l: Life) {
   l.food -= upkeep(l);
   if (l.food < 0) { l.food = 0; hurtOrShed(l, 'Starving'); }
   emit(l, { k: 'upkeep', food: l.food });
-  const t = tile(l).t, ev = l.hab.event;
-  if (t === 'dead' || (eventOn(l) && (ev.where === 'all' || ev.where === t))) {
+  const ev = l.hab.event;
+  if (airless(l)) {
     l.oxygen -= 1;
     if (l.oxygen < 0) { l.oxygen = 0; say(l, 'No oxygen: −1 health.'); l.health -= 1; emit(l, { k: 'hurt', why: 'No oxygen', health: l.health }); }
   } else l.oxygen = Math.min(oxygenMax(l), l.oxygen + 1);
