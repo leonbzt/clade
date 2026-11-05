@@ -11,7 +11,7 @@ garden that shows open niches. A fresh start, in a stack picked by playing.
 **Done when:** you'd send it to the 100 nerds: you start Lives to fill niches without deciding to; a grazer and a predator Life
 feel different; a fresh start reaches its first A tier. Then the first itch release and Discord.
 
-1. [ ] [08 The stack test](docs/slices/08-stack-test.md): Godot or PixiJS
+1. [x] [08 The stack test](docs/slices/08-stack-test.md): Godot or PixiJS → **PixiJS** (5 Nov). Next: [the M1 run](docs/planning/m1-run.md)
 2. [ ] 09 The Life, for real: three boards, worm and arthropod, feel and phone layout
 3. [ ] 10 Verb slots: parts give verbs, 1–3 picked; grazer styles
 4. [ ] 11 The predator Life: the swimmer, readable prey, ground and armour, ambush and frenzy

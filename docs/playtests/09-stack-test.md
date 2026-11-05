@@ -110,6 +110,6 @@ Open question 2 (load for itch) has an easy answer here: under a second.
 - Moulting leaves your old skin behind for a moment (priapulids do moult); laid clutches stay on the board as amber eggs.
 - As in the Godot half: the board turned a quarter, R2's names, a picked part goes in the first free slot.
 
-**Your notes**
-- Not played yet.
+**Your notes** (5 Nov)
+- "pixi is good enough stay with this for itch." The pick; the five values aren't tuned yet.
 

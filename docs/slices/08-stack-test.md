@@ -28,9 +28,9 @@ Both throwaway; nothing goes into `src/`. One session each.
 - A final save system, app store builds.
 
 ## Done when
-- [ ] Both halves open on your phone (a link) and on desktop; you can play the mud flats to the end in each.
-- [ ] You tuned the five feel values in both and picked a stack, logged in `decisions.md`.
-- [ ] Each half has a few tests of the ported rules (Godot: headless with GUT or a plain script; Pixi: vitest).
+- [x] Both halves open on your phone (a link) and on desktop; you can play the mud flats to the end in each.
+- [x] You picked a stack, logged in `decisions.md`: PixiJS (5 Nov). The Pixi half's values aren't tuned yet.
+- [x] Each half has a few tests of the ported rules (Godot: headless with GUT or a plain script; Pixi: vitest).
 - [ ] Your notes are in `docs/playtests/09-stack-test.md`.
 
 ## Size check

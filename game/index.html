@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0a1c24" />
+    <title>Clade</title>
+    <meta name="claude:viewport-fit-sides" content="cover" />
+    <style>:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }</style>
+    <link rel="stylesheet" href="./src/ui/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header id="top" class="panel">
+        <div class="row">
+          <span id="turn" class="big">Turn 1/20</span>
+          <span id="eggs" class="big">Eggs 0</span>
+          <span id="tier" class="tier">F</span>
+          <button id="devBtn" class="small" title="Feel values (`)">Feel</button>
+        </div>
+        <div id="track"></div>
+      </header>
+      <main id="area">
+        <div id="stage"></div>
+        <div id="vignette"></div>
+        <div id="flash"></div>
+        <div id="banner"></div>
+        <div id="floaters"></div>
+      </main>
+      <footer id="bottom" class="panel">
+        <div id="info">Tap a lit tile to move.</div>
+        <div class="stocks">
+          <div class="stock"><span class="lbl">Food</span><div class="pips" id="food"></div><span class="num" id="foodN">4</span></div>
+          <div class="stock"><span class="lbl">Oxygen</span><div class="pips" id="oxy"></div><span class="num" id="oxyN">3/3</span></div>
+          <div class="stock"><span class="lbl">Health</span><div class="pips" id="hp"></div><span class="num" id="hpN">3/3</span></div>
+        </div>
+        <div id="body"></div>
+        <div class="buttons">
+          <button id="wait">Wait</button>
+          <button id="moult">Moult</button>
+          <button id="lay">Lay</button>
+        </div>
+      </footer>
+      <div id="cardWrap" hidden>
+        <div id="card" class="panel">
+          <h2 id="cardTitle"></h2>
+          <p id="cardText"></p>
+          <div id="cardButtons"></div>
+        </div>
+      </div>
+      <aside id="dev" class="panel" hidden>
+        <h3>Feel <span class="hint">your five values · ` toggles</span></h3>
+        <div id="devFeel"></div>
+        <h3>Look</h3>
+        <div id="devLook"></div>
+        <div class="devRow"><button id="devCopy" class="small">Copy values</button><button id="devReset" class="small">Reset</button><button id="devClose" class="small">Close</button></div>
+        <pre id="devOut" hidden></pre>
+      </aside>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

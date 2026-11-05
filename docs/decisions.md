@@ -260,3 +260,6 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 ## 5 Nov, stack test: the PixiJS half
 - **The PixiJS half's look:** "dont keep the simple shapes, feel free to do a free interpretation" (said while it was being
   built). It got the 2D low-poly look from the look toy; the Godot half keeps its placeholder shapes.
+- **The stack:** "pixi is good enough stay with this for itch." PixiJS (TypeScript, Vite) for the first itch release.
+- **The next session:** "set up everything so i can start a session that implements as much as possible to hit the free
+  credit limit." → [planning/m1-run.md](planning/m1-run.md); slices are built back to back and played afterwards.

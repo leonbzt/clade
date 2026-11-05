@@ -1,6 +1,7 @@
 # PixiJS half of the stack test (slice 08)
 
-Throwaway. The mud flats Life from `toys/life2`, in TypeScript with PixiJS 8.22 and Vite, phone first.
+Throwaway, and done: PixiJS won the stack test (5 Nov), and this code moved into [`game/`](../../game/), where the
+real build goes on. Kept as the record. The mud flats Life from `toys/life2`, in TypeScript with PixiJS 8.22 and Vite, phone first.
 Spec: [docs/slices/08-stack-test.md](../../docs/slices/08-stack-test.md). Notes: [docs/playtests/09-stack-test.md](../../docs/playtests/09-stack-test.md).
 
 Same rules, board, fixed worm (gut gland and sclerites) and feel list as the Godot half. Different on purpose: the look.
@@ -22,7 +23,7 @@ Values stay in your browser. **Copy values** puts them on the clipboard to paste
 defaults for everyone, they go in `DEFAULTS` in `src/feel.ts`.
 
 ## Tests
-`npm run check` runs them with the rest (9 cases, the same checks as the Godot half's 37). Alone: `npx vitest run spikes/pixi-life`.
+9 cases, the same checks as the Godot half's 37. They moved to `game/tests/` with the code.
 
 ## Build
 ```

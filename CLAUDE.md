@@ -1,11 +1,12 @@
 # Clade
 
-An idle / incremental evolution game. Web: Svelte 5, TypeScript, Vite. You live one creature's Life at a time on a real habitat board: walk, eat, grow up,
+An idle / incremental evolution game. Web: TypeScript, PixiJS (the board), Svelte 5 (screens), Vite. You live one creature's Life at a time on a real habitat board: walk, eat, grow up,
 lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
 garden becomes is the next board you walk on.
 
-**Start here: `docs/status.md`, then `docs/planning/plan.md` (the plan for the real build, 5 Nov; it wins over `big-picture.md`) and `ROADMAP.md`.** Playable now: `toys/garden.html` and
-`toys/life2.html`. The plant game in `docs/spec.md` and `src/` is on hold; its island, habitat and garden code may be reused.
+**Start here: `docs/status.md`, then `docs/planning/plan.md` (the plan for the real build, 5 Nov; it wins over `big-picture.md`) and `ROADMAP.md`.**
+The game is in `game/` (PixiJS won the stack test, 5 Nov); a long build session follows `docs/planning/m1-run.md`. The plant game in
+`docs/spec.md`, `src/` and `tests/` is the archive; its island, habitat and garden code may be ported.
 
 **The guardrails against tangling (big-picture §12) are defaults, not laws (the user's words, 5 Nov: don't take them too seriously or stop thinking outside them).**
 They were written for one toy. If one blocks a better idea, say so and propose changing it; the tests that check them can change too.
@@ -17,9 +18,10 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 - `docs/tastes.md`: the user's tastes, wishes and lessons. `docs/decisions.md`: the dated log of their calls.
 - `docs/proposals.md`: open AI proposals (three at most). `docs/ideas.md`: the parking lot.
 - `docs/slices/`: one spec per slice (`_template.md`); `docs/playtests/`: the user's notes after playing.
-- Code (from M1): `src/sim` (rules, no DOM; never imports view or ui), `src/data` (numbers and content), `src/view`
-  (canvas), `src/ui` (Svelte). `tests/`. `toys/` holds throwaway prototypes (`npm run dev`, then `/toys/`).
-- `npm run dev` · `npm run check` (types and tests, prints only failures).
+- Code: `game/src/sim` (rules, no DOM; never imports view or ui), `game/src/data` (numbers and content), `game/src/view`
+  (Pixi), `game/src/ui` (DOM and Svelte), `game/tests/`. `toys/` and `spikes/` hold throwaway prototypes.
+- `npm run dev` (then `/game/`) · `npm run check` (the game's types and tests, prints only failures) · `npm run look`
+  (headless browser: screenshots and real taps, see `scripts/look.mjs`) · `npm run build:game` (one HTML file for itch).
 
 ## Rules
 1. **The user owns the design.** `spec.md`, `tastes.md` and `ROADMAP.md` change only on the user's explicit call,

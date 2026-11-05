@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "check": "node scripts/check.mjs",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:game": "vite build game && node game/inline.mjs",
+    "look": "node scripts/look.mjs"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^7.3.1",
