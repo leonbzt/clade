@@ -32,4 +32,6 @@ Next: steps 2–8 in one long session, [the M1 run](planning/m1-run.md).
 - The board turned a quarter (8 × 11) for phones is an AI choice you haven't judged. R2's [K] biology lines still need a check.
 
 ## Built, not played
-- (The run adds a line per slice here, with its AI choices to judge.)
+- **09 The Life, for real** ([spec](slices/09-life-for-real.md)): sand shallows (low tide) and volcanic rock (vents, vent
+  surge) beside the mud flats; the arthropod drawn; a pick screen; textured ground; a stone-and-brass UI. *Judge:* the
+  boards and events, the new palette and textures, the OSRS-like frame.

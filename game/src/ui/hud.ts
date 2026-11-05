@@ -75,7 +75,7 @@ export class Hud {
     this.hp.set(l.health, RULE.health, instant);
     const nt = L.nextTier(l.hab, l.eggs);
     $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${l.size} (${L.stage(l)}) · upkeep ${L.upkeep(l)}` +
-      (!L.mature(l) ? ` · lay from size ${RULE.adultSize}` : nt ? ` · ${nt[0]} at ${nt[1]} eggs` : '');
+      (L.mature(l) && nt ? ` · ${nt[0]} at ${nt[1]} eggs` : '');
     const play = l.phase === 'play' && !busy;
     $<HTMLButtonElement>('wait').disabled = !play;
     const m = $<HTMLButtonElement>('moult');
