@@ -2,28 +2,29 @@
 
 Updated 2026-11-05. Branch `claude/project-thread-cy8ptv`. The plan: [ROADMAP](../ROADMAP.md).
 
-**Milestone:** M2, the living sea, step 1 (quick wins) built, waiting for your play; slice 16 is uncommitted. M1 is built; only its itch release and Discord are left.
+**Milestone:** M2, the living sea, step 1 (quick wins) built and committed, waiting for your play. M1 is built; only its itch release and Discord are left.
+**Not pushed:** the last commits are local. The repo is public, so a push publishes the RuneScape font files (see Open).
 
 **Done**
-- Trust fixes, tried with real clicks: a form is really on the body (`sim/life.ts`, `ui/Meta.svelte`); a finished Life and its clutch survive a
-  reload (`sim/save.ts`, `main.ts`); a passed-on rare is a sure card, and you can decline a form (`sim/clutch.ts`, `ui/Clutch.svelte`); Feel button
-  hidden in player builds (`ui/dev.ts`). `npm run check` passed in 7.2 s.
-- [design/world-and-body-review.md](design/world-and-body-review.md): v1, v2 map, toy and now compared, why the map is dead, the proposals.
-- [design/tradeoffs.md](design/tradeoffs.md) (new, the living comparison), [patch-notes.md](patch-notes.md), [playtests/10-m1-run.md](playtests/10-m1-run.md).
+- [Slice 16](slices/16-quick-wins.md): four bars with "normal" marks and the next-board line on the habitat card (`sim/garden.ts`, `sim/door.ts`, `ui/Meta.svelte`);
+  map labels stay inside (`view/islandmap.ts`, test on 200 seeds).
+- The RuneScape font, Plain and Bold 12, as its own commit (`ui/fonts/`, `ui/style.css`, `scripts/build-font.py`). All text is 16 or 32 px, the only crisp sizes.
+  The font's `·` was one high pixel, so the build redraws it as a mid-height dot. Screens checked by screenshot, no overflow found on the start screen; itch build is one file, 728 KB.
+- `toys/fonts.html` compares 21 fonts; GNF sits in gitignored `toys/fonts-local/`. [Slice 17](slices/17-sea-toy.md): spec written, not started.
+- `npm run check` passed in 8.7 s. `npm run look` fails here because Playwright isn't installed; screenshots used a temporary driver.
 
 **Decided** (5 Nov, [decisions.md](decisions.md))
-- The living sea: governed patches, booms and crashes, spreading, few named rules, an overview map. Next milestone; filter feeders wait.
-- The body: big drawing, visible slots, inventory, verbs from plug-ins. Role settled by body and diet. The skill tree. The review's order.
-- 8 h catch-up about 5 s (up to 10): "better fewer time savings and better map and game".
+- Font: the RuneScape fonts first, "or else gnf"; "drawing our own would also be great".
+- A generation stays 3 min "for now"; crashes "every 5-50 gens"; about 70 patches. The living sea, the body and the review's order, as logged earlier.
 
 **Next**
-1. Play [slice 16](slices/16-quick-wins.md): pick a font in `toys/fonts.html` (Jersey 15 is a placeholder), say if the four bars are right.
-2. Build [slice 17, the sea toy](slices/17-sea-toy.md): one question, "does the map feel alive?"; its numbers are answered.
-3. Your further play notes go in playtest 10, any time. The phone page still has the old build: https://claude.ai/artifact/M6LoHUuraYzC5bTdf2SjEn
+1. Play slice 16 with the new font; notes go in `docs/playtests/16-quick-wins.md`. Then tick step 1.
+2. Settle the bars' names (below) and apply them.
+3. Build slice 17: one question, "does the map feel alive?"
 
 **Open**
-- How limited is the inventory? Banked or pieced offline time instead of one catch-up (idea)? How do body and diet weigh in the role?
-- M2's "done when" is my draft, and the 30 ms step limit is my reading of your 5 s: both yours to change. When does the itch release happen?
-- `tests/garden.test.ts:48` still enforces 0.1 ms and 0.5 s; it passes, and should loosen when the new model lands.
+- **Font licence, before a push or the itch release:** RuneStar's CC0 can't clear Jagex's rights, as its README says the glyphs are exactly as in the game. Keep it, GNF (embed only, never in the repo), or our own (AI lean)?
+- **Bars' names:** AI lean is Surface, Buried, Prey, Oxygen, with this habitat's real foods beside them. Buried barely moves today (sand 23–29 over 160 gens); the sea toy must fix that.
+- How limited is the inventory? Banked offline time (idea)? How do body and diet weigh in the role? When is the itch release?
+- M2's "done when" and the 30 ms step limit are my drafts. `tests/garden.test.ts:48` should loosen when the new model lands.
 - Left from M1: saving mid-Life, Deep burrow against Dig, clutch odds, sweeper and tank balance (tank 0% A+).
-- To re-run v1: `git archive slice-11e` outside the repo, symlink `node_modules`, `npx vite`, open with `?bot=1200`.
