@@ -31,6 +31,7 @@ export function devPanel() {
   $('devReset').onclick = () => { for (const k of Object.keys(DEFAULTS) as FeelKey[]) setFeel(k, DEFAULTS[k]); shows.forEach((f) => f()); };
   const toggle = () => { panel.hidden = !panel.hidden; };
   $('devBtn').onclick = toggle;
+  if (!import.meta.env.DEV) $('devBtn').style.display = 'none'; // players don't see it; ` still opens the panel
   $('devClose').onclick = toggle;
   window.addEventListener('keydown', (e) => { if (e.key === '`') toggle(); });
 }

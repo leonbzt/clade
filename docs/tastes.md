@@ -15,6 +15,8 @@ has to fit.
 - **"The 'living' ecosystem is also really important to me to have the feeling"** (4 Nov).
 - **The big picture "sounds really cool",** and the example of a booming worm changing the place "is just what i had in mind" (4 Nov).
 - **"I like to be the little creature and chase things around"** (4 Nov). You want to feel "really a part of that habitat".
+- **"World is core"** (5 Nov). "Species has to change the board." The "feeling of really adapting and having maybe a recognizable
+  species is good."
 
 ## How it should play
 - **"A lot of feel with simple mechanics that can get done, instead of overly complicated and not fitting
@@ -38,6 +40,8 @@ has to fit.
 - **Swings are wanted** (grazers that eat plants to death, species dying out). Chains are features: tune them, don't
   cut them. Balance by feel; abstract multipliers are fine; feeling right beats everything being readable.
 - **Readable:** show why something is winning; important news stands out.
+- **"Better fewer time savings and better map and game"** (5 Nov): a richer world is worth slower catch-up.
+- **The climb:** "skill tree is cool, and i like the climb" (5 Nov). You like diverse verbs and playstyles "a lot".
 - **"Simple and impactful" decisions, budgets and moving for rewards:** "a great little minigame to solve" (4 Nov). "In this simple
   setup its easy to introduce lots of different mechanics."
 - **Rare drops, the most efficient route, milestones you worked for, getting mechanically better at bosses** (4 Nov), from Idle
@@ -64,6 +68,8 @@ has to fit.
 - **Contrast between areas** (the wind side). Landmarks: vents, springs, beaches, caves.
 - **Habitats the sim detects, in detail**, small patches too (2 Nov: "I like getting the habitats in detail").
   Habitats filled like an RPG equipment loadout. Open slots are good.
+- **Patches "really governed", where booms and crashes happen;** species spread, with "only few named rules". The overview map "is
+  very important for feeling" (5 Nov). "Not all roles should fit everywhere" (5 Nov).
 - **The sim has a life of its own;** you can't influence everything. Calm means slow, big stores. Fewer visible
   layers, more hidden depth.
 - **Real units:** grams (g → kg → t), 10 m tiles.
@@ -80,7 +86,7 @@ has to fit.
 - **"I'd really like to go towards a low-res low-poly look"** (3 Nov), with pixel-art references: bold outlined
   pixel fonts, segmented bars, framed cards, a "VS" favour bar.
 - **The look toy** (3 Nov): **2D low-poly, for now** ("least buggy and weird", its shadows "make sense to use");
-  3D "if it could be stable it were great". Menus calm (fewer colours), font Pixelify.
+  3D "if it could be stable it were great". Menus calm (fewer colours). The font isn't settled: "i don't like the font still" (5 Nov).
 - The growth toys: "a cool feeling and look of growth… organic" (patch); "looks really cool… the look and feel is
   very nice" (specimen). Voronoi and reaction-diffusion looks.
 - **Hatched's staged assembly** for creatures (2 Nov). **Mycelarium's side view** (2 Nov).
@@ -122,6 +128,9 @@ has to fit.
   compelled to go on".
 - **The living garden toy (5 Nov):** no big pull to wait, but "really felt sad i couldn't play to fill the other niches" and "really wanted to play as a predator". Liked the creatures roaming, the overview, the
   bars, skipping to see changes, variant offers. "i don't really recognize the creatures... that can come later."
+- **The M1 run (5 Nov):** "the basics seem fun and as imagined." Liked the board layout, strategy from moves, foods and skills, picking
+  species and slots, the compact UI, the hunter's life. "The map ust looks dead"; "no real progression"; "the looks are okay for a start
+  but i want more work on that." Wants to see adaptations on the body and build it visually.
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

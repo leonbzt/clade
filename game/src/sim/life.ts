@@ -94,6 +94,8 @@ export function verbs(l: Life): VerbId[] {
 }
 /** The parts a set of verbs gives this body plan: a verb loadout is a starting body. */
 export const partsFor = (plan: PlanId, vs: VerbId[]): PartId[] => (plan === 'swimmer' ? ['arms'] : vs.map((v) => VERB_PART[plan][v]));
+/** A Life's starting body: your kept form first, so it always gets its slot, then each verb's part while there's room. */
+export const startParts = (plan: PlanId, vs: VerbId[], form?: PartId): PartId[] => [...new Set([...(form && PARTS[form].plans.includes(plan) ? [form] : []), ...partsFor(plan, vs)])];
 export const ready = (l: Life, v: VerbId) => l.phase === 'play' && verbs(l).includes(v) && !(l.recharge[v]! > 0);
 export const sense = (l: Life) => PLANS[l.plan].sense + count(l, 'eye') * RULE.eyeSense + count(l, 'compound') * RULE.compoundSense;
 export const clutch = (l: Life) => (1 + count(l, 'pouch')) * l.size + (has(l, 'deep') && onMud(l) ? 1 : 0);

@@ -30,4 +30,9 @@ describe('the copy-species code', () => {
     addVisitor(s.garden, sp);
     expect(s.garden.habs.sand.entries.some((e) => e.name === 'Kim' && e.role === 'predator' && !e.line)).toBe(true);
   });
+  it('a finished Life waiting in the save survives a reload', () => {
+    const s = freshSave(5, 0), cards = [{ part: 'deep' as const, rarity: 'rare' as const, passed: true }];
+    s.pending = { hab: 'mud', role: 'burrower', plan: 'worm', eggs: 20, tier: 'B', cards };
+    expect(parseSave(JSON.stringify(s)).save?.pending).toEqual(s.pending);
+  });
 });

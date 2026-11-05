@@ -1,12 +1,31 @@
 // The Life's rules: the stack test's checks (both halves ran these).
 import { describe, expect, it } from 'vitest';
-import { RULE, TURNS } from '../src/data/life';
+import { PARTS, PART_IDS, RULE, STYLE_VERBS, TURNS } from '../src/data/life';
 import * as L from '../src/sim/life';
 import { MUD_FLATS } from '../src/data/habitats';
 
 /** Coordinates in the toy's 11 x 8 map; the spike's board is that map turned a quarter (x and y swapped). */
 const T = (x: number, y: number) => L.at(y, x);
 const parts = (l: L.Life) => l.slots.flatMap((s) => (s.part ? [s.part] : []));
+
+describe('a kept form on the starting body', () => {
+  const PLAN_IDS = ['worm', 'arthropod', 'trilobite', 'swimmer'] as const;
+  it('always gets its slot, whatever the verbs want', () => {
+    for (const plan of PLAN_IDS) for (const form of PART_IDS.filter((p) => PARTS[p].plans.includes(plan))) for (const style of Object.values(STYLE_VERBS)) {
+      const l = L.newLife(1, plan, undefined, L.startParts(plan, style, form));
+      expect(L.has(l, form), `${plan} ${form}`).toBe(true);
+    }
+  });
+  it("keeps the swimmer's arms, and a form that fits another body is left out", () => {
+    for (const form of PART_IDS.filter((p) => PARTS[p].plans.includes('swimmer'))) expect(L.has(L.newLife(1, 'swimmer', undefined, L.startParts('swimmer', [], form)), 'arms'), form).toBe(true);
+    expect(L.startParts('swimmer', [], 'deep')).toEqual(['arms']);
+  });
+  it('holds the slot against a verb: deep burrow takes the tail, so the bulb has no room', () => {
+    const parts = L.startParts('worm', ['dig', 'sense'], 'deep'), l = L.newLife(1, 'worm', undefined, parts);
+    expect(L.has(l, 'deep') && !L.has(l, 'bulb') && L.has(l, 'eye')).toBe(true);
+    expect(L.startParts('worm', ['dig'], 'bulb')).toEqual(['bulb']);
+  });
+});
 
 describe('the mud flats Life', () => {
   it('starts with the fixed body', () => {

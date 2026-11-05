@@ -113,3 +113,9 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - "Minigames wait until the garden core is fun" (26 Oct) → v2 reverses it: the activity comes first.
 - v1's first-session script (seabirds in session 2, mosses via the leafy shoot, a cliffhanger) → the vent start
   stays (tastes.md).
+- More buried food on sand, introduced later, opening burrowing there as a new niche (your idea, 5 Nov).
+- Offline as banked time you advance by choice, or catch-up in pieces (your idea, 5 Nov: "8h offline could be handled differently").
+- A limited inventory for the body screen ("maybe inventory should be somewhat limited?", 5 Nov; how limited is open).
+- Fully free bodies "maybe later or as extension" (5 Nov).
+- Pluggable segments, heads and tails as rare late finds (AI, from the review, 5 Nov).
+- Save a Life in progress, so closing the page mid-Life loses nothing (AI, 5 Nov).

@@ -3,13 +3,19 @@
 // Offline: the generations you missed run when you come back (capped at 8 h).
 import { MODEL } from '../data/garden';
 import type { PartId } from '../data/life';
+import type { Role } from '../data/garden';
+import type { HabitatId } from '../data/habitats';
+import type { PlanId } from '../data/life';
+import type { Card } from './clutch';
 import { catchUp, newGarden, type Garden, type News } from './garden';
 
 export const SAVE_KEY = 'clade.m1.save', BACKUP_KEY = 'clade.m1.backup';
 export const SAVE_VERSION = 2; // 1: slice 13 · 2: forms and unlocks (slices 12, 14)
+/** A finished Life not yet released: saved the moment it ends, so closing the page can't lose its eggs. */
+export interface Pending { hab: HabitatId; role: Role; plan: PlanId; eggs: number; tier: string; cards: Card[] }
 export interface Save {
   v: number; seed: number; at: number; garden: Garden; best: Record<string, string>; lives: number;
-  forms: Record<string, PartId>; unlocks: Record<string, boolean>;
+  forms: Record<string, PartId>; unlocks: Record<string, boolean>; pending?: Pending;
 }
 
 export function freshSave(seed: number, now: number): Save {

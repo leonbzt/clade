@@ -17,6 +17,14 @@ describe('open your clutch', () => {
     }
     expect([...seen].sort()).toEqual(['common', 'epic', 'rare']);
   });
+  it('a rare part you laid after getting is a sure card, first and only once', () => {
+    for (let s = 1; s < 100; s++) {
+      const cards = rollClutch(s, 'worm', 'mud', 8, 'C', 'deep');
+      expect(cards[0]).toEqual({ part: 'deep', rarity: 'rare', passed: true });
+      expect(cards.filter((c) => c.part === 'deep').length).toBe(1);
+    }
+    expect(rollClutch(1, 'worm', 'mud', 0, 'F', 'deep')).toEqual([]);
+  });
   it('a higher tier gives better odds', () => {
     expect(odds('S').rare).toBeGreaterThan(odds('F').rare);
     expect(odds('S').epic).toBeGreaterThan(odds('D').epic);

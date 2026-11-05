@@ -3,6 +3,9 @@
 Started 5 Nov in the planning session. Every item is labelled *decided (date)*, *proposal* or *idea*. Calls are logged in
 `docs/decisions.md`. Inputs: `big-picture.md`, `research-digest.md`, playtests 06 and 08.
 
+**Since M1 (5 Nov):** the next milestone is M2, the living sea; its design is
+[design/world-and-body-review.md](../design/world-and-body-review.md), and it wins over the garden model and milestones below.
+
 ## The game in one screen *(proposal)*
 1. **Island map.** The volcanic island with habitats as areas in the sea around it (big-picture §4).
 2. **Habitat card.** Each habitat shows a roster of niches (grazer, burrower, filter feeder, predator) × tier rows. Empty or weak

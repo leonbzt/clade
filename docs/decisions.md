@@ -263,3 +263,35 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **The stack:** "pixi is good enough stay with this for itch." PixiJS (TypeScript, Vite) for the first itch release.
 - **The next session:** "set up everything so i can start a session that implements as much as possible to hit the free
   credit limit." → [planning/m1-run.md](planning/m1-run.md); slices are built back to back and played afterwards.
+
+## 5 Nov, after the first look at the M1 run
+- **The verdict:** "the basics seem fun and as imagined." Notes: [playtests/10-m1-run.md](playtests/10-m1-run.md).
+- **Trust fixes before more play:** "go ahead with the trust fixes" (kept forms real, a Life saved when it ends, stay with your
+  form, passing on works, Feel hidden from players).
+- **What comes next:** "keeping in mind the map and species chaning place is important, alongside further improvements and deeper
+  progression."
+- **How a species changes the place:** "a mix between a and b with maybe an overview map so you get a good feeling for things are
+  spreading on a larger scale" (a: fixed, readable rules per role; b: populations that boom and move the stocks).
+- **Roles don't fit everywhere:** "burrower on sand beeing bad is a good thing. not all roles should fit everywhere." "its fine if a
+  burrower can't live in some habitats." More buried food on sand: "maybe introduced later to give it as a new niche."
+- **Crashes:** "populations shod be abe to crash."
+- **Roles from the body:** "'burrower' and alike should come from the body and be assigned during and after. maybe at start give a
+  guess or current best fi." This changes "filling a niche = C, pick gives the base body" (5 Nov). How it's assigned is still open.
+- **Verbs from the body:** "verbs should come from the body, not the body from the verbs." This reverses slice 10's direction.
+- **Open, your ideas to shape:** a pick-and-plug body, a skill tree with parts as keys (part plus XP unlocks a verb), a new font.
+  Options: [design/world-and-body-review.md](design/world-and-body-review.md).
+
+## 5 Nov, the review's proposal
+- **The proposal:** "the proposal sounds really good and what i wanted." ([design/world-and-body-review.md](design/world-and-body-review.md))
+- **The living sea:** "I like the lviing sea proposal a lot, with patches that are really goverened and booms and crashes happen.
+  species spreading and only few named rules." "the overview map is very important for feeling."
+- **The body:** "i also like the proposal. big drawing with visible slots and inventory is cool." "verbs from plug ins sounds good."
+  "feeling of really adapting and having maybe a recognizable species is good."
+- **The skill tree:** "skill tree is cool, and i like the climb."
+- **The order:** "the order sounds good" (quick wins, sea toy, overview map, named rules, body screen, skill tree, look pass).
+- **The milestone (Q1):** "lean yes. world is core and was intendet for m1." The living sea goes next; filter feeders and sponges wait.
+- **Role at the end of a Life (Q2):** "body and diet is good."
+- **The offline budget (Q3):** "better fewer time savings and better map and game. 8h catchup window limit maybe around 5s (up to 10)."
+  Replaces 8 h < 0.5 s; the old 0.1 ms step limit goes with it (5 s over 160 generations is about 30 ms each).
+- **Tracking trade-offs:** "i like the comparison table, maybe keep something like this to follow where tradoffs have been made
+  and what they achieved." → [design/tradeoffs.md](design/tradeoffs.md).

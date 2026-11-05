@@ -10,7 +10,6 @@ open parts needed for M1 are kept here; the rest is parked in ideas.md.
 
 (P36–P40 were decided 3 Nov, except P38's garden question: see decisions.md. P41 went to the toy: see decisions.md. P42 closed 5 Nov: the stack is picked by playing (slice 08, the stack test). P43 was decided 3 Nov.)
 P44 (the run's core play) and P45 (next step, apex slot, world) were decided 4 Nov: see decisions.md.
+P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea replaces that model (see decisions.md).
 
-## P38 left open: the garden
-(From P37.) May one good line take most of a row? (a) replicator growth, newcomers earn ground in S-curves ·
-(b) winner takes a patch · (c) keep score³ shares with crowding. **Lean: (a)**, and split the lava row.
+Nothing open right now.

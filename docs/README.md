@@ -18,6 +18,9 @@ wins (and the code is the truth for what's built).
 | [decisions.md](decisions.md) | The dated log of your calls (v2) | AI records them | To check why or when |
 | [ideas.md](ideas.md) | The parking lot, reviewed against v2 | Anyone | When planning the next milestone |
 | [workflow.md](workflow.md) | How we work: sessions, the idea funnel, tokens | You | When the process changes |
+| [patch-notes.md](patch-notes.md) | What changed, written for players | AI drafts, you edit | When shipping a build |
+| [design/world-and-body-review.md](design/world-and-body-review.md) | **The living sea, the body, the skill tree (5 Nov): design for M2** | You (AI drafts) | M2 sessions |
+| [design/tradeoffs.md](design/tradeoffs.md) | The versions compared: what each trade-off cost and achieved | AI, you | When a big model or look changes |
 
 **Reference** (open when a spec needs it):
 - `design/`: [rebuild.md](design/rebuild.md) (the v1 review and the v2 plan, with the grid vs patch benchmark,

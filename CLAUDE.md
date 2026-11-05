@@ -33,7 +33,7 @@ They were written for one toy. If one blocks a better idea, say so and propose c
    serve. At most three open at once. Ask for big calls before writing plans (options first, then converge).
 5. **One slice = one question.** Write a spec from the template before code. One or two sessions each. Play it
    before calling it done.
-6. **Budgets** (in the roadmap): garden step < 0.1 ms, 8 h offline < 0.5 s, `npm run check` < 10 s; at most 4
+6. **Budgets** (in the roadmap): 8 h catch-up about 5 s (up to 10), `npm run check` < 10 s; at most 4
    stocks, 6 stats and 10 genes per kingdom. Adding one means removing one, or the user's call. No long headless sim
    runs: model tests run hours of garden in under a second.
 7. **Code:** files under ~400 lines; data separate from logic. Balance by feel, a simple curve model and the dev

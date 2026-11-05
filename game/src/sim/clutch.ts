@@ -5,7 +5,7 @@ import { PARTS, PART_IDS, type PartId, type PlanId } from '../data/life';
 import { seeded } from './rng';
 
 export type Rarity = 'common' | 'rare' | 'epic';
-export interface Card { part: PartId; rarity: Rarity }
+export interface Card { part: PartId; rarity: Rarity; passed?: boolean }
 export const CLUTCH = { base: 2, perEggs: 8, max: 5, rare: 0.2, epic: 0.05, rarePerTier: 0.04, epicPerTier: 0.02 };
 const TIER_STEPS = ['F', 'D', 'C', 'B', 'A', 'S'];
 
@@ -17,7 +17,8 @@ export function odds(tier: string) {
   return { rare: CLUTCH.rare + CLUTCH.rarePerTier * k, epic: CLUTCH.epic + CLUTCH.epicPerTier * k };
 }
 
-export function rollClutch(seed: number, plan: PlanId, hab: HabitatId, eggs: number, tier: string): Card[] {
+/** `passed`: a rare part you laid after getting. It's a sure card on top of the roll, the first in the clutch. */
+export function rollClutch(seed: number, plan: PlanId, hab: HabitatId, eggs: number, tier: string, passed: PartId | null = null): Card[] {
   const rng = seeded(seed), o = odds(tier), out: Card[] = [];
   const common = PART_IDS.filter((p) => !PARTS[p].rare && PARTS[p].plans.includes(plan));
   const rare = HABITATS[hab].rares[plan].filter((p) => PARTS[p].plans.includes(plan));
@@ -29,5 +30,5 @@ export function rollClutch(seed: number, plan: PlanId, hab: HabitatId, eggs: num
     else if (r < o.epic + o.rare && rare.length) out.push({ part: pickFrom(rare), rarity: 'rare' });
     else out.push({ part: pickFrom(common), rarity: 'common' });
   }
-  return out;
+  return passed && eggs > 0 ? [{ part: passed, rarity: 'rare', passed: true }, ...out.filter((c) => c.part !== passed)] : out;
 }

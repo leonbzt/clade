@@ -1,31 +1,29 @@
 # Status
 
-Updated 2026-11-05. Branch `claude/project-thread-cy8ptv` on GitHub (`leonbzt/clade`). The plan: [planning/plan.md](planning/plan.md).
+Updated 2026-11-05. Branch `claude/project-thread-cy8ptv`. **Everything below is uncommitted.** The plan: [ROADMAP](../ROADMAP.md).
 
-**Milestone:** M1, the first playable sea ([ROADMAP](../ROADMAP.md)). Step 1 (PixiJS) done. **The M1 run built steps 2–8**
-([m1-run](planning/m1-run.md)): all built, none played. Next: you play, notes into `docs/playtests/`, then tick the ROADMAP.
-**Play:** on the phone, the private page https://claude.ai/artifact/M6LoHUuraYzC5bTdf2SjEn · locally `npm run dev`, then `/game/`.
+**Milestone:** M2, the living sea, step 1 (quick wins), not started. M1 is built; only its itch release and Discord are left.
 
-## Built, not played (5 Nov) · AI choices to judge
-- **09 The Life** ([spec](slices/09-life-for-real.md)): sand shallows (low tide), volcanic rock (vents, surge), the arthropod
-  drawn, textured ground, stone-and-brass menus. *Judge:* boards, events, palette and textures, the OSRS-like frame.
-- **10 Verbs** ([spec](slices/10-verb-slots.md)): six verbs from parts, pick 1–3 (sweeper, digger, tank). *Judge:* verbs cost
-  upkeep via parts; verbs are your starting body; start food 6; mats regrow in 4 turns (the new boards starved without).
-- **11 The predator Life** ([spec](slices/11-predator-life.md)): the swimmer; worms burrow, trilobites run, Wiwaxia hunkers;
-  lurk ×2, frenzy; compound eyes preview prey (tap to aim, tap again). *Judge:* prey notice you only after you move.
-- **13 Garden and island** ([spec](slices/13-garden-island.md)): island map, habitat cards (open niches first, ranks to beat,
-  news), the ported garden with a 60% self-limit, the one door, 3-min generations, Skip, 8 h offline. *Judge:* niche →
-  body (grazer → arthropod, burrower → worm, hunter → swimmer); one tier scale S 40 · A 28 · B 18 · C 10 · D 4; natives.
-- **12 Open your clutch** ([spec](slices/12-open-your-clutch.md)): 2–5 eggs hatch as common/rare/epic cards; keep a form your
-  line carries into that niche. *Judge:* odds; a form = one inherited part.
-- **14 Your hunter, the trilobite** ([spec](slices/14-your-predator.md)): topping a hunter row makes your swimmers the board's
-  hunter (lurk, boldness, form effects); an A as an arthropod opens the trilobite. *Judge:* those rules and the unlock.
-- **15 Ship it** ([spec](slices/15-ship-it.md)): versioned saves with a backup, species codes (friends' species visit your
-  garden), a Menu, `game/dist/clade.html` (764 KB, 60 fps), [itch page text](itch.md). Discord is yours.
+**Done**
+- Trust fixes, tried with real clicks: a form is really on the body (`sim/life.ts`, `ui/Meta.svelte`); a finished Life and its clutch survive a
+  reload (`sim/save.ts`, `main.ts`); a passed-on rare is a sure card, and you can decline a form (`sim/clutch.ts`, `ui/Clutch.svelte`); Feel button
+  hidden in player builds (`ui/dev.ts`). `npm run check` passed in 7.2 s.
+- [design/world-and-body-review.md](design/world-and-body-review.md): v1, v2 map, toy and now compared, why the map is dead, the proposals.
+- [design/tradeoffs.md](design/tradeoffs.md) (new, the living comparison), [patch-notes.md](patch-notes.md), [playtests/10-m1-run.md](playtests/10-m1-run.md).
 
-## Open
-- Balance is unplayed: a heuristic player survived every board after the regrow fix but laid few eggs; a first A tier may be
-  too far (tiers or egg counts are the knob). The feel values are the stack test's. Pixelify's 2, 3, 5 read like 8 or S.
-- `life`, `hunt` and `threat` import each other (works). R2's [K] biology lines need a check before they show as text.
+**Decided** (5 Nov, [decisions.md](decisions.md))
+- The living sea: governed patches, booms and crashes, spreading, few named rules, an overview map. Next milestone; filter feeders wait.
+- The body: big drawing, visible slots, inventory, verbs from plug-ins. Role settled by body and diet. The skill tree. The review's order.
+- 8 h catch-up about 5 s (up to 10): "better fewer time savings and better map and game".
 
-**Next:** `/kickoff play the M1 run: my notes are in docs/playtests/10-m1-run.md`
+**Next**
+1. `/spec` the quick wins: the resource bars and "next board" line from `toys/garden-view.ts`, a font from `toys/fonts.html`, clipped labels.
+2. `/spec` the toy of patches with real populations and crashes, seen on a map; one question: "does the map feel alive?"
+3. Your further play notes go in playtest 10, any time. The phone page still has the old build: https://claude.ai/artifact/M6LoHUuraYzC5bTdf2SjEn
+
+**Open**
+- How limited is the inventory? Banked or pieced offline time instead of one catch-up (idea)? How do body and diet weigh in the role?
+- M2's "done when" is my draft, and the 30 ms step limit is my reading of your 5 s: both yours to change. When does the itch release happen?
+- `tests/garden.test.ts:48` still enforces 0.1 ms and 0.5 s; it passes, and should loosen when the new model lands.
+- Left from M1: saving mid-Life, Deep burrow against Dig, clutch odds, sweeper and tank balance (tank 0% A+).
+- To re-run v1: `git archive slice-11e` outside the repo, symlink `node_modules`, `npx vite`, open with `?bot=1200`.
