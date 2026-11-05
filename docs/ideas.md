@@ -82,6 +82,11 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Portrait boards for phones: author maps 8 wide × 11 tall, as the Godot spike's turned mud flats (AI, 5 Nov).
 - Shrink Godot's 40 MB web engine with a custom build without 3D; check whether itch serves it compressed (AI, 5 Nov).
 
+- *(M1 run, 5 Nov, AI)* Prey kinds straight from the garden's species (each native a prey with its own flee rule),
+  not three fixed kinds. · Several hunters per habitat (Ottoia in the mud, Sidneyia on rock), each with its own rule.
+  · A trilobite tree (enrolling, spiny, blind burrowing forms). · Visitors from codes that spread like your lines.
+  · Swimmer verbs (a pounce, a sonar sweep) once the hunt is played.
+
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
   patch niches replace the structure.
