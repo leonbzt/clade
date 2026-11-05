@@ -11,13 +11,22 @@ background; where they disagree with `plan.md`, `plan.md` wins.
   of web fetches; unverified lines are marked (most of R2's species table).
 - **Planning session:** your calls in [decisions.md](decisions.md) (5 Nov, turns 1–6) and [planning/plan.md](planning/plan.md).
 
-## Next: slice 08, the stack test
-[slices/08-stack-test.md](slices/08-stack-test.md). Godot half first, in a fresh cloud session on this branch:
+## Done: slice 08, the Godot half (5 Nov)
+[`spikes/godot-life/`](../spikes/godot-life/README.md): the mud flats Life in Godot 4.7.2, phone first, with the five feel values
+as inspector sliders on **Main**. The web build is committed in `spikes/godot-life/build/web/` (single-threaded); an Android APK
+was built and signed in the cloud (not committed). 37 rule tests run headless in about 10 ms. Workflow log and load numbers:
+[playtests/09-stack-test.md](playtests/09-stack-test.md).
+
+## Next
+1. You: open `spikes/godot-life/` in Godot 4.7, play, tune the five values, try it on your phone; notes go in playtest 09.
+2. The PixiJS half, in a fresh cloud session on this branch:
 ```
-Follow docs/slices/08-stack-test.md: build the Godot half. Read docs/status.md first.
+Follow docs/slices/08-stack-test.md: build the PixiJS half. Read docs/status.md first.
 ```
-Then the PixiJS half in another session, then you play both and pick.
+3. Then you play both and pick; the call goes in `decisions.md`.
 
 ## Open
+- The Godot half was checked only in headless Chromium at phone size, not in the editor or on a real phone.
+- The board is the toy's map turned a quarter (8 × 11) to fill a phone held upright: an AI choice for you to judge.
 - R2's [K] biology lines need a check before they go into text the player sees.
 - Hallucigenia, the brachiopod and generated habitats wait for M2 (see ROADMAP).

@@ -1,0 +1,36 @@
+; Engine configuration file.
+; Clade, slice 08: the stack test, Godot half. Throwaway spike.
+
+config_version=5
+
+[application]
+
+config/name="Clade Life (Godot spike)"
+config/description="The mud flats Life, ported from toys/life2 for the stack test (slice 08)."
+run/main_scene="res://main.tscn"
+config/icon="res://icon.png"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+boot_splash/bg_color=Color(0.047, 0.149, 0.176, 1)
+boot_splash/show_image=false
+
+[display]
+
+window/size/viewport_width=540
+window/size/viewport_height=960
+window/size/window_width_override=432
+window/size/window_height_override=768
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[gui]
+
+theme/custom="res://theme.tres"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.047, 0.149, 0.176, 1)

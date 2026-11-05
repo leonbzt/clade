@@ -1,0 +1,265 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://main.gd" id="1_main"]
+[ext_resource type="Script" path="res://view/board.gd" id="2_board"]
+[ext_resource type="Script" path="res://view/overlay.gd" id="3_overlay"]
+[ext_resource type="Script" path="res://view/creature.gd" id="4_creature"]
+[ext_resource type="Script" path="res://view/creature_body.gd" id="5_body"]
+[ext_resource type="Script" path="res://view/predator.gd" id="6_predator"]
+[ext_resource type="Script" path="res://view/fx.gd" id="7_fx"]
+[ext_resource type="Script" path="res://view/hud.gd" id="8_hud"]
+[ext_resource type="Script" path="res://view/track.gd" id="9_track"]
+[ext_resource type="Script" path="res://view/pip_bar.gd" id="10_pips"]
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_main")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Board" type="Node2D" parent="."]
+script = ExtResource("2_board")
+
+[node name="Overlay" type="Node2D" parent="Board"]
+script = ExtResource("3_overlay")
+
+[node name="Rivals" type="Node2D" parent="Board"]
+
+[node name="Creature" type="Node2D" parent="Board"]
+script = ExtResource("4_creature")
+
+[node name="Body" type="Node2D" parent="Board/Creature"]
+script = ExtResource("5_body")
+
+[node name="Predator" type="Node2D" parent="Board"]
+visible = false
+script = ExtResource("6_predator")
+
+[node name="Fx" type="Node2D" parent="Board"]
+script = ExtResource("7_fx")
+
+[node name="Hud" type="CanvasLayer" parent="."]
+script = ExtResource("8_hud")
+
+[node name="Root" type="VBoxContainer" parent="Hud"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="TopMargin" type="MarginContainer" parent="Hud/Root"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 4
+
+[node name="Top" type="PanelContainer" parent="Hud/Root/TopMargin"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Hud/Root/TopMargin/Top"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Row" type="HBoxContainer" parent="Hud/Root/TopMargin/Top/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="Hud/Root/TopMargin/Top/VBox/Row"]
+layout_mode = 2
+theme_type_variation = &"Heading"
+text = "Mud flats"
+
+[node name="Turn" type="Label" parent="Hud/Root/TopMargin/Top/VBox/Row"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Turn 1/20"
+
+[node name="Eggs" type="Label" parent="Hud/Root/TopMargin/Top/VBox/Row"]
+layout_mode = 2
+text = "Eggs 0"
+
+[node name="Tier" type="Label" parent="Hud/Root/TopMargin/Top/VBox/Row"]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+theme_type_variation = &"Heading"
+text = "F"
+horizontal_alignment = 1
+
+[node name="Track" type="Control" parent="Hud/Root/TopMargin/Top/VBox"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("9_track")
+
+[node name="BoardArea" type="Control" parent="Hud/Root"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
+
+[node name="BottomMargin" type="MarginContainer" parent="Hud/Root"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Bottom" type="PanelContainer" parent="Hud/Root/BottomMargin"]
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Hud/Root/BottomMargin/Bottom"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Info" type="Label" parent="Hud/Root/BottomMargin/Bottom/VBox"]
+custom_minimum_size = Vector2(0, 56)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Tap a lit tile to move."
+autowrap_mode = 3
+
+[node name="Stocks" type="GridContainer" parent="Hud/Root/BottomMargin/Bottom/VBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 12
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="FoodL" type="Label" parent="Hud/Root/BottomMargin/Bottom/VBox/Stocks"]
+custom_minimum_size = Vector2(96, 0)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.882, 0.29, 1)
+text = "Food"
+
+[node name="FoodBar" type="Control" parent="Hud/Root/BottomMargin/Bottom/VBox/Stocks"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("10_pips")
+color = Color(1, 0.882, 0.29, 1)
+
+[node name="OxygenL" type="Label" parent="Hud/Root/BottomMargin/Bottom/VBox/Stocks"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.361, 0.796, 0.91, 1)
+text = "Oxygen"
+
+[node name="OxygenBar" type="Control" parent="Hud/Root/BottomMargin/Bottom/VBox/Stocks"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("10_pips")
+color = Color(0.361, 0.796, 0.91, 1)
+fixed_max = 3
+
+[node name="HealthL" type="Label" parent="Hud/Root/BottomMargin/Bottom/VBox/Stocks"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.416, 0.298, 1)
+text = "Health"
+
+[node name="HealthBar" type="Control" parent="Hud/Root/BottomMargin/Bottom/VBox/Stocks"]
+custom_minimum_size = Vector2(0, 34)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+script = ExtResource("10_pips")
+color = Color(1, 0.416, 0.298, 1)
+fixed_max = 3
+
+[node name="BodyLine" type="Label" parent="Hud/Root/BottomMargin/Bottom/VBox"]
+layout_mode = 2
+theme_type_variation = &"Muted"
+text = "Worm, size 1"
+autowrap_mode = 3
+
+[node name="Buttons" type="HBoxContainer" parent="Hud/Root/BottomMargin/Bottom/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Wait" type="Button" parent="Hud/Root/BottomMargin/Bottom/VBox/Buttons"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Wait"
+
+[node name="Moult" type="Button" parent="Hud/Root/BottomMargin/Bottom/VBox/Buttons"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Moult"
+
+[node name="Lay" type="Button" parent="Hud/Root/BottomMargin/Bottom/VBox/Buttons"]
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Lay"
+
+[node name="Overlay" type="Control" parent="Hud"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Banner" type="Label" parent="Hud/Overlay"]
+layout_mode = 0
+offset_right = 540.0
+offset_bottom = 40.0
+theme_type_variation = &"Heading"
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="Floaters" type="Control" parent="Hud/Overlay"]
+anchors_preset = 0
+mouse_filter = 2
+
+[node name="Flash" type="ColorRect" parent="Hud/Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0, 0, 0)
+
+[node name="Card" type="PanelContainer" parent="Hud/Overlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -230.0
+offset_top = -150.0
+offset_right = 230.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="Hud/Overlay/Card"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Hud/Overlay/Card/VBox"]
+layout_mode = 2
+theme_type_variation = &"Heading"
+theme_override_font_sizes/font_size = 30
+text = "Mud flats"
+
+[node name="Text" type="Label" parent="Hud/Overlay/Card/VBox"]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+text = "..."
+autowrap_mode = 3
+
+[node name="Buttons" type="VBoxContainer" parent="Hud/Overlay/Card/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
