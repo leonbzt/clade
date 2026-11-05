@@ -36,4 +36,6 @@ before porting the garden.
 - **Several playstyles must be proven** *(decided 5 Nov)*, not one verb. **Verbs can come from equipment (parts); many verbs and skills** *(decided 5 Nov)*.
 - **Filling a niche = C** *(decided 5 Nov)*: you pick the gap and get that role's base body; it counts only if you lived that way.
 - **First roles: grazer and predator** *(decided 5 Nov)*, maybe several grazer playstyles. Filter feeders: stacking up to reach efficient current flow *(idea, yours)*.
-- **A Life costs nothing at first** *(decided 5 Nov)*. **A lootbox feeling** *(wish, 5 Nov)*: where is open (turn 2).
+- **A Life costs nothing at first** *(decided 5 Nov)*. **A lootbox feeling** *(wish, 5 Nov)*: **open your clutch** after a Life *(decided 5 Nov)*; garden variants as chests later.
+- **Verbs:** the body plan keeps its move (chess piece); parts give verbs; **1–3 verb slots you pick** per Life *(decided 5 Nov, open to minigames later)*.
+- **Stack** *(proposal, turn 3)*: the goal is now a well-made game, phones later. AI lean Godot 4 (GDScript), proven first by a one-session spike porting the Life board.

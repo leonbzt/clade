@@ -225,3 +225,8 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Filling a niche:** C, you pick the gap and it counts only if you lived that way; "pick should still give the selected base body".
 - **Roles first:** "grazer and predator first good. maybe different grazer playstyles." Filter feeders: "maybe stacking up to get to efficent current flow?"
 - **A Life's cost:** "at first no." **"There should also be some kind of lootbox feeling maybe."**
+
+## 5 Nov, planning session turn 2
+- **Verbs:** "the direction sounds good", not sure yet; "could also be a cool idea with the 3 slots. but i could also imagine different minigames. but go with the 1-3 verb slots that you could pick".
+- **Lootbox:** "b) open your clutch, c later" (garden variants as chests later).
+- **Stack:** asked for an honest evaluation: "an actual properly well done game thats playable on phones lateron... i don't want the prottype like style and limitations."
