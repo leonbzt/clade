@@ -230,3 +230,7 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Verbs:** "the direction sounds good", not sure yet; "could also be a cool idea with the 3 slots. but i could also imagine different minigames. but go with the 1-3 verb slots that you could pick".
 - **Lootbox:** "b) open your clutch, c later" (garden variants as chests later).
 - **Stack:** asked for an honest evaluation: "an actual properly well done game thats playable on phones lateron... i don't want the prottype like style and limitations."
+
+## 5 Nov, planning session turn 3
+- **Stack:** "lean godot, but pixi as alternative sounds good. i dont trust ai to get the feel right without help. want smooth workflow. will test, write it as a slice." → [slices/08-stack-test.md](slices/08-stack-test.md).
+- **The predator:** "you see next step (maybe as upgrade) and you can change your movement and speed. also differnt undergrounds change escape. also armour."

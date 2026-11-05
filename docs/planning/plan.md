@@ -21,14 +21,14 @@ before porting the garden.
 | Topic | State |
 | --- | --- |
 | The pull, filling a niche, cost of a Life | decided (5 Nov), below |
-| Playing a predator, ghosts, verbs | open (turn 2) |
+| Playing a predator, ghosts, verbs | predator decided (5 Nov); ghosts open |
 | Body plans | open |
 | The island view | open |
 | The garden model | open |
 | Species and the tree | open |
 | Era and apex | open |
 | The look | open |
-| Code and process | fresh start decided (5 Nov); stack open (turn 2) |
+| Code and process | fresh start, stack test slice 08 (5 Nov) |
 | Community and scope | open |
 
 ## Calls so far
@@ -38,4 +38,5 @@ before porting the garden.
 - **First roles: grazer and predator** *(decided 5 Nov)*, maybe several grazer playstyles. Filter feeders: stacking up to reach efficient current flow *(idea, yours)*.
 - **A Life costs nothing at first** *(decided 5 Nov)*. **A lootbox feeling** *(wish, 5 Nov)*: **open your clutch** after a Life *(decided 5 Nov)*; garden variants as chests later.
 - **Verbs:** the body plan keeps its move (chess piece); parts give verbs; **1–3 verb slots you pick** per Life *(decided 5 Nov, open to minigames later)*.
-- **Stack** *(proposal, turn 3)*: the goal is now a well-made game, phones later. AI lean Godot 4 (GDScript), proven first by a one-session spike porting the Life board.
+- **Stack** *(decided 5 Nov: lean Godot, PixiJS the alternative; test first)*: [slice 08, the stack test](../slices/08-stack-test.md) builds the mud-flats Life twice, with feel values you tune yourself.
+- **The predator** *(decided 5 Nov)*: seeing the prey's next step, maybe as an upgrade; you can change your movement and speed; the substrate changes how prey escape; armour matters.
