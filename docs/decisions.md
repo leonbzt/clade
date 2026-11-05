@@ -239,3 +239,8 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Your predator chases you:** A, your best predator body in a habitat becomes that board's hunter once it ranks top; "maybe some special rules or mechanics for the predator would also be cool".
 - **Grounds:** mud, sand and reef for the first boards, but they "should be the same as the natural map, so maybe should go together with this".
 - **Body plans:** worm, arthropod, swimmer, "but maybe one extra role or body plan? what woud fit from the time? clam/brachipod? something cute or exciting or memorable".
+
+## 5 Nov, planning session turn 5
+- **Fourth body plan:** C, the trilobite, "maybe evolve from arthropods". Hallucigenia "only with sponges"; the brachiopod next milestone.
+- **The island:** "should maybe change a little depending on the living species there. but basic starting habitats these three sound good." "it would be good if the island/garden still gave you the habitats within some range. still authoring like sand shallows or volcanic rock or mud flats is a good starting base geology wise. should be geology given life evolves. maybe to complicated for the start"
+- **Predator rules:** ambush and frenzy.

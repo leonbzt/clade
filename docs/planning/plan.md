@@ -22,8 +22,8 @@ before porting the garden.
 | --- | --- |
 | The pull, filling a niche, cost of a Life | decided (5 Nov), below |
 | Playing a predator, ghosts, verbs | predator decided (5 Nov); ghosts open |
-| Body plans | open |
-| The island view | open |
+| Body plans | decided (5 Nov), below |
+| The island view | decided (5 Nov), below |
 | The garden model | open |
 | Species and the tree | open |
 | Era and apex | open |
@@ -42,4 +42,6 @@ before porting the garden.
 - **The predator** *(decided 5 Nov)*: seeing the prey's next step, maybe as an upgrade; you can change your movement and speed; the substrate changes how prey escape; armour matters.
 - **Your predator chases you** *(decided 5 Nov)*: your best predator body in a habitat becomes that board's hunter once it ranks top. Special predator rules or mechanics welcome *(wish)*.
 - **Grounds** *(decided 5 Nov, first boards)*: mud, sand, reef, matching the natural map's ground.
-- **Body plans, first milestone** *(decided 5 Nov)*: worm, arthropod, swimmer, plus maybe one memorable extra (turn 5).
+- **Body plans, first milestone** *(decided 5 Nov)*: worm, arthropod, swimmer, plus the **trilobite**, maybe evolving from the arthropod *(decided 5 Nov)*. Hallucigenia once there are sponges; the brachiopod (filter feeder, stacking) next milestone.
+- **Habitats** *(decided 5 Nov)*: three to start, from geology (sand shallows, volcanic rock, mud flats); the island gives habitats within authored ranges, and life changes them a little. Generated ranges may be too much for the start: author the three first *(AI reading)*.
+- **Predator rules** *(decided 5 Nov)*: ambush (stay still a turn, the next move doubles) and frenzy (+1 speed per catch in a row).
