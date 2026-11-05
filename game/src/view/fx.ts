@@ -7,6 +7,7 @@ import { BW, BH } from './floor';
 interface Bit { x: number; y: number; z: number; vx: number; vy: number; vz: number; life: number; max: number; color: number; s: number }
 interface Puff { x: number; y: number; t: number; max: number; color: number }
 interface Husk { segs: { x: number; y: number; r: number; a: number }[]; t: number }
+interface Ring { x: number; y: number; r: number; t: number; color: number }
 
 export class Fx {
   under = new Graphics(); // on the floor, below the creatures
@@ -14,11 +15,12 @@ export class Fx {
   private bits: Bit[] = [];
   private puffs: Puff[] = [];
   private husks: Husk[] = [];
+  private rings: Ring[] = [];
   private clutches: { x: number; y: number; n: number; seed: number; t: number }[] = [];
   private snow = Array.from({ length: 34 }, (_, k) => ({ x: hash(k, 1, 31) * BW, y: hash(k, 2, 31) * BH, s: 0.6 + hash(k, 3, 31) * 0.8, p: hash(k, 4, 31) * 6 }));
   private t = 0;
 
-  clear() { this.bits = []; this.puffs = []; this.husks = []; this.clutches = []; }
+  clear() { this.bits = []; this.puffs = []; this.husks = []; this.clutches = []; this.rings = []; }
 
   burst(x: number, y: number, ramp: Ramp, n: number, speed = 1) {
     for (let k = 0; k < n; k++) {
@@ -27,6 +29,9 @@ export class Fx {
     }
     if (n > 0) this.puffs.push({ x, y, t: 0, max: 0.45, color: ramp[4] });
   }
+
+  /** An expanding ring out to radius r (a verb's reach). */
+  ring(x: number, y: number, r: number, color: number) { this.rings.push({ x, y, r, t: 0, color }); }
 
   husk(segs: Husk['segs']) { this.husks.push({ segs: segs.map((s) => ({ ...s })), t: 0 }); }
   clutch(x: number, y: number, n: number) { this.clutches.push({ x, y, n, seed: this.clutches.length + 1, t: 0 }); }
@@ -48,6 +53,8 @@ export class Fx {
       const a = 0.55 * (1 - h.t / 2.2);
       for (const s of h.segs) flat(u, ring(s.x, s.y, s.r * 1.1, s.r, 7, s.a), PAL.pale[3], a);
     }
+    this.rings = this.rings.filter((r) => (r.t += dt) < 0.6);
+    for (const r of this.rings) { const k = r.t / 0.6; o.circle(r.x, r.y, 4 + (r.r - 4) * Math.sqrt(k)).stroke({ width: 2, color: r.color, alpha: 0.8 * (1 - k) }); }
     this.puffs = this.puffs.filter((p) => (p.t += dt) < p.max);
     for (const p of this.puffs) {
       const k = p.t / p.max, r = 3 + k * 11;

@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { RULE, TURNS } from '../src/data/life';
 import * as L from '../src/sim/life';
+import { MUD_FLATS } from '../src/data/habitats';
 
 /** Coordinates in the toy's 11 x 8 map; the spike's board is that map turned a quarter (x and y swapped). */
 const T = (x: number, y: number) => L.at(y, x);
@@ -9,8 +10,8 @@ const parts = (l: L.Life) => l.slots.flatMap((s) => (s.part ? [s.part] : []));
 
 describe('the mud flats Life', () => {
   it('starts with the fixed body', () => {
-    const l = L.newLife(7);
-    expect([l.x, l.y, l.size, l.food]).toEqual([3, 1, 1, 4]);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
+    expect([l.x, l.y, l.size, l.food]).toEqual([3, 1, 1, RULE.startFood]);
     expect(parts(l)).toEqual(['sclerite', 'gut']);
     expect(L.upkeep(l)).toBe(2);
     expect(l.rivals.length).toBe(1);
@@ -18,7 +19,7 @@ describe('the mud flats Life', () => {
   });
 
   it('crawls on sand and tunnels through mud', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     let ds = L.dests(l);
     expect(ds.has(T(2, 3)) && ds.has(T(0, 3)) && ds.has(T(1, 2))).toBe(true);
     expect(ds.has(T(1, 4))).toBe(false); // rock blocks
@@ -30,12 +31,12 @@ describe('the mud flats Life', () => {
   });
 
   it('eats, and locks what it cannot eat', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     L.move(l, T(2, 3));
     L.move(l, T(3, 3));
     const eats = l.events.filter((e) => e.k === 'eat');
     expect(eats.length === 1 && eats[0].k === 'eat' && eats[0].gain).toBe(8); // 6 + 2 from the gut gland
-    expect(l.food).toBe(4 - 2 + 8 - 2);
+    expect(l.food).toBe(RULE.startFood - 2 + 8 - 2);
     expect(l.tiles[T(3, 3)].node).toBeNull();
     l.x = 4; l.y = 6; // next to the carcass
     L.move(l, T(7, 4));
@@ -43,7 +44,7 @@ describe('the mud flats Life', () => {
   });
 
   it('moults, picks a part and lays', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     l.food = 40;
     expect(L.canLay(l)).toBe(false);
     expect(L.moultCost(l)).toBe(3);
@@ -66,7 +67,7 @@ describe('the mud flats Life', () => {
   });
 
   it('starves: sheds the newest part, then loses health', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     l.food = 0; L.stay(l);
     expect(parts(l)).toEqual(['gut']);
     l.food = 0; L.stay(l);
@@ -75,7 +76,7 @@ describe('the mud flats Life', () => {
   });
 
   it('the hunter arrives, marks, strikes and rests', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     l.food = 99;
     for (let k = 0; k < 5; k++) L.stay(l);
     expect(l.turn).toBe(6);
@@ -96,7 +97,7 @@ describe('the mud flats Life', () => {
   });
 
   it('mud hides you; guards block by side', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     expect(L.hitOn(l, 2, 2, 3, 2).kind).toBe('buried');
     expect(L.hitOn(l, 2, 0, 3, 1).kind).toBe('blocked'); // sclerites on the tail, a strike from behind
     const h = L.hitOn(l, 1, 2, 3, 1); // from the east while facing south: your left side
@@ -104,7 +105,7 @@ describe('the mud flats Life', () => {
   });
 
   it('the mudslide takes oxygen in mud', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     l.food = 99;
     L.move(l, T(2, 3));
     while (l.turn < 12) L.stay(l);
@@ -114,7 +115,7 @@ describe('the mud flats Life', () => {
   });
 
   it('a season ends after 20 turns', () => {
-    const l = L.newLife(7);
+    const l = L.newLife(7, 'worm', MUD_FLATS, ['gut', 'sclerite']);
     l.food = 999;
     L.move(l, T(2, 3));
     l.x = 5; l.y = 4; // deep in the mud field

@@ -35,3 +35,6 @@ Next: steps 2–8 in one long session, [the M1 run](planning/m1-run.md).
 - **09 The Life, for real** ([spec](slices/09-life-for-real.md)): sand shallows (low tide) and volcanic rock (vents, vent
   surge) beside the mud flats; the arthropod drawn; a pick screen; textured ground; a stone-and-brass UI. *Judge:* the
   boards and events, the new palette and textures, the OSRS-like frame.
+- **10 Verb slots** ([spec](slices/10-verb-slots.md)): six verbs from parts (Graze, Dash, Dig, Sense, Brace, Crush); pick
+  1–3 before a Life (presets Sweeper, Digger, Tank); verb buttons with recharge pips; keys 1–3. *Judge:* verbs cost upkeep
+  via their parts; your verbs are your starting body; start food 6; mats regrow after 4 turns (the new boards starved).

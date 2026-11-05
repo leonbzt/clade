@@ -2,7 +2,7 @@
 // Chromium at phone size, runs steps, saves screenshots to .shots/ and prints page errors and eval results.
 //   npm run look -- [page] [steps-json]          page defaults to /game/
 // Steps: {"click":"#sel"} {"tap":tile} {"key":"w"} {"wait":ms} {"shot":"name"} {"eval":"expr"} {"play":turns}
-// "tap" taps a board tile by index; "play" plays turns with real taps (greedy for food), both via window.__game.
+// "tap" taps a board tile by index; "play" plays turns with real taps (greedy for food, using ready verbs), via window.__game.
 // Env: W and H (viewport, default 390 x 844), DSF (pixel ratio, default 1; use 2 for shots a person will see).
 import { createRequire } from 'node:module';
 import { mkdirSync } from 'node:fs';
@@ -35,6 +35,8 @@ async function play(turns) {
     const st = await p.evaluate(() => { const l = window.__game.life; return { phase: l.phase, food: l.food, size: l.size }; });
     if (st.phase === 'over') break;
     if (await p.$eval('#cardWrap', (e) => !e.hidden)) { await p.click('#cardButtons button'); await p.waitForTimeout(250); continue; }
+    const verb = await p.evaluate(() => [...document.querySelectorAll('#verbs button')].findIndex((b) => !b.disabled && !/no mats|nothing|ready in|no strike/.test(b.textContent)));
+    if (verb >= 0 && Math.random() < 0.6) { await p.click(`#verbs button:nth-child(${verb + 1})`); await idle(); }
     if (await p.$eval('#lay', (e) => !e.disabled) && st.food >= 8) await p.click('#lay');
     else {
       const order = await p.evaluate(() => {

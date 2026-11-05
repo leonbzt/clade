@@ -80,6 +80,7 @@ export class Arthropod implements Creature {
     for (const s of has('gill')) this.gill(g, s);
     for (const s of has('digger')) this.digger(g, s, dark);
     for (const s of has('pouch')) this.pouch(g, s);
+    for (const s of has('rake')) this.rake(g, s, dark);
     for (const s of has('spine')) this.spine(g, s, s.kind === 'tail');
     // antennae
     for (const side of [-1, 1]) {
@@ -167,6 +168,14 @@ export class Arthropod implements Creature {
     g.moveTo(b[0], b[1]).lineTo(pad[0][0], pad[0][1]).stroke({ width: 1.6, color: PAL.ink });
     flat(g, pad, PAL.ink, 1, 0.8, pad[0][0], pad[0][1]);
     flat(g, pad, dark[3]);
+  }
+
+  private rake(g: Graphics, s: BodySlot, dark: Ramp) { // a comb of bristled limbs reaching forward
+    const L = this.len(), side = this.sideOf(s), f = this.along(s), sw = Math.sin(this.t * 5) * 1.2;
+    const b = this.P(f * L, side * this.width(f)), e = this.P(f * L - 6 + sw, side * (this.width(f) + 5));
+    g.moveTo(b[0], b[1]).lineTo(e[0], e[1]).stroke({ width: 1.8, color: PAL.ink });
+    g.moveTo(b[0], b[1]).lineTo(e[0], e[1]).stroke({ width: 0.9, color: dark[3] });
+    for (let k = 1; k <= 3; k++) { const q = this.P(f * L - 2 * k + sw * k / 3, side * (this.width(f) + 1.7 * k)), r = this.P(f * L - 2 * k - 2 + sw * k / 3, side * (this.width(f) + 1.7 * k)); g.moveTo(q[0], q[1]).lineTo(r[0], r[1]).stroke({ width: 0.8, color: PAL.pale[3] }); }
   }
 
   private pouch(g: Graphics, s: BodySlot) {

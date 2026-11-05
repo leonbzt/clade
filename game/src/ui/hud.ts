@@ -1,7 +1,8 @@
 // The screen around the board (DOM): season track, eggs and tier, stock bars that tick pip by pip, the three
 // buttons, the info line, floaters, the banner, the red flash and the cards (start, moult, end).
-import { PLANS, RULE, TURNS } from '../data/life';
+import { PLANS, RULE, TURNS, VERBS, type VerbId } from '../data/life';
 import * as L from '../sim/life';
+import { verbNote } from '../sim/verbs';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const TIER_INK: Record<string, string> = { S: '#ffe033', A: '#7fd14e', B: '#5ec4d6', C: '#f3e9cc' };
@@ -49,7 +50,7 @@ export class Hud {
   private track: HTMLElement[] = [];
   private bannerT = 0;
 
-  constructor(on: { wait: () => void; moult: () => void; lay: () => void }) {
+  constructor(private on: { wait: () => void; moult: () => void; lay: () => void; verb: (v: VerbId) => void }) {
     for (let k = 0; k < TURNS; k++) { const i = document.createElement('i'); $('track').appendChild(i); this.track.push(i); }
     $('wait').onclick = on.wait; $('moult').onclick = on.moult; $('lay').onclick = on.lay;
     let last = performance.now();
@@ -84,6 +85,21 @@ export class Hud {
     const ly = $<HTMLButtonElement>('lay');
     ly.textContent = L.mature(l) ? `Lay +${L.clutch(l)}` : `Lay (size ${RULE.adultSize})`;
     ly.disabled = !play || !L.canLay(l);
+    this.verbs(l, play);
+  }
+
+  /** One button per verb: its name, what it would do now, and its recharge as pips. */
+  private verbs(l: L.Life, play: boolean) {
+    const box = $('verbs');
+    box.innerHTML = '';
+    for (const v of L.verbs(l)) {
+      const V = VERBS[v], b = document.createElement('button'), rc = l.recharge[v] ?? 0;
+      b.className = (V.free ? 'free' : '') + (v === 'dash' && l.dash ? ' armed' : '');
+      b.innerHTML = `${V.name}<small>${v === 'dash' && l.dash ? 'next move ×2' : verbNote(l, v)}</small><span class="rc">${Array.from({ length: V.recharge }, (_, k) => `<i class="${k < V.recharge - rc ? 'on' : ''}"></i>`).join('')}</span>`;
+      b.disabled = !play || !L.ready(l, v) || (v === 'dash' && l.dash);
+      b.onclick = () => this.on.verb(v);
+      box.appendChild(b);
+    }
   }
 
   setEggs(n: number, tier: string) {

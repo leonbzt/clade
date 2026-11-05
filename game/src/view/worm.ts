@@ -124,6 +124,11 @@ export class Worm implements Creature {
           const [x, y] = slot.kind === 'tail' ? [s.x - fx * (s.r + 2) + rx * f, s.y - fy * (s.r + 2) + ry * f] : at(f, s.r + 1.8);
           dome(g, ring(x, y, 1.9, 1.9, 5), x - 0.4, y - 0.4, 1.4, PAL.amber, 0.4, a);
         }
+        if (p === 'tentacles') for (const o of [-0.9, -0.3, 0.3, 0.9]) {
+          const ax = Math.cos(s.a + o), ay = Math.sin(s.a + o), w = Math.sin(this.t * 4 + o * 3) * 0.6;
+          g.moveTo(s.x + ax * s.r * 0.6, s.y + ay * s.r * 0.6).lineTo(s.x + ax * (s.r + 4) - ay * w, s.y + ay * (s.r + 4) + ax * w).stroke({ width: 1.2, color: PAL.flesh[3], alpha: a });
+        }
+        if (p === 'bulb') { const bx = s.x - fx * (s.r + 1.5), by = s.y - fy * (s.r + 1.5); dome(g, ring(bx, by, s.r * 0.9, s.r * 0.8, 6, s.a), bx - 0.4, by - 0.4, s.r * 0.7, this.ramp, 0.3, a); }
         if (p === 'deep') { const bx = s.x - fx * (s.r + 2.5), by = s.y - fy * (s.r + 2.5); flat(g, ring(bx, by, 3, 2, 4, s.a), PAL.mudDark[0], a); }
         if (p === 'proboscis') {
           const len = 2.5 + this.reach.v * 9, tx = s.x + fx * (s.r + len), ty = s.y + fy * (s.r + len);

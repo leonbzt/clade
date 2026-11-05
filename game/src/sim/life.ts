@@ -1,8 +1,8 @@
 // A Life, the rules (no DOM, no Pixi). Ported from toys/life2-sim.ts: move, eat, moult, lay, the predator's hunt,
 // mark, strike and rest. Every action records `events`, which the view plays back in order.
 import {
-  COLS, NODES, PARTS, PART_IDS, PLANS, ROWS, RULE, STAGES, STARTERS, STARTER_PLAN, TURNS,
-  type NodeId, type PartId, type PlanId, type SlotKind, type Terrain,
+  COLS, MAX_VERBS, NODES, PARTS, PART_IDS, PLANS, ROWS, RULE, STAGES, STARTER_PLAN, STYLE_VERBS, TURNS, VERB_PART,
+  type NodeId, type PartId, type PlanId, type SlotKind, type Terrain, type VerbId,
 } from '../data/life';
 import { CELL, MUD_FLATS, type Habitat } from '../data/habitats';
 
@@ -16,7 +16,7 @@ export const inB = (x: number, y: number) => x >= 0 && x < COLS && y >= 0 && y <
 export const xy = (i: number): [number, number] => [i % COLS, Math.floor(i / COLS)];
 const dist = (ax: number, ay: number, bx: number, by: number) => Math.abs(ax - bx) + Math.abs(ay - by);
 
-export interface Tile { t: Terrain; node: NodeId | null; seen: boolean }
+export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number } }
 export interface Slot { kind: SlotKind; side: Side; seg: number; part: PartId | null }
 export interface Predator { x: number; y: number; state: 'hunt' | 'strike' | 'rest'; rest: number; marks: number[]; dir: Dir; lx: number; ly: number }
 export interface Dest { i: number; dir: Dir; grab: boolean; path: number[] }
@@ -41,6 +41,8 @@ export type Ev =
   | { k: 'marks'; marks: number[]; dir: Dir }
   | ({ k: 'strike'; at: number; dir: Dir; marks: number[]; health: number } & (Hit | { kind: 'miss' }))
   | { k: 'event'; name: string; text: string }
+  | { k: 'verb'; verb: VerbId; tiles: number[] }
+  | { k: 'grow'; i: number; node: NodeId }
   | { k: 'over'; cause: 'season' | 'died' };
 
 export interface Life {
@@ -51,6 +53,7 @@ export interface Life {
   phase: 'play' | 'offer' | 'over'; offers: PartId[];
   moults: number; rareAt: number; rareGot: PartId | null; rarePassed: boolean; moulted: boolean; soft: boolean; moved: boolean;
   pred: Predator | null; cause: 'season' | 'died' | null; lines: string[]; events: Ev[];
+  recharge: Partial<Record<VerbId, number>>; dash: boolean; braced: boolean; dug: boolean;
 }
 
 function rnd(l: { r: number }) { // the toy's mulberry32
@@ -76,8 +79,17 @@ export function eventArea(l: Life, x: number, y: number) {
 export const airless = (l: Life, x = l.x, y = l.y) => !has(l, 'blood') && (l.tiles[at(x, y)].t === 'dead' || (eventOn(l) && eventArea(l, x, y)));
 export const upkeep = (l: Life) => (has(l, 'deep') && onMud(l) ? 0 : RULE.baseUpkeep + l.slots.reduce((n, s) => n + (s.part ? PARTS[s.part].upkeep : 0), 0));
 export const oxygenMax = (l: Life) => RULE.oxygen + count(l, 'gill') * RULE.gillOxygen;
-export const range = (l: Life) => Math.min(RULE.maxRange, PLANS[l.plan].range + count(l, 'leg'));
-export const tunnel = (l: Life) => RULE.tunnel + count(l, 'chaetae') * RULE.bristleTunnel;
+export const range = (l: Life) => Math.min(RULE.maxRange, PLANS[l.plan].range + count(l, 'leg')) * (l.dash ? 2 : 1);
+export const tunnel = (l: Life) => (RULE.tunnel + count(l, 'chaetae') * RULE.bristleTunnel) * (l.dash ? 2 : 1);
+/** Your verbs: those your parts give, in the order you got them, three at most. */
+export function verbs(l: Life): VerbId[] {
+  const out: VerbId[] = [];
+  for (const k of l.order) { const v = l.slots[k].part && PARTS[l.slots[k].part!].verb; if (v && !out.includes(v) && out.length < MAX_VERBS) out.push(v); }
+  return out;
+}
+/** The parts a set of verbs gives this body plan: a verb loadout is a starting body. */
+export const partsFor = (plan: PlanId, vs: VerbId[]) => vs.map((v) => VERB_PART[plan][v]);
+export const ready = (l: Life, v: VerbId) => l.phase === 'play' && verbs(l).includes(v) && !(l.recharge[v]! > 0);
 export const sense = (l: Life) => PLANS[l.plan].sense + count(l, 'eye') * RULE.eyeSense + count(l, 'compound') * RULE.compoundSense;
 export const clutch = (l: Life) => (1 + count(l, 'pouch')) * l.size + (has(l, 'deep') && onMud(l) ? 1 : 0);
 export const moultCost = (l: Life) => l.size + PLANS[l.plan].moultExtra;
@@ -91,6 +103,12 @@ export const nextTier = (h: Habitat, eggs: number) => [...h.tiers].reverse().fin
 const hasReach = (l: Life) => has(l, 'claw') || has(l, 'proboscis') || has(l, 'hook');
 export const known = (t: Tile) => t.t !== 'mud' || t.seen;
 
+/** A tile's food is gone; mats grow back after a while. */
+export function cleared(l: Life, t: Tile) {
+  if (t.node === 'mat' || t.node === 'bloom') t.grow = { node: t.node, at: l.turn + RULE.regrow };
+  t.node = null;
+}
+
 /** What a node feeds you, with your parts. */
 export const foodOf = (l: Life, node: NodeId) => NODES[node].food * (node === 'bloom' && has(l, 'symbiont') ? 2 : 1) + count(l, 'gut') * RULE.gutFood;
 
@@ -102,12 +120,12 @@ export function lockOf(l: Life, node: NodeId): string | null {
   return null;
 }
 
-function reveal(l: Life) {
+export function reveal(l: Life) {
   const R = sense(l);
   l.tiles.forEach((t, i) => { const [x, y] = xy(i); if (Math.max(Math.abs(x - l.x), Math.abs(y - l.y)) <= R) t.seen = true; });
 }
-const say = (l: Life, m: string) => { l.lines.push(m); if (l.lines.length > 5) l.lines.shift(); };
-const emit = (l: Life, e: Ev) => { l.events.push(e); };
+export const say = (l: Life, m: string) => { l.lines.push(m); if (l.lines.length > 5) l.lines.shift(); };
+export const emit = (l: Life, e: Ev) => { l.events.push(e); };
 export const fits = (part: PartId, kind: SlotKind) => PARTS[part].slots.includes(kind);
 
 /** The first empty slot this part fits, else the first filled one (it replaces that part), else -1. */
@@ -117,7 +135,7 @@ export function freeSlotFor(l: Life, part: PartId) {
 }
 
 // ---- starting a Life ----
-export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, starters: PartId[] = STARTERS[plan]): Life {
+export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, starters: PartId[] = partsFor(plan, STYLE_VERBS.digger)): Life {
   const P = PLANS[plan], slots: Slot[] = [];
   for (let k = 0; k < P.head; k++) slots.push({ kind: 'head', side: 'front', seg: -1, part: null });
   slots.push({ kind: 'tail', side: 'back', seg: 99, part: null });
@@ -129,6 +147,7 @@ export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat 
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, xp: 0, eaten: 0,
     size: 1, slots, order: [], phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
     moulted: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
+    recharge: {}, dash: false, braced: false, dug: false,
   };
   l.rareAt = 2 + Math.floor(rnd(l) * 2);
   for (const part of starters) { const k = freeSlotFor(l, part); if (k >= 0 && !slots[k].part) { slots[k].part = part; l.order.push(k); } }
@@ -220,16 +239,17 @@ export function dests(l: Life): Map<number, Dest> {
   return out;
 }
 
-function eat(l: Life, i: number) {
+/** Eat what lies on tile i; `force` skips the lock (a verb opened it), `bonus` adds food. */
+export function eat(l: Life, i: number, force = false, bonus = 0) {
   const t = l.tiles[i];
   if (!t.node) return;
-  const lock = lockOf(l, t.node);
+  const lock = force ? null : lockOf(l, t.node);
   if (lock) { say(l, `${NODES[t.node].name} ${lock}.`); emit(l, { k: 'locked', i, node: t.node, why: lock }); return; }
-  const f = foodOf(l, t.node);
+  const f = foodOf(l, t.node) + bonus;
   say(l, `${NODES[t.node].name}: +${f} food.`);
   l.food += f; l.xp += f; l.eaten += f;
   emit(l, { k: 'eat', i, node: t.node, gain: f, food: l.food });
-  t.node = null;
+  cleared(l, t);
 }
 
 export function move(l: Life, i: number) {
@@ -238,7 +258,7 @@ export function move(l: Life, i: number) {
   if (!d) return;
   const from = at(l.x, l.y);
   if (!d.grab) { [l.x, l.y] = xy(i); l.facing = d.dir; }
-  l.moved = !d.grab;
+  l.moved = !d.grab; l.dash = false;
   emit(l, { k: 'move', from, to: i, path: d.path, grab: d.grab, dir: d.dir });
   eat(l, i);
   world(l);
@@ -266,7 +286,9 @@ export function stay(l: Life, dir: Dir = l.facing) {
 export function hitOn(l: Life, dir: Dir, facing: Dir, x: number, y: number): Hit {
   const side = SIDES[(dir - facing + 4) % 4];
   if (buriedAt(l, x, y)) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
+  if (l.dug) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
   if (has(l, 'enrol') && !l.moved) return { side, kind: 'enrolled', part: 'enrol', tear: -1, damage: 0 };
+  if (l.braced) return { side, kind: 'blocked', part: VERB_PART[l.plan].brace, tear: -1, damage: 0 };
   const guard = l.slots.find((s) => s.side === side && s.part && PARTS[s.part].guard);
   if (guard) return { side, kind: 'blocked', part: guard.part, tear: -1, damage: 0 };
   let tear = -1;
@@ -287,9 +309,9 @@ function strike(l: Life) {
   else if (h.kind === 'enrolled') say(l, 'You roll up: the strike glances off.');
   else if (h.kind === 'blocked') {
     say(l, `Your ${PARTS[h.part!].name.toLowerCase()} blocks a strike on your ${h.side}.`);
-    if (h.part === 'spine') p.rest = RULE.restAfterSpine;
+    if (h.part === 'spine' || l.braced) p.rest = RULE.restAfterSpine;
   } else {
-    if (h.tear >= 0) { say(l, `Hit on your ${h.side}: your ${PARTS[h.part!].name.toLowerCase()} is torn off.`); l.slots[h.tear].part = null; l.order = l.order.filter((k) => k !== h.tear); }
+    if (h.tear >= 0) { const n = PARTS[h.part!].name.toLowerCase(); say(l, `Hit on your ${h.side}: your ${n} ${n.endsWith('s') ? 'are' : 'is'} torn off.`); l.slots[h.tear].part = null; l.order = l.order.filter((k) => k !== h.tear); }
     if (h.damage) { say(l, `Hit on your ${h.side}: −${h.damage} health${l.soft ? ' (soft from moulting)' : ''}.`); l.health -= h.damage; }
   }
   emit(l, { k: 'strike', ...h, at: here, dir: p.dir, marks, health: l.health });
@@ -345,7 +367,7 @@ function rivalStep(l: Life, idx: number) {
     if ((ox || oy) && inB(v.x + ox, v.y + oy) && tile(l, v.x + ox, v.y + oy).t !== 'rock') { v.x += ox; v.y += oy; break; }
   }
   const t = tile(l, v.x, v.y), ate = t.node === v.eats;
-  if (ate) t.node = null;
+  if (ate) cleared(l, t);
   emit(l, { k: 'rival', idx, from, to: at(v.x, v.y), ate });
 }
 
@@ -363,7 +385,8 @@ function hurtOrShed(l: Life, why: string) {
   emit(l, { k: 'hurt', why, health: l.health });
 }
 
-function world(l: Life) {
+export function world(l: Life) {
+  for (const v of Object.keys(l.recharge) as VerbId[]) if (l.recharge[v]! > 0) l.recharge[v]!--;
   l.food -= upkeep(l);
   if (l.food < 0) { l.food = 0; hurtOrShed(l, 'Starving'); }
   emit(l, { k: 'upkeep', food: l.food });
@@ -375,7 +398,7 @@ function world(l: Life) {
   emit(l, { k: 'oxygen', oxygen: l.oxygen });
   l.rivals.forEach((_, k) => rivalStep(l, k));
   predatorStep(l);
-  l.soft = false; l.moulted = false;
+  l.soft = false; l.moulted = false; l.braced = false; l.dug = false;
   reveal(l);
   if (l.health <= 0) {
     l.health = 0; l.phase = 'over'; l.cause = 'died';
@@ -383,6 +406,10 @@ function world(l: Life) {
     return;
   }
   l.turn++;
+  l.tiles.forEach((t, i) => {
+    if (!t.grow || t.grow.at > l.turn || t.node || i === at(l.x, l.y)) return;
+    t.node = t.grow.node; t.grow = undefined; emit(l, { k: 'grow', i, node: t.node });
+  });
   if (l.turn === l.hab.predatorAt) {
     l.pred = { x: l.hab.entry[0], y: l.hab.entry[1], state: 'hunt', rest: 0, marks: [], dir: 1, lx: l.x, ly: l.y };
     say(l, `${l.hab.predator} arrives.`); emit(l, { k: 'pred_arrive', at: at(l.pred.x, l.pred.y) });

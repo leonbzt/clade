@@ -18,9 +18,9 @@ describe('the three boards', () => {
     }
   });
 
-  it('the arthropod starts with a claw and a gill, and runs 2 tiles on sand', () => {
+  it('the arthropod starts with its verbs\' parts, and runs 2 tiles on sand', () => {
     const l = sand();
-    expect(parts(l)).toEqual(['claw', 'gill']);
+    expect(parts(l)).toEqual(['eye', 'digger']);
     expect(L.dests(l).has(L.at(4, 8))).toBe(true); // two tiles south over open sand
   });
 

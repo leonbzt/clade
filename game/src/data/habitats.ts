@@ -16,13 +16,13 @@ export interface Rival { at: [number, number]; name: string; eats: NodeId }
 /** A board event: from turn to turn, on one terrain or all, optionally only in rows [top, bottom]. */
 export interface BoardEvent { from: number; to: number; where: 'all' | Terrain; rows?: [number, number]; name: string; text: string; look: 'murk' | 'dry' | 'haze' }
 export interface Habitat {
-  id: HabitatId; name: string; ground: Ground; blurb: string; real: string; map: string[];
+  id: HabitatId; name: string; ground: Ground; pitch: string; blurb: string; real: string; map: string[];
   start: [number, number]; entry: [number, number]; predatorAt: number; predator: string; rivals: Rival[];
   event: BoardEvent; rares: Record<PlanId, PartId[]>; tiers: [string, number][];
 }
 
 export const MUD_FLATS: Habitat = {
-  id: 'mud', name: 'Mud flats', ground: 'mud',
+  id: 'mud', name: 'Mud flats', ground: 'mud', pitch: 'Hidden food in soft mud. Mudslide on turns 12–15.',
   blurb: 'Soft mud full of hidden food. Burrowers rule until the mudslide, when the mud has no oxygen.',
   real: 'Mud slumps swept animals from banks beside a reef cliff into deeper water and buried them.',
   map: [
@@ -46,18 +46,18 @@ export const MUD_FLATS: Habitat = {
 };
 
 export const SAND_SHALLOWS: Habitat = {
-  id: 'sand', name: 'Sand shallows', ground: 'sand',
+  id: 'sand', name: 'Sand shallows', ground: 'sand', pitch: 'Long moves, nowhere to hide. Low tide by the shore.',
   blurb: 'Open rippled sand: long moves, nowhere to hide. The richest mats grow by the shore, which runs dry at low tide.',
   real: 'Cambrian shores were sandy shallows; trilobites left their trackways in the ripples.',
   map: [
     'mm.m.mm.',
     '.m.m..m.',
     'm..s.m.m',
-    '....#...',
+    '.m..#.m.',
     '.s.~~..s',
     '...~b.m.',
     'm.s....s',
-    '..#..m..',
+    'm.#..m.m',
     '.s...~~.',
     'm..s.~b.',
     '..c...s.',
@@ -70,23 +70,23 @@ export const SAND_SHALLOWS: Habitat = {
 };
 
 export const VOLCANIC_ROCK: Habitat = {
-  id: 'rock', name: 'Volcanic rock', ground: 'basalt',
+  id: 'rock', name: 'Volcanic rock', ground: 'basalt', pitch: 'Basalt lanes; rich vents with no oxygen.',
   blurb: 'Basalt lanes cut your moves short. Warm vents grow rich sulfur mats in water with no oxygen, where the hunter will not follow.',
   real: 'Sulfur-eating microbes grow thick mats where warm, oxygen-poor water seeps out of volcanic rock.',
   map: [
     'm.#..#.m',
     '.s#.m#s.',
-    '..#%o#..',
+    'm.#%o#.m',
     'm..o%...',
     '##.%%.##',
-    '.m....m.',
+    '.m.mm.m.',
     's#.~b.#s',
-    '.#.~~.#.',
+    'm#.~~.#m',
     'm..#%o..',
     '.s.#o%m.',
-    '..m#..s.',
+    '.mm#.ms.',
   ],
-  start: [4, 5], entry: [0, 5], predatorAt: 5, predator: 'Anomalocaris',
+  start: [5, 5], entry: [0, 5], predatorAt: 5, predator: 'Anomalocaris',
   rivals: [{ at: [7, 10], name: 'a rival bristle worm', eats: 'bloom' }],
   event: { from: 8, to: 10, where: 'all', name: 'Vent surge', text: 'warm water, oxygen falls everywhere', look: 'haze' },
   rares: { arthropod: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'] },

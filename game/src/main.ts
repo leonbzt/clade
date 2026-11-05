@@ -4,9 +4,10 @@ import '@fontsource/pixelify-sans/latin-400.css';
 import '@fontsource/pixelify-sans/latin-700.css';
 import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
-import { COLS, NODES, PARTS, PLANS, RULE, TERRAIN, type NodeId, type PartId, type PlanId } from './data/life';
+import { COLS, NODES, PARTS, PLANS, RULE, TERRAIN, VERBS, type NodeId, type PartId, type PlanId, type VerbId } from './data/life';
 import { HABITATS, type HabitatId } from './data/habitats';
 import * as L from './sim/life';
+import { useVerb } from './sim/verbs';
 import { feel, onFeel } from './ui/feel';
 import { Camera } from './view/camera';
 import { Floor } from './view/floor';
@@ -44,7 +45,7 @@ app.stage.addChild(world);
 const bodies2: Record<PlanId, Creature> = { worm: new Worm(PAL.you), arthropod: new Arthropod(PAL.you, 1.2) };
 let you: Creature = bodies2.worm;
 const rival = new Worm(PAL.rival, true, 0.85), hunter = new Hunter(), pick = new Pick();
-const hud = new Hud({ wait: () => act(() => L.stay(life)), moult: () => doMoult(), lay: () => act(() => L.lay(life)) });
+const hud = new Hud({ wait: () => act(() => L.stay(life)), moult: () => doMoult(), lay: () => act(() => L.lay(life)), verb: (v) => doVerb(v) });
 const cam = new Camera(world, app.canvas, (x, y) => tap(x, y), (x, y) => hover(x, y));
 devPanel();
 skin();
@@ -83,7 +84,7 @@ app.ticker.add((tk) => {
 function choose() { pick.show((h, p) => { habId = h; plan = p; newLife(); }); }
 
 function newLife() {
-  life = L.newLife((Math.random() * 2 ** 31) | 0, plan, HABITATS[habId]);
+  life = L.newLife((Math.random() * 2 ** 31) | 0, plan, HABITATS[habId], L.partsFor(plan, pick.verbs));
   you = bodies2[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
@@ -121,6 +122,18 @@ async function act(f: () => void) {
   sync();
   hud.info(life.lines.slice(-2).join(' '));
   if ((life.phase as L.Life['phase']) === 'over') { await wait(0.5); endCard(); }
+}
+
+function doVerb(v: VerbId) {
+  if (busy || hud.cardOpen || pick.open || !L.ready(life, v)) return;
+  if (VERBS[v].free) { // no world turn: play its look, stay ready to move
+    if (!useVerb(life, v)) { hud.info(life.lines.at(-1) ?? ''); return; }
+    const evs = life.events.slice();
+    sync(); play(evs);
+    hud.info(life.lines.at(-1) ?? '');
+    return;
+  }
+  act(() => { if (!useVerb(life, v)) life.events = []; });
 }
 
 function doMoult() {
@@ -255,10 +268,23 @@ async function play(evs: L.Ev[]) {
       }
       case 'strike': await strike(e); break;
       case 'event': hud.banner(`${e.name}: ${e.text}`, '#ff8a3a'); floor.refresh(); break;
+      case 'verb': await verbFx(e.verb, e.tiles); break;
+      case 'grow': { const c = centre(e.i); floor.redrawNodes(); fx.burst(c.x, c.y, NODE_RAMP[e.node], 3, 0.3); break; }
       case 'over': break;
     }
   }
   await wait(0.05);
+}
+
+async function verbFx(v: VerbId, tiles: number[]) {
+  const h = you.head, s = screen(h), g = feel.glideTime;
+  hud.floater(s.x, s.y - 10, VERBS[v].name, '#9fe3ff');
+  if (v === 'graze') { await bounce(g * 1.5); for (const i of tiles) { const c = centre(i); fx.burst((c.x + h.x) / 2, (c.y + h.y) / 2, PAL.leaf, 3, 0.4); } }
+  else if (v === 'dash') { fx.burst(h.x, h.y, PAL.pale, feel.particles, 1.4); await bounce(g); }
+  else if (v === 'dig') { fx.burst(h.x, h.y, PAL.mudSeen, feel.particles, 0.9); floor.refresh(); await tween(you.stretch, { v: -1 }, g, ease.quadOut); tween(you.stretch, { v: 0 }, g * 2, ease.backOut); }
+  else if (v === 'sense') { fx.ring(h.x, h.y, 5 * C, PAL.gill[4]); floor.refresh(); await wait(g * 2); }
+  else if (v === 'brace') { fx.ring(h.x, h.y, C * 0.8, PAL.pale[4]); await bounce(g * 2); }
+  else if (v === 'crush' && tiles.length) { const c = centre(tiles[0]); await lunge(Math.abs(c.x - h.x) > Math.abs(c.y - h.y) ? (c.x > h.x ? 1 : 3) : c.y > h.y ? 2 : 0); fx.burst(c.x, c.y, PAL.shell, feel.particles, 1.2); cam.shake(0.25); }
 }
 
 async function strike(e: Extract<L.Ev, { k: 'strike' }>) {
@@ -323,6 +349,8 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'l') act(() => L.lay(life));
   if (e.key === 'm') doMoult();
   if (e.key === '0') cam.reset();
+  const n = '123'.indexOf(e.key);
+  if (n >= 0 && life) { const v = L.verbs(life)[n]; if (v) doVerb(v); }
 });
 
 // A hook for the browser check (scripts/look.mjs): drive the game with real taps and read the state.
