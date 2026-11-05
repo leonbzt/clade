@@ -57,5 +57,59 @@ serves the wasm compressed is not checked yet. A custom engine build without 3D 
 - "i feel more freedom for ai is also good."
 - Not noted yet: the feel values you settled on, how tuning in the inspector went, the phone.
 
-## PixiJS half
-Next session.
+## PixiJS half (5 Nov, AI build session)
+Build: [`spikes/pixi-life/`](../../spikes/pixi-life/README.md), PixiJS 8.22, TypeScript, Vite; the screen around the board is HTML and CSS.
+
+**In it:** the same Life as the Godot half: the mud flats, its rival, the fixed worm, move and tunnel, eat, moult (pick a
+part), lay, the mudslide, the hunter (arrive, hunt, mark, strike, rest). Feel: the same list (glide with stretch and landing
+squash, eat bursts and a floating +food, pips that tick one by one, pulsing marks with an arrow, shake and a red flash, pan,
+pinch and wheel zoom), and the five values as sliders in a dev panel (the **Feel** button), live, kept in the browser.
+**The look is different on purpose** (your call, 5 Nov: "dont keep the simple shapes, feel free to do a free interpretation").
+
+**Where to play:** on the phone, the private page https://claude.ai/artifact/EmQkbFhyV8LLhx5CYe7Jm8 (one 647 KB file).
+Locally: `npm run dev`, then `/spikes/pixi-life/`.
+
+**Measured** (headless Chromium, software WebGL; same throttling as the Godot half):
+| | Godot | PixiJS |
+| --- | --- | --- |
+| Download | 39.5 MB wasm (10.1 MB gzipped) | 647 KB, one page (210 KB gzipped) |
+| Load to the first board: desktop | 1.3 s | 0.2 s |
+| CPU slowed 4× (a phone stand-in) | 4.9 s | 0.7 s |
+| plus 20 Mbps / 8 Mbps | 21 s / 45 s | 0.6 s / 0.8 s |
+| Frame rate | not measured | 60 fps (software WebGL) |
+| Tests | 37 checks, about 10 ms headless | the same checks in 9 vitest cases, 0.2 s; inside `npm run check` (8.3 s in all) |
+| Build | web 4 s, Android 9 s | web 1 s; no Android (a store build would need a wrapper like Capacitor, not tried) |
+| Code | rules 591 lines, `main.gd` 425, view about 700 | rules 383, `main.ts` 318, view 870 and UI 200 (the view holds the new look) |
+
+Open question 2 (load for itch) has an easy answer here: under a second.
+
+**Workflow log**
+- *Easy:* one `npm install`; the rules port was close to a copy of the toy's TypeScript, so it kept its length (358 → 383 lines
+  with the events; GDScript grew to 591). Type errors show at once in the editor and `npm run check`; hot reload shows a change
+  without a rebuild. The AI drove the page in headless Chromium with real taps, a two-finger pinch and screenshots, and
+  played a whole Life to its end, so it saw what it made. The low-res look was two lines (a canvas resolution below 1 and
+  `image-rendering: pixelated`). The page ran under a strict CSP with Pixi's `unsafe-eval` module.
+- *Built by hand* (what Godot has built in): tweens (a 46-line tweener on Pixi's ticker), particles (part of `fx.ts`), the
+  dev panel instead of an inspector (64 lines), the camera with pinch (104 lines; the Godot half wrote its own input too).
+  Text and menus are HTML rather than Pixi, which kept them crisp and quick to style.
+- *Fought:* Pixi 8's drawing API (shape first, then fill) took one look at the docs; overlapping shadows doubled up until
+  they went through one alpha filter. Readability needed the screenshots: buried, you were nearly invisible; lit tiles
+  merged into a pattern of crosses; the hunter read as a torpedo. Each was fixed after looking. Pixelify's "2" reads like
+  an 8 at small sizes (in both halves; a look-topic note).
+- *Not seen by the AI:* a real phone, and the hosted page itself (it ran locally inside a copy of the host's skeleton and
+  CSP).
+- *Needs your hands:* tuning the five values, the phone, judging the feel and the look.
+
+**AI choices for you to judge**
+- The look: 2D low-poly from the look toy, read freely: the seafloor is one faceted mesh (sand, mud basins, rock) lit by one
+  sun, boulders cast shadows, caustic light drifts over it, marine snow falls. Pixel size 2 (a slider under Look).
+- The creatures: you and the rival are chains of segments that trail around corners when tunnelling and ripple as they
+  crawl; your parts show on the body (the gut gland glows amber through it, sclerites are pale plates). Buried, you show
+  dim with a silt outline. The hunter swims above the floor (its shadow shows the height), its flaps ripple, its arms
+  uncurl to strike, its eyes dim while it rests.
+- Moulting leaves your old skin behind for a moment (priapulids do moult); laid clutches stay on the board as amber eggs.
+- As in the Godot half: the board turned a quarter, R2's names, a picked part goes in the first free slot.
+
+**Your notes**
+- Not played yet.
+

@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "types": ["vite/client", "vitest/config", "node"]
   },
-  "include": ["src/**/*.ts", "toys/**/*.ts", "src/**/*.svelte", "tests/**/*.ts", "vite.config.ts"]
+  "include": ["src/**/*.ts", "toys/**/*.ts", "src/**/*.svelte", "tests/**/*.ts", "spikes/pixi-life/**/*.ts", "vite.config.ts"]
 }

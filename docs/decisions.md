@@ -256,3 +256,7 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   rough and looks more like from a template."
 - **AI freedom:** "i feel more freedom for ai is also good."
 - "get ready and commit so i can start a new session to continue after this stack test." No stack picked yet.
+
+## 5 Nov, stack test: the PixiJS half
+- **The PixiJS half's look:** "dont keep the simple shapes, feel free to do a free interpretation" (said while it was being
+  built). It got the 2D low-poly look from the look toy; the Godot half keeps its placeholder shapes.
