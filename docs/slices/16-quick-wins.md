@@ -11,11 +11,9 @@
   counted from grazers and burrowers, so it's no new stock; Buried is the `rot` stock under the board's own word.
 - **"Next board" line on the card:** "11 mats · 15 buried · 2 carcasses · Anomalocaris on turn 7 · rivals: Wiwaxia". Port
   `boardFacts` from `toys/garden-board.ts:98` to `sim/door.ts`; it reads `boardFor`, so the line can't disagree with the board you get.
-- **The new font,** replacing Pixelify in its three places: `main.ts:3-4`, `style.css:13`, `view/islandmap.ts:53`.
-  - Default **Jersey 15** (*proposal*), yours to change. It has no bold, as most options don't (Handjet, Bitcount Single and Doto do). So
-    `font-synthesis: none`, and headings stand out by size, colour and the outline they already have.
-  - One pass over the sizes (13–28 px today), checked on all the screens at phone width. The file stays inlined in the one-HTML build.
-  - `toys/fonts.html` swaps its old plant text for this game's lines, so you judge it on real words.
+- **The new font:** Plain 12 and Bold 12 from [RuneStar](https://github.com/RuneStar/fonts), your first choice (5 Nov), replacing Pixelify. It has
+  a real bold. Crisp at 16 and 32 px, so all text uses only those sizes. `scripts/build-font.py` makes the woff2 files. `toys/fonts.html`
+  compares 21 fonts on this game's panel. Licence question before release: see `decisions.md`.
 - **Map labels stay inside the map.** Today they run past the canvas edge on about 176 of 200 seeds (computed from an estimated text
   width). Clamp the label in `drawIsland`, using the measured width; if there's no room below the disc, it goes above. Any other clipped
   text found in the font pass gets fixed too.
@@ -40,6 +38,5 @@
 - Fits one session.
 
 ## Open questions
-1. Which font? Jersey 15 is in as a placeholder: in the whole Jersey family V reads like U ("Uolcanic"). `toys/fonts.html` now has 18
-   fonts. A swap is `main.ts:3` and `--font` in `style.css`. Our own font is an option (*proposal*): see `ideas.md`.
-2. Is the bar set right: Mats, Buried, Prey, Oxygen?
+1. Before a push or the itch release: keep the RuneScape font, or GNF, or our own? *AI lean:* our own, drawn in that spirit.
+2. Bars' names: general, with the kinds of food shown? *AI lean:* Surface, Buried, Prey, Oxygen, with this habitat's real foods beside them.

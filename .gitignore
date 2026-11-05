@@ -2,3 +2,6 @@ node_modules
 dist
 _old/
 .shots/
+
+# Fonts for the comparison page only; GNF may not be published, FS Pixel is 1 MB
+toys/fonts-local/

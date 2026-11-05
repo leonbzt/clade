@@ -8,7 +8,7 @@ const css = (c: RGB, k = 0) => `rgb(${Math.max(0, Math.min(255, c[0] + k)) | 0},
 const LAND: Record<number, RGB> = { [BEACH]: [226, 200, 140], [LAVA]: [44, 38, 42], [BARE]: [124, 108, 88], [FOREST]: [38, 96, 50], [WET]: [26, 72, 54] };
 const DISC: Record<SpotId, string> = { sand: 'rgba(214,226,170,0.38)', mud: 'rgba(120,90,60,0.5)', rock: 'rgba(60,70,92,0.6)' };
 
-const LABEL_PX = 15, LABEL_PAD = 3;
+const LABEL_PX = 16, LABEL_PAD = 3;
 /** Where a disc's label goes (its top middle): under the disc, or above if there's no room, and always inside the map. */
 export function labelAt(cx: number, cy: number, r: number, textW: number, textH: number, w: number, h: number) {
   const below = cy + r + LABEL_PAD, half = textW / 2 + LABEL_PAD;
@@ -57,7 +57,7 @@ export function drawIsland(cv: HTMLCanvasElement, isl: Island, spots: Record<Spo
     }
   }
   // Habitat spots.
-  g.font = `${LABEL_PX}px ${getComputedStyle(cv).fontFamily}`; g.textAlign = 'center'; g.textBaseline = 'top'; g.lineJoin = 'round';
+  g.font = `bold ${LABEL_PX}px ${getComputedStyle(cv).fontFamily}`; g.textAlign = 'center'; g.textBaseline = 'top'; g.lineJoin = 'round';
   for (const id of Object.keys(spots) as SpotId[]) {
     const s = spots[id], cx = (s.x + 0.5) * S, cy = (s.y + 0.5) * S, R = s.r * S, sel = opts.selected === id;
     g.fillStyle = DISC[id]; g.beginPath(); g.arc(cx, cy, R, 0, 6.2832); g.fill();

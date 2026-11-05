@@ -6,7 +6,7 @@ Newest first, written for players. *AI draft (5 Nov), yours to change.*
 
 - Each habitat card shows what its roles live on: mats, buried food, prey and oxygen, each marked against what's normal there.
 - The card tells you what your next board holds before you start.
-- A new font, still on trial.
+- A new font, with a real bold.
 - Map labels no longer run off the edge of the map.
 
 ## The first playable sea (M1 run, 5 Nov 2026)

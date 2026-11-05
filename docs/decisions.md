@@ -301,3 +301,10 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Asked, not decided:** "do mats rot and oxygen make sense? what about mats/plants, animals/prey, and oxygen or similar." Slice 16
   builds Mats, Buried, Prey, Oxygen as a proposal (the rot stock stays underneath).
 - **The font is still open:** "are there more pixel fonts? can we build one?" Jersey 15 is a placeholder.
+
+## 5 Nov, the font
+- **The font:** "using this would be great and first priority" (RuneStar's Old School RuneScape fonts); "i dont like all would prefer
+  runescape font or else gnf." "drawing our own would also be great." Plain 12 and Bold 12 are in the game; crisp at 16 and 32 px, so those are the only sizes.
+- **Not settled for release (AI flag):** RuneStar's CC0 covers only RuneStar's own rights, and its README says the glyphs are exactly as
+  in the game, so Jagex's rights aren't cleared by it. The repo is public, so a push publishes the font files too. Decide before pushing or the itch release.
+- **The bars' names:** "map specififc names are okay but maybe general names are easier long term? or maybe show the kind of food types." Not yet changed.

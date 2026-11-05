@@ -86,7 +86,7 @@ has to fit.
 - **"I'd really like to go towards a low-res low-poly look"** (3 Nov), with pixel-art references: bold outlined
   pixel fonts, segmented bars, framed cards, a "VS" favour bar.
 - **The look toy** (3 Nov): **2D low-poly, for now** ("least buggy and weird", its shadows "make sense to use");
-  3D "if it could be stable it were great". Menus calm (fewer colours). The font isn't settled: "i don't like the font still" (5 Nov).
+  3D "if it could be stable it were great". Menus calm (fewer colours). Font: the RuneScape fonts first, "or else gnf"; "drawing our own would also be great" (5 Nov).
 - The growth toys: "a cool feeling and look of growth… organic" (patch); "looks really cool… the look and feel is
   very nice" (specimen). Voronoi and reaction-diffusion looks.
 - **Hatched's staged assembly** for creatures (2 Nov). **Mycelarium's side view** (2 Nov).

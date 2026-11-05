@@ -21,21 +21,27 @@
   <body>
     <div class="bar">
       <b>Pixel fonts, all free, on the game's panel with its outline</b>
-      <label>size <input id="size" type="range" min="10" max="36" value="18" /> <span id="sv">18</span> px</label>
+      <label>size <input id="size" type="range" min="10" max="36" value="16" /> <span id="sv">16</span> px</label>
       <a href="./" style="color: #5ccbe8">back to the toys</a>
     </div>
     <div id="grid" class="grid"></div>
     <script>
       // [family, fontsource id, note]. All from Fontsource's CDN, one weight unless noted. Dim: already turned down.
+      const LOCAL = [
+        ['RS Plain', '../game/src/ui/fonts/RuneScape-Plain-12.woff2', 'in the game now; crisp at 16 and 32 px'],
+        ['GNF', './fonts-local/GNF.ttf', 'your second choice; free to embed, not to publish'],
+        ['FS Pixel Sans', './fonts-local/fs-pixel-sans-unicode-regular.ttf', 'OFL'],
+      ];
       const FONTS = [
-        ['Jersey 15', 'jersey-15', 'in the game now'], ['Jersey 10', 'jersey-10', ''], ['Jersey 20', 'jersey-20', ''], ['Jersey 25', 'jersey-25', ''],
+        ...LOCAL.map(([family, , note]) => [family, '', note]),
+        ['Jersey 15', 'jersey-15', ''], ['Jersey 10', 'jersey-10', ''], ['Jersey 20', 'jersey-20', ''], ['Jersey 25', 'jersey-25', ''],
         ['Handjet', 'handjet', 'has bold'], ['Bitcount Single', 'bitcount-single', 'has bold'], ['Doto', 'doto', 'has bold'], ['Geist Pixel', 'geist-pixel', ''],
         ['DotGothic16', 'dotgothic16', ''], ['Bytesized', 'bytesized', ''], ['Workbench', 'workbench', ''], ['Micro 5', 'micro-5', ''],
         ['Sixtyfour', 'sixtyfour', ''], ['Press Start 2P', 'press-start-2p', ''],
         ['Pixelify Sans', 'pixelify-sans', 'the old one', 1], ['Silkscreen', 'silkscreen', 'turned down', 1], ['Tiny5', 'tiny5', 'turned down', 1], ['VT323', 'vt323', 'turned down', 1],
       ];
       const url = (id) => `https://cdn.jsdelivr.net/fontsource/fonts/${id}@latest/latin-400-normal.woff2`;
-      for (const [family, id] of FONTS) { const face = new FontFace(family, `url(${url(id)})`); face.load().then((f) => document.fonts.add(f)).catch(() => {}); }
+      for (const [family, id] of FONTS) { const face = new FontFace(family, `url(${id ? url(id) : LOCAL.find((l) => l[0] === family)[1]})`); face.load().then((f) => document.fonts.add(f)).catch(() => {}); }
       const grid = document.getElementById('grid');
       grid.innerHTML = FONTS.map(([family, , note, no]) => `<div class="f${no ? ' no' : ''}"><h3>${family}${note ? ` · ${note}` : ''}</h3><div style="font-family:'${family}'">
         <p class="t">Volcanic rock</p>

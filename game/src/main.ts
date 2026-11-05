@@ -1,6 +1,5 @@
 // Clade: the app, the layers, the flow of a Life (pick, start, moult, end) and the input. The turn's events play
 // back in playback.ts; the shared pieces live in scene.ts. Feel values: ui/feel.ts and the dev panel (Feel, or `).
-import '@fontsource/jersey-15/latin-400.css'; // the one place to change the font, with --font in ui/style.css
 import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
 import { mount } from 'svelte';
