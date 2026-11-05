@@ -4,6 +4,7 @@ Updated 2026-11-05. Branch `claude/project-thread-cy8ptv` on GitHub (`leonbzt/cl
 
 **Milestone:** M1, the first playable sea ([ROADMAP](../ROADMAP.md)). Step 1 (PixiJS) done. **The M1 run built steps 2–8**
 ([m1-run](planning/m1-run.md)): all built, none played. Next: you play, notes into `docs/playtests/`, then tick the ROADMAP.
+**Play:** on the phone, the private page https://claude.ai/artifact/M6LoHUuraYzC5bTdf2SjEn · locally `npm run dev`, then `/game/`.
 
 ## Built, not played (5 Nov) · AI choices to judge
 - **09 The Life** ([spec](slices/09-life-for-real.md)): sand shallows (low tide), volcanic rock (vents, surge), the arthropod
