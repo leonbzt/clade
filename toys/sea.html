@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: The living sea</title>
+    <style>
+      @font-face { font-family: 'Clade Text'; src: url('../game/src/ui/fonts/CladeText-Plain.woff2') format('woff2'); }
+      @font-face { font-family: 'Clade Text'; font-weight: bold; src: url('../game/src/ui/fonts/CladeText-Bold.woff2') format('woff2'); }
+      :root { --ink: #0a0d10; --panel: #2a241b; --edge: #6d5a35; --dim: #b4a689; --gold: #ffe033; --text: #f3e9cc; }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 8px; background: #14110c; color: var(--text); font: 16px 'Clade Text', monospace; font-synthesis: none; -webkit-font-smoothing: none; }
+      a { color: #5ec4d6; }
+      button { font: inherit; color: var(--text); background: #3a3023; border: 2px solid var(--edge); padding: 1px 8px; cursor: pointer; }
+      button.on { background: var(--edge); color: var(--gold); }
+      .bar-top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 6px; }
+      .grp { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+      .dim, small { color: var(--dim); font-size: 16px; }
+      .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 8px; align-items: start; }
+      @media (max-width: 860px) { .wrap { display: flex; flex-direction: column; align-items: stretch; } .wrap > div:first-child { display: contents; } #card { order: 1; } #mapBox { order: 0; } #newsBox { order: 2; } }
+      #map { width: 100%; display: block; image-rendering: pixelated; border: 2px solid var(--edge); cursor: pointer; background: #0e2838; }
+      .panel { background: var(--panel); border: 2px solid var(--edge); padding: 6px 8px; margin-bottom: 8px; }
+      h2 { margin: 0 0 4px; font-size: 16px; color: var(--gold); }
+      #key { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: 6px 0; }
+      #key i, .sp i { display: inline-block; width: 12px; height: 12px; margin-right: 4px; vertical-align: -1px; border: 1px solid #000; }
+      .bars { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1px 8px; align-items: center; }
+      .bars small { grid-column: 2; margin-bottom: 3px; }
+      .bar { position: relative; height: 12px; background: var(--ink); }
+      .bar i { position: absolute; inset: 0 auto 0 0; background: #5ec4d6; }
+      .bar u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: #fff; }
+      #hist { width: 100%; display: block; margin-top: 6px; image-rendering: pixelated; }
+      .legend { display: flex; gap: 10px; margin-bottom: 4px; }
+      .sp { display: flex; gap: 2px; }
+      .sp span { flex: 1; }
+      .sp em { font-style: normal; color: var(--dim); }
+      .poke { margin-top: 6px; display: grid; gap: 4px; }
+      .line { cursor: pointer; padding: 1px 0; }
+      .line.crash { color: #ff9a80; } .line.boom { color: #c7e89a; } .line.spread { color: #ffe9a0; } .line.mine { color: #ff8ae6; }
+      .line:hover { background: #3a3023; }
+      #news { max-height: 300px; overflow-y: auto; }
+      #away { border-color: var(--gold); }
+      #newsBox { width: 100%; }
+    </style>
+  </head>
+  <body>
+    <div class="bar-top">
+      <b style="color: var(--gold)">Clade · the living sea</b>
+      <span>Generation <b id="gen"></b></span>
+      <div class="grp" id="speed"></div>
+      <button id="skip">Skip 160</button>
+      <div class="grp" id="views"></div>
+      <span class="dim" id="cost"></span>
+      <span class="dim">seed <span id="seed"></span></span>
+      <button id="newSea">New sea</button>
+      <a href="./">all toys</a>
+    </div>
+    <div class="wrap">
+      <div>
+        <div id="mapBox"><canvas id="map"></canvas><div id="key"></div><div class="panel" id="away" hidden></div></div>
+        <div class="panel" id="newsBox"><h2>Headlines</h2><div id="news"></div></div>
+      </div>
+      <div class="panel" id="card"></div>
+    </div>
+    <script type="module" src="./sea.ts"></script>
+  </body>
+</html>

@@ -28,7 +28,7 @@ numbers below are *proposal*.
   - Each patch is painted in the colour of its most numerous prey species, brighter when full and dark when crashed. Colours fade between generations.
   - Views: holder, mats, oxygen, hunters.
   - Small creatures roam, capped as in `toys/garden-view.ts`, so it moves between generations.
-- **Tap a patch:** the card's bars with a "normal" mark (Mats, Buried, Prey, Oxygen, as in slice 16), the species rows, and one small history graph of the last 60 generations.
+- **Tap a patch:** the card's bars with a "normal" mark (Surface, Buried, Prey, Oxygen, as in slice 16), the species rows, and one small history graph of the last 60 generations.
 - **Headlines with causes.** "Wiwaxia crashed on 5 sand patches: mats ran out, 62 → 9." Neighbouring crashes merge into one line, and
   tapping a line shows its patches.
 - **Poke it.** Tap a patch and release 30 of your line, picking its role and tier. It shows in one bright colour, so you can watch it
@@ -45,15 +45,16 @@ numbers below are *proposal*.
 
 ## Done when
 - [ ] In play: you can name a boom, a crash and a spread you just watched, and say why each happened.
-- [ ] A model test on 3 seeds over 160 generations, in under 1 s. Starting bars, to be tuned by feel:
+- [x] A model test on 3 seeds over 160 generations, in under 1 s (all 8 tests take about 0.7 s). Starting bars, to be tuned by feel:
   - at least 20 local crashes, and a patch's crashes come 5–50 generations apart
   - fewer than a third of the patches crash at once, so the whole map doesn't pulse
   - no species holds over half the patches for 40 generations in a row
   - no role is gone from the whole map for more than 20 generations
   - your line can take a patch and lose it
-- [ ] A generation costs well under 30 ms, shown in the toy.
-- [ ] `npm run check` passes; the test is `game/tests/sea.test.ts` (toys aren't in the typecheck otherwise).
-- [ ] A toy column in `docs/design/tradeoffs.md`, and your verdict in `docs/playtests/17-sea-toy.md`.
+- [x] A generation costs well under 30 ms, shown in the toy (0.3–0.6 ms; Skip 160 about 60 ms).
+- [x] `npm run check` passes; the test is `game/tests/sea.test.ts` (toys aren't in the typecheck otherwise).
+- [x] A toy column in `docs/design/tradeoffs.md`.
+- [ ] Your verdict in `docs/playtests/17-sea-toy.md`.
 
 ## Size check
 - New systems: one, patches with populations, replacing the garden model if the answer is yes. No new stock; natives stay at 9.
@@ -63,6 +64,12 @@ numbers below are *proposal*.
 **Risks.** The natural failures are all-or-nothing swings, one species taking everything (v1's moss), and the whole map pulsing as one.
 The test catches these, and the feel is still yours. If the answer is no, we learned it for the price of a toy, and the review's plan
 for steps 3–4 changes.
+
+## Changed while building (5 Nov, proposal)
+- **Ground:** most of the coast is bare ground, so "the rest → mud" gave 75% mud and one species held the map. Bare coast now takes long arcs of mud or rock, by the seed.
+- **Headlines:** the same story within 4 generations is one line anywhere on the map, not only between neighbours; neighbour-only left three identical lines in one generation.
+- **Measured (seeds 1–3, 160 generations):** 321–357 patch crashes; the median gap is 26–29 generations (the middle 80% of gaps: 19–54); at most 9 patches at once out of 66–73; no species over half the map for more than 19 generations in a row.
+- **Known weak spots:** Anomalocaris takes nearly all the hunting (at the end of the runs, Ottoia and Sidneyia number 4–21 across the whole map, Anomalocaris 600–1,197), and each patch's cycle is fairly regular.
 
 ## Answered (5 Nov)
 - A generation stays 3 min "for now". Crash pace: "depends on real dynamics but every 5-50 gens". About 70 patches: "sounds good".

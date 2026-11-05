@@ -4,20 +4,20 @@ Started 5 Nov at your suggestion ("to follow where tradoffs have been made and w
 changes the model or the look, and a line to the log. Numbers are measured unless marked.
 
 ## The versions
-| | v1 (to 2 Nov) | v2 plant map | Garden toy | M1 build (5 Nov) | Living sea *(target)* |
-|---|---|---|---|---|---|
-| **Places** | Tiles (10 m), habitats found by the sim | Tiles for land, 89 patches for life | 3 boards | 3 fixed spots, 3 numbers each | About 40–90 patches |
-| **Places change shape** | Yes | Yes (lava → soil → forest) | No | No | Yes, at the edges |
-| **Spreading you can see** | Yes | Yes | No | No | Yes |
-| **Crashes** | Yes (snails best at 18:00, dead by 19:30) | Not checked | Not checked | None in 1,000 generations | Yes, with a cause in a headline |
-| **Your species changes the board** | Not comparable (no boards) | Not comparable (no boards) | By design, not measured | Barely: S worm 9.9 mats, same as no worm | Yes, by a few named rules |
-| **Layers to view** | 9 map views | Hover a patch | Resource bars | Species bars | Overview map with views, resource bars |
-| **The Life** | None | Toy | Toy | Full: 3 bodies, verbs, hunting | Keep |
-| **Body** | Gene pips, specimen | Genes | Toy parts | Verbs pick parts; text only | Drawn, plug in parts; verbs from the body |
-| **Progression** | Runs, tree, levels ("I don't get what the levels benefit") | Tier ladder | Foraging level | Tiers, one unlock | Skill tree, inventory |
-| **8 h offline** | About 6 min CPU; no saves | About 0.3–6 s by size (benchmark, 2 Nov) | Not measured | 13 ms | About 5 s, up to 10 |
-| **`npm run check`** | 48 s | Not recorded here | Not recorded here | 7 s | Under 10 s |
-| **What you said** | "It feels alive"; "a little lost and it was random" | "Still seems like a toy" | Liked the roaming, overview and bars | "Fun and as imagined"; "the map ust looks dead" | |
+| | v1 (to 2 Nov) | v2 plant map | Garden toy | M1 build (5 Nov) | Sea toy (5 Nov) | Living sea *(target)* |
+|---|---|---|---|---|---|---|
+| **Places** | Tiles (10 m), habitats found by the sim | Tiles for land, 89 patches for life | 3 boards | 3 fixed spots, 3 numbers each | 66–73 patches around the real island | About 40–90 patches |
+| **Places change shape** | Yes | Yes (lava → soil → forest) | No | No | No, not yet | Yes, at the edges |
+| **Spreading you can see** | Yes | Yes | No | No | Yes: the hungry cross borders | Yes |
+| **Crashes** | Yes (snails best at 18:00, dead by 19:30) | Not checked | Not checked | None in 1,000 generations | Yes: median gap 26–29 generations per patch, always with a cause | Yes, with a cause in a headline |
+| **Your species changes the board** | Not comparable (no boards) | Not comparable (no boards) | By design, not measured | Barely: S worm 9.9 mats, same as no worm | No board yet; your line eats the patch's stocks | Yes, by a few named rules |
+| **Layers to view** | 9 map views | Hover a patch | Resource bars | Species bars | 4 map views, bars, 60-generation graph | Overview map with views, resource bars |
+| **The Life** | None | Toy | Toy | Full: 3 bodies, verbs, hunting | None, on purpose | Keep |
+| **Body** | Gene pips, specimen | Genes | Toy parts | Verbs pick parts; text only | None, on purpose | Drawn, plug in parts; verbs from the body |
+| **Progression** | Runs, tree, levels ("I don't get what the levels benefit") | Tier ladder | Foraging level | Tiers, one unlock | None, on purpose | Skill tree, inventory |
+| **8 h offline** | About 6 min CPU; no saves | About 0.3–6 s by size (benchmark, 2 Nov) | Not measured | 13 ms | About 60 ms | About 5 s, up to 10 |
+| **`npm run check`** | 48 s | Not recorded here | Not recorded here | 7 s | 9 s, whole game | Under 10 s |
+| **What you said** | "It feels alive"; "a little lost and it was random" | "Still seems like a toy" | Liked the roaming, overview and bars | "Fun and as imagined"; "the map ust looks dead" |  | |
 
 ## The log: what we gave up, and what it bought
 | When | Trade-off | Bought | Cost |
@@ -27,3 +27,4 @@ changes the model or the look, and a line to the log. Numbers are measured unles
 | 5 Nov | 3 pots with a self-limit, smooth populations | Stable and learnable; 13 ms offline; can't tip to one winner | No crashes, no booms, boards barely change |
 | 5 Nov | Niche picks the body; verbs pick the parts | Quick to start, clear call to action | No building, no adapting feel; reversed the same day |
 | 5 Nov | Catch-up budget 0.5 s → about 5 s | Room for a richer map, about 12× by estimate | Slower return after a long time away |
+| 5 Nov | Smooth pots → real populations in patches | Booms, crashes and spreading from four rules; 0.3–0.6 ms a generation | Cycles are fairly regular; hunters mostly one species; tuning is by feel |

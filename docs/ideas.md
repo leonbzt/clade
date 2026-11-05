@@ -120,3 +120,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Fully free bodies "maybe later or as extension" (5 Nov).
 - Pluggable segments, heads and tails as rare late finds (AI, from the review, 5 Nov).
 - Save a Life in progress, so closing the page mid-Life loses nothing (AI, 5 Nov).
+- Habitats changing shape on the sea map (sand to mud at the edges), after the sea toy if the map lives (slice 17, 5 Nov).
