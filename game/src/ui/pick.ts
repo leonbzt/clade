@@ -1,6 +1,6 @@
 // The plain pick screen (slice 09, until the island exists in slice 13): a board and a body, then Start. Each board
 // card shows a small map and your best tier there this visit, per body.
-import { MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type PlanId, type StyleId, type VerbId } from '../data/life';
+import { HUNT, MAX_VERBS, PARTS, PLANS, PLAN_IDS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type PlanId, type StyleId, type VerbId } from '../data/life';
 import { newLife, partsFor } from '../sim/life';
 import { CELL, HABITATS, HAB_ORDER, type HabitatId } from '../data/habitats';
 
@@ -55,7 +55,7 @@ export class Pick {
     if (this.verbs.includes(v)) { if (this.verbs.length > 1) this.verbs = this.verbs.filter((q) => q !== v); else this.note = 'Keep at least one verb.'; return; }
     const next = [...this.verbs, v];
     if (next.length > MAX_VERBS) { this.note = `Three verbs at most: drop one first.`; return; }
-    if (!this.fits(next)) { this.note = `No room: ${PARTS[VERB_PART[this.plan][v]].name} needs a slot another verb's part already takes.`; return; }
+    if (!this.fits(next)) { this.note = `No room: ${PARTS[partsFor(this.plan, [v])[0]].name} needs a slot another verb's part already takes.`; return; }
     this.verbs = next;
   }
 
@@ -65,18 +65,26 @@ export class Pick {
     for (const id of HAB_ORDER) {
       const h = HABITATS[id], b = document.createElement('button');
       b.className = 'pickCard' + (id === this.hab ? ' on' : '');
-      const best = (['worm', 'arthropod'] as PlanId[]).map((p) => `${PLANS[p].name} ${this.best.get(`${id}:${p}`) ?? '–'}`).join(' · ');
+      const best = PLAN_IDS.map((p) => `${PLANS[p].name} ${this.best.get(`${id}:${p}`) ?? '–'}`).join(' · ');
       b.innerHTML = `<span class="txt"><b>${h.name}</b><small>${h.pitch}</small><em>Best: ${best}</em></span>`;
       b.prepend(thumb(id));
       b.onclick = () => { this.hab = id; this.render(); };
       habs.appendChild(b);
     }
-    for (const id of ['worm', 'arthropod'] as PlanId[]) {
+    for (const id of PLAN_IDS) {
       const p = PLANS[id], b = document.createElement('button');
       b.className = 'pickCard plan' + (id === this.plan ? ' on' : '');
       b.innerHTML = `<span class="txt"><b>${p.name}</b><small>${p.pitch}</small></span>`;
       b.onclick = () => { this.plan = id; if (!this.fits(this.verbs)) this.verbs = [...STYLE_VERBS.digger]; this.render(); };
       plans.appendChild(b);
+    }
+    const hunter = this.plan === 'swimmer';
+    $('pickVerbsHead').hidden = hunter; styles.hidden = hunter;
+    if (hunter) {
+      verbs.innerHTML = `<div class="rules"><b>The hunter's rules</b><small><b>Lurk</b> a turn: prey don't notice you, and your next swim goes ${HUNT.ambush}× as far.</small>` +
+        `<small><b>Frenzy</b>: +1 speed for each catch in a row.</small><small>Prey flee by their own rule, and the ground decides who gets away.</small></div>`;
+      $('pickNote').textContent = `Grasping arms · upkeep ${RULE.baseUpkeep} food a turn at the start.`;
+      return;
     }
     for (const id of Object.keys(STYLES) as StyleId[]) {
       const b = document.createElement('button'), on = STYLE_VERBS[id].every((v) => this.verbs.includes(v)) && this.verbs.length === 2;
@@ -85,7 +93,7 @@ export class Pick {
       styles.appendChild(b);
     }
     for (const v of VERB_IDS) {
-      const V = VERBS[v], part = PARTS[VERB_PART[this.plan][v]], b = document.createElement('button');
+      const V = VERBS[v], part = PARTS[VERB_PART[this.plan as 'worm'][v]], b = document.createElement('button');
       b.className = 'verbCard' + (this.verbs.includes(v) ? ' on' : '');
       b.innerHTML = `<b>${V.name}</b><small>${V.does}</small><em>${part.name} · upkeep ${part.upkeep} · ${V.free ? 'free' : 'your turn'}, every ${V.recharge}</em>`;
       b.onclick = () => { this.toggle(v); this.render(); };

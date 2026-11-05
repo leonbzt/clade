@@ -3,6 +3,7 @@
 import { PLANS, RULE, TURNS, VERBS, type VerbId } from '../data/life';
 import * as L from '../sim/life';
 import { verbNote } from '../sim/verbs';
+import { speed } from '../sim/hunt';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const TIER_INK: Record<string, string> = { S: '#ffe033', A: '#7fd14e', B: '#5ec4d6', C: '#f3e9cc' };
@@ -75,10 +76,11 @@ export class Hud {
     this.oxy.set(l.oxygen, L.oxygenMax(l), instant);
     this.hp.set(l.health, RULE.health, instant);
     const nt = L.nextTier(l.hab, l.eggs);
-    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${l.size} (${L.stage(l)}) · upkeep ${L.upkeep(l)}` +
+    const hunt = l.plan === 'swimmer' ? ` · speed ${speed(l)}${l.still ? ' (ambush)' : ''}${l.frenzy ? ` · frenzy ${l.frenzy}` : ''}` : '';
+    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${l.size} (${L.stage(l)}) · upkeep ${L.upkeep(l)}${hunt}` +
       (L.mature(l) && nt ? ` · ${nt[0]} at ${nt[1]} eggs` : '');
-    const play = l.phase === 'play' && !busy;
-    $<HTMLButtonElement>('wait').disabled = !play;
+    const play = l.phase === 'play' && !busy, w = $<HTMLButtonElement>('wait');
+    w.disabled = !play; w.textContent = l.plan === 'swimmer' ? 'Lurk' : 'Wait';
     const m = $<HTMLButtonElement>('moult');
     m.textContent = l.size >= RULE.maxSize ? 'Full grown' : `Moult −${L.moultCost(l)}`;
     m.disabled = !play || !L.canMoult(l);

@@ -80,6 +80,12 @@ button.small { min-height: 34px; font-size: 15px; padding: 2px 10px; color: var(
 #pick h3 { margin: 4px 0 0; font-size: 17px; color: var(--dim); }
 .pickList { display: grid; gap: 6px; }
 .pickList.two { grid-template-columns: 1fr 1fr; }
+.pickList.three { grid-template-columns: 1fr 1fr 1fr; }
+.pickList.three .pickCard b { font-size: 17px; }
+.pickList.three .pickCard small { font-size: 13px; }
+.rules { grid-column: 1 / -1; display: grid; gap: 4px; padding: 4px 2px; }
+.rules > b { color: var(--gold); }
+.rules small { font-size: 14px; } .rules small b { color: #9fe3ff; }
 .pickCard { display: flex; gap: 10px; align-items: flex-start; text-align: left; padding: 7px 10px; min-height: 0; color: var(--text); }
 .pickCard .txt { display: grid; gap: 2px; min-width: 0; }
 .pickCard b { color: var(--gold); font-size: 19px; }

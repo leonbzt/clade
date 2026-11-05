@@ -1,20 +1,18 @@
 // A Life, the rules (no DOM, no Pixi). Ported from toys/life2-sim.ts: move, eat, moult, lay, the predator's hunt,
 // mark, strike and rest. Every action records `events`, which the view plays back in order.
 import {
-  COLS, MAX_VERBS, NODES, PARTS, PART_IDS, PLANS, ROWS, RULE, STAGES, STARTER_PLAN, STYLE_VERBS, TURNS, VERB_PART,
+  HUNT, MAX_VERBS, NODES, PARTS, PART_IDS, PLANS, RULE, STAGES, STARTER_PLAN, STYLE_VERBS, TURNS, VERB_PART,
   type NodeId, type PartId, type PlanId, type SlotKind, type Terrain, type VerbId,
 } from '../data/life';
 import { CELL, MUD_FLATS, type Habitat } from '../data/habitats';
+import type { PreyKind } from '../data/prey';
+import { preyInit, preyStep, swimDests, swimMove, type Prey } from './hunt';
 
-export type Dir = 0 | 1 | 2 | 3; // north, east, south, west
+import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
+export { DX, DY, at, dist, inB, xy, type Dir } from './grid';
 export type Side = 'front' | 'right' | 'back' | 'left';
-export const DX = [0, 1, 0, -1], DY = [-1, 0, 1, 0];
 const SIDES: Side[] = ['front', 'right', 'back', 'left'];
 const DIR_NAMES = ['north', 'east', 'south', 'west'];
-export const at = (x: number, y: number) => y * COLS + x;
-export const inB = (x: number, y: number) => x >= 0 && x < COLS && y >= 0 && y < ROWS;
-export const xy = (i: number): [number, number] => [i % COLS, Math.floor(i / COLS)];
-const dist = (ax: number, ay: number, bx: number, by: number) => Math.abs(ax - bx) + Math.abs(ay - by);
 
 export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number } }
 export interface Slot { kind: SlotKind; side: Side; seg: number; part: PartId | null }
@@ -43,6 +41,10 @@ export type Ev =
   | { k: 'event'; name: string; text: string }
   | { k: 'verb'; verb: VerbId; tiles: number[] }
   | { k: 'grow'; i: number; node: NodeId }
+  | { k: 'prey'; idx: number; from: number; to: number; hide: boolean }
+  | { k: 'prey_ate'; idx: number; i: number; node: NodeId }
+  | { k: 'prey_back'; idx: number; at: number }
+  | { k: 'catch'; idx: number; i: number; kind: PreyKind; gain: number; food: number }
   | { k: 'over'; cause: 'season' | 'died' };
 
 export interface Life {
@@ -54,9 +56,10 @@ export interface Life {
   moults: number; rareAt: number; rareGot: PartId | null; rarePassed: boolean; moulted: boolean; soft: boolean; moved: boolean;
   pred: Predator | null; cause: 'season' | 'died' | null; lines: string[]; events: Ev[];
   recharge: Partial<Record<VerbId, number>>; dash: boolean; braced: boolean; dug: boolean;
+  prey: Prey[]; frenzy: number; still: boolean; caught: boolean; catches: number; // the predator Life
 }
 
-function rnd(l: { r: number }) { // the toy's mulberry32
+export function rnd(l: { r: number }) { // the toy's mulberry32
   l.r = (l.r + 0x6d2b79f5) | 0;
   let t = Math.imul(l.r ^ (l.r >>> 15), 1 | l.r);
   t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
@@ -88,7 +91,7 @@ export function verbs(l: Life): VerbId[] {
   return out;
 }
 /** The parts a set of verbs gives this body plan: a verb loadout is a starting body. */
-export const partsFor = (plan: PlanId, vs: VerbId[]) => vs.map((v) => VERB_PART[plan][v]);
+export const partsFor = (plan: PlanId, vs: VerbId[]): PartId[] => (plan === 'swimmer' ? ['arms'] : vs.map((v) => VERB_PART[plan][v]));
 export const ready = (l: Life, v: VerbId) => l.phase === 'play' && verbs(l).includes(v) && !(l.recharge[v]! > 0);
 export const sense = (l: Life) => PLANS[l.plan].sense + count(l, 'eye') * RULE.eyeSense + count(l, 'compound') * RULE.compoundSense;
 export const clutch = (l: Life) => (1 + count(l, 'pouch')) * l.size + (has(l, 'deep') && onMud(l) ? 1 : 0);
@@ -143,12 +146,13 @@ export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat 
   const l: Life = {
     plan, hab, r: (seed ^ 0x5bd1e995) | 0,
     tiles: hab.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
-    x: hab.start[0], y: hab.start[1], facing: 1, rivals: hab.rivals.map((v) => ({ x: v.at[0], y: v.at[1], name: v.name, eats: v.eats })),
+    x: hab.start[0], y: hab.start[1], facing: 1, rivals: plan === 'swimmer' ? [] : hab.rivals.map((v) => ({ x: v.at[0], y: v.at[1], name: v.name, eats: v.eats })),
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, xp: 0, eaten: 0,
     size: 1, slots, order: [], phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
     moulted: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
-    recharge: {}, dash: false, braced: false, dug: false,
+    recharge: {}, dash: false, braced: false, dug: false, prey: [], frenzy: 0, still: false, caught: false, catches: 0,
   };
+  preyInit(l);
   l.rareAt = 2 + Math.floor(rnd(l) * 2);
   for (const part of starters) { const k = freeSlotFor(l, part); if (k >= 0 && !slots[k].part) { slots[k].part = part; l.order.push(k); } }
   l.oxygen = oxygenMax(l);
@@ -214,6 +218,7 @@ function tunnels(l: Life, out: Map<number, Dest>, predAt: number) {
 export function dests(l: Life): Map<number, Dest> {
   const out = new Map<number, Dest>();
   if (l.phase !== 'play') return out;
+  if (l.plan === 'swimmer') return swimDests(l);
   const worm = l.plan === 'worm', predAt = l.pred ? at(l.pred.x, l.pred.y) : -1;
   for (let d = 0 as Dir; d < 4; d = (d + 1) as Dir) {
     const path: number[] = [];
@@ -256,6 +261,7 @@ export function move(l: Life, i: number) {
   l.events = [];
   const d = dests(l).get(i);
   if (!d) return;
+  if (l.plan === 'swimmer') { swimMove(l, d); world(l); return; }
   const from = at(l.x, l.y);
   if (!d.grab) { [l.x, l.y] = xy(i); l.facing = d.dir; }
   l.moved = !d.grab; l.dash = false;
@@ -288,7 +294,7 @@ export function hitOn(l: Life, dir: Dir, facing: Dir, x: number, y: number): Hit
   if (buriedAt(l, x, y)) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
   if (l.dug) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
   if (has(l, 'enrol') && !l.moved) return { side, kind: 'enrolled', part: 'enrol', tear: -1, damage: 0 };
-  if (l.braced) return { side, kind: 'blocked', part: VERB_PART[l.plan].brace, tear: -1, damage: 0 };
+  if (l.braced && l.plan !== 'swimmer') return { side, kind: 'blocked', part: VERB_PART[l.plan].brace, tear: -1, damage: 0 };
   const guard = l.slots.find((s) => s.side === side && s.part && PARTS[s.part].guard);
   if (guard) return { side, kind: 'blocked', part: guard.part, tear: -1, damage: 0 };
   let tear = -1;
@@ -397,8 +403,10 @@ export function world(l: Life) {
   } else l.oxygen = Math.min(oxygenMax(l), l.oxygen + 1);
   emit(l, { k: 'oxygen', oxygen: l.oxygen });
   l.rivals.forEach((_, k) => rivalStep(l, k));
+  preyStep(l);
   predatorStep(l);
   l.soft = false; l.moulted = false; l.braced = false; l.dug = false;
+  if (l.plan === 'swimmer') { l.frenzy = l.caught ? Math.min(HUNT.frenzyMax, l.frenzy + 1) : 0; l.caught = false; l.still = !l.moved; }
   reveal(l);
   if (l.health <= 0) {
     l.health = 0; l.phase = 'over'; l.cause = 'died';
@@ -410,7 +418,7 @@ export function world(l: Life) {
     if (!t.grow || t.grow.at > l.turn || t.node || i === at(l.x, l.y)) return;
     t.node = t.grow.node; t.grow = undefined; emit(l, { k: 'grow', i, node: t.node });
   });
-  if (l.turn === l.hab.predatorAt) {
+  if (l.turn === l.hab.predatorAt && l.plan !== 'swimmer') {
     l.pred = { x: l.hab.entry[0], y: l.hab.entry[1], state: 'hunt', rest: 0, marks: [], dir: 1, lx: l.x, ly: l.y };
     say(l, `${l.hab.predator} arrives.`); emit(l, { k: 'pred_arrive', at: at(l.pred.x, l.pred.y) });
   }

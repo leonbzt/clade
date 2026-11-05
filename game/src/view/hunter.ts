@@ -1,7 +1,7 @@
 // The hunter, Anomalocaris: it swims above the floor (its shadow shows how high), its side flaps ripple in a wave,
 // its two grasping arms stay curled until it strikes, then uncurl as it dives. All facets take the same sun.
 import type { Graphics } from 'pixi.js';
-import { PAL, SHADOW, flat, mixRamp, tri, type P3 } from './shade';
+import { PAL, SHADOW, flat, mixRamp, tri, type P3, type Ramp } from './shade';
 
 const HULL: [number, number][] = [[13, 2.2], [11, 4.4], [8.5, 4.6], [6.5, 3.6], [3, 4], [-1, 4], [-5, 3.6], [-9, 3], [-12, 2.2], [-14, 1.4]]; // x, half-width
 const FLAPS = 10;
@@ -14,19 +14,25 @@ export class Hunter {
   grab = { v: 0 }; // the arms, 0 curled … 1 out
   swim = { v: 0.4 }; // flap speed
   resting = false;
+  flash = { v: 0 };
+  big = false; // bigger eyes (the swimmer's compound eyes)
   private t = 0;
+
+  constructor(private base: Ramp = PAL.hunter, public scale = 1) {}
 
   update(dt: number) { this.t += dt * (0.6 + 2.6 * this.swim.v) * (this.resting ? 0.4 : 1); }
 
   private tf() {
-    const c = Math.cos(this.look.a), s = Math.sin(this.look.a), k = 0.95 + 0.15 * this.show.v, { x, y } = this.pos;
+    const c = Math.cos(this.look.a), s = Math.sin(this.look.a), k = (0.95 + 0.15 * this.show.v) * this.scale, { x, y } = this.pos;
     return (lx: number, ly: number, z = 0): P3 => [x + (lx * c - ly * s) * k, y + (lx * s + ly * c) * k, z];
   }
 
   draw(g: Graphics, sh: Graphics) {
     if (this.show.v <= 0.01) return;
-    const P = this.tf(), a = this.show.v, ramp = this.resting ? mixRamp(PAL.hunter, PAL.rock[2], 0.25) : PAL.hunter;
-    const flapRamp = mixRamp(PAL.hunter, PAL.ember, 0.25);
+    const P = this.tf(), a = this.show.v;
+    let ramp = this.resting ? mixRamp(this.base, PAL.rock[2], 0.25) : this.base;
+    if (this.flash.v > 0) ramp = mixRamp(ramp, 0xffffff, this.flash.v * 0.8);
+    const flapRamp = mixRamp(ramp, PAL.ember, 0.25);
     // the shadow on the floor: the hull and the flaps, pushed away from the sun by the height
     const ox = this.lift.v * SHADOW.x, oy = this.lift.v * SHADOW.y;
     const wide = (lx: number, w: number) => (lx < 6.5 && lx > -12 ? w + 6.5 - Math.abs(lx + 2) * 0.25 : w + 1);
@@ -62,8 +68,9 @@ export class Hunter {
     for (const side of [-1, 1]) {
       const e = P(10.2, side * 8.4, 6), b1 = P(11, side * 3.6, 5), b2 = P(9.4, side * 3.6, 5);
       g.poly([b1[0], b1[1], e[0], e[1], b2[0], b2[1]]).fill({ color: PAL.ink, alpha: a });
-      g.circle(e[0], e[1], 2.4).fill({ color: PAL.ink, alpha: a });
-      g.circle(e[0], e[1], 1.5).fill({ color: this.resting ? PAL.rock[2] : PAL.gold, alpha: a });
+      const er = this.big ? 1.45 : 1;
+      g.circle(e[0], e[1], 2.4 * er).fill({ color: PAL.ink, alpha: a });
+      g.circle(e[0], e[1], 1.5 * er).fill({ color: this.resting ? PAL.rock[2] : PAL.gold, alpha: a });
       g.rect(e[0] - 1, e[1] - 1, 1, 1).fill({ color: 0xffffff, alpha: this.resting ? 0 : a });
     }
     // the grasping arms: segments that curl inward, and straighten as it strikes

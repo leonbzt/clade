@@ -14,6 +14,9 @@ export class Marks {
   pop = { v: 0 }; // 0 → 1 as the marks appear
   from = { x: 0, y: 0 }; // the hunter, for the arrow
   pulse = 1.6; // beats a second
+  burrows = new Set<number>(); // where a worm has dug in
+  aim = -1; // the tile you aimed at (compound eyes)
+  preview: { from: number; to: number; hide: boolean }[] = []; // where each prey will go
   private t = 0;
 
   tick(dt: number) {
@@ -33,10 +36,23 @@ export class Marks {
       }
       if (d.grab) g.circle(x0 + C / 2, y0 + C / 2, 2.5).fill({ color: PAL.gold, alpha: 0.6 });
     }
-    const h = this.dests.get(this.hover);
+    for (const i of this.burrows) { // ripples over a dug-in worm
+      const [x, y] = xy(i), r = 3 + ((this.t * 5) % 6);
+      g.circle(x * C + C / 2, y * C + C / 2, r).stroke({ width: 1, color: PAL.mudSeen[4], alpha: 0.7 * (1 - (r - 3) / 6) });
+    }
+    for (const p of this.preview) { // the prey's next step, as an arrow
+      const [fx, fy] = xy(p.from), [tx, ty] = xy(p.to), ax = fx * C + C / 2, ay = fy * C + C / 2, bx = tx * C + C / 2, by = ty * C + C / 2;
+      if (p.hide) { g.circle(ax, ay, 6).stroke({ width: 1.5, color: 0x9fe3ff, alpha: 0.9 }); g.rect(ax - 1, ay - 3, 2, 6).fill(0x9fe3ff); continue; }
+      if (p.from === p.to) { g.circle(ax, ay, 5).stroke({ width: 1.5, color: 0x9fe3ff, alpha: 0.6 }); continue; }
+      const d = Math.hypot(bx - ax, by - ay) || 1, ux = (bx - ax) / d, uy = (by - ay) / d;
+      g.moveTo(ax, ay).lineTo(bx - ux * 4, by - uy * 4).stroke({ width: 2, color: 0x9fe3ff, alpha: 0.9 });
+      g.poly([bx, by, bx - ux * 5 - uy * 3.5, by - uy * 5 + ux * 3.5, bx - ux * 5 + uy * 3.5, by - uy * 5 - ux * 3.5]).fill(0x9fe3ff);
+    }
+    if (this.aim >= 0) { const [x, y] = xy(this.aim); g.rect(x * C + 1, y * C + 1, C - 2, C - 2).stroke({ width: 2, color: 0x9fe3ff }); }
+    const h = this.dests.get(this.aim >= 0 ? this.aim : this.hover);
     if (h) {
       for (const i of h.path) { const [x, y] = xy(i); g.rect(x * C + C / 2 - 1.5, y * C + C / 2 - 1.5, 3, 3).fill(PAL.gold); }
-      const [x, y] = xy(this.hover);
+      const [x, y] = xy(this.aim >= 0 ? this.aim : this.hover);
       g.rect(x * C, y * C, C, C).fill({ color: PAL.gold, alpha: 0.18 });
     }
     if (!this.marks.length) return;

@@ -38,3 +38,6 @@ Next: steps 2–8 in one long session, [the M1 run](planning/m1-run.md).
 - **10 Verb slots** ([spec](slices/10-verb-slots.md)): six verbs from parts (Graze, Dash, Dig, Sense, Brace, Crush); pick
   1–3 before a Life (presets Sweeper, Digger, Tank); verb buttons with recharge pips; keys 1–3. *Judge:* verbs cost upkeep
   via their parts; your verbs are your starting body; start food 6; mats regrow after 4 turns (the new boards starved).
+- **11 The predator Life** ([spec](slices/11-predator-life.md)): the swimmer (you hunt; no hunter on your board); worms burrow,
+  trilobites run, Wiwaxia hunkers; lurk = ambush ×2, frenzy +1 speed per catch in a row; compound eyes preview the prey's next
+  step (tap to aim, tap again). *Judge:* prey notice you only when you moved; Wiwaxia cuts only if it saw you; respawn in 3.

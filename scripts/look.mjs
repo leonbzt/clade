@@ -41,14 +41,19 @@ async function play(turns) {
     else {
       const order = await p.evaluate(() => {
         const l = window.__game.life, cols = l.hab.map[0].length, out = [];
+        const prey = new Set(l.prey.filter((q) => q.alive && !q.hidden).map((q) => q.y * cols + q.x));
         l.tiles.forEach((t, i) => {
           const d = Math.abs((i % cols) - l.x) + Math.abs(Math.floor(i / cols) - l.y);
-          if (d > 0 && d <= 3) out.push([(t.node && (t.t !== 'mud' || t.seen) ? 10 : 0) - d * 0.1 + Math.random(), i]);
+          if (d > 0 && d <= 6) out.push([(prey.has(i) ? 12 : 0) + (t.node && (t.t !== 'mud' || t.seen) ? 10 : 0) - d * 0.1 + Math.random(), i]);
         });
         return out.sort((a, b) => b[0] - a[0]).map((a) => a[1]);
       });
       let moved = false;
-      for (const i of order) { await tapTile(i); await p.waitForTimeout(40); if (await p.evaluate(() => window.__game.busy)) { moved = true; break; } }
+      for (const i of order) {
+        await tapTile(i); await p.waitForTimeout(40);
+        if (!(await p.evaluate(() => window.__game.busy))) { await tapTile(i); await p.waitForTimeout(40); } // aim, then go
+        if (await p.evaluate(() => window.__game.busy)) { moved = true; break; }
+      }
       if (!moved) await p.click('#wait');
     }
     await idle();

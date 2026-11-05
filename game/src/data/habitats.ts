@@ -2,6 +2,7 @@
 // with R2's corrections; the sand shallows and volcanic rock are new for slice 09 (geology, plan.md 5 Nov).
 // Maps are 8 columns × 11 rows, the shore at the top. x and y count from 0 at the top left.
 import type { NodeId, PartId, PlanId, Terrain } from './life';
+import type { PreyKind } from './prey';
 
 //   . sand   ~ mud   # rock   % vent water (dead water)
 //   m microbial mat   s shell bed   c carcass (on sand)   b buried food (in mud)   o sulfur mat (in vent water)
@@ -19,6 +20,7 @@ export interface Habitat {
   id: HabitatId; name: string; ground: Ground; pitch: string; blurb: string; real: string; map: string[];
   start: [number, number]; entry: [number, number]; predatorAt: number; predator: string; rivals: Rival[];
   event: BoardEvent; rares: Record<PlanId, PartId[]>; tiers: [string, number][];
+  prey: { kind: PreyKind; at: [number, number] }[]; // the predator Life's prey
 }
 
 export const MUD_FLATS: Habitat = {
@@ -41,7 +43,8 @@ export const MUD_FLATS: Habitat = {
   start: [3, 1], entry: [1, 10], predatorAt: 6, predator: 'Anomalocaris',
   rivals: [{ at: [4, 9], name: 'a rival priapulid worm', eats: 'buried' }],
   event: { from: 12, to: 15, where: 'mud', name: 'Mudslide', text: 'no oxygen in the mud', look: 'murk' },
-  rares: { arthropod: ['compound', 'progenesis'], worm: ['deep', 'progenesis'] },
+  rares: { arthropod: ['compound', 'progenesis'], worm: ['deep', 'progenesis'], swimmer: ['fan', 'progenesis'] },
+  prey: [{ kind: 'worm', at: [1, 3] }, { kind: 'worm', at: [6, 4] }, { kind: 'worm', at: [2, 9] }, { kind: 'trilobite', at: [6, 1] }, { kind: 'wiwaxia', at: [4, 7] }],
   tiers: [['S', 56], ['A', 40], ['B', 26], ['C', 14], ['D', 5], ['F', 0]],
 };
 
@@ -65,7 +68,8 @@ export const SAND_SHALLOWS: Habitat = {
   start: [4, 6], entry: [7, 10], predatorAt: 4, predator: 'Anomalocaris',
   rivals: [{ at: [1, 8], name: 'Wiwaxia, a scaled grazer', eats: 'mat' }],
   event: { from: 9, to: 12, where: 'all', rows: [0, 2], name: 'Low tide', text: 'the three rows by the shore run dry', look: 'dry' },
-  rares: { arthropod: ['enrol', 'progenesis'], worm: ['hook', 'progenesis'] },
+  rares: { arthropod: ['enrol', 'progenesis'], worm: ['hook', 'progenesis'], swimmer: ['fan', 'progenesis'] },
+  prey: [{ kind: 'trilobite', at: [1, 1] }, { kind: 'trilobite', at: [6, 2] }, { kind: 'trilobite', at: [3, 9] }, { kind: 'worm', at: [4, 5] }, { kind: 'wiwaxia', at: [6, 7] }],
   tiers: [['S', 48], ['A', 34], ['B', 22], ['C', 12], ['D', 4], ['F', 0]],
 };
 
@@ -89,7 +93,8 @@ export const VOLCANIC_ROCK: Habitat = {
   start: [5, 5], entry: [0, 5], predatorAt: 5, predator: 'Anomalocaris',
   rivals: [{ at: [7, 10], name: 'a rival bristle worm', eats: 'bloom' }],
   event: { from: 8, to: 10, where: 'all', name: 'Vent surge', text: 'warm water, oxygen falls everywhere', look: 'haze' },
-  rares: { arthropod: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'] },
+  rares: { arthropod: ['blood', 'progenesis'], worm: ['symbiont', 'progenesis'], swimmer: ['fan', 'progenesis'] },
+  prey: [{ kind: 'trilobite', at: [1, 0] }, { kind: 'trilobite', at: [6, 9] }, { kind: 'wiwaxia', at: [1, 5] }, { kind: 'wiwaxia', at: [6, 1] }, { kind: 'worm', at: [4, 6] }],
   tiers: [['S', 44], ['A', 32], ['B', 22], ['C', 12], ['D', 4], ['F', 0]],
 };
 
