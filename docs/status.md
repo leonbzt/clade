@@ -46,3 +46,6 @@ Next: steps 2–8 in one long session, [the M1 run](planning/m1-run.md).
   burrower → worm, hunter → swimmer); the garden (ported) with a 60% self-limit; the garden writes the board; eggs count in
   the niche you ate like; a generation every 3 min, Skip +10, 8 h offline, a browser save. *Judge:* the mapping, the
   self-limit, one tier scale (S 40, A 28, B 18, C 10, D 4), the natives. Built before 12, as plan.md allows.
+- **12 Open your clutch** ([spec](slices/12-open-your-clutch.md)): 2–5 eggs hatch as cards (common, rare from the habitat,
+  epic from another; better odds at higher tiers); keep one form: its part rides along in every later Life in that niche.
+  *Judge:* card count and odds; a form = one inherited part.

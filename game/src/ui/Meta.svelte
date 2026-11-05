@@ -44,7 +44,7 @@
     if (id) openHab(id);
   }
   function openHab(id: HabitatId) { ui.hab = id; ui.niche = null; }
-  function live(role: Role) { ui.niche = role; note = ''; if (!fits(verbs)) verbs = [...STYLE_VERBS.digger]; }
+  function live(role: Role) { ui.niche = role; note = ''; verbs = [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']]; }
 
   const plan = $derived(ui.niche ? BODY_FOR[ui.niche] : 'worm');
   function fits(vs: VerbId[]) { const l = newLife(1, plan, HABITATS[ui.hab ?? 'mud'], partsFor(plan, vs)); return l.order.length === vs.length; }
@@ -92,6 +92,7 @@
           {#each n.rows as r}
             <div class="sp" class:mine={!!r.e.line}><i style:color={TINK[r.tier]}>{r.tier}</i><span>{r.e.name}{r.e.proven ? '' : ' (unproven)'}</span><em><u style:width={`${Math.round(r.bar * 100)}%`}></u></em></div>
           {/each}
+          {#if ctx.save.forms[`${id}:${n.role}`]}<div class="form">Your form here: {PARTS[ctx.save.forms[`${id}:${n.role}`]].name}</div>{/if}
           <button class="liveBtn" onclick={() => live(n.role)}>Live it as {BODY_FOR[n.role] === "arthropod" ? "an" : "a"} {PLANS[BODY_FOR[n.role]].name.toLowerCase()}</button>
         </div>
       {/each}

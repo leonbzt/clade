@@ -17,6 +17,8 @@ import { release, step, tierName } from './sim/garden';
 import { habitatSpots, makeIsland } from './sim/island';
 import { SAVE_KEY, advance, freshSave, parseSave } from './sim/save';
 import Meta from './ui/Meta.svelte';
+import Clutch from './ui/Clutch.svelte';
+import { rollClutch } from './sim/clutch';
 import { bump, ctx, ui } from './ui/meta.svelte';
 import { S, centre, dirAngle, screen } from './scene';
 import { bounce, play } from './playback';
@@ -98,12 +100,21 @@ ctx.start = (hab, role, vs) => { habId = hab; niche = role; plan = BODY_FOR[role
 ctx.skip = () => { for (let k = 0; k < MODEL.skip; k++) step(save.garden); persist(); };
 setInterval(() => { if (ui.open && advance(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
+mount(Clutch, { target: document.getElementById('metaRoot')! });
 
 function choose() { ui.open = true; bump(); }
 
-/** The Life's eggs go to the garden, in the niche you lived; a couple of generations pass; back to the habitat's card. */
+/** After a Life: open the clutch (if you laid), keep a form, and the eggs go to the garden in the niche you lived. */
 function finishLife() {
-  const r = resultOf(S.life), key = `${r.hab}:${r.role}`, tier = tierName(r.hab, r.eggs);
+  const r = resultOf(S.life), tier = tierName(r.hab, r.eggs);
+  if (r.eggs <= 0) { settle(r, tier); return; }
+  ui.clutch = { cards: rollClutch((Math.random() * 2 ** 31) | 0, r.plan, r.hab, r.eggs, tier), hab: r.hab, role: r.role, plan: r.plan, eggs: r.eggs, tier };
+  ui.open = true; ui.hab = null; bump();
+  ctx.keep = (k) => { save.forms[`${r.hab}:${r.role}`] = ui.clutch!.cards[k].part; ui.clutch = null; settle(r, tier); };
+}
+
+function settle(r: ReturnType<typeof resultOf>, tier: string) {
+  const key = `${r.hab}:${r.role}`;
   if (r.eggs > 0) release(save.garden, r);
   for (let k = 0; k < MODEL.afterLife; k++) step(save.garden);
   if (!save.best[key] || 'SABCDF'.indexOf(tier) < 'SABCDF'.indexOf(save.best[key])) save.best[key] = tier;
@@ -112,7 +123,8 @@ function finishLife() {
 }
 
 function newLife() {
-  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, boardFor(save.garden, habId), L.partsFor(plan, verbs));
+  const form = save.forms[`${habId}:${niche}`], parts = L.partsFor(plan, verbs);
+  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, boardFor(save.garden, habId), form && PARTS[form].plans.includes(plan) ? [...parts, form] : parts);
   S.you = BODIES[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
@@ -125,7 +137,7 @@ function newLife() {
   hud.refresh(life, true);
   hud.info('Tap a lit tile to move.');
   const h = life.hab, P = PLANS[plan];
-  const role = `You came to fill the ${ROLES[niche].name} niche. `;
+  const role = `You came to fill the ${ROLES[niche].name} niche.${form ? ` Your line here carries ${PARTS[form].name.toLowerCase()}.` : ''} `;
   const who = role + (plan === 'swimmer'
     ? `You are the hunter here. ${P.blurb}\nLurk a turn and prey won't notice you; your next swim goes twice as far. Each catch in a row adds speed.`
     : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predatorAt > 20 ? 'No hunter here this time.' : `${h.predator} comes on turn ${h.predatorAt}.`}`);
