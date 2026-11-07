@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Spike: real board looks</title>
+    <style>
+      body { margin: 0; background: #14110d; color: #e8dcc0; font: 14px/1.4 system-ui, sans-serif; }
+      #bar { padding: 8px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+      button { font: inherit; padding: 6px 10px; background: #3a3020; color: inherit; border: 1px solid #6a5a3a; }
+      a { color: #8fe0ef; }
+      table { border-collapse: collapse; margin: 8px; }
+      td, th { padding: 2px 10px; text-align: right; border-bottom: 1px solid #3a3020; }
+      td:first-child, th:first-child { text-align: left; }
+      canvas { display: block; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body>
+    <div id="bar"><b>One real board, six ways</b><a href="?hab=mud">Mud flats</a><a href="?hab=sand">Sand</a><a href="?hab=rock">Volcanic rock</a><a href="?view=beasts">More animals</a><a href="?round=2">Round 2: today's floor, steadier animals</a><a href="?round=2&amp;hab=rock">Round 2, rock</a><a href="?view=sizes">Sizes: 8 to 48 px</a><button id="run">Run the cost test (about 1 min)</button></div>
+    <div id="out"></div>
+    <div id="stage"></div>
+    <script type="module" src="./board.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:,">
+    <title>Toy: The body</title>
+    <style>
+      @font-face { font-family: 'Clade Text'; src: url('../game/src/ui/fonts/CladeText-Plain.woff2') format('woff2'); }
+      @font-face { font-family: 'Clade Text'; font-weight: bold; src: url('../game/src/ui/fonts/CladeText-Bold.woff2') format('woff2'); }
+      :root { --ink: #0a0d10; --panel: #2a241b; --edge: #6d5a35; --dim: #b4a689; --gold: #ffe033; --text: #f3e9cc; }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 8px; background: #14110c; color: var(--text); font: 16px 'Clade Text', monospace; font-synthesis: none; -webkit-font-smoothing: none; }
+      a { color: #5ec4d6; }
+      button { font: inherit; color: var(--text); background: #3a3023; border: 2px solid var(--edge); padding: 1px 8px; cursor: pointer; }
+      button.on { background: var(--edge); color: var(--gold); }
+      button:disabled { opacity: 0.45; cursor: default; }
+      .top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 6px; }
+      .grp { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+      .dim, small { color: var(--dim); font-size: 16px; }
+      .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 8px; align-items: start; }
+      @media (max-width: 860px) { .wrap { display: block; } #panel { margin-top: 8px; } }
+      #stage { position: relative; }
+      #stage canvas { position: absolute; left: 0; top: 0; pointer-events: none; image-rendering: pixelated; z-index: 0; }
+      #cells { position: relative; z-index: 1; display: grid; gap: 6px; }
+      .cell { position: relative; border: 2px solid var(--edge); min-width: 0; }
+      .cap { position: absolute; left: 3px; top: 1px; color: var(--text); text-shadow: 1px 1px 0 #000; pointer-events: none; }
+      .cap.r { left: auto; right: 3px; }
+      #vBig { height: clamp(240px, 48vh, 520px); cursor: pointer; }
+      #picker { background: var(--panel); border: 2px solid var(--edge); padding: 3px 6px; min-height: 36px; display: flex; flex-wrap: wrap; gap: 3px 4px; align-items: center; }
+      #picker b { color: var(--gold); margin-right: 4px; }
+      #picker em { font-style: normal; color: var(--gold); }
+      .row2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 6px; }
+      @media (max-width: 620px) { .row2 { grid-template-columns: minmax(0, 1fr); } }
+      #vStrip { cursor: pointer; aspect-ratio: 2; }
+      #vMap { min-height: 150px; }
+      #vCard { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); height: 170px; }
+      #vCard .arrow { align-self: center; text-align: center; color: var(--gold); }
+      #cardText { background: var(--panel); border: 2px solid var(--gold); padding: 3px 8px; }
+      #cardText b { color: var(--gold); }
+      .cmp { grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); }
+      .cmp .cell { height: 168px; }
+      #vCrowd { height: clamp(380px, 78vh, 760px); }
+      .panel { background: var(--panel); border: 2px solid var(--edge); padding: 6px 8px; margin-bottom: 8px; }
+      h2 { margin: 0 0 4px; font-size: 16px; color: var(--gold); }
+      input[type='range'] { width: 100%; accent-color: var(--gold); }
+      .recipe { margin-bottom: 8px; }
+      .recipe .ok { color: #c7e89a; } .recipe .no { color: var(--dim); }
+      .stack { display: grid; gap: 3px; }
+      .stack button { text-align: left; }
+      table { border-collapse: collapse; width: 100%; }
+      td { padding: 0 8px 0 0; } td:last-child { text-align: right; padding: 0; color: var(--dim); }
+    </style>
+  </head>
+  <body>
+    <div class="top">
+      <b style="color: var(--gold)">Clade · the body toy</b>
+      <div class="grp" id="views"></div>
+      <div class="grp" id="switches"></div>
+      <a href="./">all toys</a>
+    </div>
+    <div class="wrap">
+      <div id="stage"><div id="cells"></div></div>
+      <div id="panel"></div>
+    </div>
+    <script type="module" src="./creature.ts"></script>
+  </body>
+</html>

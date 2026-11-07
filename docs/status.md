@@ -1,26 +1,31 @@
 # Status
 
-Updated 2026-11-05. Branch `claude/project-thread-cy8ptv`. The plan: [ROADMAP](../ROADMAP.md).
+Updated 2026-11-07. Branch `claude/project-thread-cy8ptv`. The plan: [ROADMAP](../ROADMAP.md), the vision: [full-version.md](design/full-version.md).
 
-**Milestone:** M2, the living sea. Steps 1 and 2 are built and wait for your play. M1 is built; only its itch upload and Discord are left.
+**Milestone:** M2, the full version (release). Steps 1 and 2 are ticked. Step 3, the body toy, is built and played, but not ticked: three of its play checks are still open. Next is step 4.
 
-**Done**
-- [Slice 17](slices/17-sea-toy.md), the sea toy: `npm run dev`, then `/toys/sea.html`. Files are `toys/sea*.ts`; test is `game/tests/sea.test.ts`.
-  The test's bars all pass on 3 seeds. A patch's median gap between crashes is 26–29 generations; at most 9 patches at once; a generation costs 0.3–0.6 ms; Skip 160 about 60 ms. Causes come from what actually killed them.
-- **The bars, your request:** Surface, Buried, Prey, Oxygen, with real foods beside them, in the game and the toy (`sim/garden.ts`).
-- **The font, your call:** the RuneScape font stays ([research](research/font-licences.md): small risk, not legal advice). Now named Clade Text in files, family and internal names. GNF is the fallback.
-- Slice 16: built earlier, unplayed. `npm run check` passes in 9 s. The itch build is one file, 728 KB, and loads from disk.
+**Done** (nothing committed; the docs from 5 Nov on and all of slice 18 are only in the working tree)
+- Body toy: `toys/creature*`, `game/tests/creature.test.ts`, [spec](slices/18-body-toy.md), [your notes](playtests/18-body-toy.md).
+- Looks on a real board, a spike: `spikes/body-render/board.html`, with `?round=2`, `?view=sizes` and `?view=beasts`. [Spec](slices/18c-board-looks.md), [your notes](playtests/18c-board-looks.md).
+- Analysis and numbers: [body-approach.md](design/body-approach.md). Research: [AI sprites](research/ai-sprite-workflows.md), [models of life](research/ruliology-and-models-of-life.md).
+- `npm run check` passes in 9.8 s, close to the 10 s budget.
+
+**Decided** ([decisions.md](decisions.md))
+- 7 Nov: "you write the painter and each animal is a recipe". The same recipe paints every size; 3D info stays; the look aims "between osrs and stardew valley"; don't spend more time on looks now, "continue towards itch release".
+- 6 Nov: one place, one thing; places locked by lineage, can improve inside their kind and can reopen; Front is the weapon slot; rows for now.
 
 **Next**
-1. Play the toy for the question "does the map feel alive?" Name a boom, a crash and a spread. Notes go in `docs/playtests/17-sea-toy.md`.
-2. Play slice 16 in the game; notes in `docs/playtests/16-quick-wins.md`. Then tick steps 1 and 2.
-3. Upload to itch, which needs your account: `npm run build:game`, then `game/dist/clade.html`; text in [itch.md](itch.md).
-4. If the toy lives: step 3, the overview map in the game.
+1. `/kickoff join the sea` (step 4). Spec it first: the sea replaces the garden, the map is home with run hooks, boards come from patches.
+2. Answer first in that spec: is your Rockplate a rival of the native trilobite, or the same species? ([full-version.md §6](design/full-version.md), gap 5.)
+3. Step 5 then brings in the general body, six places and the head bug fix, with the painter behind one draw call.
 
 **Open**
-- Known weak spots in the toy: Anomalocaris takes nearly all the hunting, and each patch's cycle is fairly regular. Your feel decides if they matter.
-- Slice 17 changed two things from its spec: bare coast splits into mud and rock arcs, and headlines merge across the whole map (see the spec).
-- `npm run look` fails here because Playwright isn't installed; screenshots used a temporary driver.
-- How limited is the inventory? Banked offline time (idea)? How do body and diet weigh in the role? When is the itch release?
-- M2's "done when" and the 30 ms step limit are my drafts. `tests/garden.test.ts:48` should loosen when the new model lands.
-- Left from M1: saving mid-Life, Deep burrow against Dig, clutch odds, sweeper and tank balance (tank 0% A+).
+- **Final style, step 9:** pixels or low poly, 16 or 24 px, large animals across two tiles. The painters and the data exist in the spike only; none of it is in the game.
+- **Bug:** the front of the body sticks out past the head on arthropods and the trilobite ([body-approach.md §6](design/body-approach.md)).
+- **Step 3:** tick it, or play its three open checks? AI lean: roll them into step 5.
+- **Animals on the sea map:** only roamers and one-part map forms exist; an *idea* is in `ideas.md`, for the step 4 spec.
+- [P46](proposals.md): six places in step 5; power from locked parts; body shape visible first (AI's leans, not your calls).
+- How parts go into a new base. Respec, and XP per lineage or whole line (step 6). Recipes don't fit today's slots and moults; each animal has a player side and an AI side ([full-version.md §6](design/full-version.md)).
+- Research shortlist 1, 2, 5 (drift, food web, coat patterns): you liked them; parked in `ideas.md`.
+- Before tooltips: `researcher` should check three biology claims (full-version.md §5). M2's "done when" is a draft. The sea toy's Anomalocaris does nearly all the hunting.
+- **Costs measured on software graphics only;** no phone or real GPU tested.

@@ -44,7 +44,7 @@ numbers below are *proposal*.
 - Banked offline time: stays in `ideas.md`.
 
 ## Done when
-- [ ] In play: you can name a boom, a crash and a spread you just watched, and say why each happened.
+- [x] In play: you can name a boom, a crash and a spread you just watched, and say why each happened.
 - [x] A model test on 3 seeds over 160 generations, in under 1 s (all 8 tests take about 0.7 s). Starting bars, to be tuned by feel:
   - at least 20 local crashes, and a patch's crashes come 5–50 generations apart
   - fewer than a third of the patches crash at once, so the whole map doesn't pulse
@@ -54,7 +54,7 @@ numbers below are *proposal*.
 - [x] A generation costs well under 30 ms, shown in the toy (0.3–0.6 ms; Skip 160 about 60 ms).
 - [x] `npm run check` passes; the test is `game/tests/sea.test.ts` (toys aren't in the typecheck otherwise).
 - [x] A toy column in `docs/design/tradeoffs.md`.
-- [ ] Your verdict in `docs/playtests/17-sea-toy.md`.
+- [x] Your verdict in `docs/playtests/17-sea-toy.md`.
 
 ## Size check
 - New systems: one, patches with populations, replacing the garden model if the answer is yes. No new stock; natives stay at 9.

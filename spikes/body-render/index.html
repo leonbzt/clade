@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Spike: body render</title>
+    <style>
+      body { margin: 0; background: #14110d; color: #e8dcc0; font: 14px/1.4 system-ui, sans-serif; }
+      #bar { padding: 8px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      button { font: inherit; padding: 6px 10px; background: #3a3020; color: inherit; border: 1px solid #6a5a3a; }
+      table { border-collapse: collapse; margin: 8px; }
+      td, th { padding: 2px 10px; text-align: right; border-bottom: 1px solid #3a3020; }
+      td:first-child, th:first-child { text-align: left; }
+      canvas { display: block; max-width: 100%; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body>
+    <div id="bar"><b>Styles and cost of the general body</b><button id="run">Run the cost test (about 30 s)</button><a style="color:#8fe0ef" href="?res=1&aa=1">sharp pixels</a><a style="color:#8fe0ef" href="?">chunky pixels</a><span id="note"></span></div>
+    <div id="out"></div>
+    <div id="stage"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -25,12 +25,12 @@
 - Other look work: step 7.
 
 ## Done when
-- [ ] In play: open a habitat and see its four bars with normal marks; Skip +10 moves them.
-- [ ] The next-board line matches the board you then walk on (a test compares it with `boardFor`).
-- [ ] The font is in, with nothing overflowing at phone width or on desktop, and the itch build is still one file.
-- [ ] A test: label positions stay inside the canvas on 200 seeds.
-- [ ] `npm run check` passes.
-- [ ] Your notes are in `docs/playtests/16-quick-wins.md`, and a player-facing line in `docs/patch-notes.md`.
+- [x] In play: open a habitat and see its four bars with normal marks; Skip +10 moves them.
+- [x] The next-board line matches the board you then walk on (a test compares it with `boardFor`).
+- [x] The font is in, with nothing overflowing at phone width or on desktop, and the itch build is still one file.
+- [x] A test: label positions stay inside the canvas on 200 seeds.
+- [x] `npm run check` passes.
+- [x] Your notes are in `docs/playtests/16-quick-wins.md`, and a player-facing line in `docs/patch-notes.md`.
 
 ## Size check
 - New systems: none. No new stock, stat or gene.

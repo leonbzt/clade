@@ -12,4 +12,13 @@ open parts needed for M1 are kept here; the rest is parked in ideas.md.
 P44 (the run's core play) and P45 (next step, apex slot, world) were decided 4 Nov: see decisions.md.
 P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea replaces that model (see decisions.md).
 
-Nothing open right now.
+## P46: Six places instead of free slots (M2, step 3) *proposal, 6 Nov*
+Full reasoning and numbers: [design/body-approach.md](design/body-approach.md).
+
+**Your reactions (6 Nov, logged in decisions.md):** one place, one thing and locked places by lineage: yes. A locked place keeps its kind and can improve or reopen later. Front is the weapon slot. Rows for now, exact placement maybe later. Power from locked parts, authored numbers or both: still open.
+**Your call on looks (7 Nov):** recipes for a code painter; don't spend more time on the final style now. It waits for the art pass, step 9.
+**AI lean:** build six places as part of step 5, not as a separate toy, with the painter behind one draw call so the style stays swappable.
+
+**Questions, for step 5.**
+1. Does lineage power come from locked parts, authored numbers or both? (Your words: "still open".) AI lean: locked parts first.
+2. Body shape: visible only at first, or with small effects from the start? AI lean: visible first, then at most one trade-off for each of two named forms.

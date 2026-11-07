@@ -4,7 +4,7 @@ An idle / incremental evolution game. Web: TypeScript, PixiJS (the board), Svelt
 lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
 garden becomes is the next board you walk on.
 
-**Start here: `docs/status.md`, then `docs/planning/plan.md` (the plan for the real build, 5 Nov; it wins over `big-picture.md`) and `ROADMAP.md`.**
+**Start here: `docs/status.md`, then `docs/design/full-version.md` (the vision for the release, 6 Nov; it wins over `docs/planning/plan.md` and `big-picture.md`) and `ROADMAP.md`.**
 The game is in `game/` (PixiJS won the stack test, 5 Nov); a long build session follows `docs/planning/m1-run.md`. The plant game in
 `docs/spec.md`, `src/` and `tests/` is the archive; its island, habitat and garden code may be ported.
 

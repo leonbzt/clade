@@ -313,3 +313,76 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **The bars:** "build slice 17 and pick the bars to use." Picked by AI at your request: **Surface, Buried, Prey, Oxygen**, each with this habitat's real foods beside it ("grazers eat mats, shell beds"; "hunters eat Wiwaxia, Olenoides"). In the game's card and the sea toy.
 - **The font:** "i like runescape best, release it if possible with this otherwise gnf." Checked ([research](research/font-licences.md), not legal advice): it can ship with a small risk, so **the RuneScape font stays**. Likely outcome nothing; worst realistic case a takedown request, then we swap the font. GNF is the fallback, embedded only and never in the repo. Jagex's fan policy gives no permission, so don't cite it.
 - **Done because of that (AI):** the files, family and internal names are now Clade Text, and "RuneScape" stays out of the UI and the itch page.
+
+## 5 Nov, after playing slices 16 and 17
+- **The sea toy:** "it looks really cool and is similar to what i've imagined and feel really nice to see the changes." "i played the toy and could watch these" (a boom, a crash and a spread). Notes: [playtest 17](playtests/17-sea-toy.md).
+- **Slice 16:** "it feels a little better."
+- **The font:** "rs font is cool."
+- **The itch upload waits:** "before itch upload i would like to put everything together."
+- **The goal:** "get a clean freshly put together full version that i can release to get feedback and ideas." It needs: "polish look, species beeing recogniazble"; "one full run and different playstyyles, and recognizable creatures and possibly names"; and "make the connection feel good between ah i played this run and advanced my lineage now i can see it play out on the map and change conditions. what run do i pick next?"
+- **For the next session to discuss, not decided:** when to start a new folder or repository; when to put it all together; more lines and customisable characters; the art pass.
+
+## 6 Nov, planning the full version (tastes, one question at a time; the options and the plan come after)
+- **The aim:** "i liked the individual game, and i like the lviing sea, and i want to put it together." "most importantly the current toys should become one game." Also: more animals, "maybe some plants or algae", "progression in the lines to actually change the body", "a lot of ui and art".
+- **One full run** is one Life: "for now one full run would be one life, and along you evolve your lineage."
+- **After a Life** *(leaning, not final)*: the family tree: "this sounds really good, and also a little how i imagined an evoltuin upgrade skill tree". "watch it spread is also a core aspect." "opening the clutch still seems fun but maybe not in place yet."
+- **The trees: undecided.** "i really like the classic skill tree and pure family tree, and i think pure family tree could get too crowded. but maybe there could be one big tree of life, then the lineage tree and skill tree together or side by side?"
+- **New parts: undecided, a direction:** "i like earned by living part, that you actually grow up and grow the body parts to use them"; "somehow earned with evolution points or evolution xp"; "i really like the random genes and \"mutation\" aspect"; "lineagexp for unlocks and skills, get rare \"genes\" or \"body parts\" that you can equip or grow during a run."
+- **Growing up:** moult offers drawn from your genes: "i like this best, lineage should also offer verbs and mechanics and stats." Plan first by "speccing the lineage tree to see what could be offered for a run." "finding genes is interesting but makes more sense for reproduction."
+- **Animals:** "you can play as every lineage and start as most build if you have unlocked it." Keep it general: "generalized bodys and creation as possible"; "a authored base sprite per lineage with adaptable body parts and slots that can change during the loadout"; "not author tons of other creatures that you can't play." Lineages change because you played them well: "picked adaptations that formed a real new lineage. that also looks differnt." Open: "either body just from parts/gen or authored lineages with body plans that automatically are put together and appear as the final species."
+- **A new lineage** *(leaning)*: authored recipes (meet a lineage's parts and play well, and your form becomes it): "this is cool, but pureley from parts or having a strong generator would also be really important. the feeling that the animal or creature you see and build is qctually the one drawn fells important, and also see your impact."
+- **Home and the next run:** the map, with run hooks made by the sim (a crash, an open niche, a rival booming); tap, pick a lineage and build, live; the trees one tap away (AI's option, picked without changes).
+- **Plants and algae:** a living food layer first: "a living food layer is definetley the direction i want to move, maybe multilayered animal food chain first too." "this needs to come at some point, playable later is okay."
+- **Creature art:** code-drawn low-poly, pushed further, one generator: "this sounds the best, i also like the idea of code drawn pixelated or hand drawn bases for good recognizability. but i think this is the most robust and fitting."
+- **The arc of the first release:** the whole release is the sea, and a line reaching the shore in one special Life is the cliffhanger; the sea keeps running afterwards (AI's option, picked without changes).
+- **Order:** a body toy first ("is the one I built the one I see?"), then join sea and bodies in `game/`, then trees and XP, more lineages and algae, the UI and art pass, then a clean repo and itch (AI's option, picked without changes).
+- **The whole picture:** "sounds good, order good." ROADMAP changed on this: M2 is now the full version, step 3 the body toy. "make sure that we stay on the road to this vision for release soon." Design: [full-version.md](design/full-version.md).
+- **Systems:** arrive "one at a time".
+- **Rigs:** "maybe even more rigs? what ways are there to do this?" Answered in full-version.md §3 (AI's lean: one spine, many gaits; the toy tests it).
+- **Recipes:** "would be cool if the recipes were body parts, some of which then would go into the base of the new lineage. like running an arthropods with claws and 10 legs, it would be a crab, and become a base crab."
+- **Every lineage playable:** "i plan to add more mechanics and minigames midterm, so show also maybe carry some more, but keep simple now but expandable."
+- **Lineages in the release:** "6-10 unless toy makes it easy, them aim for around 15."
+- **Trees:** "one tree screen, maybe one extra closeup lineage spec tree for skills and upgrades for that run."
+- **Hatching:** "maybe hatching for now is okay, so at the end."
+- **Slice 18, the body toy,** is next: "go ahead and spec the body toy as next slice and document all thoughts tastes, plans and ideas."
+- **Named species as end points** *(a wish, with question marks)*: "i would like it if a named real species was an end point for a lineage so you have something to arrive at? maybe not as more recent animals it would be cool to discover an own thing, but it would be cool if you could arrive at named species that are pretty strong but still spec into a slightly different sidebuild that could be more optimal under some circumstances."
+- **Parts in the new base: not decided.** "that sounds great, but maybe be careful that it doesn't stack to much or can't be changed again, maybe it could also be a default start with that body part or just some are integrated? not sure about that."
+- **Long term:** "long term sounds good. did you think it through?" (AI's answer and the gaps: full-version.md §6.)
+- **What a new lineage is:** "more of a fresh start and can look different but optimally it should overlap so that the lineages look is anyways already kind of how the creature i build. but maybe as a more direct or \"branded\" result that feels like an upgrade."
+- **The crab:** "crab similar thing would be cute, cambrian crusher later crabs would be cool."
+- **Recipes:** "recipe naming parts to fuse is cool, or also by rules that are overarching. (skeleton + flabby skin/feathers = wing) but i think authered is easierst mainly."
+
+## 6 Nov, after the body toy (slots and style; style still open)
+- **One place, one thing:** "everything you can see lives in a place and a place holds one thing sounds like a good rule."
+- **Locked places by lineage:** "locked places as lineages sounds cool and like a good idea, maybe the kind of spot should stay but still improve (carpace > spiked carapace/tough carapace)."
+- **Locked isn't forever:** "locked slots could also reopen later when going to even more advanced lineages"; "locked should also become free again or still changable and upgradable within the class."
+- **Front:** "front appendage beeing like the weapon slot is also cool."
+- **Stacking: open.** "i think lineage power could come from the locked parts in this setup, but i think both is a good solution. still open."
+- **Exact placement:** "exact placement would still really nice to have in some places, but for now its ok."
+- **Style: open, a direction.** "in the current way i almost like the current best, but i think in general i want to go more cozy retro pixel vibes or more detailed low poly. or a scientific feel." And: "i wanted a little cuter animals also for a start instead of just bug-looking things." Not in tastes.md until you say so.
+
+## 6 Nov, after the seven looks (style still open; the board test is what decides)
+- **Where you stand:** "low res (low) poly is i think the way to go, but everything should be really efficent and maybe could get swapped with pixel arts at some times. maybe all pixel could also be nice."
+- **Pixels:** "i also like the low poly world and also want future minigames with shadows. but i like the pixel style a little more."
+- **The looks:** "I think I like the idea of D but right now c looks better, today is also cool."
+- **Field guide:** "pretty intriguing but i think i wond end u liking it."
+- **Cute:** "not a lot of cute."
+- **How to compare:** approach each style fresh, on a real board. Done in slice 18c. Not in tastes.md until you say so.
+
+## 6 Nov, after watching the board (research shortlist; style still open)
+- **Research shortlist:** "1 and 2 sound good" (hidden drift then rare breakthroughs; niche-model food web). "3 sounds good but also complicated, what effects would body shapes have?" "5 also sounds really cool to have and to collect" (heritable coat patterns). Ideas, not plans.
+- **How the look gets picked:** "for now I'll decide what is easiest to get high quality ai generation for, and fits most animals easy." "Speed and performance is important to me. mainly though the ease of getting everything right."
+- **Other options wanted:** more basic, less movement, generalised; really small sprites; a cheap sprite in-game and on maps with a larger detailed one for equipment.
+- **Reactions:** "for background i like the current best." Likes the 3D look of low poly and the overall vibe of pixels most, "especially the simple 16x vibe", but "bodies, segments and map structure are less visible" there; "better recognizable in 24x for animals and background". "the improved low poly look for the animals is actually really good as well", "chunkier low poly is actually also pretty good", but "glitchy and flicker a lot"; "i like that you can see the legs and everything well moving". Likes having 3D info for map models and future plants.
+
+## 7 Nov, closing the looks for now (the final style stays open and changeable)
+- **How animals get made:** "you write the painter and each animal is a recipe sounds good." So no image AI for the animals themselves.
+- **Keep:** "same recipe painting all sizes is great. also keeping 3d info is great. also the flicker fix is great."
+- **The target:** "for a look i think i want to hit between osrs and stardew valley."
+- **Stop here:** "if we can change all of this up easily i wouldn't waste more time on this now, and continue towards itch release."
+- **Reactions, not calls:** "i like low poly steady for the arthrpods, but prefer low poly chunkier." "for general look i prefer 16px over 24 but some of the animals are way better readable in 24px." "for the full animal chart i think 16 is most my look but 24 is still really cool and fits." "maybe we can switch u inbetweem or even use 16px for smaller or two tiles for larger?"
+- **Bug you found:** "for some arthropods and the trilobite the head or front end from the body sticks out in front of the original head."
+
+## 7 Nov, join the sea (step 4): who lives on the map
+- **Same species, and you invent it:** "so b same specises, and you invent the trilobite so the map starts empty, maybe some really basic things that you also start with. \"you start as one of the worms\"." This drops the nine natives as a starting cast, and answers gap 5 in full-version.md §6.
+- **Becoming a new lineage** *(a lean, not a call; step 5)*: "i lean becoming an trilobite is an empty build, or having the parts locked, then you could still see the impact".

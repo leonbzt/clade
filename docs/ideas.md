@@ -88,6 +88,17 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   · A trilobite tree (enrolling, spiny, blind burrowing forms). · Visitors from codes that spread like your lines.
   · Swimmer verbs (a pounce, a sonar sweep) once the hunt is played.
 
+- *(6 Nov, from the full-version plan; the plan itself is [full-version.md](design/full-version.md))*
+  - More mechanics and minigames as new kinds of Life, midterm (you): the lineage's `mechanic` key is their door.
+  - Playable algae and plants, "playable later is okay" (you). Sessile animals as habitat, sponges and brachiopods (you liked it; M3).
+  - Anchored bodies and shells with a jet, as their own small rigs (AI). Planted feet and rope physics as polish on the spine (AI).
+  - Code-drawn pixel creatures or hand-drawn bases, if code-drawn low-poly falls short (you liked both).
+  - Stretch lineages: Marrella, Waptia, Leanchoilia, Hurdia, hyolith, Pikaia (AI). Later: sea scorpion, millipede, snail, nautiloid, fish; crabs in their own era (you, for the crab).
+  - Bodies purely from parts, or a generator that names off-recipe builds as new lineages, alongside recipes (you: "really important" alongside them; AI: shared pieces with named combos).
+  - Respec in the close-up tree; XP per lineage or for the whole line (AI; open for step 6).
+  - Overarching rules that make parts combine, "skeleton + flabby skin/feathers = wing" (you, 6 Nov; authored recipes come first).
+  - Slots that grow with size, so big recipes fit in a Life (AI, 6 Nov; for step 5, full-version.md §6).
+
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
   patch niches replace the structure.
@@ -121,3 +132,22 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Pluggable segments, heads and tails as rare late finds (AI, from the review, 5 Nov).
 - Save a Life in progress, so closing the page mid-Life loses nothing (AI, 5 Nov).
 - Habitats changing shape on the sea map (sand to mud at the edges), after the sea toy if the map lives (slice 17, 5 Nov).
+- A line that starts to spread on land, "maybe just as a cliffhanger for now", to end the first version (you, 5 Nov).
+- The full chain from ocean to the island (you, 5 Nov).
+- "some alorhitm to put together the animals or a base model that shows alla adaptation" (you, 5 Nov).
+- More lines; more recognisable, customisable characters, possibly with names (you, 5 Nov; part of the goal in decisions.md).
+- The sea toy's little drawn interactions play out, "like something was hunted"; "thats for later" (you, 5 Nov).
+- Species shown as more than numbers on the patch card and map (you found numbers confusing, 5 Nov).
+- Exact placement of parts in some places, later (you, 6 Nov).
+- One tweak for older lineages, resembling an upgrade system (you, 6 Nov).
+- Field-guide plates for species and family cards, whatever the board's look (AI, 6 Nov).
+- One painted or AI-made image per part, tied to the joints; or small hand-made pixel parts on the computed body (AI, 6 Nov).
+- Future minigames with shadows (you, 6 Nov); what they need from the sun decides how the floor stores light.
+- Hidden neutral drift per lineage, then rare breakthroughs; some forms only reachable through stepping stones (research shortlist; you liked it, 6 Nov).
+- Niche-model food web for the garden: a niche value and a prey interval per species (research shortlist; you liked it, 6 Nov).
+- Heritable coat patterns to collect, from a tiny pattern network or reaction-diffusion grid (research shortlist; you liked it, 6 Nov).
+- Body shape as a visible read-out of existing stats, not new stats (AI, 6 Nov; research shortlist 3, you asked what the effects would be).
+- One pixel size, 16 px a tile, with large animals drawn across two tiles; or a switch between 16 and 24 (you, 7 Nov). For the art pass, step 9.
+- Today's floor rendered on the 16 px grid, so 16 px animals share its pixels; untried (AI, 7 Nov).
+- AI art test for concept and card art only: Retro Diffusion, your key, under $4 (AI, 6 Nov; not answered).
+- Animals on the sea map: the same recipe baked at about 12 px, a capped few roaming each patch, small portraits instead of numbers on the patch card (AI, 7 Nov). For step 4.

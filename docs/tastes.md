@@ -92,6 +92,8 @@ has to fit.
 - **Hatched's staged assembly** for creatures (2 Nov). **Mycelarium's side view** (2 Nov).
 - **The Godot stack test** (5 Nov): animation and board "a lot smoother", but the look "really rough and looks more like
   from a template". "More freedom for AI is also good."
+- **The target** (7 Nov): "between osrs and stardew valley". Animals are recipes for a code painter, the same recipe paints every size,
+  and 3D info stays for the map and plants. 16 px is "most my look", though some animals read "way better" at 24.
 
 ## Methods and mechanics you like (26 Oct)
 - **Sim methods:** cellular automata, forest fire, L-systems, space colonization, physarum agents, boids, ant
@@ -131,6 +133,18 @@ has to fit.
 - **The M1 run (5 Nov):** "the basics seem fun and as imagined." Liked the board layout, strategy from moves, foods and skills, picking
   species and slots, the compact UI, the hunter's life. "The map ust looks dead"; "no real progression"; "the looks are okay for a start
   but i want more work on that." Wants to see adaptations on the body and build it visually.
+- **The sea toy (5 Nov):** "really cool and is similar to what i've imagined"; "feel really nice to see the changes." The patch graph "looks like
+  population crashes." Species shown only as numbers are "a little confusing". Wants the small drawn interactions to play out, "like something was hunted", later.
+- **The goal (5 Nov):** "a clean freshly put together full version that i can release to get feedback and ideas": a good look, recognisable species, one full run, different playstyles,
+  and the link from "i played this run and advanced my lineage" to seeing it on the map, to "what run do i pick next?"
+- **Putting it together (6 Nov):** "i liked the individual game, and i like the lviing sea, and i want to put it together."
+- **The family tree after a Life (6 Nov):** "sounds really good"; "watch it spread is also a core aspect." You like the classic skill tree and the pure family tree, but a family tree "could get too crowded".
+- **Growing and mutating (6 Nov):** "you actually grow up and grow the body parts to use them"; "i really like the random genes and \"mutation\" aspect"; lineage "should also offer verbs and mechanics and stats"; finding genes "makes more sense for reproduction".
+- **Your animal, drawn (6 Nov):** "the animal or creature you see and build is qctually the one drawn fells important, and also see your impact." You like recipes and a strong generator together.
+- **Every animal playable (6 Nov):** "you can play as every lineage"; "generalized bodys and creation"; "not author tons of other creatures that you can't play." Lineages change "because you played them well and picked adaptations that formed a real new lineage. that also looks differnt."
+- **Creature art (6 Nov):** code-drawn low-poly is "the most robust and fitting"; you also like code-drawn pixels and hand-drawn bases "for good recognizability".
+- **Something to arrive at (6 Nov):** a named real species as "an end point for a lineage", "pretty strong", with "a slightly different sidebuild that could be more optimal under some circumstances"; "it would be cool to discover an own thing". A new lineage should feel like "a more direct or \"branded\" result that feels like an upgrade". Beware bodies that stack "to much" or "can't be changed again".
+- **Food (6 Nov):** "a living food layer is definetley the direction i want to move, maybe multilayered animal food chain first too."
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

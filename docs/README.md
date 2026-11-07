@@ -5,7 +5,9 @@ wins (and the code is the truth for what's built).
 
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |
-| [planning/plan.md](planning/plan.md) | **The plan for the real build (5 Nov): your calls, M1's slices, what's ported, cuts** | You (AI drafts) | Every session |
+| [design/full-version.md](design/full-version.md) | **The full version (6 Nov): the one game, rigs, recipes, the lineage ladder, long-term needs, staying on the road** | You (AI drafts) | Every session |
+| [design/body-approach.md](design/body-approach.md) | **Bodies, slots, species and what animation costs (6 Nov):** six places, measured render costs, styles | AI, after your slice 18 notes | For the slot model and the style |
+| [planning/plan.md](planning/plan.md) | The plan for the real build (5 Nov): your calls, M1's slices, what's ported, cuts | You (AI drafts) | When a call's history matters |
 | [design/big-picture.md](design/big-picture.md) | The direction before planning (4 Nov); `plan.md` wins where they differ | You (AI drafts) | Background |
 | [planning/m1-run.md](planning/m1-run.md) | **The M1 run: how one long session builds slices 09–15 (5 Nov)** | You (AI drafts) | Build sessions in M1 |
 | [planning/README.md](planning/README.md) | **The kit for research and planning the real build in cloud sessions (5 Nov)** | AI, you | When planning |
