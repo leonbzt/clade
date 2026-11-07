@@ -1,57 +1,47 @@
-<!-- The island and its habitats (slice 13): the map, a card per habitat with its niche rows (open and contested first,
-     news underneath), the loadout before a Life, and what happened while you were away. -->
+<!-- Part B: real patch selection and the existing loadout, on the current island overview. -->
 <script lang="ts">
-  import { ROLES, ROLE_IDS, type Role } from '../data/garden';
   import { HABITATS, HAB_ORDER, type HabitatId } from '../data/habitats';
   import { HUNT, MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type GrazerId, type PlanId, type StyleId, type VerbId } from '../data/life';
-  import { BODY_FOR, boardFor, nextBoard } from '../sim/door';
-  import { capacity, rowOf, stockBars, tierName } from '../sim/garden';
+  import { boardForPatch, nextBoard } from '../sim/door';
+  import { formFor, launchBodies, launchPatches } from '../sim/sea-life';
+  import { headlineText } from '../sim/sea-news';
   import { newLife, partsFor, startParts } from '../sim/life';
   import { drawIsland, spotAt } from '../view/islandmap';
   import { bump, ctx, ui } from './meta.svelte';
 
   let cv: HTMLCanvasElement | undefined = $state();
   let verbs: VerbId[] = $state([...STYLE_VERBS.digger]);
-  let note = $state('');
-  let body: PlanId | null = $state(null);
-  let carry = $state(true);
-  const g =$derived((ui.tick, ctx.save.garden));
-  const TINK: Record<string, string> = { S: '#ffe033', A: '#7fd14e', B: '#5ec4d6', C: '#f3e9cc', D: '#c9a26a', F: '#ff6a4c' };
-
-  /** A niche row, as the card shows it: who's there, and the call to action. */
-  function niche(id: HabitatId, role: Role) {
-    void ui.tick;
-    const h = g.habs[id], row = rowOf(h, role), cap = capacity(h)[role] || 1, mine = row.find((e) => e.line), top = row[0];
-    const beat = row.find((e) => !e.line);
-    const state = !mine ? 'open' : mine === top ? 'held' : 'contested';
-    const call = !mine ? `None of yours.${beat ? ` Rank to beat: ${tierName(id, beat.score)}.` : ' Empty!'}`
-      : mine === top ? `Yours lead at ${tierName(id, mine.score)}.${role === 'predator' ? ' They hunt your grazers and burrowers here now.' : ''}` : `Yours rank ${tierName(id, mine.score)}; ${top.name} hold ${tierName(id, top.score)}.`;
-    return { role, state, call, rows: row.map((e) => ({ e, tier: tierName(id, e.score), bar: Math.min(1, e.pop / cap) })) };
-  }
-  const order = { open: 0, contested: 1, held: 2 };
-  const niches = (id: HabitatId) => ROLE_IDS.map((r) => niche(id, r)).sort((a, b) => order[a.state as keyof typeof order] - order[b.state as keyof typeof order]);
-  const openCount = (id: HabitatId) => ROLE_IDS.filter((r) => niche(id, r).state !== 'held').length;
-  const best = (id: HabitatId) => { void ui.tick; const t = ROLE_IDS.map((r) => ctx.save.best[`${id}:${r}`]).filter(Boolean) as string[]; return t.sort((a, b) => 'SABCDF'.indexOf(a) - 'SABCDF'.indexOf(b))[0] ?? '–'; };
-  const habNews = (id: HabitatId) => { void ui.tick; return g.news.filter((n) => n.hab === id).slice(0, 6); };
+  let note = $state(''), body: PlanId = $state('worm'), carry = $state(true), usingDesign = $state(false);
+  const g = $derived((ui.tick, ctx.save.sea));
+  const eligible = $derived((ui.tick, launchPatches(ctx.save)));
+  const bodies = $derived((ui.tick, launchBodies(ctx.save)));
+  const patch = $derived(ui.patch === null ? null : g.patches[ui.patch]);
+  const board = $derived((ui.tick, patch ? boardForPatch(g, patch.id) : null));
+  const continuation = $derived((ui.tick, ctx.save.continuation));
+  const pending = $derived((ui.tick, ctx.save.pending));
+  const stocks = $derived((ui.tick, patch ? [{ name: 'Mats', value: patch.mats }, { name: 'Detritus', value: patch.rot }, { name: 'Oxygen', value: patch.oxygen }] : []));
+  const populations = $derived((ui.tick, patch ? g.species.map((sp, k) => ({ sp, pop: patch.pop[k] })).filter((e) => e.pop >= 1) : []));
 
   $effect(() => {
-    void ui.tick; void ui.hab;
-    if (cv) drawIsland(cv, ctx.isl, ctx.spots, { scale: 4, selected: ui.hab, labels: Object.fromEntries(HAB_ORDER.map((id) => [id, `${HABITATS[id].name} ${best(id)}`])) });
+    void ui.tick;
+    if (cv) drawIsland(cv, ctx.isl, ctx.spots, { scale: 4, selected: ui.hab });
   });
-
   function tapMap(e: MouseEvent) {
     if (!cv) return;
     const r = cv.getBoundingClientRect(), tx = Math.floor(((e.clientX - r.left) / r.width) * ctx.isl.w), ty = Math.floor(((e.clientY - r.top) / r.height) * ctx.isl.h);
     const id = spotAt(ctx.spots, tx, ty);
     if (id) openHab(id);
   }
-  function openHab(id: HabitatId) { ui.hab = id; ui.niche = null; }
-  const defaults = (role: Role) => [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']];
-  function live(role: Role, as: PlanId | null = null) { ui.niche = role; body = as; note = ''; carry = true; verbs = roomFor(defaults(role)); }
-
-  const plan: PlanId = $derived(body ?? (ui.niche ? BODY_FOR[ui.niche] : 'worm'));
-  // the form you kept here: on the body unless you leave it behind this Life, or it doesn't fit this body
-  const form = $derived.by(() => { void ui.tick; return ui.hab && ui.niche ? ctx.save.forms[`${ui.hab}:${ui.niche}`] : undefined; });
+  function openHab(id: HabitatId) { ui.hab = id; ui.patch = null; ui.niche = null; }
+  function openPatch(id: number) { ui.patch = id; ui.hab = g.patches[id].ground; ui.niche = null; }
+  const defaults = (role: string) => [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']];
+  function live(as: PlanId, shared = false) {
+    body = as; usingDesign = shared; carry = true; note = '';
+    ui.niche = shared ? ui.design!.role : continuation?.plan === as ? continuation.role : as === 'worm' ? 'burrower' : as === 'swimmer' ? 'predator' : 'grazer';
+    verbs = shared ? [...ui.design!.verbs] : roomFor(defaults(ui.niche));
+  }
+  const plan = $derived<PlanId>(body);
+  const form = $derived((ui.tick, usingDesign ? ui.design?.form : patch && ui.niche ? formFor(ctx.save, patch.id, plan, ui.niche) : undefined));
   const formFits = $derived(!!form && PARTS[form].plans.includes(plan));
   const carried = $derived(carry && formFits ? form : undefined);
   function fits(vs: VerbId[]) {
@@ -79,58 +69,58 @@
   }
   function toggleCarry() { carry = !carry; note = ''; if (ui.niche) verbs = roomFor(defaults(ui.niche)); }
   const upkeep = $derived(RULE.baseUpkeep + startParts(plan, verbs, carried).reduce((n, p) => n + PARTS[p].upkeep, 0));
-  function start() { if (ui.hab && ui.niche) ctx.start(ui.hab, ui.niche, verbs, plan, carried); }
+  function start() { if (ui.patch !== null && ui.niche) ctx.start(ui.patch!, ui.niche, verbs, plan, carried); }
 </script>
 
+{#if ui.saveError}
+  <aside class="saveWarning" role="alert"><p>{ui.saveError}</p><button onclick={() => ctx.retrySave()}>Retry saving</button></aside>
+{/if}
 {#if ui.open}
 <div id="meta" class="panel">
-  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {g.gen}</span><button class="small" onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button></div>
+  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button></div>
   <canvas bind:this={cv} class="isle" onclick={tapMap}></canvas>
+  <p class="pitch">{continuation ? `Your last successful clutch is in patch ${continuation.patch + 1}. Start there or in a direct neighbour; retries remain available even after extinction.` : 'The sea has no animals yet. Choose a patch and found it with your first worm’s eggs.'}</p>
+  {#if continuation}<button class="go" onclick={() => openPatch(continuation.patch)}>Continue from patch {continuation.patch + 1}</button>{/if}
   <div class="habList">
-    {#each HAB_ORDER as id}
-      <button class="habBtn" onclick={() => openHab(id)}>
-        <b>{HABITATS[id].name}</b><span class="tierChip" style:color={TINK[best(id)] ?? '#c2b08a'}>{best(id)}</span>
-        <small>{openCount(id) ? `${openCount(id)} niche${openCount(id) > 1 ? 's' : ''} to take` : 'you lead every niche'}</small>
-      </button>
-    {/each}
+    {#each HAB_ORDER as id}<button class="habBtn" onclick={() => openHab(id)}><b>{HABITATS[id].name}</b><small>{g.patches.filter((p) => p.ground === id && eligible.includes(p.id)).length} eligible patches</small></button>{/each}
   </div>
   <h3>News</h3>
-  <ul class="news">
-    {#each g.news.slice(0, 8) as n}<li class:yours={n.yours}>{n.text}<small>{n.why}</small></li>{:else}<li><small>Nothing yet. Pick a habitat and live there.</small></li>{/each}
-  </ul>
+  <ul class="news">{#each (ui.tick, ctx.save.news.slice(0, 8)) as n}<li class:yours={g.species[n.sp].line}>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines yet.</small></li>{/each}</ul>
 </div>
 {/if}
 
-{#if ui.open && ui.hab}
-{@const id = ui.hab}
-<div class="metaWrap">
-  <div class="panel habCard">
-    <div class="metaTop"><h2>{HABITATS[id].name}</h2><button class="small" onclick={() => (ui.hab = null)}>Map</button></div>
-    {#if !ui.niche}
-      <p class="pitch">{HABITATS[id].pitch}</p>
-      <div class="habStocks">
-        {#each (void ui.tick, stockBars(g, id)) as b}
-          <span>{b.name}</span>
-          <div class="habStock"><i style:width={`${Math.round(b.value * 100)}%`}></i><u style:left={`${Math.round(b.normal * 100)}%`}></u></div>
-          <small>{b.food}</small>
-        {/each}
-      </div>
-      <p class="pitch next"><b>Next board:</b> {(void ui.tick, nextBoard(boardFor(g, id, ctx.save.forms)))}</p>
-      {#each niches(id) as n}
-        <div class="niche {n.state}">
-          <div class="nHead"><b>{ROLES[n.role].call}</b><span>{n.call}</span></div>
-          {#each n.rows as r}
-            <div class="sp" class:mine={!!r.e.line}><i style:color={TINK[r.tier]}>{r.tier}</i><span>{r.e.name}{r.e.proven ? '' : ' (unproven)'}</span><em><u style:width={`${Math.round(r.bar * 100)}%`}></u></em></div>
-          {/each}
-          {#if ctx.save.forms[`${id}:${n.role}`]}<div class="form">Your form here: {PARTS[ctx.save.forms[`${id}:${n.role}`]].name}</div>{/if}
-          <button class="liveBtn" onclick={() => live(n.role)}>Live it as {BODY_FOR[n.role] === "arthropod" ? "an" : "a"} {PLANS[BODY_FOR[n.role]].name.toLowerCase()}</button>
-          {#if n.role === 'grazer' && ctx.save.unlocks.trilobite}<button class="liveBtn" onclick={() => live(n.role, 'trilobite')}>Live it as a trilobite</button>{/if}
-        </div>
+{#if ui.open && ui.hab && !patch}
+<div class="metaWrap"><div class="panel habCard">
+  <div class="metaTop"><h2>{HABITATS[ui.hab].name}</h2><button class="small" onclick={() => (ui.hab = null)}>Map</button></div>
+  <p class="pitch">Choose a patch. Only your last clutch and its direct neighbours allow continuation.</p>
+  {#each g.patches.filter((p) => p.ground === ui.hab).sort((a, b) => Number(eligible.includes(b.id)) - Number(eligible.includes(a.id)) || a.id - b.id) as p}
+    <button class="liveBtn" onclick={() => openPatch(p.id)}>Patch {p.id + 1} · {eligible.includes(p.id) ? 'eligible' : 'outside clutch range'}</button>
+  {/each}
+</div></div>
+{/if}
+
+{#if ui.open && patch && board}
+<div class="metaWrap"><div class="panel habCard">
+  <div class="metaTop"><h2>{board.name}</h2><button class="small" onclick={() => { ui.patch = null; ui.niche = null; }}>Patches</button></div>
+  {#if !ui.niche}
+    <p class="pitch">{eligible.includes(patch.id) ? continuation?.patch === patch.id ? 'Your last successful clutch: continue here or in a direct neighbour.' : continuation ? 'Direct neighbour of your last clutch: you can continue here.' : 'Founding patch: your first Life is a worm.' : 'Outside the last clutch’s direct neighbours. Descendant populations do not make this a launch point.'}</p>
+    <div class="habStocks">
+      {#each stocks as b}
+        <span>{b.name}</span><div class="habStock"><i style:width={`${b.value}%`}></i></div><small>{Math.round(b.value)}</small>
       {/each}
-      <h3>News here</h3>
-      <ul class="news">{#each habNews(id) as n}<li class:yours={n.yours}>{n.text}<small>{n.why}</small></li>{:else}<li><small>Quiet so far.</small></li>{/each}</ul>
-    {:else}
-      <p class="pitch"><b>{ROLES[ui.niche].call}</b> in the {HABITATS[id].name.toLowerCase()}: you live it as a {PLANS[plan].name.toLowerCase()}. {PLANS[plan].blurb}</p>
+    </div>
+    <p class="pitch next"><b>Next board:</b> {nextBoard(board)}. A few food spots near the start are protected.</p>
+    <h3>Populations here</h3>
+    {#each populations as e}<p class="note">{e.sp.name} · {Math.round(e.pop)}</p>{:else}<p class="note">No animals here.</p>{/each}
+    {#each bodies as as}<button class="liveBtn" disabled={!eligible.includes(patch.id) || !!pending} onclick={() => live(as)}>Live as {PLANS[as].name.toLowerCase()}</button>{/each}
+    {#if ui.design}
+      <button class="liveBtn" disabled={!eligible.includes(patch.id) || !bodies.includes(ui.design.plan) || !!pending} onclick={() => live(ui.design!.plan, true)}>Use {ui.design.name}’s {PLANS[ui.design.plan].name.toLowerCase()} design</button>
+      {#if !bodies.includes(ui.design.plan)}<p class="note">Found the sea with a worm before using this body.</p>{/if}
+    {/if}
+    <h3>News here</h3><ul class="news">{#each (ui.tick, ctx.save.news.filter((n) => n.patches.includes(patch.id)).slice(0, 6)) as n}<li>{headlineText(g, n)}</li>{:else}<li><small>Quiet so far.</small></li>{/each}</ul>
+  {:else}
+    <p class="pitch">{PLANS[plan].name} in patch {patch.id + 1}. {PLANS[plan].blurb} Parts and verbs determine feeding; diet is recorded during play.</p>
+    <p class="note">{nextBoard(board)}</p>
       {#if form}
         <div class="form">
           {#if formFits}<button class="chip" class:on={carry} onclick={toggleCarry}>{carry ? 'Carrying' : 'Leaving behind'}: {PARTS[form].name}</button> <small>{PARTS[form].does} Holds the {PARTS[form].slots.join(' or ')} slot.</small>
@@ -151,28 +141,21 @@
         <div class="note">{note || `${verbs.length} of ${MAX_VERBS} verbs · upkeep ${upkeep} food a turn at the start.`}</div>
       {/if}
       <div class="row2"><button onclick={() => (ui.niche = null)}>Back</button><button class="go" onclick={start}>Start the Life</button></div>
-    {/if}
-  </div>
-</div>
+  {/if}
+</div></div>
 {/if}
 
 {#if ui.notice}
-<div class="metaWrap">
-  <div class="panel habCard">
-    <h2>{ui.notice.title}</h2>
-    <p class="pitch">{ui.notice.text}</p>
-    <button class="go" onclick={() => (ui.notice = null)}>Back to the island</button>
-  </div>
-</div>
+<div class="metaWrap"><div class="panel habCard"><h2>{ui.notice.title}</h2><p class="pitch">{ui.notice.text}</p><button class="go" onclick={() => (ui.notice = null)}>Continue</button></div></div>
 {/if}
-
 {#if ui.away}
-<div class="metaWrap">
-  <div class="panel habCard">
-    <h2>While you were away</h2>
-    <p class="pitch">{ui.away.gens} generation{ui.away.gens === 1 ? '' : 's'} passed in the garden.</p>
-    <ul class="news">{#each ui.away.news.slice(0, 10) as n}<li class:yours={n.yours}>{n.text}<small>{n.why}</small></li>{:else}<li><small>Nothing much changed.</small></li>{/each}</ul>
-    <button class="go" onclick={() => (ui.away = null)}>Back to the island</button>
-  </div>
-</div>
+<div class="metaWrap"><div class="panel habCard">
+  <h2>While you were away</h2><p class="pitch">{ui.away.gens} generations passed in the sea.</p>
+  <ul class="news">{#each ui.away.news.slice(0, 10) as n}<li>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines.</small></li>{/each}</ul>
+  <button class="go" onclick={() => (ui.away = null)}>Back to the sea</button>
+</div></div>
 {/if}
+<style>
+  .saveWarning { position: fixed; z-index: 100; top: 0; left: 0; right: 0; padding: 8px; background: #38231e; color: #ffe5c4; font-size: 14px; }
+  .saveWarning p { margin: 0 0 4px; }
+</style>

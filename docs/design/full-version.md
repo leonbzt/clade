@@ -22,6 +22,8 @@ You play one Life at a time, and each one moves your line on. Everything leads f
 and the sea keeps running. A run is one Life.
 
 **Step 4 bridge (7 Nov):** existing body choices are temporarily open after founding, without new rank gates.
+Diet stays recorded; inherited parts and verbs determine feeding behaviour. Species codes share starting creature
+designs that still follow founding and continuation rules, rather than introducing populations.
 This does not settle permanent progression. Food and environmental conditions exist before animals; populations
 come from releases and their descendants. The scope, migration requirements and remaining compatibility decisions
 are in [slice 19: Join the sea](../slices/19-join-the-sea.md).

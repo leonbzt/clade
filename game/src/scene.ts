@@ -10,12 +10,12 @@ import type { Fx } from './view/fx';
 import type { Hunter } from './view/hunter';
 import type { Marks } from './view/marks';
 import { C, PAL, type Ramp } from './view/shade';
-import type { Creature, Worm } from './view/worm';
+import type { Creature } from './view/worm';
 
 export interface PreyView { kind: PreyKind; body: Creature; visible: boolean }
 export const S = {} as {
   app: Application; floor: Floor; fx: Fx; marks: Marks; cam: Camera; hud: Hud; hunter: Hunter;
-  you: Creature; rival: Worm; prey: PreyView[]; life: Life; busy: boolean;
+  you: Creature; rival: Creature; prey: PreyView[]; life: Life; busy: boolean;
 };
 
 export const NODE_RAMP: Record<NodeId, Ramp> = { mat: PAL.leaf, buried: PAL.amber, shell: PAL.shell, carcass: PAL.flesh, bloom: PAL.bloom };

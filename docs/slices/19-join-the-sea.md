@@ -2,8 +2,8 @@
 
 **Milestone:** M2, step 4 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Does each Life visibly change the sea and determine where you play next?
-**Status:** part A implemented on 7 Nov: production model and staged v3 codec/migration. Parts B/C are not wired;
-the current UI still runs the garden. No slice-19 playtest yet.
+**Status:** parts A/B implemented on 7 Nov: sea model, v3 runtime, patch snapshots, completion/continuation and
+creature-design sharing. Part C's visual patch map and playtest remain. Verification is recorded in `docs/status.md`.
 **Builds on:** [7 Nov decisions](../decisions.md#7-nov-join-the-sea-empty-founding-and-continuation-resumed-in-codex),
 [the release vision](../design/full-version.md), the sea toy (slice 17), and the existing Life, clutch and save systems.
 Gameplay calls below are settled for this slice; items labelled proposal or open are not new user decisions.
@@ -35,8 +35,8 @@ Gameplay calls below are settled for this slice; items labelled proposal or open
   releases the actual eggs into that patch once. Further releases must not accidentally downgrade established fitness.
 - **Proposal:** retain bounded food-safety adjustments around the start; show depleted food and absent prey honestly
   in the start card. A predator choice need not be viable in every patch. Do not manufacture animals to make it viable.
-- **Proposal:** retain the existing diet-to-role calculation initially, but resolve its predator-worm mismatch
-  before wiring it to board threats (see open questions). This slice does not introduce the general body model.
+- **Decided 7 Nov:** keep recording diet; use inherited parts and verbs to specify feeding behaviour. Diet roles
+  remain progress/identity labels, not permission to hunt. This slice does not introduce the general body model.
 
 ### Home map and feedback
 - The sea map is home. Show eligible launch patches and why other patches are unavailable. Tapping a patch shows
@@ -60,8 +60,8 @@ Gameplay calls below are settled for this slice; items labelled proposal or open
   failures accurately. Persist a completed result before animation; reload and release must not duplicate eggs.
 - Fix the offline cap so a second timer tick cannot consume time already discarded. Keep generation remainders
   for ordinary elapsed time and preserve the roadmap's eight-hour catch-up cap.
-- Species export/import needs an explicit compatibility decision before the UI switch; do not silently remove it
-  or let pasted codes bypass the new world's species and continuation rules.
+- **Decided 7 Nov:** species codes share starting creature designs (body, carried form and verbs). Existing codes
+  remain readable; their score/habitat grants no population or launch access. Migrated visitors remain.
 
 ## Relevant files and smallest route
 
@@ -86,18 +86,18 @@ needed without rewriting movement, parts or event playback. No new framework, de
   plain `npm run build` targets the archived plant game.
 
 ## Done when
-- [ ] A new save has zero animals, including after time advances. Founding offers a playable worm board with no invented animals.
-- [ ] A positive-egg result adds its actual eggs to its patch once and visibly becomes the continuation clutch.
-- [ ] Only that patch and its direct neighbours permit the next run. A successful adjacent run moves the continuation point.
-- [ ] Failure, retry, population extinction and reload cannot leave the player without a launch; retries do not duplicate releases.
-- [ ] Existing bodies are selectable after founding without tier gates; distinct bodies remain distinct populations.
-- [ ] Empty and depleted patches produce matching boards, including prey respawns and threats; no worm is presented as a swimmer hunter.
-- [ ] Patch-to-board snapshots and result-to-population transfer have focused automated checks, including a full round trip.
-- [ ] New saves round-trip deterministically; v1/v2 migration preserves progress and pending results; invalid/newer imports do not overwrite progress.
-- [ ] Reload during terminal playback or clutch selection neither loses nor duplicates eggs. Storage failure has clear feedback.
-- [ ] Offline tests cover below, at and above eight hours, repeated calls, and clock rollback; catch-up meets the roadmap budget.
-- [ ] Species-code compatibility is documented and tested; any temporary limitation is explicitly approved.
-- [ ] `npm run check` and `npm run build:game` pass. The packaged page is smoke-tested through founding, continuation and reload.
+- [x] A new save has zero animals, including after time advances. Founding offers a playable worm board with no invented animals.
+- [x] A positive-egg result adds its actual eggs to its patch once and visibly becomes the continuation clutch.
+- [x] Only that patch and its direct neighbours permit the next run. A successful adjacent run moves the continuation point.
+- [x] Failure, retry, population extinction and reload cannot leave the player without a launch; retries do not duplicate releases.
+- [x] Existing bodies are selectable after founding without tier gates; distinct bodies remain distinct populations.
+- [x] Empty and depleted patches produce matching boards, including prey respawns and threats; no worm is presented as a swimmer hunter.
+- [x] Patch-to-board snapshots and result-to-population transfer have focused automated checks, including a full round trip.
+- [x] New saves round-trip deterministically; v1/v2 migration preserves progress and pending results; invalid/newer imports do not overwrite progress.
+- [x] Reload during terminal playback or clutch selection neither loses nor duplicates eggs. Storage failure has clear feedback.
+- [x] Offline tests cover below, at and above eight hours, repeated calls, and clock rollback; catch-up meets the roadmap budget.
+- [x] Species-code compatibility is documented and tested; any temporary limitation is explicitly approved.
+- [x] `npm run check` and `npm run build:game` pass. The packaged page is smoke-tested through founding, continuation and reload.
 - [ ] A phone playtest checks map readability, taps and performance; limitations are reported if no device is available.
 - [ ] The user can explain where the first animals came from and why the next run can start where it does;
   notes are saved in `docs/playtests/19-join-the-sea.md` after actual play.
@@ -113,11 +113,8 @@ needed without rewriting movement, parts or event playback. No new framework, de
   already authorized. Start a fresh session after the saved spec and after each verified part, with `status.md` updated.
 
 ## Open questions (before dependent work)
-1. **Predator identity:** worms can score as predators by eating carcasses, but `preyInit()` only gives live prey to
-   swimmers and the current threat path uses swimmer behaviour. Choose a bounded compatibility treatment before
-   wiring those populations into threats; live worm hunting is not implied by the role label.
-2. **Sharing:** how should existing species codes join a player-founded sea without separate rival species or
-   bypassing spatial continuation? Preserve the feature pending an explicit adaptation or deferral decision.
+1. **Predator identity resolved:** parts and verbs specify feeding; diet stays recorded. No new live worm hunting.
+2. **Sharing resolved:** import a creature design to try in an eligible Life; do not introduce a visitor population.
 3. **Founding balance:** does the real empty-world loop need a boost? Measure actual early clutches on a few seeds
    and play the return to the map before proposing a number. This does not block the model/serialization part.
 
@@ -145,3 +142,27 @@ needed without rewriting movement, parts or event playback. No new framework, de
 - Validate before returning a save; reject malformed or newer data without storage writes. Keep ordinary partial
   generations, discard elapsed time above eight hours once, and never move the timestamp backwards on clock rollback.
   Browser storage feedback and terminal-playback/release atomicity belong to the runtime integration in Part B.
+
+
+## Part B implementation boundary
+
+- `sea-life.ts` owns launch eligibility, terminal completion and settlement. `door.ts` makes detached patch boards.
+  The current Life keeps its snapshot while the sea can advance later. Species absent at launch cannot respawn.
+- Save the completed result before terminal playback. Its actual eggs, inherited parts, diet, cards and patch/species
+  references survive reload. Settlement accepts only the active pending object, releases once, advances the existing
+  two post-Life generations and clears pending in one saved snapshot. Failed writes retain recoverable in-memory
+  progress and show an error/retry; imports replace active state only after validation and a successful write.
+- Positive results replace continuation even if the parent died. Zero-egg results retain it; extinction never
+  revokes it. Founding permits worms; afterwards all four existing bodies are available. No launch spends eggs.
+- Parts at the latest lay represent the clutch. The best successful clutch supplies the existing body/diet line's
+  representative build, with latest winning ties. Feeding is derived from those parts/verbs, independently of diet.
+  Graze tools use mats, dig/crush tools use rot, capture arms/spines hunt; mixed non-hunting tools split effort.
+  Existing IDs and the v3 format remain readable, with optional validated `parts`/`diet` fields. Old builds get
+  deterministic body-compatible defaults; there is no separate genotype registry or new stock.
+- Current worm, arthropod, trilobite and swimmer bodies are reused for matching residents. Unknown migrated body
+  types are listed as sea-only instead of being disguised. Old worm predator labels now use scavenging tools.
+- Codes describe a fitting starting build, including one carried form and available verbs. Code score and habitat
+  do not grant eggs, animals, bodies before founding or distant launch points. Imported designs remain selected
+  for the current visit; the portable code can be pasted again. Invalid designs leave the previous selection intact.
+- Part B keeps the existing island drawing with patch lists and stock/population/board previews. Part C still owns
+  the actual patch-map view, release/descendant highlighting, pacing and player/phone playtests.

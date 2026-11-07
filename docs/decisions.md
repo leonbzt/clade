@@ -427,3 +427,25 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   Old saves lack last-clutch chronology; use the documented successful-entry/progress fallback. Exact rules and
   typed-array ordering are in [slice 19's Part A notes](slices/19-join-the-sea.md#part-a-implementation-boundary-and-migration).
 - Predator-worm representation, new sharing rules and founding balance remain open for their dependent parts.
+
+
+## 7 Nov, join the sea part B: feeding and creature-design sharing
+- **User decision:** "keep recording diet but use parts and verbs to specify. sharing creature design".
+  Diet remains an observed record; it does not grant hunting behaviour. This supersedes the slice's proposal
+  to use diet roles as the complete feeding specification. Body identity remains distinct from feeding.
+- **Bounded implementation:** existing grazing parts/verbs use mats, digging and crushing tools use the existing
+  rot stock, and grasping arms/arm spines enable live capture. Mixed graze/detritus tools split feeding effort.
+  No new food stock, animal, worm-hunting mechanic or general body system. Basic builds without feeding tools
+  use the existing mat-feeding fallback. Existing swimmer catching now requires a capture part.
+- Record the build at the latest lay, so later injuries do not rewrite the eggs. Keep the existing body/diet
+  species IDs and use the strongest successful clutch's parts as their representative build (latest wins ties).
+  This is a bounded bridge, not a system of separately simulated genotypes. Fitness never decreases.
+- Older saves lack inherited builds: retain their IDs/populations and derive compatible parts from body/old role.
+  A legacy meat-eating worm gets a proboscis and scavenges; it does not become a swimmer hunter. Unknown legacy
+  bodies remain in the sea and are explicitly listed as sea-only on the board preview.
+- **Sharing means a starting creature design:** old codes keep their body, carried form and verbs, but score
+  and habitat grant neither animals nor launch access. Existing migrated visitors remain; new imports add no
+  visitors. Body compatibility and slot/verb capacity are checked. The imported preset is held for this visit;
+  its code remains the portable artifact, without adding a design-library feature.
+- **Part B presentation:** retain the island overview and authored boards, add patch lists/eligibility and
+  existing body/loadout controls. The visual patch map and release highlighting remain part C.

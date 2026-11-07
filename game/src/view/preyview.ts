@@ -2,7 +2,7 @@
 import type { PreyKind } from '../data/prey';
 import { Arthropod } from './arthropod';
 import { PAL } from './shade';
-import { Wiwaxia } from './swimmer';
+import { Swimmer, Wiwaxia } from './swimmer';
 import { Worm, type BodySlot, type Creature } from './worm';
 
 const TRILO = [0x3a3326, 0x5c4e36, 0x86734f, 0xb09a6c, 0xd8c493];
@@ -10,6 +10,7 @@ const EYES: BodySlot[] = [{ kind: 'head', side: 'front', seg: -1, part: 'eye' }]
 
 export function preyBody(kind: PreyKind): Creature {
   if (kind === 'worm') { const w = new Worm(PAL.rival, true, 0.85); w.setBody(2, [], false); return w; }
-  if (kind === 'trilobite') { const a = new Arthropod(TRILO, 0.8, true); a.setBody(2, EYES, false); return a; }
+  if (kind === 'swimmer') { const s = new Swimmer(PAL.rival); s.setBody(2, []); return s; }
+  if (kind === 'trilobite' || kind === 'arthropod') { const a = new Arthropod(TRILO, 0.8, kind === 'trilobite'); a.setBody(2, EYES, false); return a; }
   return new Wiwaxia();
 }

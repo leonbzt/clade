@@ -4,73 +4,85 @@ Updated 2026-11-07. Branch `codex/m2-step4-spec`. Active spec: [19 Join the sea]
 Read this and that spec first; open other docs and source files only as needed.
 
 ## Saved checkpoint
-- Previous gameplay is preserved at `c9c20da`; `d36588e` preserves `AGENTS.md`. The reviewed spec is `bc4d87c`.
-- Part A and this handoff are committed as `feat: stage sea model and v3 save migration`; use `git log -1 --oneline`
-  for the hash. No new dependencies, browser save writes or push. Remote state has not been freshly queried.
+- Previous gameplay: `c9c20da`; project instructions: `d36588e`; reviewed spec: `bc4d87c`; Part A: `09dc4b0`.
+- Part B simulation/lifecycle checkpoint: `b6ccf69` (`feat: connect patch boards and recover sea clutches`).
+  Runtime, UI and this handoff are committed as `feat: run sea lives with creature design sharing`;
+  use `git log -1 --oneline` for that hash.
+- No new dependencies or push. Only disposable browser profiles were used; no personal browser saves were accessed.
+  Remote state has not been freshly queried.
 
 ## Current milestone and decisions
-M2 release: steps 1/2 are complete. Step 3 is built and played but retains three open play checks. Step 4 part A
-is implemented; parts B/C remain. The roadmap order is unchanged.
+M2 steps 1/2 are complete. Step 3 retains three open play checks. Step 4 parts A/B are implemented;
+Part C's patch-map presentation and playtesting remain. The roadmap order is unchanged.
 
-- New seas start without animals. The first worm Life founds the population; food/environment remain present.
-- Next Lives start from the **last successful clutch**, in its patch or a directly adjacent patch. Keep it for
-  retries; replace it on a new success. Any living descendant population is not an alternate launch source.
-- Existing bodies temporarily open after founding; no new tier gates or recipes in step 4.
-- The player invents the same species seen on the map. Worm hunting and species-code compatibility still need
-  bounded decisions before dependent integration; see the spec. Do not re-ask the settled founding/clutch choices.
-- Context-saving rules and the request for handoff reminders are saved in [workflow.md](workflow.md).
-  Exact calls: [decisions.md](decisions.md#7-nov-join-the-sea-empty-founding-and-continuation-resumed-in-codex).
-- Latest implementation instruction: "saves are no priority". The bounded migration remains in A; no browser data
-  was accessed. See [Part A decisions](decisions.md#7-nov-join-the-sea-part-a-implementation).
+- New seas have food/environment and zero animals. A worm Life founds the population through its actual eggs.
+- Continuation uses the **last successful clutch**, in its patch or a direct neighbour. Failure, retry and world
+  extinction do not revoke it. A new positive result replaces it, even if the parent died. No egg spending.
+- All four existing bodies open after founding, without rank gates or recipes. Starting a body adds no population.
+- **New user decision:** "keep recording diet but use parts and verbs to specify. sharing creature design".
+  Diet is recorded separately from feeding capabilities. Codes load a fitting starting build; score/habitat
+  grants no eggs, visitors or launch access. Existing migrated visitors remain.
+- Exact decisions and bounded implementation choices are in
+  [Part B decisions](decisions.md#7-nov-join-the-sea-part-b-feeding-and-creature-design-sharing).
+  Saves remain lower priority; the existing bounded v1/v2 migration is retained.
 
-## Part A completed and integration boundary
-- Production files: `game/src/data/sea.ts`, `sim/sea.ts`, `sea-patches.ts`, `sea-news.ts`. No toy imports. New seas
-  have food/environment, zero animals and no immigration. Player IDs include body and role; actual-egg releases
-  keep arthropods/trilobites distinct and never lower established fitness. Existing toy/reference tests remain.
-- `sim/sea-save.ts` exposes `freshSeaSave`, `serializeSeaSave`, `parseSeaSave`, `advanceSeaSave`, `SeaPending` and
-  `Continuation`. V3 saves explicitly encode/reconstruct typed arrays and remap every species column by ID;
-  seed, RNG, time, graph, ecological memory, news, progress, forms, pending result and continuation round-trip.
-- `sim/sea-migration.ts` migrates validated v1/v2 data without releasing pending eggs. Each habitat's populations
-  go into one matching patch, without duplication; original JSON remains in `legacy.json`. The spec documents
-  the continuation fallback and missing-ground fallback. Old last-clutch chronology cannot be reconstructed.
-- **Staged, not active in the UI:** `main.ts`/UI still use the v2 garden save, existing boards and sharing. Part B
-  must switch runtime persistence to the codec, snapshot patch boards and implement result/continuation lifecycle.
-  `release()` is an additive model primitive; exactly-once settlement and saving before playback are still B work.
-- Active v2 reader now validates structure. The offline timestamp bug is fixed in both save paths: consume the
-  eight-hour cap once, retain ordinary generation remainders and leave the timestamp unchanged on clock rollback.
+## Part B completed
+- `door.ts` creates detached patch boards using the three authored templates. Food follows stocks with the
+  existing small start refuge; low snapshot oxygen affects all boards. Prey/rivals/hunters come from actual
+  residents, retain species/body identity and cannot respawn absent species. Arthropods and trilobites stay distinct.
+- `feeding.ts` derives feeding from inherited parts and their verbs: graze uses mats; dig/crush uses rot;
+  arms/spines enable live capture. Mixed non-hunting tools split effort. No new stock or live worm hunting.
+  Diet/role labels do not grant hunting. Legacy builds get deterministic body-compatible defaults.
+- Parts at the latest lay survive later injuries in the result. The strongest successful clutch supplies the
+  existing body/diet species slot's representative parts (latest wins ties); weaker releases do not lower fitness.
+  This retains broad species slots, not separate genotypes for every part combination.
+- `sea-life.ts` owns launch checks, completion and once-only settlement. `main.ts` saves the full pending result
+  before terminal playback. Reload resumes clutch selection; settlement clears pending in the same snapshot as
+  its release/progress. Zero-egg results recover too. New forms are keyed by patch/body/diet, with legacy fallback.
+- Runtime persistence now uses the v3 codec. Optional inherited `parts` and `diet` fields are validated and survive
+  round trips. Storage errors are visible with retry/export guidance. Failed imports leave the active sea unchanged;
+  an unread startup save cannot be overwritten. Broken/newer JSON must be backed up before a fresh save is written.
+- Home retains the current island drawing, with patch lists, eligibility, stocks, named populations, board previews
+  and ecological news. The existing loadout/clutch screens remain. Part C still owns the visual patch map and
+  release/descendant highlighting.
+- Species codes export/import starting designs: body, one carried form and fitting verbs. Existing codes still
+  decode. Imported presets last for the visit; the code can be pasted again. No design-library system was added.
 
-## Verification and known limits
-- Focused checks passed (23 tests), followed by the full suite: **85/85 tests across 13 files, 5.19 s**. Added
-  production model/codec/migration checks; mature nine-native ecology expectations still test the original toy.
-  Tests cover empty worlds, exact eggs, distinct bodies, fitness, deterministic reload, reordered species columns,
-  v1/v2 progress/cards/visitors, malformed/newer inputs, extinction fallback and elapsed-time boundaries.
-- `npm run check` passed after fixing a test-fixture typing error: zero type errors/warnings and all tests passing.
-  The sandbox blocked the wrapper's child launches (`spawnSync npx EPERM`); the standard wrapper passed with
-  execution permission after the first approval review timed out. No check-script changes were needed.
-- `npm run build:game` passed and emitted `game/dist/clade.html` (730 KB). Existing build notices: Svelte config
-  fallback, deprecated inlineDynamicImports and a large JS chunk. Root `build` targets the archived plant game.
-- The populated migrated-registry catch-up test meets the roadmap's five-second target in this environment.
-- All 51 local links/anchors in the changed docs passed. Whitespace and file-scope review passed.
-- No browser/phone playtest. Playwright is not installed; no `npm run look` claim. Part A does not expose the sea
-  in the UI, so founding/continuation play and packaged reload verification belong to B/C.
-- Remaining runtime issues: terminal results currently persist after animation; storage failures lack clear feedback.
-  Predator-role worms still need a bounded representation decision before threats; species-code adaptation is open.
-  No balance boost was added or measured. The island generator must remain compatible with v3's saved seed/patch graph.
+## Verification and limits
+- **96/96 automated tests across 14 files**, including 11 new Part B checks; direct suite completed in 4.01 s.
+  Covers empty/depleted snapshots, matching identities/respawns, part-based feeding, oxygen, real terminal lays,
+  reload/once-only settlement, adjacent continuation, failure/extinction, storage errors and design compatibility.
+- A deterministic policy founded empty mud patches on seeds 1/2/3 using ordinary food, moulting and laying.
+  No injected food/eggs or population boost in that check. This is limited viability evidence, not balance tuning.
+- `npm run check` passes (typecheck and full suite). The sandbox intermittently blocked nested npx launches with
+  `spawnSync npx EPERM`; the unchanged wrapper was run with execution permission. Direct tests also passed.
+- `npm run build:game` passes; packaged `game/dist/clade.html` is 744 KB. Existing Svelte config fallback,
+  inlineDynamicImports deprecation and large-chunk notices remain. Root `build` targets the archived plant game.
+- `node scripts/sea-smoke.mjs` checks the packaged page in installed Chrome at 390×844, in a temporary profile:
+  empty founding, saved result while playback is busy, terminal/clutch reloads, single settlement, all four body
+  choices, failed-run continuation, code import and visible storage-error retry. It uses controlled terminal
+  fixtures, not a full player run. A screenshot was visually inspected; no page exceptions were observed.
+  Chrome needed execution permission for its local crash-handler socket. Initial permission review timed out;
+  the permitted retry ran. The runner closes Chrome before removing its disposable profile.
+- All 53 local links/anchors in the changed docs passed, along with whitespace and file-scope diff review.
+- No human/phone playtest, no frame-rate claim, and no founding balance adjustment. The real map and its taps,
+  pacing and player understanding remain Part C work; do not mark the whole slice complete.
+- Unknown migrated body types remain in the ecology and are explicitly listed as sea-only in board previews.
+  Their representation still needs review in C. The staged seed/patch graph compatibility boundary remains.
 
 ## Next session
-Good handoff point: part A is ready. Start a fresh session for **slice 19, part B**.
+Part B is a saved boundary. Start a fresh session for **slice 19, Part C**.
 
 > Continue on `codex/m2-step4-spec`. Read AGENTS.md, docs/status.md and docs/slices/19-join-the-sea.md.
-> Work on part B: patch board snapshots, completed results, continuation and failed-run recovery. Inspect the
-> staged sea model and v3 codec, explain the smallest change and checks before coding, and resolve the predator
-> identity question before wiring threats. Follow the Part A integration boundary; keep the current UI playable.
-> Saves are lower priority. Use focused commits, update the handoff and remind me at the next session boundary.
-> No subagents or new dependencies by default.
+> Work on Part C: replace the island overview/patch lists with the sea map, make eligible patches and the last
+> release/descendants clear, review the remaining legacy representation edges, then verify and play the loop.
+> Keep diet recorded and feeding determined by parts/verbs; sharing is creature design, not population import.
+> Reuse the Part B lifecycle and codec. Do not re-ask settled founding/continuation/sharing decisions. No new
+> dependencies or subagents by default. Save a handoff and remind me at the next verified boundary.
 
 ## Later work retained
-- Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy and rendering spike are saved
-  in `c9c20da`; [body approach](design/body-approach.md) and [slice 18 playtest](playtests/18-body-toy.md) hold the details.
-- Step 6: parts entering new bases, respec and XP ownership remain open. [P46](proposals.md) retains the body/slot
-  proposals. Step 9: final style remains open; the target is between OSRS and Stardew Valley. Performance evidence
-  so far is software graphics, not phones. Step 3's three play checks are still outstanding.
-- Research shortlist and biology-tooltip checks remain in their existing docs; no new research is required for part A.
+- Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in
+  `c9c20da`; [body approach](design/body-approach.md) and [slice 18 playtest](playtests/18-body-toy.md) have details.
+- Step 6: parts entering new bases, respec and XP ownership remain open. [P46](proposals.md) retains the proposals.
+- Step 9: final style remains open, between OSRS and Stardew Valley. Step 3's three play checks are still open.
+- Research shortlist and biology-tooltip checks remain in their existing docs; no new research was needed here.

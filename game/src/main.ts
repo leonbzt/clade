@@ -5,20 +5,24 @@ import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
 import { mount } from 'svelte';
 import { NODES, PARTS, PLANS, RULE, TERRAIN, VERBS, type PartId, type PlanId, type VerbId } from './data/life';
 import { HABITATS, type HabitatId } from './data/habitats';
-import { MODEL, ROLES, type Role } from './data/garden';
+import { MODEL } from './data/garden';
 import { PREY } from './data/prey';
 import * as L from './sim/life';
 import { predict } from './sim/hunt';
 import { useVerb } from './sim/verbs';
-import { BODY_FOR, boardFor, resultOf } from './sim/door';
-import { release, step, tierName } from './sim/garden';
-import { habitatSpots, makeIsland } from './sim/island';
-import { BACKUP_KEY, SAVE_KEY, advance, freshSave, parseSave, type Pending } from './sim/save';
-import { addVisitor, decode, encode } from './sim/share';
+import { nextBoard, resultOf } from './sim/door';
+import { step } from './sim/sea';
+import { tell } from './sim/sea-news';
+import { partsOf } from './sim/feeding';
+import { canLaunch, completeLife, formFor, settlePending, startSeaLife } from './sim/sea-life';
+import { advanceSeaSave, freshSeaSave, parseSeaSave, serializeSeaSave, type SeaPending, type SeaSave } from './sim/sea-save';
+import { importSeaSave, writeSeaSave } from './sim/sea-storage';
+import { habitatSpots } from './sim/island';
+import { BACKUP_KEY, SAVE_KEY } from './sim/save';
+import { decode, designProblem, designVerbs, encode } from './sim/share';
 import Meta from './ui/Meta.svelte';
 import Clutch from './ui/Clutch.svelte';
 import Menu from './ui/Menu.svelte';
-import { rollClutch } from './sim/clutch';
 import { bump, ctx, ui } from './ui/meta.svelte';
 import { S, centre, dirAngle, screen } from './scene';
 import { bounce, play } from './playback';
@@ -60,7 +64,8 @@ Object.assign(S, { app, floor, fx, marks, cam, hud, hunter: HUNTERS.native, you:
 devPanel();
 skin();
 
-let habId: HabitatId = 'mud', plan: PlanId = 'worm', niche: Role = 'burrower', verbs: VerbId[] = [], carried: PartId | undefined;
+let patchId = 0;
+let habId: HabitatId = 'mud', plan: PlanId = 'worm', verbs: VerbId[] = [], carried: PartId | undefined;
 const inMud = (x: number, y: number) => { const tx = Math.floor(x / C), ty = Math.floor(y / C); return L.inB(tx, ty) && L.tile(S.life, tx, ty).t === 'mud'; };
 
 function applyFeel() {
@@ -92,85 +97,99 @@ app.ticker.add((tk) => {
   hunter.draw(above, shadows);
 });
 
-// ---- the garden and the island (slice 13) ----
-const raw = (() => { try { return localStorage.getItem(SAVE_KEY); } catch { return null; } })(), parsed = parseSave(raw);
-if (parsed.problem === 'broken' || parsed.problem === 'newer') { // never lose a save silently: keep it as a backup
-  try { localStorage.setItem(BACKUP_KEY, raw!); } catch { /* nowhere to keep it */ }
-  ui.notice = { title: 'Your save could not be read', text: `${parsed.problem === 'newer' ? 'It comes from a newer version of Clade.' : 'It looks damaged.'} It is kept as a backup (Menu, then Save); this is a new island.` };
-}
-let save = ctx.save = parsed.save ?? freshSave((Math.random() * 2 ** 31) | 0, Date.now());
-ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl);
-const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch { /* private mode: this visit only */ } };
-{ const away = advance(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
-ctx.start = (hab, role, vs, body, form) => { habId = hab; niche = role; plan = body ?? BODY_FOR[role]; verbs = vs; carried = form; ui.open = false; newLife(); };
-ctx.skip = () => { for (let k = 0; k < MODEL.skip; k++) step(save.garden); persist(); };
-ctx.code = (hab, role) => {
-  const line = save.garden.habs[hab].entries.find((e) => e.line && e.role === role);
-  return line ? encode({ plan: line.line!, role, hab, eggs: Math.round(line.score), form: save.forms[`${hab}:${role}`], verbs: [], name: `${line.name.replace('Your ', 'Our ')}` }) : '';
+// ---- the sea and the existing island overview (the patch map follows in part C) ----
+let raw: string | null = null, unreadable = false;
+try { raw = localStorage.getItem(SAVE_KEY); }
+catch { unreadable = true; }
+const parsed = parseSeaSave(raw);
+let protectedRaw = parsed.problem === 'broken' || parsed.problem === 'newer' ? raw : null;
+if (protectedRaw) ui.notice = { title: 'Your save could not be read', text: `${parsed.problem === 'newer' ? 'It comes from a newer version of Clade.' : 'It looks damaged.'} The original must be backed up before this new sea can be saved. Use Menu to copy the backup.` };
+let save = ctx.save = parsed.save ?? freshSeaSave((Math.random() * 2 ** 31) | 0, Date.now());
+ctx.isl = save.sea.isl; ctx.spots = habitatSpots(ctx.isl);
+const write = (json: string) => {
+  if (unreadable) throw new Error('Cannot replace an unread save');
+  if (protectedRaw) { localStorage.setItem(BACKUP_KEY, protectedRaw); protectedRaw = null; }
+  localStorage.setItem(SAVE_KEY, json);
+};
+const persist = () => {
+  const error = writeSeaSave(save, write);
+  ui.saveError = unreadable ? 'Browser storage could not be read. Your old save has not been replaced. Copy this visit’s progress from Menu before reloading.' : error ?? '';
+  return !error;
+};
+ctx.retrySave = () => { persist(); };
+{ const away = advanceSeaSave(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
+ctx.start = (patch, _role, vs, body, form) => {
+  if (!canLaunch(save, patch, body)) { ui.notice = { title: 'Choose an eligible patch', text: 'Finish your clutch first. After founding, start in the last clutch’s patch or a direct neighbour.' }; return; }
+  patchId = patch; habId = save.sea.patches[patch].ground; plan = body; verbs = vs; carried = form;
+  ui.open = false; newLife();
+};
+ctx.skip = () => { if (save.pending) return; for (let k = 0; k < MODEL.skip; k++) tell(save.sea, save.news, step(save.sea)); persist(); };
+ctx.code = (patch, species) => {
+  const sp = save.sea.species.find((e) => e.id === species), p = save.sea.patches[patch];
+  if (!sp?.line || !sp.plan || !p) return '';
+  const form = formFor(save, patch, sp.plan, sp.role);
+  const fittingForm = form && PARTS[form].plans.includes(sp.plan) ? form : undefined;
+  return encode({ plan: sp.plan, role: sp.role, hab: p.ground, eggs: Math.min(200, Math.round(p.fit[save.sea.species.indexOf(sp)])),
+    form: fittingForm, verbs: designVerbs(sp.plan, partsOf(sp), fittingForm), name: sp.name.replace('Your ', 'Our ') });
 };
 ctx.paste = (code) => {
   const sp = decode(code);
   if (!sp) return "That isn't a Clade species code.";
-  const n = addVisitor(save.garden, sp); persist(); bump();
-  return `${n.text}: ${n.why}.`;
+  const problem = designProblem(sp);
+  if (problem) return problem;
+  ui.design = sp; bump();
+  return `${sp.name} is ready as a starting design. Choose an eligible patch and use the design there.${!save.continuation && sp.plan !== 'worm' ? ' Found the sea with a worm first.' : ''} Its score grants no eggs.`;
 };
-ctx.exportSave = () => JSON.stringify(save);
-ctx.importSave = (text) => {
-  const p = parseSave(text.trim());
-  if (!p.save) return p.problem === 'newer' ? 'That save is from a newer version.' : "That isn't a Clade save.";
-  save = ctx.save = p.save; ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl); persist(); bump();
+ctx.exportSave = () => serializeSeaSave(save);
+function useSave(next: SeaSave) {
+  save = ctx.save = next; ctx.isl = save.sea.isl; ctx.spots = habitatSpots(ctx.isl);
+  ui.clutch = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
+  hud.hideCard(); choose();
   if (save.pending) openClutch(save.pending);
-  return 'Save loaded.';
+}
+ctx.importSave = (text) => {
+  const loaded = importSeaSave(text, write);
+  if (loaded.save) { ui.saveError = ''; useSave(loaded.save); }
+  return loaded.message;
 };
-ctx.reset = () => { save = ctx.save = freshSave((Math.random() * 2 ** 31) | 0, Date.now()); ctx.isl = makeIsland(save.seed); ctx.spots = habitatSpots(ctx.isl); persist(); bump(); };
-ctx.backup = () => { try { return localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return ''; } };
+ctx.reset = () => {
+  const next = freshSeaSave((Math.random() * 2 ** 31) | 0, Date.now()), error = writeSeaSave(next, write);
+  if (error) { ui.saveError = 'The new sea could not be saved. Your current sea is unchanged.'; return false; }
+  ui.saveError = ''; useSave(next); return true;
+};
+ctx.backup = () => { try { return protectedRaw ?? save.legacy?.json ?? localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return protectedRaw ?? save.legacy?.json ?? ''; } };
 void document.fonts?.ready.then(bump); // the map's labels are drawn on a canvas: redraw once the font is in
-setInterval(() => { if (ui.open && advance(save, Date.now()).gens) { bump(); persist(); } }, 5000);
+setInterval(() => { if (ui.open && advanceSeaSave(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
 mount(Clutch, { target: document.getElementById('metaRoot')! });
 mount(Menu, { target: document.getElementById('metaRoot')! });
 
 function choose() { ui.open = true; bump(); }
 
-/** The moment a Life ends it goes in the save, clutch included, so closing the page can't lose it. */
-function closeLife() {
-  const life = S.life, r = resultOf(life), tier = tierName(r.hab, r.eggs);
-  const cards = r.eggs > 0 ? rollClutch((Math.random() * 2 ** 31) | 0, r.plan, r.hab, r.eggs, tier, life.rarePassed ? life.rareGot : null) : [];
-  save.pending = { ...r, tier, cards };
-  persist();
-}
+/** Persist the complete result before starting any terminal playback. */
+function closeLife() { completeLife(save, S.life, (Math.random() * 2 ** 31) | 0); persist(); }
 
-/** After a Life: open the clutch (if you laid), keep a form or not, and the eggs go to the garden in the niche you lived. */
-function openClutch(p: Pending) {
+function openClutch(p: SeaPending) {
   if (!p.cards.length) { settle(p); return; }
-  ui.clutch = p;
-  ui.open = true; ui.hab = null; bump();
-  ctx.keep = (k) => { if (k >= 0) save.forms[`${p.hab}:${p.role}`] = p.cards[k].part; ui.clutch = null; settle(p); };
+  ui.clutch = p; ui.open = true; ui.hab = null; ui.patch = null; bump();
+  ctx.keep = (k) => { settle(p, k); };
 }
 
-function settle(r: Pending) {
-  const key = `${r.hab}:${r.role}`, tier = r.tier;
-  if (r.eggs > 0) release(save.garden, { hab: r.hab, role: r.role, plan: r.plan, eggs: r.eggs });
-  for (let k = 0; k < MODEL.afterLife; k++) step(save.garden);
-  if (!save.best[key] || 'SABCDF'.indexOf(tier) < 'SABCDF'.indexOf(save.best[key])) save.best[key] = tier;
-  if (r.plan === 'arthropod' && (tier === 'A' || tier === 'S') && !save.unlocks.trilobite) { // the first branch (slice 14)
-    save.unlocks.trilobite = true;
-    save.garden.news.unshift({ gen: save.garden.gen, hab: r.hab, yours: true, text: 'Your arthropods branched: the trilobite', why: `a first ${tier} tier as an arthropod. Grazer niches now offer it` });
-    ui.notice = { title: 'A new branch: the trilobite', text: `Your ${tier} tier as an arthropod opened a new body. ${PLANS.trilobite.blurb} Grazer niches now offer it beside the arthropod.` };
-  }
-  save.lives++; delete save.pending; persist();
-  ui.open = true; ui.hab = r.hab; ui.niche = null; bump();
+function settle(p: SeaPending, card = -1) {
+  if (!settlePending(save, p, card)) return;
+  persist();
+  ui.clutch = null; ui.open = true; ui.hab = save.sea.patches[p.patch].ground; ui.patch = p.patch; ui.niche = null; bump();
 }
 
 function newLife() {
-  const life = S.life = L.newLife((Math.random() * 2 ** 31) | 0, plan, boardFor(save.garden, habId, save.forms), L.startParts(plan, verbs, carried));
+  const life = S.life = startSeaLife(save, (Math.random() * 2 ** 31) | 0, patchId, plan, verbs, carried);
   const form = carried && L.has(life, carried) ? carried : undefined;
   S.hunter = life.hab.hunter?.yours ? HUNTERS.yours : HUNTERS.native;
   S.you = BODIES[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
   S.you.setBody(life.size, life.slots, false); S.you.place(s.x, s.y, dirAngle(life.facing));
-  if (life.rivals.length) { const v = life.rivals[0], r = centre(L.at(v.x, v.y)); S.rival.setBody(2, [], false); S.rival.place(r.x, r.y, -Math.PI / 2); }
+  if (life.rivals.length) { const v = life.rivals[0], r = centre(L.at(v.x, v.y)); S.rival = preyBody(v.kind ?? 'worm'); S.rival.place(r.x, r.y, -Math.PI / 2); }
   S.prey = life.prey.map((p) => { const body = preyBody(p.kind), c = centre(L.at(p.x, p.y)); body.place(c.x, c.y, Math.PI / 2); return { kind: p.kind, body, visible: true }; });
   S.hunter.show.v = 0;
   marks.marks = []; marks.burrows.clear(); marks.aim = -1; marks.preview = [];
@@ -178,13 +197,13 @@ function newLife() {
   hud.refresh(life, true);
   hud.info('Tap a lit tile to move.');
   const h = life.hab, P = PLANS[plan];
-  const role = `You came to fill the ${ROLES[niche].name} niche.${form ? ` Your line here carries ${PARTS[form].name.toLowerCase()}.` : ''} `;
+  const role = `Your parts determine how your descendants feed.${form ? ` Your line here carries ${PARTS[form].name.toLowerCase()}.` : ''} `;
   const who = role + (plan === 'swimmer'
     ? `You are the hunter here. ${P.blurb}\nLurk a turn and prey won't notice you; your next swim goes twice as far. Each catch in a row adds speed.`
     : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predatorAt > 20 ? 'No hunter here this time.' : h.hunter?.yours
       ? `${h.predator} hunt here now, your own line, and they hunt like you: they lurk a turn, then swim twice as far, and grow bolder with every hit. They come on turn ${h.predatorAt}.`
       : `${h.predator} comes on turn ${h.predatorAt}.`}`);
-  hud.showCard(h.name, `${h.blurb}\n\n${who} ${h.event.name} on turns ${h.event.from}–${h.event.to}: ${h.event.text}.`, [{ label: 'Start', on: () => hud.hideCard() }]);
+  hud.showCard(h.name, `${h.blurb}\n\n${nextBoard(h)}. Food stocks: mats ${Math.round(h.stocks!.mats)}, detritus ${Math.round(h.stocks!.rot)}; oxygen ${Math.round(h.stocks!.oxygen)}. A few food spots near the start are protected.\n\n${who} ${h.event.name} on turns ${h.event.from}–${h.event.to}: ${h.event.text}.`, [{ label: 'Start', on: () => hud.hideCard() }]);
 }
 
 function sync(instant = false) {
@@ -203,13 +222,14 @@ async function act(f: () => void) {
   if (S.busy || life.phase !== 'play' || hud.cardOpen || ui.open) return;
   S.busy = true; marks.dests = new Map(); marks.hover = -1; marks.aim = -1; marks.preview = [];
   f();
+  if ((life.phase as L.Life['phase']) === 'over') closeLife();
   const evs = life.events.slice();
   hud.refresh(life, false, true);
   if (evs.length) await play(evs);
   S.busy = false;
   sync();
   hud.info(life.lines.slice(-2).join(' '));
-  if ((life.phase as L.Life['phase']) === 'over') { closeLife(); await wait(0.5); endCard(); }
+  if ((life.phase as L.Life['phase']) === 'over') { await wait(0.5); endCard(); }
 }
 
 function doVerb(v: VerbId) {
@@ -252,10 +272,10 @@ function pickPart(id: PartId) {
 
 function endCard() {
   const life = S.life, r = resultOf(life), tier = L.tierOf(life.hab, life.eggs), nt = L.nextTier(life.hab, life.eggs);
-  const lived = r.role === niche ? `You lived as a ${ROLES[r.role].name}.` : `You came as a ${ROLES[niche].name} but ate like a ${ROLES[r.role].name}: the eggs count there.`;
+  const lived = `Your diet was mostly ${r.role === 'predator' ? 'meat' : r.role === 'burrower' ? 'buried food' : 'grazed food'}. Your inherited parts determine feeding behaviour.`;
   hud.showCard(life.cause === 'season' ? 'The season ends' : `You died on turn ${life.turn}`,
     `You laid ${life.eggs} eggs: tier ${tier} in the ${life.hab.name.toLowerCase()}. ${lived}${nt ? `\n${nt[0]} needs ${nt[1]}.` : ''}`,
-    [{ label: life.eggs ? 'Release your eggs' : 'Back to the island', note: life.eggs ? `They join the ${ROLES[r.role].plural.toLowerCase()} of the ${life.hab.name.toLowerCase()}.` : undefined, on: () => { hud.hideCard(); if (save.pending) openClutch(save.pending); } }]);
+    [{ label: life.eggs ? 'Release your eggs' : 'Back to the sea', note: life.eggs ? `They establish your ${PLANS[r.plan].name.toLowerCase()} population in patch ${life.hab.patch! + 1}.` : undefined, on: () => { hud.hideCard(); if (save.pending) openClutch(save.pending); } }]);
 }
 
 // ---- input ----
@@ -282,7 +302,7 @@ function tileText(i: number) {
   const v = life.rivals.find((r) => L.at(r.x, r.y) === i);
   if (v) return `${v.name[0].toUpperCase()}${v.name.slice(1)}. It eats ${NODES[v.eats].name.toLowerCase()}.`;
   const p = life.prey.find((q) => q.alive && !q.hidden && L.at(q.x, q.y) === i);
-  if (p) { const P = PREY[p.kind]; return `${P.name}, ${P.food} food. ${P.flees}`; }
+  if (p) { const P = PREY[p.kind]; return `${p.name ?? P.name}, ${P.food} food. ${P.flees}`; }
   if (life.x === x && life.y === y) return `You: ${PLANS[life.plan].name.toLowerCase()}, size ${life.size}. ${life.plan === 'swimmer' ? 'Lurk to ambush.' : 'Wait to stay put.'}`;
   if (t.t === 'mud' && !t.seen) return "Mud. You can't see what's buried here yet.";
   let s: string = TERRAIN[t.t];

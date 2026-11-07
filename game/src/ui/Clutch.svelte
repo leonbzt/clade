@@ -1,15 +1,15 @@
 <!-- Open your clutch (slice 12): eggs lie face down; tap to hatch each; keep one form for your line in this niche. -->
 <script lang="ts">
-  import { ROLES } from '../data/garden';
   import { HABITATS } from '../data/habitats';
-  import { PARTS, VERBS } from '../data/life';
+  import { PARTS, PLANS, VERBS } from '../data/life';
+  import { formFor } from '../sim/sea-life';
   import { ctx, ui } from './meta.svelte';
 
   const RARITY = { common: 'Common', rare: 'Rare', epic: 'Epic' };
   let open: boolean[] = $state([]), hatching = $state(-1), chosen = $state(-1);
   $effect(() => { if (ui.clutch) { open = ui.clutch.cards.map((k) => !!k.passed); chosen = ui.clutch.cards.findIndex((k) => k.passed); hatching = -1; } });
   const c = $derived(ui.clutch);
-  const current = $derived(c ? ctx.save.forms[`${c.hab}:${c.role}`] : undefined);
+  const current = $derived(c ? formFor(ctx.save, c.patch, c.plan, c.role) : undefined);
 
   function tap(k: number) {
     if (hatching >= 0) return;
@@ -24,7 +24,7 @@
 <div class="metaWrap">
   <div class="panel habCard clutch">
     <h2>Open your clutch</h2>
-    <p class="pitch">{c.eggs} eggs in the {HABITATS[c.hab].name.toLowerCase()}, tier {c.tier}. {c.cards.length} hatch where you can see them: keep one form for your {ROLES[c.role].name} line here. Later Lives in this niche can start with its part; it holds that slot on the body.</p>
+    <p class="pitch">{c.eggs} eggs in the {HABITATS[c.hab].name.toLowerCase()}, patch {c.patch + 1}, tier {c.tier}. {c.cards.length} hatch where you can see them: keep one form for your {PLANS[c.plan].name.toLowerCase()} line here. Later Lives of this body and diet here can start with its part; it holds that slot on the body.</p>
     <div class="eggRow">
       {#each c.cards as card, k}
         <button class="egg {open[k] ? 'open ' + card.rarity : ''}" class:shake={hatching === k} class:chosen={chosen === k} onclick={() => tap(k)}>
