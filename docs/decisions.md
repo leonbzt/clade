@@ -449,3 +449,18 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   its code remains the portable artifact, without adding a design-library feature.
 - **Part B presentation:** retain the island overview and authored boards, add patch lists/eligibility and
   existing body/loadout controls. The visual patch map and release highlighting remain part C.
+
+## 7 Nov, Part B feedback and Part C specification
+- **Reported play feedback:** Part B mostly looks good; the living sea map is missing and species unlocks feel
+  too fast. This is feedback on the temporary bridge, not a decision to reinstate rank gates.
+- **Equipment clarified:** the missing view means “Large creature with visible slots and parts beside it”.
+  This reaffirms the body-screen direction; its roadmap home is step 5.
+- **Requested planning:** finish the Part C spec and advise on an implementation agent for token efficiency.
+  The user also wants a general gameplay/design review of genes, founding species, steering lifeforms,
+  RPG-like runs, strategy and how later minigames fit together.
+- **AI recommendation, not a user decision:** do that review after the connected Part C loop is played and
+  before step 5. [Plan and preliminary assessment](design/part-c-and-gameplay-review.md),
+  [Part C spec](slices/19-join-the-sea.md#part-c-implementation-specification),
+  [reported feedback and future play protocol](playtests/19-join-the-sea.md).
+- This session specifies and records the work; it does not implement gameplay, change release scope, or
+  claim that the general review or phone playtest has happened.

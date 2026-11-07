@@ -3,7 +3,8 @@
 **Milestone:** M2, step 4 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Does each Life visibly change the sea and determine where you play next?
 **Status:** parts A/B implemented on 7 Nov: sea model, v3 runtime, patch snapshots, completion/continuation and
-creature-design sharing. Part C's visual patch map and playtest remain. Verification is recorded in `docs/status.md`.
+creature-design sharing. Part C is specified below; implementation and playtesting remain.
+Verification is recorded in `docs/status.md`.
 **Builds on:** [7 Nov decisions](../decisions.md#7-nov-join-the-sea-empty-founding-and-continuation-resumed-in-codex),
 [the release vision](../design/full-version.md), the sea toy (slice 17), and the existing Life, clutch and save systems.
 Gameplay calls below are settled for this slice; items labelled proposal or open are not new user decisions.
@@ -98,6 +99,8 @@ needed without rewriting movement, parts or event playback. No new framework, de
 - [x] Offline tests cover below, at and above eight hours, repeated calls, and clock rollback; catch-up meets the roadmap budget.
 - [x] Species-code compatibility is documented and tested; any temporary limitation is explicitly approved.
 - [x] `npm run check` and `npm run build:game` pass. The packaged page is smoke-tested through founding, continuation and reload.
+- [ ] The home is the living patch map; selection, launch range and named populations are readable.
+- [ ] Return from a Life shows its actual release, current line distribution and next eligible patches without replaying settlement.
 - [ ] A phone playtest checks map readability, taps and performance; limitations are reported if no device is available.
 - [ ] The user can explain where the first animals came from and why the next run can start where it does;
   notes are saved in `docs/playtests/19-join-the-sea.md` after actual play.
@@ -166,3 +169,94 @@ needed without rewriting movement, parts or event playback. No new framework, de
   for the current visit; the portable code can be pasted again. Invalid designs leave the previous selection intact.
 - Part B keeps the existing island drawing with patch lists and stock/population/board previews. Part C still owns
   the actual patch-map view, release/descendant highlighting, pacing and player/phone playtests.
+
+## Part C implementation specification
+
+Specified 7 Nov at the user's request. This defines the remaining presentation/playtest work in step 4;
+permanent evolution progression comes later. [Part B feedback and play protocol](../playtests/19-join-the-sea.md);
+[release route and proposed design review](../design/part-c-and-gameplay-review.md).
+
+### Cause and smallest change
+
+The production sea, patch graph and Life lifecycle exist. `Meta.svelte` still draws `drawIsland` with habitat
+buttons and patch lists, and `main.ts` returns directly to a patch card after settlement. The sea toy already
+has patch colouring, roaming population markers, overlays and history curves. Port that presentation into
+`game/`, adapt it to the saved species registry and part-based feeding, and connect selection/result feedback.
+Do not port the toy's starting populations or entry point, create a second simulation, or rewrite the Life.
+
+### C1. The living map is home
+
+- Keep the island/sea geography and current visual style. Draw actual patches with population-dependent fill,
+  transitions and a capped set of moving markers. Zero animals means zero animal markers, even after waiting.
+- Reuse the toy's population, mats, oxygen and hunter views with a small legend. Read production `sea.species`,
+  `holder`, `preyOf`, `huntersOf` and feeding rules; never assume the toy's fixed species indices or use diet
+  labels as hunting permission. The population view's holder colour describes dominant prey; hunter presence
+  must still be visible in markers/details and the hunter view.
+- Distinguish bodies/species with labels and a stable visual key. All current player lines share one saved
+  colour, so do not rely on that colour alone. View-only distinctions may use stable IDs without rewriting saves.
+  Preserve existing simple map markers; detailed inherited-body portraits wait for step 5. Unknown migrated
+  animals get an honest generic marker/name and the existing sea-only explanation, not a false playable identity.
+- Tapping a patch opens its card directly. Show food/oxygen, named populations, recent causes, the next-board
+  preview and the toy's compact stock/prey history using the existing history buffer. No invented historic data.
+- Mark selection, the last successful clutch and its direct neighbours distinctly; explain the key in text.
+  Other patches remain inspectable and explain why launch is unavailable. Population spread grants no access.
+- Make the map the primary route. Keep a compact named patch/eligible-patch list as a keyboard/touch fallback
+  for tiny patches, plus a clear return-to-map action. Preserve loadout, design import/export, menu, away news,
+  pending-clutch recovery and storage-error controls.
+- Fit phone widths, use a scrollable patch sheet without covering every map cue, and avoid hover-only controls.
+  Reuse the existing canvas approach; cap decorative markers and stop its animation while the map is hidden.
+  Drawing and visual randomness must not advance or consume the simulation RNG.
+
+### C2. See what the Life changed
+
+- After successful settlement, return to the visible map, focus/pulse the release patch and state the actual
+  eggs released and species/body name. Show the current population separately: the existing two post-Life
+  generations may already have changed it. Keep next-run access clear and the feedback short/skippable.
+- Highlight the selected line's current occupied patches and actual spread/change events. These are aggregate
+  body/diet populations, not tracked individual descendants of the latest clutch. Use wording such as “Your
+  worm line here”; do not invent an ancestry trail or attribute all existing animals to the last release.
+- Use read-only before/after display data around the existing once-only settlement if needed. Feedback may
+  interpolate saved observations, but must not release twice, add generations, delay persistence or change RNG.
+  An extinct line still has a continuation marker; a zero-egg result shows no new release and keeps the old one.
+- Keep transient animation state out of the save. After reload, reconstruct the last-clutch focus and current
+  distribution from continuation/state; do not replay a settlement or pretend an unsaved animation was recovered.
+  A pending result still resumes clutch selection before settlement, as in Part B.
+- Retain truthful crash/boom/spread causes and a clear next eligible patch. Do not force a crash, add natives,
+  boost eggs or change founding/continuation/unlock rules to make the presentation busier.
+
+### Files and implementation boundary
+
+| Work | Relevant files |
+| --- | --- |
+| Renderer and selection | Reference `toys/sea-view.ts`; port to `game/src/view/sea-map.ts`; reuse `view/islandmap.ts` |
+| Cards, history and phone layout | `ui/Meta.svelte`, `ui/meta.svelte.ts`, `ui/style.css`; history reference in `toys/sea.ts` |
+| Return feedback | `main.ts` around `settle`; reuse `sim/sea-life.ts` as the sole lifecycle owner |
+| Read-only data | `data/sea.ts`, `sim/sea.ts`, `sea-news.ts`, `sea-patches.ts`, `feeding.ts`, `door.ts` |
+| Verification | Relevant sea/lifecycle tests; `scripts/sea-smoke.mjs`; playtest 19 |
+
+Expected runtime edits are presentation and the small return-feedback connection. No new dependency, save
+version, genotype registry, body model, equipment system, permanent gate, XP, recipe or minigame is needed.
+Sharing rules were resolved in B; only preserve access and honest representation here.
+
+### C3. Verification and completion
+
+1. Add focused checks for any nontrivial map/state mapping: resized canvas coordinates select the correct
+   patch; eligibility follows the graph; absent populations have no markers; legacy identities and part-based
+   hunter classification remain correct. Check that rendering does not mutate simulation state/RNG.
+2. Update the packaged smoke runner to navigate the real map, including a pointer/touch hit on a patch at a
+   phone viewport, not only the fallback list. Retain pending/clutch reload, single settlement, failure,
+   continuation, design sharing and save-error checks. Include dismiss/reload during return feedback.
+3. Run `npm run check`, `npm run build:game`, and `node scripts/sea-smoke.mjs`. Inspect map/patch/return views
+   at desktop and phone widths. The root `build` is still the archived plant build.
+4. Play the ordinary loop using the protocol in playtest 19. Record actual founding and return pacing before
+   proposing numerical tuning. A deterministic fixture checks correctness, not fun or founding balance.
+5. Record a real-phone check, or leave that criterion open and state the device limitation. Report timings
+   with the device/build/measurement method; do not reuse the toy's performance numbers as production results.
+6. Inspect the diff for scope, commit the work and handoff, and keep slice 19 open until its player checks pass.
+
+Use focused checkpoints for C1 (map) and C2 (return feedback), then the integrated checks/player pass. Start
+a fresh session if a verified checkpoint becomes a handoff; do not repeat the A/B audit. The proposed next
+design session is one general gameplay review after C's playable loop and before step 5.
+
+Permanent species pacing and the large creature/slots/parts equipment view remain steps 5/6. The review
+should shape them before their implementation; these requests are recorded, not treated as fixed by Part C.

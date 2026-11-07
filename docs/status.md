@@ -1,19 +1,21 @@
 # Status
 
-Updated 2026-11-07. Branch `codex/m2-step4-spec`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
+Updated 2026-11-07. Branch `codex/part-c-review-plan`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
 Read this and that spec first; open other docs and source files only as needed.
 
 ## Saved checkpoint
 - Previous gameplay: `c9c20da`; project instructions: `d36588e`; reviewed spec: `bc4d87c`; Part A: `09dc4b0`.
 - Part B simulation/lifecycle checkpoint: `b6ccf69` (`feat: connect patch boards and recover sea clutches`).
-  Runtime, UI and this handoff are committed as `feat: run sea lives with creature design sharing`;
-  use `git log -1 --oneline` for that hash.
+  Latest gameplay: `a8a54b8` (`feat: run sea lives with creature design sharing`).
+- Part C specification, reported feedback and review agenda: `docs: specify Part C and gameplay review handoff`
+  on the current branch; use `git log -1 --oneline` for that documentation checkpoint. No runtime changes.
 - No new dependencies or push. Only disposable browser profiles were used; no personal browser saves were accessed.
   Remote state has not been freshly queried.
 
 ## Current milestone and decisions
 M2 steps 1/2 are complete. Step 3 retains three open play checks. Step 4 parts A/B are implemented;
-Part C's patch-map presentation and playtesting remain. The roadmap order is unchanged.
+Part C's patch-map presentation and playtesting remain; its implementation spec is now concrete.
+The roadmap order is unchanged.
 
 - New seas have food/environment and zero animals. A worm Life founds the population through its actual eggs.
 - Continuation uses the **last successful clutch**, in its patch or a direct neighbour. Failure, retry and world
@@ -48,7 +50,20 @@ Part C's patch-map presentation and playtesting remain. The roadmap order is unc
 - Species codes export/import starting designs: body, one carried form and fitting verbs. Existing codes still
   decode. Imported presets last for the visit; the code can be pasted again. No design-library system was added.
 
-## Verification and limits
+## Part C planning checkpoint
+- [Part C spec](slices/19-join-the-sea.md#part-c-implementation-specification): port the living patch map,
+  expose launch range and patch history, connect truthful release/line highlighting, then verify and play.
+- [User's Part B feedback](playtests/19-join-the-sea.md): mostly good; missing living map, species access too
+  fast, missing equipment view. Equipment means the large creature with visible slots and parts beside it.
+- [Plan and review agenda](design/part-c-and-gameplay-review.md): recommend one general gameplay/design review
+  after C's connected-loop playtest and before step 5. Review genes, inheritance, species founding, RPG strategy
+  and later minigames together. This timing is a recommendation, not a change to the adopted roadmap.
+- The large equipment view is an explicit step-5 deliverable. Permanent species progression remains steps 5/6;
+  no temporary unlock gates were added. One carried part and aggregate body/diet populations remain bridges.
+- This session changed documentation only. Local links/anchors, consistency and diff scope were checked;
+  gameplay checks below are the prior Part B results, not new runs. No new human/phone test was performed.
+
+## Part B verification and remaining limits
 - **96/96 automated tests across 14 files**, including 11 new Part B checks; direct suite completed in 4.01 s.
   Covers empty/depleted snapshots, matching identities/respawns, part-based feeding, oxygen, real terminal lays,
   reload/once-only settlement, adjacent continuation, failure/extinction, storage errors and design compatibility.
@@ -65,20 +80,22 @@ Part C's patch-map presentation and playtesting remain. The roadmap order is unc
   Chrome needed execution permission for its local crash-handler socket. Initial permission review timed out;
   the permitted retry ran. The runner closes Chrome before removing its disposable profile.
 - All 53 local links/anchors in the changed docs passed, along with whitespace and file-scope diff review.
-- No human/phone playtest, no frame-rate claim, and no founding balance adjustment. The real map and its taps,
+- Part B verification had no observed human/phone playtest, no frame-rate claim, and no founding balance adjustment.
+  Subsequent user-reported feedback is saved above. The real map and its taps,
   pacing and player understanding remain Part C work; do not mark the whole slice complete.
 - Unknown migrated body types remain in the ecology and are explicitly listed as sea-only in board previews.
   Their representation still needs review in C. The staged seed/patch graph compatibility boundary remains.
 
 ## Next session
-Part B is a saved boundary. Start a fresh session for **slice 19, Part C**.
+The Part C spec is a saved boundary. Start a fresh implementation session from this branch/checkpoint.
 
-> Continue on `codex/m2-step4-spec`. Read AGENTS.md, docs/status.md and docs/slices/19-join-the-sea.md.
-> Work on Part C: replace the island overview/patch lists with the sea map, make eligible patches and the last
-> release/descendants clear, review the remaining legacy representation edges, then verify and play the loop.
-> Keep diet recorded and feeding determined by parts/verbs; sharing is creature design, not population import.
-> Reuse the Part B lifecycle and codec. Do not re-ask settled founding/continuation/sharing decisions. No new
-> dependencies or subagents by default. Save a handoff and remind me at the next verified boundary.
+> Implement slice 19 Part C from `codex/part-c-review-plan`, on a task branch based on its current HEAD.
+> Read AGENTS.md, docs/status.md and docs/slices/19-join-the-sea.md, especially the Part C implementation spec.
+> Begin with C1's map, then C2's release feedback, and run C3's integrated checks. Reuse the Part B lifecycle
+> and codec. Preserve temporary body access; equipment and permanent progression remain steps 5/6.
+> Use one agent, no new dependencies, and targeted source reads. Do not repeat the A/B or architecture audit.
+> Save focused commits and a handoff. Report actual player/phone tests separately from automated fixtures;
+> leave unavailable human checks open. Remind me at the next verified boundary.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in
