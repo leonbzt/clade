@@ -3,17 +3,20 @@
 Open only what the task needs. Top to bottom is the order of authority: when two docs disagree, the higher one
 wins (and the code is the truth for what's built).
 
+**Current task:** [slice 19: Join the sea](slices/19-join-the-sea.md), M2 step 4. Start with [status.md](status.md)
+and that spec; open the documents below only as the task needs them.
+
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |
-| [design/full-version.md](design/full-version.md) | **The full version (6 Nov): the one game, rigs, recipes, the lineage ladder, long-term needs, staying on the road** | You (AI drafts) | Every session |
+| [design/full-version.md](design/full-version.md) | **The full version (6 Nov, updated 7 Nov): the game, rigs, recipes, lineage ladder and staying on the road** | You (AI drafts) | Relevant sections for design or scope questions |
 | [design/body-approach.md](design/body-approach.md) | **Bodies, slots, species and what animation costs (6 Nov):** six places, measured render costs, styles | AI, after your slice 18 notes | For the slot model and the style |
 | [planning/plan.md](planning/plan.md) | The plan for the real build (5 Nov): your calls, M1's slices, what's ported, cuts | You (AI drafts) | When a call's history matters |
 | [design/big-picture.md](design/big-picture.md) | The direction before planning (4 Nov); `plan.md` wins where they differ | You (AI drafts) | Background |
 | [planning/m1-run.md](planning/m1-run.md) | **The M1 run: how one long session builds slices 09–15 (5 Nov)** | You (AI drafts) | Build sessions in M1 |
 | [planning/README.md](planning/README.md) | **The kit for research and planning the real build in cloud sessions (5 Nov)** | AI, you | When planning |
-| [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, the budgets | You (AI drafts) | Every session |
+| [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, the budgets | You (AI drafts) | Scope or budget questions |
 | [status.md](status.md) | The last handoff: done, decided, next, open | AI at `/handoff` | Every session |
-| `spec.md` (after the toy) | The game in one page; replaces v1's vision. Until then: [design/rebuild.md](design/rebuild.md) | You (AI drafts) | Design sessions, slice specs |
+| [spec.md](spec.md) | Archived plant-game spec; current release vision is `design/full-version.md` | You (AI drafts) | Historical context only when needed |
 | [tastes.md](tastes.md) | Your tastes, wishes and lessons, in your words | You (AI records) | Design sessions, specs |
 | [slices/](slices/) | One spec per slice ([_template.md](slices/_template.md)) | AI drafts, you approve | The current one when building |
 | [proposals.md](proposals.md) | Open AI proposals (three at most) | AI | When deciding |

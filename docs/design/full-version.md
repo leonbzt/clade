@@ -8,8 +8,10 @@ body parts, the shore cliffhanger. **Proposal:** everything marked so. Your exac
 ## 1. The game
 You play one Life at a time, and each one moves your line on. Everything leads from a Life to the map and back.
 
-1. **The map (home).** The living sea, with hooks from the sim: a crash, an open niche, a rival booming. Tap a patch, pick a lineage and
-   build. The trees are one tap away.
+1. **The map (home).** The living sea, with hooks from the sim: a crash, an open niche, a population booming.
+   **Updated 7 Nov:** a new sea has no animals; the first worm Life founds it. Thereafter the last successful clutch
+   permits a Life in its patch or an adjacent patch and remains available for retries. A new successful Life replaces
+   that clutch. Pick a body and build at an eligible patch; the trees are one tap away when introduced.
 2. **The Life.** You hatch small, eat and moult. Each moult offers parts your line has unlocked, sometimes a rare one, and the creature on
    the board changes.
 3. **Hatching.** The eggs open at the end. Found genes belong here, with reproduction, not on the board.
@@ -18,6 +20,11 @@ You play one Life at a time, and each one moves your line on. Everything leads f
 
 **The arc.** The whole release is the sea. When one line reaches the shore, you play one special Life on the tide line, "to be continued",
 and the sea keeps running. A run is one Life.
+
+**Step 4 bridge (7 Nov):** existing body choices are temporarily open after founding, without new rank gates.
+This does not settle permanent progression. Food and environmental conditions exist before animals; populations
+come from releases and their descendants. The scope, migration requirements and remaining compatibility decisions
+are in [slice 19: Join the sea](../slices/19-join-the-sea.md).
 
 ## 2. Who does what
 | System | Its one job | Where |
@@ -140,7 +147,7 @@ Build these simply now, in a way that can grow. *Proposal.*
 2. **The toy only prices drawing.** New lineages may still need new rules: a walking lobopod, Opabinia's snatch, the shore. Rules, not art, may be what limits us to 6–10 or 15.
 3. **Every animal has two sides.** A lineage needs rules for you and behaviour when it's prey, a rival or a hunter. Today those are separate code (`PLANS`, `data/prey.ts`, `sim/threat.ts`). Both must come from one record, or each animal costs double.
 4. **Parts free of plans have a price.** "Worm + legs" needs a leg to mean something on a worm. Today 27 parts are tied to plans, and verbs per plan (`VERB_PART`). Some parts will need a rule per body kind, or a list of allowed bases.
-5. **Whose trilobites are they?** *Answered (7 Nov):* the same species, and "you invent the trilobite so the map starts empty, maybe some really basic things that you also start with". See [decisions.md](../decisions.md).
+5. **Whose trilobites are they?** *Answered and clarified (7 Nov):* the same species. "empty map your first play gives the first animal" supersedes the earlier suggestion of basic starting natives. See [decisions.md](../decisions.md).
 
 ## 7. The sea with more in it
 *Decided:* algae are a living food layer first, playable later; "maybe multilayered animal food chain first too". *Proposal:* about 3–5 kinds that grow, spread and crash, painted on the

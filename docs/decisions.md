@@ -386,3 +386,32 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 ## 7 Nov, join the sea (step 4): who lives on the map
 - **Same species, and you invent it:** "so b same specises, and you invent the trilobite so the map starts empty, maybe some really basic things that you also start with. \"you start as one of the worms\"." This drops the nine natives as a starting cast, and answers gap 5 in full-version.md §6.
 - **Becoming a new lineage** *(a lean, not a call; step 5)*: "i lean becoming an trilobite is an empty build, or having the parts locked, then you could still see the impact".
+
+## 7 Nov, join the sea: empty founding and continuation (resumed in Codex)
+- **Empty animal map:** "empty map your first play gives the first animal." This supersedes the earlier possibility
+  of starting with basic native animals. The step-4 draft keeps food and environmental conditions present; the first Life is a worm.
+- **Temporary body access:** "don't overthink this if we will change it later. so i guess lean b", referring to
+  existing bodies being open instead of temporary rank gates. The saved draft uses that after the founding Life;
+  it does not decide permanent lineage progression or recipes.
+- **Close connection:** "would be also cool if you could only start a run from your last runs eggs, so you have to
+  spread step by step. the sea and basegame should interact closeley and feel connected".
+- **Continuation rule selected:** the user chose "first" between the last successful clutch and any living descendant
+  population. Use the last successful clutch, in its patch or an adjacent patch, retained for retries. A new
+  successful Life replaces it. This is spatial continuation, not an egg-inventory spending system.
+- **Worm predators and more animals:** "can we make worm predators?" and "maybe add more animals" remain requests
+  to investigate, not approval for a larger step-4 scope. Live worm hunting needs a bounded gameplay change.
+- **Spec checkpoint:** the user authorized saving the reviewed step-4 draft, decisions and workflow on a fresh branch:
+  "yes you can change things on a fresh branch ... if you make sure with git everything is reversiable and tracable
+  thats fine". [Slice 19](slices/19-join-the-sea.md) records the scope and remaining compatibility decisions.
+- **Old measurements:** the resumed Claude transcript contains fewer-species experiments from an unsaved scratch
+  script. Their scores were provisional; these are reported results, not reproducible evidence in this repository.
+  Do not derive an empty-world founding boost from competition against the old nine-native starting population.
+
+## 7 Nov, context, verification and handoffs
+- Fresh session per task: store decisions and handoff first. "also remind me when to hanover to a new session".
+- Keep AGENTS.md/CLAUDE.md concise and link to details. Restrict inspection to relevant files and dependencies.
+- Separate investigation from implementation; propose the cause, smallest change and checks before approval.
+  Existing authorization does not need to be requested again.
+- Use deterministic scripts for checks and summarize output; limit parallel agents to explicitly requested,
+  independent work. The shared rules are in [workflow.md](workflow.md).
+- Git checkpoints on a fresh branch must preserve previous work and make changes reversible and traceable.

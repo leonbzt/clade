@@ -37,8 +37,25 @@ adding features or rewriting architecture.
 - Preserve existing visual style.
 
 ## Context
-Read relevant docs/ files on demand.
-Do not load the entire documentation tree.
+Start with docs/status.md and the active slice spec.
+Read only relevant scripts, dependencies and docs/ sections.
+Do not load the entire documentation tree or repeat a completed audit.
+The release vision is docs/design/full-version.md; workflow details
+are in docs/workflow.md.
+
+## Sessions and traceability
+- Use a fresh session for a new task. Save decisions and a short
+  handoff first; remind the user at a completed task boundary.
+- Keep investigation separate from implementation: state the cause,
+  smallest change and checks, then obtain approval unless the user
+  has already authorized that implementation.
+- Work on a task branch and make focused, reviewable commits.
+  Preserve existing user work; do not reset or rewrite its history.
+- Use deterministic scripts for checks; summarize their results.
+  Repeat checks only after changes, failures or unresolved concerns.
+- Keep permanent instructions short; link to detailed documents.
+- Use one agent by default. Subagents require an explicit request
+  and a genuinely independent task.
 
 ## Scope
 Do not expand the release scope without approval.
