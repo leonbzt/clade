@@ -13,15 +13,18 @@ export const CELL: Record<string, [Terrain, NodeId | null]> = {
 
 export type HabitatId = 'mud' | 'sand' | 'rock';
 export type Ground = 'mud' | 'sand' | 'basalt';
-export interface Rival { at: [number, number]; name: string; eats: NodeId }
+export interface Rival { at: [number, number]; name: string; eats: NodeId; kind?: PreyKind; species?: string }
 /** A board event: from turn to turn, on one terrain or all, optionally only in rows [top, bottom]. */
 export interface BoardEvent { from: number; to: number; where: 'all' | Terrain; rows?: [number, number]; name: string; text: string; look: 'murk' | 'dry' | 'haze' }
 export interface Habitat {
+  patch?: number; // immutable launch reference on a sea board snapshot
+  stocks?: { mats: number; rot: number; oxygen: number };
+  unrepresented?: string[]; // migrated animals without an existing board body
   id: HabitatId; name: string; ground: Ground; pitch: string; blurb: string; real: string; map: string[];
   start: [number, number]; entry: [number, number]; predatorAt: number; predator: string; rivals: Rival[];
   event: BoardEvent; rares: Record<PlanId, PartId[]>; tiers: [string, number][];
-  prey: { kind: PreyKind; at: [number, number] }[]; // the predator Life's prey
-  hunter?: { yours: boolean; parts: PartId[] }; // set by the garden when your own line is the hunter (slice 14)
+  prey: { kind: PreyKind; at: [number, number]; species?: string; name?: string; eats?: NodeId }[];
+  hunter?: { yours: boolean; parts: PartId[]; species?: string };
 }
 
 /** One tier scale for every habitat, in eggs (slice 13). */

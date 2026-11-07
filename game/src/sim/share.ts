@@ -2,7 +2,8 @@
 // their species into your garden as a visitor in that niche: it competes for room, it never spreads.
 import type { Role } from '../data/garden';
 import { HABITATS, type HabitatId } from '../data/habitats';
-import { PARTS, PLANS, VERBS, type PartId, type PlanId, type VerbId } from '../data/life';
+import { MAX_VERBS, PARTS, PLANS, VERBS, type PartId, type PlanId, type VerbId } from '../data/life';
+import { newLife, startParts, verbs as lifeVerbs } from './life';
 import { tierName, type Garden, type News } from './garden';
 
 export interface Species { plan: PlanId; role: Role; hab: HabitatId; eggs: number; form?: PartId; verbs: VerbId[]; name: string }
@@ -21,11 +22,33 @@ export function decode(code: string): Species | null {
   const m = code.trim().match(/^CLADE-([A-Za-z0-9_-]+)-([0-9a-z]{4})$/);
   if (!m || sum(m[1]) !== m[2]) return null;
   try {
-    const [plan, role, hab, eggs, form, verbs, name] = JSON.parse(unb64(m[1]));
-    if (!PLANS[plan as PlanId] || !HABITATS[hab as HabitatId] || !['grazer', 'burrower', 'predator'].includes(role)) return null;
-    if (typeof eggs !== 'number' || eggs < 0 || eggs > 200) return null;
-    return { plan, role, hab, eggs: Math.round(eggs), form: PARTS[form as PartId] ? form : undefined, verbs: (verbs as VerbId[]).filter((v) => VERBS[v]).slice(0, 3), name: String(name || 'A friend').slice(0, 24) };
+    const fields = JSON.parse(unb64(m[1]));
+    if (!Array.isArray(fields) || fields.length !== 7) return null;
+    const [plan, role, hab, eggs, form, verbs, name] = fields;
+    if (!Object.hasOwn(PLANS, plan) || !Object.hasOwn(HABITATS, hab) || !['grazer', 'burrower', 'predator'].includes(role)) return null;
+    if (typeof eggs !== 'number' || !Number.isFinite(eggs) || eggs < 0 || eggs > 200 || !Array.isArray(verbs)
+      || verbs.length > MAX_VERBS || !verbs.every((v) => typeof v === 'string' && Object.hasOwn(VERBS, v))
+      || (form !== '' && (typeof form !== 'string' || !Object.hasOwn(PARTS, form)))) return null;
+    return { plan, role, hab, eggs: Math.round(eggs), form: form || undefined, verbs, name: String(name || 'A friend').slice(0, 24) };
   } catch { return null; }
+}
+
+/** Old codes still decode, but now describe a starting build. They never add visitors or grant the encoded score. */
+export function designProblem(sp: Species): string | null {
+  if (sp.form && !PARTS[sp.form].plans.includes(sp.plan)) return 'That form does not fit this body.';
+  const parts = startParts(sp.plan, sp.verbs, sp.form), l = newLife(1, sp.plan, HABITATS[sp.hab], parts);
+  return l.order.length !== parts.length || new Set(parts.map((p) => PARTS[p].verb).filter(Boolean)).size > MAX_VERBS
+    ? 'That design has more parts or verbs than its starting body can hold.' : null;
+}
+
+/** Export a starting design that fits, using the representative build's verbs and the kept form. */
+export function designVerbs(plan: PlanId, parts: PartId[], form?: PartId): VerbId[] {
+  const out: VerbId[] = [];
+  for (const p of parts) {
+    const v = PARTS[p].verb;
+    if (v && !out.includes(v) && !designProblem({ plan, role: 'grazer', hab: 'mud', eggs: 0, form, verbs: [...out, v], name: '' })) out.push(v);
+  }
+  return lifeVerbs(newLife(1, plan, HABITATS.mud, startParts(plan, out, form)));
 }
 
 /** A friend's species joins your garden as a visitor in its niche. */

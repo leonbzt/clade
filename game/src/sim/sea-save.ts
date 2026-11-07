@@ -1,10 +1,10 @@
-// Slice 19 part A: a staged v3 boundary. The garden UI keeps using save.ts until part B.
+// Slice 19: the runtime v3 boundary, including optional inherited builds added in part B.
 // JSON columns follow the saved species registry, never the current content order.
 import { ROLE_IDS } from '../data/garden';
 import { HAB_ORDER } from '../data/habitats';
 import { SEA as WATER } from '../data/island';
-import { PLAN_IDS } from '../data/life';
-import { PLAYER_SPECIES, SEA, lineId, type Species } from '../data/sea';
+import { NODES, PARTS, PART_IDS, PLAN_IDS, type PartId } from '../data/life';
+import { PLAYER_SPECIES, SEA, lineId, type Diet, type Species } from '../data/sea';
 import { makeIsland } from './island';
 import { parseSave, type Pending, type Save } from './save';
 import { finite, integer, oneOf, record, rngState, text, validPending, validProgress } from './save-validation';
@@ -14,7 +14,7 @@ import { migrateLegacySea } from './sea-migration';
 
 export const SEA_SAVE_VERSION = 3;
 export interface Continuation { patch: number; species: string; plan: Pending['plan']; role: Pending['role']; eggs: number }
-export interface SeaPending extends Pending { patch: number; species: string }
+export interface SeaPending extends Pending { patch: number; species: string; parts?: PartId[]; diet?: Diet }
 export interface SeaSave extends Omit<Save, 'v' | 'garden' | 'pending'> {
   v: typeof SEA_SAVE_VERSION; sea: Sea; news: Headline[]; pending?: SeaPending; continuation?: Continuation;
   legacy?: { json: string }; // the exact input, recoverable without browser storage access
@@ -45,7 +45,13 @@ const patchRef = (v: unknown, count: number) => integer(v, 0, count - 1);
 function validSpecies(v: unknown): v is Species {
   return record(v) && text(v.id) && text(v.name) && oneOf(v.role, ROLE_IDS) && typeof v.line === 'boolean'
     && (v.plan === undefined || oneOf(v.plan, PLAN_IDS)) && numbers(v.colour, 3, (n) => integer(n, 0, 255))
-    && (v.line ? oneOf(v.plan, PLAN_IDS) && v.id === lineId(v.plan, v.role) : !v.id.startsWith('line:'));
+    && (v.line ? oneOf(v.plan, PLAN_IDS) && v.id === lineId(v.plan, v.role) : !v.id.startsWith('line:')) && validBuild(v);
+}
+
+function validBuild(v: Record<string, unknown>): boolean {
+  return (v.parts === undefined || (Array.isArray(v.parts) && v.parts.length <= 16
+    && v.parts.every((p) => oneOf(p, PART_IDS) && (v.plan === undefined || PARTS[p].plans.includes(v.plan as Pending['plan'])))))
+    && (v.diet === undefined || (record(v.diet) && Object.entries(v.diet).every(([key, n]) => (key === 'prey' || Object.hasOwn(NODES, key)) && finite(n))));
 }
 
 /** Validate before constructing typed arrays: typed-array coercion must not repair invalid imports. */
@@ -107,7 +113,7 @@ export function parseSeaSave(json: string | null): Parsed {
     }
     if (!validProgress(s)) return { save: null, problem: 'broken' };
     const sea = readSea(s.sea, s.seed as number);
-    if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea)))
+    if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea) || !validBuild(s.pending as unknown as Record<string, unknown>)))
       || (s.continuation !== undefined && (!validReference(s.continuation, sea) || s.continuation.eggs <= 0))
       || (s.legacy !== undefined && (!record(s.legacy) || typeof s.legacy.json !== 'string'))) return { save: null, problem: 'broken' };
     if (!Array.isArray(s.news) || s.news.length > SEA.keepLines) return { save: null, problem: 'broken' };

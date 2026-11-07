@@ -6,6 +6,9 @@ import { COLS, ROWS, TURNS, type NodeId, type PartId, type PlanId } from '../dat
 import type { PreyKind } from '../data/prey';
 import { popOf, type Garden, type LifeResult } from './garden';
 import type { Life } from './life';
+import type { Sea } from './sea';
+import { SEA, type Species } from '../data/sea';
+import { feedsAs, partsOf } from './feeding';
 
 const hash = (x: number, y: number, salt: number) => {
   let t = Math.imul((x * 73856093) ^ (y * 19349663) ^ (salt * 83492791), 0x5bd1e995);
@@ -72,6 +75,57 @@ export function boardFor(g: Garden, id: HabitatId, forms: Record<string, PartId>
 }
 
 const count = (b: Habitat, nodes: string) => [...b.map.join('')].filter((c) => nodes.includes(c)).length;
+
+/** Only use a body we can actually draw, never disguise a migrated species as another animal. */
+export function boardKind(sp: Species): PreyKind | null {
+  if (sp.plan) return sp.plan;
+  if (sp.id === 'legacy:wiwaxia:grazer') return 'wiwaxia';
+  if (sp.id === 'legacy:olenoides:grazer') return 'trilobite';
+  if (/^legacy:(burgesso|selkirkia|ottoia):/.test(sp.id)) return 'worm';
+  if (sp.id === 'legacy:sidneyia:predator') return 'arthropod';
+  if (sp.id === 'legacy:anomalocaris:predator') return 'swimmer';
+  return null;
+}
+
+/** A detached snapshot of one patch, using the existing terrain templates and only its actual residents. */
+export function boardForPatch(sea: Sea, patch: number): Habitat {
+  const p = sea.patches[patch];
+  if (!p) throw new Error('Unknown sea patch');
+  const base = structuredClone(HABITATS[p.ground]), grid: Grid = base.map.map((row) => [...row]);
+  const safe = (x: number, y: number) => dist(x, y, ...base.start) <= BOARD.safeRange || (x === base.entry[0] && y === base.entry[1]);
+  const share = (now: number, normal: number) => clamp(normal > 0 ? now / normal : now > 0 ? 1 : 0, 0, BOARD.maxShare);
+  follow(grid, 'm', '.', share(p.mats, p.normal.mats), 1, safe);
+  follow(grid, 'o', '%', share(p.mats, p.normal.mats), 2, safe);
+  follow(grid, 'b', '~', share(p.rot, p.normal.rot), 3, safe);
+  if (share(p.rot, p.normal.rot) < BOARD.carcassShare) follow(grid, 'c', '.', 0, 6, () => false);
+  if (base.ground === 'basalt') {
+    const off = p.normal.oxygen - p.oxygen, past = Math.sign(off) * Math.max(0, Math.abs(off) - BOARD.deadBand);
+    shiftVents(grid, clamp(Math.round(past / BOARD.oxygenPerTile), -BOARD.maxDeadShift, BOARD.maxDeadShift), safe);
+  }
+  const residents = sea.species.map((sp, k) => ({ sp, pop: p.pop[k], fit: p.fit[k], kind: boardKind(sp), feeding: feedsAs(sp) }))
+    .filter((e) => e.pop >= 1).sort((a, b) => b.pop - a.pop || a.sp.id.localeCompare(b.sp.id));
+  const food = (e: typeof residents[number]): NodeId => e.feeding.rot ? e.feeding.dig ? 'buried' : 'carcass' : base.ground === 'basalt' ? 'bloom' : 'mat';
+  const preyResidents = residents.filter((e) => e.kind && !e.feeding.hunt);
+  const prey: Habitat['prey'] = [];
+  // Round-robin the real species across authored positions. No minimum prey and no absent kind to respawn.
+  for (let round = 0; prey.length < Math.min(BOARD.preyMax, base.prey.length); round++) {
+    let added = false;
+    for (const e of preyResidents) {
+      if (round >= Math.max(1, Math.floor(e.pop / BOARD.rivalAt)) || prey.length >= base.prey.length) continue;
+      prey.push({ kind: e.kind!, at: [...base.prey[prey.length].at], species: e.sp.id, name: e.sp.name, eats: food(e) }); added = true;
+    }
+    if (!added) break;
+  }
+  const rival = preyResidents.find((e) => e.pop >= BOARD.rivalAt), spot = base.rivals[0];
+  const rivals: Habitat['rivals'] = rival && spot ? [{ ...spot, name: rival.sp.name, species: rival.sp.id, kind: rival.kind!, eats: food(rival) }] : [];
+  const hunter = residents.filter((e) => e.feeding.hunt && e.kind === 'swimmer' && e.pop >= BOARD.predatorAt)
+    .sort((a, b) => b.fit - a.fit || b.pop - a.pop)[0];
+  const shift = hunter && p.normal.hunters > 0 ? Math.round(Math.log2(hunter.pop / p.normal.hunters) * BOARD.spread) : 0;
+  return { ...base, patch, name: `${base.name} · patch ${patch + 1}`, map: grid.map((row) => row.join('')), prey, rivals,
+    stocks: { mats: p.mats, rot: p.rot, oxygen: p.oxygen }, unrepresented: residents.filter((e) => !e.kind).map((e) => e.sp.name),
+    predator: hunter ? hunter.sp.name : 'none', predatorAt: hunter ? clamp(base.predatorAt - shift, BOARD.earliest, BOARD.latest) : NO_PREDATOR,
+    hunter: hunter ? { yours: hunter.sp.line, parts: [...partsOf(hunter.sp)], species: hunter.sp.id } : undefined };
+}
 /** What's on a board, counted from the board itself. */
 export const boardFacts = (b: Habitat) => ({
   mats: count(b, 'mo'), buried: count(b, 'b'), shells: count(b, 's'), carcasses: count(b, 'cC'), prey: b.prey.length,
@@ -81,7 +135,10 @@ export const boardFacts = (b: Habitat) => ({
 export function nextBoard(b: Habitat): string {
   const f = boardFacts(b), many = (n: number, one: string, more = `${one}s`) => (n ? `${n} ${n === 1 ? one : more}` : '');
   return [many(f.mats, 'mat'), f.buried ? `${f.buried} buried` : '', many(f.shells, 'shell bed'), many(f.carcasses, 'carcass', 'carcasses'), `${f.prey} prey`,
-    f.predator ? `${f.predator.name} on turn ${f.predator.turn}` : 'no hunter', f.rivals.length ? `rivals: ${f.rivals.join(', ')}` : ''].filter(Boolean).join(' · ');
+    f.prey ? [...new Set(b.prey.map((p) => p.name ?? p.kind))].join(', ') : '',
+    f.predator ? `${f.predator.name} on turn ${f.predator.turn}` : 'no hunter', f.rivals.length ? `rivals: ${f.rivals.join(', ')}` : '',
+    b.stocks && b.stocks.oxygen < SEA.chokeAt ? 'low oxygen throughout this board' : '',
+    b.unrepresented?.length ? `sea only: ${b.unrepresented.join(', ')}` : ''].filter(Boolean).join(' · ');
 }
 
 /** The predator Life's prey follow the prey populations: worms the burrowers, trilobites and Wiwaxia the grazers. */

@@ -4,8 +4,9 @@ import {
   HUNT, MAX_VERBS, NODES, PARTS, PART_IDS, PLANS, RULE, STAGES, STARTER_PLAN, STYLE_VERBS, TURNS, VERB_PART,
   type NodeId, type PartId, type PlanId, type SlotKind, type Terrain, type VerbId,
 } from '../data/life';
-import { CELL, MUD_FLATS, type Habitat } from '../data/habitats';
+import { CELL, MUD_FLATS, type Habitat, type Rival } from '../data/habitats';
 import type { PreyKind } from '../data/prey';
+import { SEA } from '../data/sea';
 import { preyInit, preyStep, swimDests, swimMove, type Prey } from './hunt';
 import { predatorStep } from './threat';
 export { hitOn } from './threat';
@@ -50,7 +51,7 @@ export type Ev =
 
 export interface Life {
   plan: PlanId; hab: Habitat; r: number;
-  tiles: Tile[]; x: number; y: number; facing: Dir; rivals: { x: number; y: number; name: string; eats: NodeId }[];
+  tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Omit<Rival, 'at'> & { x: number; y: number })[];
   turn: number; food: number; oxygen: number; health: number; eggs: number; xp: number; eaten: number;
   size: number; slots: Slot[]; order: number[];
   phase: 'play' | 'offer' | 'over'; offers: PartId[];
@@ -59,6 +60,7 @@ export interface Life {
   recharge: Partial<Record<VerbId, number>>; dash: boolean; braced: boolean; dug: boolean;
   prey: Prey[]; frenzy: number; still: boolean; caught: boolean; catches: number; // the predator Life
   ate: Partial<Record<NodeId | 'prey', number>>; // food by source: the garden reads your role from it
+  eggParts?: PartId[]; // the most recent clutch's build, before any later injuries
 }
 
 export function rnd(l: { r: number }) { // the toy's mulberry32
@@ -81,7 +83,8 @@ export function eventArea(l: Life, x: number, y: number) {
   return (ev.where === 'all' || ev.where === t) && (!ev.rows || (y >= ev.rows[0] && y <= ev.rows[1]));
 }
 /** Whether standing on (x, y) costs oxygen this turn: vent water, or the event's area while it lasts. */
-export const airless = (l: Life, x = l.x, y = l.y) => !has(l, 'blood') && (l.tiles[at(x, y)].t === 'dead' || (eventOn(l) && eventArea(l, x, y)));
+export const airless = (l: Life, x = l.x, y = l.y) => !has(l, 'blood') &&
+  ((l.hab.stocks !== undefined && l.hab.stocks.oxygen < SEA.chokeAt) || l.tiles[at(x, y)].t === 'dead' || (eventOn(l) && eventArea(l, x, y)));
 export const upkeep = (l: Life) => (has(l, 'deep') && onMud(l) ? 0 : RULE.baseUpkeep + l.slots.reduce((n, s) => n + (s.part ? PARTS[s.part].upkeep : 0), 0));
 export const oxygenMax = (l: Life) => RULE.oxygen + count(l, 'gill') * RULE.gillOxygen;
 export const range = (l: Life) => Math.min(RULE.maxRange, PLANS[l.plan].range + count(l, 'leg')) * (l.dash ? 2 : 1);
@@ -150,7 +153,7 @@ export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat 
   const l: Life = {
     plan, hab, r: (seed ^ 0x5bd1e995) | 0,
     tiles: hab.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
-    x: hab.start[0], y: hab.start[1], facing: 1, rivals: plan === 'swimmer' ? [] : hab.rivals.map((v) => ({ x: v.at[0], y: v.at[1], name: v.name, eats: v.eats })),
+    x: hab.start[0], y: hab.start[1], facing: 1, rivals: plan === 'swimmer' ? [] : hab.rivals.map((v) => ({ ...v, x: v.at[0], y: v.at[1] })),
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, xp: 0, eaten: 0,
     size: 1, slots, order: [], phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
     moulted: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
@@ -279,6 +282,7 @@ export function lay(l: Life) {
   if (!canLay(l)) return;
   const n = clutch(l);
   l.food -= RULE.layCost; l.eggs += n; l.moved = false;
+  l.eggParts = l.order.flatMap((k) => l.slots[k].part ? [l.slots[k].part!] : []);
   say(l, `Laid ${n} egg${n > 1 ? 's' : ''}.`);
   emit(l, { k: 'lay', n, eggs: l.eggs, food: l.food });
   if (l.rareGot && !l.rarePassed) { l.rarePassed = true; say(l, `${PARTS[l.rareGot].name} passed on.`); }
@@ -300,7 +304,7 @@ function rivalStep(l: Life, idx: number) {
   const [tx, ty] = xy(best), dx = Math.sign(tx - v.x), dy = Math.sign(ty - v.y);
   const tries = Math.abs(tx - v.x) >= Math.abs(ty - v.y) ? [[dx, 0], [0, dy]] : [[0, dy], [dx, 0]];
   for (const [ox, oy] of tries) {
-    if ((ox || oy) && inB(v.x + ox, v.y + oy) && tile(l, v.x + ox, v.y + oy).t !== 'rock') { v.x += ox; v.y += oy; break; }
+    if ((ox || oy) && inB(v.x + ox, v.y + oy) && (v.kind === 'swimmer' || tile(l, v.x + ox, v.y + oy).t !== 'rock') && (!v.kind || tile(l, v.x + ox, v.y + oy).t !== 'dead')) { v.x += ox; v.y += oy; break; }
   }
   const t = tile(l, v.x, v.y), ate = t.node === v.eats;
   if (ate) cleared(l, t);

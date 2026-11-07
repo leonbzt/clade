@@ -1,10 +1,11 @@
 // The living sea, ported from the slice 17 model (slice 19). Real populations in patches, and only four rules: grazers eat mats; burrowers
 // eat rot and stir oxygen; hunters take prey, the commonest most; deaths become rot, and rot uses up oxygen. Species breed
 // from what they ate, with no capacity, so they overshoot and crash by themselves. Knows nothing of drawing. Costs little.
-import type { PlanId } from '../data/life';
+import type { PartId, PlanId } from '../data/life';
 import type { Role } from '../data/garden';
 import { makeIsland, type Island } from './island';
-import { SEA, GROUND, PLAYER_SPECIES, lineId, type Species } from '../data/sea';
+import { SEA, GROUND, PLAYER_SPECIES, lineId, type Diet, type Species } from '../data/sea';
+import { feedsAs } from './feeding';
 import { makeShallows, type Patch } from './sea-patches';
 
 export const LOST = { starve: 0, hunted: 1, choke: 2, shock: 3 } as const;
@@ -32,7 +33,7 @@ const rnd = (s: Sea) => {
   t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
   return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
 };
-const isPrey = (s: Sea, k: number) => s.species[k].role !== 'predator';
+const isPrey = (s: Sea, k: number) => !feedsAs(s.species[k]).hunt;
 export const preyOf = (s: Sea, p: SeaPatch) => { const S = s.species.length; let n = 0; for (let k = 0; k < S; k++) if (isPrey(s, k)) n += p.pop[k]; return n; };
 export const huntersOf = (s: Sea, p: SeaPatch) => { const S = s.species.length; let n = 0; for (let k = 0; k < S; k++) if (!isPrey(s, k)) n += p.pop[k]; return n; };
 /** The patch's holder: its most numerous prey species, or -1. */
@@ -44,38 +45,39 @@ export function holder(s: Sea, p: SeaPatch): number {
 }
 
 /** One patch's meal, shocks and breath. `arrive` gathers the hungry who are crossing borders. */
-function stepPatch(s: Sea, p: SeaPatch, arrive: Float64Array) {
+function stepPatch(s: Sea, p: SeaPatch, arrive: Float64Array, feeds: ReturnType<typeof feedsAs>[]) {
   const S = s.species.length, g = GROUND[p.ground], pop = p.pop;
   const eaten = new Float64Array(S), hungry = new Float64Array(S);
   let deaths = 0;
   const kill = (k: number, n: number, how: number) => { const d = Math.min(pop[k], n); pop[k] -= d; deaths += d; if (how >= 0) p.lost[k * LOSSES + how] += d; };
 
   // Grazers eat mats, burrowers eat rot: the same saturating meal from their own stock.
-  const meal = (role: 'grazer' | 'burrower', stock: number) => {
+  const meal = (source: 'mats' | 'rot', stock: number) => {
     let want = 0;
     const speed = stock / (SEA.eatHalf + stock);
-    for (let k = 0; k < S; k++) if (s.species[k].role === role && pop[k] > 0) { eaten[k] = pop[k] * SEA.eat * skill(p.fit[k]) * speed; want += eaten[k]; }
+    const amounts = new Float64Array(S);
+    for (let k = 0; k < S; k++) if (feeds[k][source] && pop[k] > 0) { amounts[k] = pop[k] * SEA.eat * skill(p.fit[k]) * speed * feeds[k][source]; want += amounts[k]; }
     const f = want > stock * SEA.maxTake ? (stock * SEA.maxTake) / want : 1;
-    for (let k = 0; k < S; k++) if (s.species[k].role === role) eaten[k] *= f;
+    for (let k = 0; k < S; k++) eaten[k] += amounts[k] * f;
     return want * f;
   };
-  const matsEaten = meal('grazer', p.mats), rotEaten = meal('burrower', p.rot);
+  const matsEaten = meal('mats', p.mats), rotEaten = meal('rot', p.rot);
   let burrowers = 0;
-  for (let k = 0; k < S; k++) if (s.species[k].role === 'burrower') burrowers += pop[k];
+  for (let k = 0; k < S; k++) if (feeds[k].dig) burrowers += pop[k];
 
   // Hunters take prey, the commonest most.
-  const prey = preyOf(s, p);
+  const prey = pop.reduce((n, v, k) => n + (feeds[k].hunt ? 0 : v), 0);
   let weight = 0, killed = 0;
-  for (let k = 0; k < S; k++) if (isPrey(s, k)) weight += pop[k] ** SEA.commonest;
-  for (let k = 0; k < S; k++) if (!isPrey(s, k) && pop[k] > 0) { eaten[k] = pop[k] * SEA.hunt * skill(p.fit[k]) * prey / (SEA.huntHalf + prey); killed += eaten[k]; }
+  for (let k = 0; k < S; k++) if (!feeds[k].hunt) weight += pop[k] ** SEA.commonest;
+  for (let k = 0; k < S; k++) if (!!feeds[k].hunt && pop[k] > 0) { eaten[k] = pop[k] * SEA.hunt * skill(p.fit[k]) * prey / (SEA.huntHalf + prey); killed += eaten[k]; }
   const room = prey * SEA.maxKill, huntF = killed > room ? room / killed : 1;
-  for (let k = 0; k < S; k++) if (!isPrey(s, k)) eaten[k] *= huntF;
+  for (let k = 0; k < S; k++) if (!!feeds[k].hunt) eaten[k] *= huntF;
   killed *= huntF;
 
   // Breed from the meal, starve from the shortfall. Hunters' meals are counted in prey.
   for (let k = 0; k < S; k++) {
     if (pop[k] <= 0) continue;
-    const hunter = !isPrey(s, k), full = hunter ? SEA.hunt : SEA.eat, fed = eaten[k] / (pop[k] * full), need = hunter ? SEA.huntNeed : SEA.need;
+    const hunter = !!feeds[k].hunt, full = hunter ? SEA.hunt : SEA.eat, fed = eaten[k] / (pop[k] * full), need = hunter ? SEA.huntNeed : SEA.need;
     const short = Math.max(0, 1 - fed / need);
     hungry[k] = short;
     const born = eaten[k] * (hunter ? SEA.huntBreed : SEA.breed);
@@ -125,8 +127,8 @@ function stepPatch(s: Sea, p: SeaPatch, arrive: Float64Array) {
 export function step(s: Sea): Event[] {
   const S = s.species.length;
   s.gen++;
-  const arrive = s.moved.fill(0), out: Event[] = [], { patches } = s;
-  for (const p of patches) stepPatch(s, p, arrive);
+  const arrive = s.moved.fill(0), out: Event[] = [], { patches } = s, feeds = s.species.map(feedsAs);
+  for (const p of patches) stepPatch(s, p, arrive, feeds);
   for (const p of patches) {
     for (let k = 0; k < S; k++) {
       const add = arrive[p.id * S + k];
@@ -171,32 +173,38 @@ function watch(s: Sea, p: SeaPatch, out: Event[]) {
   else if (p.preyPeak >= SEA.patchMinPeak && prey <= p.preyPeak * SEA.patchCrashTo) { s.patchCrashes.push(s.gen, p.id); p.preyPeak = prey; p.preyFalling = true; }
 }
 
-const FOOD_GONE = { grazer: 'mats ran out', burrower: 'buried food ran out', predator: 'prey ran out' };
+const foodGone = (sp: Species) => {
+  const f = feedsAs(sp);
+  return f.hunt ? 'prey ran out' : f.mats && f.rot ? 'mats and detritus ran short' : f.rot ? 'detritus ran out' : 'mats ran out';
+};
 function crashCause(s: Sea, p: SeaPatch, k: number): string {
   const S = s.species.length;
   let top = 0, how = 0;
   for (let c = 0; c < LOSSES; c++) if (p.lost[k * LOSSES + c] > top) { top = p.lost[k * LOSSES + c]; how = c; }
   if (how === LOST.hunted) {
     let who = -1, most = 0;
-    for (let h = 0; h < S; h++) if (s.species[h].role === 'predator' && p.pop[h] > most) { most = p.pop[h]; who = h; }
+    for (let h = 0; h < S; h++) if (!isPrey(s, h) && p.pop[h] > most) { most = p.pop[h]; who = h; }
     return who >= 0 ? `eaten by ${s.species[who].name}` : 'eaten by hunters';
   }
   if (how === LOST.choke) return 'oxygen ran out';
   if (how === LOST.shock) return GROUND[p.ground].shock;
-  return FOOD_GONE[s.species[k].role];
+  return foodGone(s.species[k]);
 }
 function boomCause(s: Sea, p: SeaPatch, k: number): string {
-  const role = s.species[k].role;
-  if (role === 'predator') return 'prey was plentiful';
+  const f = feedsAs(s.species[k]);
+  if (f.hunt) return 'prey was plentiful';
   if (huntersOf(s, p) < 2) return 'no hunters here';
-  return role === 'grazer' ? 'thick mats' : 'plenty of buried food';
+  return f.mats ? 'thick mats' : 'plenty of detritus';
 }
 
 /** Actual eggs only. A weaker clutch never lowers fitness, on this ground or elsewhere. */
-export function release(s: Sea, patch: number, plan: PlanId, role: Role, eggs: number): string {
+export function release(s: Sea, patch: number, plan: PlanId, role: Role, eggs: number, parts?: PartId[], diet?: Diet): string {
   const id = lineId(plan, role), k = s.species.findIndex((x) => x.id === id), p = s.patches[patch];
   if (!p || k < 0 || !Number.isSafeInteger(eggs) || eggs < 0) throw new Error('Invalid sea release');
   if (eggs === 0) return id;
+  if (parts && eggs >= Math.max(...s.patches.map((q) => q.fit[k]))) {
+    s.species[k].parts = [...parts]; s.species[k].diet = diet ? { ...diet } : undefined;
+  }
   for (const q of s.patches) q.fit[k] = Math.max(q.fit[k], q.ground === p.ground ? eggs : eggs * SEA.unproven);
   p.pop[k] += eggs; p.peak[k] = Math.max(p.peak[k], p.pop[k]); p.low[k] = p.pop[k]; p.came[k] = -2;
   return id;
