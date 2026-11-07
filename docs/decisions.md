@@ -415,3 +415,15 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - Use deterministic scripts for checks and summarize output; limit parallel agents to explicitly requested,
   independent work. The shared rules are in [workflow.md](workflow.md).
 - Git checkpoints on a fresh branch must preserve previous work and make changes reversible and traceable.
+
+## 7 Nov, join the sea part A implementation
+- **Authorized scope:** continue on `codex/m2-step4-spec`, implement part A, and explain the smallest change and
+  verification before coding. The latest instruction says "saves are no priority"; it supersedes the earlier
+  emphasis on preserving saves. No save files were edited or browser data accessed.
+- **Implementation boundary:** stage the production sea and v3 codec alongside the v2 garden UI until part B.
+  Keep the existing UI and species sharing working during the port. This is an implementation choice within A,
+  not a decision to retain two world simulations in the release.
+- **Migration choice:** retain original JSON and map legacy habitats/populations and pending results deterministically.
+  Old saves lack last-clutch chronology; use the documented successful-entry/progress fallback. Exact rules and
+  typed-array ordering are in [slice 19's Part A notes](slices/19-join-the-sea.md#part-a-implementation-boundary-and-migration).
+- Predator-worm representation, new sharing rules and founding balance remain open for their dependent parts.

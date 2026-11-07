@@ -2,7 +2,8 @@
 
 **Milestone:** M2, step 4 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Does each Life visibly change the sea and determine where you play next?
-**Status:** scope draft reviewed in chat and saved with permission on 7 Nov; not implemented or played.
+**Status:** part A implemented on 7 Nov: production model and staged v3 codec/migration. Parts B/C are not wired;
+the current UI still runs the garden. No slice-19 playtest yet.
 **Builds on:** [7 Nov decisions](../decisions.md#7-nov-join-the-sea-empty-founding-and-continuation-resumed-in-codex),
 [the release vision](../design/full-version.md), the sea toy (slice 17), and the existing Life, clutch and save systems.
 Gameplay calls below are settled for this slice; items labelled proposal or open are not new user decisions.
@@ -119,3 +120,28 @@ needed without rewriting movement, parts or event playback. No new framework, de
    bypassing spatial continuation? Preserve the feature pending an explicit adaptation or deferral decision.
 3. **Founding balance:** does the real empty-world loop need a boost? Measure actual early clutches on a few seeds
    and play the return to the map before proposing a number. This does not block the model/serialization part.
+
+## Part A implementation boundary and migration
+
+- Stage the production sea and v3 codec alongside the playable v2 garden. Part B will switch the runtime save and
+  connect results; Part C will replace the home view. Do not keep two live simulations or silently overwrite the
+  browser save during this model-only port. Save preservation is lower priority per the 7 Nov implementation request;
+  the bounded migration below remains part of A.
+- Species carry stable IDs, role and (for player lines) body. Player IDs are `line:<body>:<role>` so different bodies
+  and diets never share a slot. The saved registry owns array ordering; decoding orders by ID and remaps columns.
+  Natives and visitors exist only when migrated. New seas have food/environment but zero populations and no immigration.
+- Each legacy habitat maps to its lowest-ID patch with matching ground (lowest patch ID as a fallback if a seed
+  lacks that ground). Copy food, oxygen and their normal values to matching patches, but put each population only
+  in its mapped patch: no multiplication by patch count. Preserve its score, body/role, native/visitor identity,
+  simulation generation/RNG, timestamp, progress, forms and unlocks. Retain the original JSON in the migrated save.
+- Pending completed results keep their cards, eggs and habitat, gain patch/species references, and are **not** released
+  by migration. A positive pending result is the continuation point. Otherwise use the highest-scoring successful
+  player entry (ties: habitat order, then species ID); if none survives, use the best positive tier in progress with
+  the old role's default body. With no success evidence, leave continuation unset and allow founding. Old saves did
+  not record the last successful clutch, so this deterministic fallback cannot reconstruct its exact chronology.
+- Store the patch graph, species registry, ecological memory and headlines explicitly; reconstruct all typed arrays.
+  The immutable island is regenerated from its seed; the saved patch graph is retained. A future island-generator
+  change needs a save-version decision. Movement buffers are scratch space and are rebuilt empty.
+- Validate before returning a save; reject malformed or newer data without storage writes. Keep ordinary partial
+  generations, discard elapsed time above eight hours once, and never move the timestamp backwards on clock rollback.
+  Browser storage feedback and terminal-playback/release atomicity belong to the runtime integration in Part B.
