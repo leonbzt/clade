@@ -65,9 +65,20 @@ These are automated correctness fixtures and desktop layout observations. They d
 founding balance, fun, comprehension, production frame rate or real-device touch performance. No numerical
 tuning was made. The prior Part B deterministic viability test was not repeated as a player test.
 
-## Human and real-phone results still pending
+## Reported Part C desktop feedback (8 Nov)
 
-No observed human playtest or real-phone device was available during Part C implementation. The ordinary
-3–5-Life protocol above, actual early-clutch/run timings, the comprehension questions, the player's verdict,
-and phone/background/performance checks remain open. Save those observations here in the next fresh session;
-slice 19 is not complete until its player criteria pass.
+User report from chat after a little desktop play, not an observed or instrumented session. Exact build,
+seed, browser, run count, egg totals and timings were not supplied. No phone play was reported.
+
+- “Everything seems to work as imagined”; likes playing the creatures and seeing them spread on the map.
+- “The playthrough is fun”; differences between habitats are clearly noticeable. “This is a direction i like.”
+- Could see changes in the map, but “the next patch wasn't really easy to find”. This is an open navigation
+  issue; the report does not demonstrate understanding of the precise clutch/neighbour eligibility rule.
+- Suggests “maybe some coral reefs or a little more structure on the map instead of just going sideways”.
+  Saved as an idea, not an approved geography change; whether this means landmarks or different routes is open.
+- Excited for the next phases and the first complete build. Asked whether later map improvements are planned:
+  step 9 covers UI/art and step 7 ecological variety; neither currently specifies reefs or a new patch layout.
+
+This supports the connected loop's appeal, visible consequences and habitat variety. It does not complete
+the full player protocol or establish numerical balance. Next-patch clarity, founding/eligibility comprehension,
+early-clutch/run timings and real-phone taps/background/performance remain open. Slice 19 stays open.

@@ -31,6 +31,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - **Geology** (ground units, slope, island recipes; you: leaning yes) → the land layer. M1 needs a small part
   (substrate, wetness, height) to make habitats; the rest later.
 - More landmarks (waterfalls, rivers); fixed flows of water and nutrients downhill → cheap along the patch graph.
+- Reefs and more structure on the sea map “instead of just going sideways” (you, Part C desktop play, 8 Nov); landmarks versus different routes still to clarify, not added to release scope.
 - More run islands (salt, ash, caves), the archipelago map, outposts.
 - Sun and cold as pressures (you, 3 Nov), once a niche has them (alpine, open dunes, other islands).
 - Two zoom levels: the garden and a close view of one habitat (possibly in side view) (you + AI).

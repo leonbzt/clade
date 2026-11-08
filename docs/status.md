@@ -1,6 +1,6 @@
 # Status
 
-Updated 2026-11-08. Branch `codex/part-c-living-map`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
+Updated 2026-11-08. Branch `codex/part-c-player-review`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
 Read this and that spec first; open other docs and source files only as needed.
 
 ## Saved checkpoint
@@ -11,13 +11,16 @@ Read this and that spec first; open other docs and source files only as needed.
   (`docs: specify Part C and gameplay review handoff`), the documentation-only task base.
 - Part C task base: `900cc01` (current `codex/part-c-review-plan` HEAD at task start).
   C1 map: `a1da0f1`; C2 feedback: `99c413d`; integrated verification/handoff:
-  `test: verify the living sea map and save Part C handoff` on this branch.
+  `4f6c783` (`test: verify the living sea map and save Part C handoff`).
+- Planning task base: `4f6c783`; feedback/proposal checkpoint: `docs: record Part C desktop feedback and navigation follow-up`.
+  Documentation only; gameplay remains at the Part C checkpoint.
 - No new dependencies or push. Only disposable browser profiles were used; no personal browser saves were accessed.
   Remote state has not been freshly queried.
 
 ## Current milestone and decisions
 M2 steps 1/2 are complete. Step 3 retains three open play checks. Step 4 parts A/B are implemented;
-Part C's map/feedback are implemented and automated checks pass; ordinary player and real-phone checks remain.
+Part C's map/feedback are implemented and automated checks pass. User-reported desktop play supports the
+loop, visible spread and distinct habitats; next-patch discovery is difficult. Remaining player/phone checks stay open.
 The roadmap order is unchanged.
 
 - New seas have food/environment and zero animals. A worm Life founds the population through its actual eggs.
@@ -122,15 +125,26 @@ The roadmap order is unchanged.
   replay, real-phone taps/background/performance. No human player or phone was available. Automated terminal
   fixtures and earlier deterministic founding viability do not close those criteria. Slice 19 stays open.
 
-## Next session
+## Planning checkpoint (8 Nov)
 
-This is the verified Part C implementation boundary. Start a fresh session for the player pass, then the
-proposed general gameplay/design review before step 5. No equipment/progression implementation is authorized here.
+- [Desktop feedback](playtests/19-join-the-sea.md#reported-part-c-desktop-feedback-8-nov): fun runs, noticeable
+  habitat differences, visible spread, direction endorsed. The next patch was hard to find; no phone play.
+  This is a qualitative report, not the complete 3–5-Life protocol or measured founding balance.
+- [Navigation proposal and review](design/part-c-and-gameplay-review.md#part-c-desktop-feedback-and-navigation-follow-up-8-nov):
+  expose eligible next patches directly and label them on the map. Existing controls are partly collapsed;
+  eligible empty neighbours need not have number labels. No gameplay/UI change has been implemented or approved here.
+- Reefs/more map structure are saved in [ideas](ideas.md). Step 9 covers UI/art and step 7 ecological variety;
+  neither promises a new map layout. No roadmap or release-scope change.
+- Docs checks: local links/anchors, consistency and whitespace/diff review. Gameplay checks were not repeated
+  for this documentation checkpoint; no browser saves were accessed.
 
-> Continue from `codex/part-c-living-map`. Read status and playtest 19. Run the ordinary player protocol in
-> a separate save/profile, record device/build/seed/eggs/pacing and comprehension separately from fixtures,
-> and check an actual phone when available. Leave unavailable human/device checks open. Do not repeat A/B
-> or the architecture audit, tune permanent gates, or begin equipment/progression before the design review.
+**Next action:** continue the gameplay/design review with this feedback, before specifying step 5.
+Retain the navigation follow-up and remaining player/phone checks; slice 19 stays open.
+
+> Continue planning from `codex/part-c-player-review`. Read status, reported Part C feedback and the review
+> agenda. Work through one build across Lives to settle body/identity/inheritance requirements for step 5;
+> retain XP/respec/reward pacing for step 6. Do not repeat A/B or the architecture audit. Next-patch clarity
+> and phone checks remain open; reefs are an idea. No equipment/progression implementation is authorized yet.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in

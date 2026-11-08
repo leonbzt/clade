@@ -3,7 +3,8 @@
 **Milestone:** M2, step 4 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Does each Life visibly change the sea and determine where you play next?
 **Status:** parts A/B implemented on 7 Nov: sea model, v3 runtime, patch snapshots, completion/continuation and
-creature-design sharing. Part C map/feedback are implemented and automated verification passes; ordinary player and real-phone checks remain.
+creature-design sharing. Part C map/feedback are implemented and automated verification passes. Reported desktop
+play supports the loop and habitat variety; next-patch discovery needs improvement. Remaining player and real-phone checks stay open.
 Verification is recorded in `docs/status.md`.
 **Builds on:** [7 Nov decisions](../decisions.md#7-nov-join-the-sea-empty-founding-and-continuation-resumed-in-codex),
 [the release vision](../design/full-version.md), the sea toy (slice 17), and the existing Life, clutch and save systems.

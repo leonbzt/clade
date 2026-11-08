@@ -56,6 +56,28 @@ recipes becoming a shopping checklist; advanced lineages losing too much customi
 and ecological hooks occurring mostly beyond the current clutch's legal neighbours.
 These are hypotheses, not observed balance findings from this session.
 
+## Part C desktop feedback and navigation follow-up (8 Nov)
+
+[Reported play](../playtests/19-join-the-sea.md#reported-part-c-desktop-feedback-8-nov) supports the direction:
+the Life is fun, habitats feel different, and playing creatures then watching their spread works as imagined.
+The next patch was hard to find. This provides an input to the review without closing slice 19's player checks.
+
+**Inspection:** `Meta.svelte` already has a current-clutch button and an eligible-first list inside collapsed
+“Named patches”. `sea-map.ts` outlines eligible patches, but only selected, clutch and occupied-line patches
+receive number labels. An empty eligible neighbour can therefore have an outline with no matching visible label.
+These are likely discoverability problems, not a proven sole cause of the reported difficulty.
+
+**Smallest proposed follow-up:** show the current patch and eligible neighbours as an always-visible, compact
+“Play next” choice with patch numbers and habitat names; number those eligible patches on the map as well.
+Reuse existing eligibility and patch-opening controls. Keep the graph, settlement and launch rules unchanged.
+Check that only legal patches appear, each button/number identifies the matching card, and the list remains
+usable at desktop/phone widths; then ask the player to find a next patch unaided. This is a proposal, not
+authorization to implement in this planning thread or a replacement for the real-phone check.
+
+Step 9 already covers map UI/art as part of every screen; step 7 adds ecological variety. Reefs/more structure
+are now in [ideas](../ideas.md), not committed release geography. My recommendation is to continue the body,
+inheritance and progression review, with this bounded navigation issue retained before closing slice 19.
+
 ## When and how to do the general review
 
 **Recommendation: after Part C's connected-loop playtest, before implementing step 5.** Earlier, we would be
