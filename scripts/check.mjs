@@ -1,18 +1,23 @@
-// Typecheck + tests. Prints only failures (and one line when everything passes).
-import { spawnSync } from 'node:child_process';
+// Typecheck + tests, run in parallel. Prints only failures (and one line when everything passes).
+import { spawn } from 'node:child_process';
 
 const steps = [
   ['typecheck', 'npx', ['svelte-check', '--tsconfig', './tsconfig.json', '--threshold', 'warning', '--output', 'human']],
   ['tests', 'npx', ['vitest', 'run', '--reporter=dot']],
 ];
 
-let failed = false;
-for (const [name, cmd, args] of steps) {
-  const r = spawnSync(cmd, args, { encoding: 'utf8' });
-  if (r.status !== 0) {
-    failed = true;
-    console.log(`✗ ${name}\n${r.stdout}${r.stderr}`);
-  }
+const run = ([name, cmd, args]) =>
+  new Promise((resolve) => {
+    const p = spawn(cmd, args);
+    let out = '';
+    p.stdout.on('data', (d) => (out += d));
+    p.stderr.on('data', (d) => (out += d));
+    p.on('close', (code) => resolve(code === 0 ? null : `✗ ${name}\n${out}`));
+  });
+
+const failures = (await Promise.all(steps.map(run))).filter(Boolean);
+if (failures.length) {
+  console.log(failures.join('\n'));
+  process.exit(1);
 }
-if (failed) process.exit(1);
 console.log('✓ check passed');

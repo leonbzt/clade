@@ -1,7 +1,7 @@
 # Status
 
-Updated 8 Nov 2026 (Claude). Branch `codex/slice20-critical-review`; this session's docs are **uncommitted**. Gameplay is at
-`13b1ccb`. The long Codex-era status (checkpoints, Part B–D details) is at `git show 8b5b202:docs/status.md`.
+Updated 8 Nov 2026 (Claude). Everything is on `main` (the `codex/*` stack fast-forwarded, old branches pruned; all their
+commits stay in `main`'s history). Gameplay is at `13b1ccb`. The long Codex-era status is at `git show 8b5b202:docs/status.md`.
 
 **Milestone:** M2. Step 4, [slice 19](slices/19-join-the-sea.md): built, human checks open. Step 5,
 [slice 20](slices/20-join-the-bodies.md) with the [20A contract](design/20a-body-part-contract.md): specified, no code yet.
@@ -19,8 +19,8 @@ Updated 8 Nov 2026 (Claude). Branch `codex/slice20-critical-review`; this sessio
   a tier letter per niche, strong vs / weak vs, trade-off tooltips.
 
 **Next:**
-1. Housekeeping thread: commit these docs; `npm run check` (11.1 s, get it under 10 s); merge to `main`; prune branches;
-   align `AGENTS.md` (saves no priority before release, short docs).
+1. ~~Housekeeping~~ done 8 Nov: docs committed, `npm run check` 7.4 s (steps run in parallel), merged to `main`, branches
+   pruned, `AGENTS.md` aligned (saves no priority before release, short docs, 1–2 sessions per slice).
 2. Trim slice 20/20A by deletion (legacy layer, Dash in the ceiling); settle the critical review's two gaps.
 3. Build the 20A model and fixtures, then the 20B equipment view, then the cutover with the reset. Play it.
 

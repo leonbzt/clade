@@ -8,14 +8,16 @@ adding features or rewriting architecture.
 
 ## Working rules
 - Inspect existing implementations before coding.
-- Preserve working gameplay and save compatibility.
+- Preserve working gameplay. Saves are no priority before release
+  (7 Nov); the sea save resets at the body cutover (8 Nov).
 - Prefer small, localized changes.
 - Do not introduce new frameworks or dependencies
   without approval.
 - Do not refactor unrelated code.
 - Do not create abstractions for hypothetical needs.
 - Never silently remove gameplay functionality.
-- Never overwrite user data or save files.
+- Never overwrite user data or save files on disk; a planned save
+  reset is a game change, not an edit of someone's data.
 
 ## Before implementation
 1. Identify relevant files and dependencies.
@@ -32,7 +34,7 @@ adding features or rewriting architecture.
 ## Game-specific priorities
 - Gameplay correctness over code elegance.
 - Performance on target devices.
-- Reliable persistence and progression.
+- Reliable progression; persistence matters from release on.
 - No unnecessary dependencies.
 - Preserve existing visual style.
 
@@ -53,7 +55,8 @@ are in docs/workflow.md.
   Preserve existing user work; do not reset or rewrite its history.
 - Use deterministic scripts for checks; summarize their results.
   Repeat checks only after changes, failures or unresolved concerns.
-- Keep permanent instructions short; link to detailed documents.
+- Keep permanent instructions and docs short; link to detailed documents.
+- One slice answers one question in one or two sessions.
 - Use one agent by default. Subagents require an explicit request
   and a genuinely independent task.
 
