@@ -1,6 +1,6 @@
 # Slice 20A: body/part compatibility contract
 
-**Reviewed 8 Nov 2026: B/C accepted; A revision requested. Not approved for implementation or runtime cutover.**
+**Reviewed 8 Nov 2026: B/C accepted; A provisional direction, exact cost pending. No implementation or runtime cutover.**
 Task base: `13b1ccb` (`feat: expose next-patch navigation`); branch `codex/slice20a-contract`.
 This is the model-contract deliverable of [slice 20](../slices/20-join-the-bodies.md#boundaries-and-build-order).
 It preserves the running game. No runtime model, save version, offers, drawing or balance changes here.
@@ -15,15 +15,16 @@ bounded model: six choices, explicit combined variants only where needed, one co
 and recoverable legacy builds. It does **not** claim unchanged balance.
 
 Review calls are recorded in the [decision log](../decisions.md#8-nov-slice-20a-contract-review-in-progress).
-Settle A's amendment before implementing dependent rules:
+Settle A's concrete upkeep amendment before implementing dependent rules:
 
 | Review group | Proposal and review state | Concrete cost/tradeoff |
 | --- | --- | --- |
-| A: defaults and locks — revision requested | Use the four body records below; charge ordinary upkeep for built-ins, credit overlapping starter choices; concrete amendment pending | Arthropod/trilobite start with one paid leg bonus; swimmer starts with one paid flap bonus; worm keeps a free digging bulb unless replaced |
+| A: provisional direction; concrete revision pending | Defaults/locks acceptable for now; user prefers light starting upkeep and explicitly revisable balance; see the revision below | Proposed revision includes basic built-ins in base upkeep 1; extra tools still cost food; possible lower verb ceiling remains open |
 | B: six choices and bonuses — accepted | One effect copy per place; retain walking/raking and walking/digging variants; upgrades retain the predecessor's capability | Repeated-copy builds lose stacking in **new** Lives; some mixed passive/action builds need replacement choices; defaults' concrete starting effects/costs remain A's unresolved call |
 | C: damage and compatibility — accepted | Mirrored rows cover both flanks and are lost as a whole; keep old build semantics alongside new place records in a versioned save | One row guards more broadly but one injury can remove more anatomy; old conflicting designs need a visible resolution before launching |
 
-B and C are now user decisions; A's body records and paid-default examples remain proposals. The already
+B and C are now user decisions; A's defaults/locks are provisionally acceptable, while its original paid-default
+costs are superseded by the pending lighter-upkeep proposal below. The already
 selected one-part continuation and built-in lineage strength remain as recorded in
 [decisions](../decisions.md#8-nov-part-c-navigation-and-the-next-body-phase). B's accepted variants do not
 implicitly accept A's proposed default loadouts, starting costs or default-action allocation. Reconcile
@@ -32,10 +33,11 @@ in the slice after the remaining review is settled.
 
 ## Review assessment (8 Nov)
 
-**Review in progress: the user requested revision of A before acceptance; B and C are accepted.**
-The requested A amendment is not yet specified. The review request itself does not approve the proposed
-balance or compatibility changes. Record only the user's actual calls in [decisions](../decisions.md);
-keep dependent implementation gated meanwhile. The initial AI assessment below recommended all three.
+**Review in progress: A's defaults/locks are provisionally acceptable; the concrete lighter-upkeep revision
+awaits a call. B and C are accepted.** The user explicitly wants A open to revision and raised a possible
+lower verb limit. Keep that tentative idea separate from an accepted hard cap. Record only the user's
+actual calls in [decisions](../decisions.md); keep dependent implementation gated meanwhile. The initial
+assessment below explains the original paid-default proposal; the amendment follows it.
 
 - **A — costed defaults and family locks:** initial AI recommendation; user requested revision. Using
   occupied, costed equipment avoids a hidden second source of lineage bonuses and preserves the selected
@@ -67,6 +69,47 @@ The smallest change in this review is documentation: save the actual A–C calls
 the slice and handoff. Verify local links/anchors, 27-ID/four-body coverage, consistency and diff scope.
 After accepted calls, use a fresh session for the pure definitions and focused fixtures listed below;
 runtime integration, save cutover, player balance and phone checks remain later work.
+
+## A revision: light upkeep and open verb limit
+
+**User direction:** “maybe only light starting upkeep, otherwise sounds okay for now but document that
+this is open to revision. maybe there shoud be less than 3 verbs possible.” Defaults/family locks are
+acceptable provisionally. The user has not specified a number or selected a hard two-verb limit.
+
+**Concrete AI proposal, awaiting acceptance:**
+
+- Include the ordinary built-in components in the body's base upkeep 1. Keep all parts' nominal costs
+  below for comparison, but apply one explicit body allowance: subtract 1 when an A/T walking choice
+  includes `leg`, or when S has `flap`; subtract 0 for W. All other built-ins already have nominal cost 0.
+  Formula: base 1 + nominal occupied-choice costs − that body's allowance. `deep` in mud still overrides
+  the total to 0. Show the allowance and final whole-build cost in equipment/moult previews.
+- The allowance belongs to the body's current ordinary component, not acquisition history. It applies
+  within walking/raking or walking/digging and after legal repair, once only. Extra components such as
+  rake/spine/eye/claw, including carried choices, pay their normal costs. No discount applies when the leg/flap is absent;
+  base upkeep remains 1. Damage still removes the whole row's effects with no free restoration.
+- Retain the four proposed default loadouts and family locks. Occupied places remain the sole source
+  of equipment effects; the allowance changes food cost only. No new part, stat bonus or starting food.
+- Keep three as a **provisional maximum**, allowing fewer whenever the equipped build yields fewer.
+  Do not fill to three, grant a free action or hide an equipped part's action. A hard two-verb ceiling is
+  open for later review: A Digger's walking/digging + eye yields Dash/Dig/Sense, and T Tank yields
+  Dash/Brace/Crush. Lowering the ceiling now would make those builds illegal unless their choices/rules
+  were also revised. Such a change needs an explicit review of the affected B capabilities and presets.
+
+| Starting build, no carried part | Original A proposal | Revised proposal, including base |
+| --- | --- | --- |
+| Defaults only, any current body | W 1; A/T/S 2 | 1 |
+| Worm Digger (`bulb` + `eye`) | 2 | 2 |
+| Arthropod Sweeper (walking/raking) | 3 | 2 |
+| Arthropod Digger (walking/digging + `eye`) | 3 | 2 |
+| Swimmer (`arms` + `flap`) | 2 | 1 |
+| Trilobite Tank (walking + spined shield + `claw`) | 4 | 3 |
+
+These are proposals, not implemented measurements. Before acceptance, the later body/part tables retain
+the original nominal costs and original A examples; do not combine them with this amendment implicitly.
+If selected, reconcile those examples and fixtures with the allowance before implementation. Upkeep,
+defaults/locks and the verb ceiling remain balance choices open to revision after equipment playtesting;
+review starting-food pressure, action clarity and at least the affected Digger/Tank builds. No two-verb
+ceiling or promised balanced result is inferred from the user's tentative suggestion.
 
 ## Evidence and implementation boundary
 
@@ -391,7 +434,7 @@ Equipment drawing, head joins at sizes 1–5, real board performance comparison 
 belong to 20B/20C and remain open. Do not check off the whole slice's contract criterion until rules are
 approved and their staged fixtures exist. Do not repeat the completed art/performance audit for this review.
 
-**Next action:** specify and review A's requested amendment, then record its accepted rule in `decisions.md`
-and align the body/default examples here. B/C are accepted; do not re-ask those calls unless A's revision
+**Next action:** review the concrete lighter-upkeep A proposal above, then record the selected rule in
+`decisions.md` and align the body/default examples here. B/C are accepted; do not re-ask those calls unless A's revision
 requires changing them. Once the contract is settled, use a fresh implementation session to stage the
 approved pure model and fixtures. No runtime body integration is authorized by this review.

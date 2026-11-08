@@ -210,30 +210,37 @@ The roadmap order is unchanged.
 ## Slice 20A review checkpoint (8 Nov; A remains open)
 
 - Task base: `c6c272d`; branch `codex/slice20a-review`; checkpoint subject:
-  `docs: record slice 20A B and C acceptance with A revision pending`. Documentation only; gameplay remains
-  at `13b1ccb`. No pure model, fixtures, runtime/codec changes or browser-save access.
+  `docs: specify provisional lighter-upkeep direction for slice 20A`. Prior review: `5ce8615`.
+  Documentation only; gameplay remains at `13b1ccb`. No pure model, fixtures, runtime/codec changes or
+  browser-save access.
 - [Accepted calls](decisions.md#8-nov-slice-20a-contract-review-in-progress): **B accepted as proposed**
   (single-copy bonuses, explicit variants/upgrades, finite-place conflicts, old effects retained for legacy
   builds); **C accepted as proposed** (bilateral whole-row damage, loss of locked rows, versioned compatibility,
   recoverable input, old pending/feeding semantics and visible launch-conflict resolution).
-- **A not accepted:** the user requested revision before acceptance. A follow-up asks what should change
-  about starting upkeep, defaults/family locks or default actions within the three-verb limit. No amendment
-  has yet been supplied. Do not infer free built-ins, a changed food allowance or different locks.
+- **A follow-up:** defaults/locks sound acceptable provisionally; the user prefers light starting upkeep
+  and explicitly wants the rules open to revision. A possible lower verb limit is tentative. The
+  [concrete proposal](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit) includes
+  ordinary built-ins in base upkeep 1 with one explicit leg/flap allowance, extra tools cost normally,
+  and three stays a provisional ceiling (fewer allowed). Exact revision awaits a user call; do not treat
+  “maybe” as an accepted hard two-verb cap or the proposed cost allowance as already accepted.
 - [Review assessment](design/20a-body-part-contract.md#review-assessment-8-nov) records the recommendation,
   numeric costs and risks. Accepted B variants do not silently accept A's default loadouts/starting costs.
   Keep dependent implementation gated until A is settled and examples are reconciled.
-- Docs checks: local links/anchors, all 27 unique production part mappings/four body records, source
-  consistency and whitespace/diff scope. No gameplay tests repeated; no new balance/performance/play claim.
+- Docs checks: 108 local links/anchors, all 27 unique production part mappings/four body records, source
+  consistency and whitespace/diff scope. Proposed upkeep arithmetic passes for five starter examples and
+  all four default-only bodies against production nominal costs plus the proposed allowance. No gameplay
+  tests repeated; no new balance/performance/play claim.
   Slice 20 completion boxes and slice 19's outstanding player/phone checks remain open.
 
-**Next action:** obtain the concrete requested amendment to
-[group A](design/20a-body-part-contract.md#review-first), review its costs/conflicts, then record the accepted
-rule and reconcile the contract. B/C do not need re-approval unless that amendment changes them. Only after
-the contract is settled, use a fresh implementation session for 20A's pure model/fixtures. Runtime body
+**Next action:** settle the [concrete A proposal](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit),
+then record the selected rule and reconcile the contract's nominal/effective cost examples. B/C do not
+need re-approval unless that amendment changes them. Only after the contract is settled, use a fresh
+implementation session for 20A's pure model/fixtures. Runtime body
 integration is not authorized here. Separately, have the player find/open a next patch unaided for slice 19.
 
-> Read AGENTS.md, docs/status.md and docs/design/20a-body-part-contract.md. B/C are accepted; A needs the
-> user's concrete revision and acceptance. Finish that review and reconcile the contract before implementation.
+> Read AGENTS.md, docs/status.md and docs/design/20a-body-part-contract.md. B/C are accepted; A's defaults/locks
+> are provisionally acceptable, with lighter upkeep preferred and a lower verb ceiling tentative. Settle the
+> concrete A cost proposal and reconcile the contract before implementation.
 > Preserve the running game; do not begin runtime body integration. Keep slice-19 checks open.
 
 ## Later work retained

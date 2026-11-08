@@ -492,9 +492,15 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 
 ## 8 Nov, slice 20A contract review (in progress)
 
-- **A — revision requested, not accepted:** the user selected “Revise A before acceptance”. The change to
-  starting upkeep, defaults/locks or the action limit has not yet been specified. Keep A's numbers and body
-  records proposed; the earlier built-in-parts direction alone does not accept their concrete costs.
+- **A — provisional direction, exact revision pending:** after selecting “Revise A before acceptance”, the
+  user clarified: “maybe only light starting upkeep, otherwise sounds okay for now but document that this
+  is open to revision. maybe there shoud be less than 3 verbs possible.” Defaults/family locks are acceptable
+  provisionally; lighter starting upkeep is preferred, with costs and the action limit explicitly revisable.
+  The possible lower verb limit is a tentative idea, not an accepted hard two-verb cap. Builds may already
+  have fewer than three verbs; the existing ceiling is not a required number of actions.
+  The [concrete A revision](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit)
+  proposes including basic built-ins in base upkeep 1, charging extra tools normally and retaining the
+  provisional three-verb ceiling pending playtesting. Those exact cost rules await the user's call.
 - **B — accepted as proposed:** the user selected “Accept B as proposed (recommended)”. New six-place builds
   use one effect copy per choice and no repeated-ID stacking; size changes drawing count only. Retain explicit
   walking/raking and walking/digging variants, frontal rakes, spined shield and action-preserving upgrades.

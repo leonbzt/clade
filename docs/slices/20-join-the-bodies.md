@@ -3,8 +3,9 @@
 **Milestone:** M2, step 5 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Is the creature I equip the one I play, with readable choices that preserve the fun of different habitats?
 **Status:** specified for review 8 Nov; [20A's body/part contract](../design/20a-body-part-contract.md)
-has B/C accepted (single-copy bonuses/variants, row damage and compatibility); A's defaults/locks/costs
-need revision before acceptance. [Calls](../decisions.md#8-nov-slice-20a-contract-review-in-progress).
+has B/C accepted (single-copy bonuses/variants, row damage and compatibility). A's defaults/locks are
+provisionally acceptable; a concrete lighter-upkeep rule awaits selection, with costs and the verb ceiling
+explicitly open to revision. [Calls](../decisions.md#8-nov-slice-20a-contract-review-in-progress).
 Dependent implementation stays gated until A is settled. Inheritance and initial lineage-power choices
 are recorded below.
 The request authorizes specification, not runtime implementation. Slice 19's navigation follow-up and
@@ -217,7 +218,9 @@ mapping and any balance changes before dependent runtime implementation. The rem
 are still open; resolve recognisability with this real equipment/board view, and keep actual lineage-transformation
 play for step 6.
 
-**20A review (8 Nov):** B/C are accepted as proposed; A was explicitly returned for revision, with the
-concrete amendment still pending. Accepted variants do not approve the proposed starting default loadouts,
-costs or default-action allocation. Settle A and reconcile the contract before staging the pure model/fixtures;
-the contract completion box remains open until those fixtures exist. This review authorizes no runtime cutover.
+**20A review (8 Nov):** B/C are accepted as proposed. A's follow-up provisionally accepts defaults/locks,
+prefers light starting upkeep and keeps the rules revisable. A possible lower verb ceiling is tentative;
+fewer than three actions are already allowed. The contract proposes including basic built-ins in base
+upkeep 1 and charging extra tools normally; that exact rule awaits selection. Settle A and reconcile the
+contract before staging the pure model/fixtures; the contract completion box remains open until those
+fixtures exist. This review authorizes no runtime cutover.
