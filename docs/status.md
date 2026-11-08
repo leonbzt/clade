@@ -1,7 +1,6 @@
 # Status
 
-Updated 9 Nov 2026 (Claude). Branch `slice-20a-model`: 20A `b34e9cc`, 20B `3229e3d`, 20C in the commit after. The
-long Codex-era status is at `git show 8b5b202:docs/status.md`.
+Updated 9 Nov 2026 (Claude). Branch `slice-20a-model`: 20A `b34e9cc`, 20B `3229e3d`, 20C `39ca951`.
 
 **Milestone:** M2. Step 4, [slice 19](slices/19-join-the-sea.md): built, human checks open. Step 5,
 [slice 20](slices/20-join-the-bodies.md): 20A, 20B and **20C cutover built**; your play pending.
@@ -19,9 +18,7 @@ long Codex-era status is at `git show 8b5b202:docs/status.md`.
 - Draw cost (i7-1165G7, headless Chrome + SwiftShader, 390×844, packaged build, 180 rAF frames, CDP TaskDuration),
   20B → 20C: empty worm board 1.7 → 1.8 ms/frame; swimmer + 5 resident prey 3.9 → 5.4; moult open 3.6 (card) → 8.2
   (live preview, second Pixi app). Frames stay at 60 fps mean; p95 33 ms in both builds (software GL).
-- `npm run check` passes (~5 s); `build:game` 779 KB; `node scripts/sea-smoke.mjs` passes.
-
-**Decided:** nothing new (equipment preview "works for now", parked in ideas).
+- `npm run check` passes (~5 s); `build:game` 779 KB; `node scripts/sea-smoke.mjs` passes. **Decided:** nothing new.
 
 **Next:**
 1. You play 20C: launcher, a few moults with the preview, a tear, a clutch carry into a neighbour, a CLADE2- code.
