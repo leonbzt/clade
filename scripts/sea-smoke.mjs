@@ -1,4 +1,4 @@
-// Packaged Part C smoke check, using installed Chrome and a disposable profile. No browser dependencies or user saves.
+// Packaged Part C/D smoke check, using installed Chrome and a disposable profile. No browser dependencies or user saves.
 // npm run build:game && node scripts/sea-smoke.mjs
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -55,6 +55,34 @@ async function click(text, selector = 'button') {
 }
 const state = () => evaluate(`(() => { const s = __game.save; return { lives: s.lives, pending: s.pending, continuation: s.continuation, total: s.sea.patches.reduce((n,p) => n + p.pop.reduce((a,b) => a+b,0),0) }; })()`);
 const booted = '!!window.__game && !!document.querySelector("#meta")';
+// Check the real rendered controls against saved access, including labels and opening every card.
+async function checkPlayNext() {
+  const before = await state();
+  const choices = await evaluate(`(() => {
+    const s = __game.save, p = s.sea.patches[s.continuation.patch];
+    return [p.id, ...p.nb];
+  })()`);
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.playNext .habBtn')].map(b => b.querySelector('b').textContent.trim())`),
+    await evaluate(`${JSON.stringify(choices)}.map(id => { const p = __game.save.sea.patches[id]; return 'Patch ' + (id + 1) + ' · ' + ({mud:'Mud flats',sand:'Sand shallows',rock:'Volcanic rock'}[p.ground]); })`));
+  assert.deepEqual(await evaluate(`[...document.querySelectorAll('.playNext small')].map(b => b.textContent.trim())`), choices.map((_, i) => i === 0 ? 'Last clutch' : 'Neighbour'));
+  assert.equal(await evaluate(`(() => {
+    const group = document.querySelector('.playNext'), meta = document.querySelector('#meta');
+    return document.querySelector('.isle').nextElementSibling === group && meta.scrollWidth <= meta.clientWidth &&
+      [...group.querySelectorAll('button')].every(b => b.scrollWidth <= b.clientWidth);
+  })()`), true);
+  for (const id of choices) {
+    await evaluate(`document.querySelectorAll('.playNext .habBtn')[${choices.indexOf(id)}].click()`);
+    assert.match(await evaluate('document.querySelector(".patchWrap h2").textContent'), new RegExp(`Patch ${id + 1}\\b`, 'i'));
+    assert.equal(await evaluate('[...document.querySelectorAll(".patchWrap .liveBtn")].every(b => !b.disabled)'), true);
+    await click('Map');
+  }
+  assert.deepEqual(await state(), before);
+  return choices;
+}
+async function openNext(index = 0) {
+  await evaluate(`document.querySelectorAll('.playNext .habBtn')[${index}].click()`);
+  await sleep(40);
+}
 
 try {
   const target = await send('Target.createTarget', { url: 'about:blank' }, null);
@@ -66,6 +94,11 @@ try {
   await send('Page.navigate', { url: pathToFileURL(resolve('game/dist/clade.html')).href });
   await until(booted);
   assert.equal((await state()).total, 0);
+  assert.equal(await evaluate('document.querySelectorAll(".playNext .habBtn").length'), 0);
+  await click('Choose a founding patch');
+  assert.equal(await evaluate('document.querySelector(".patchList").open'), true);
+  assert.equal(await evaluate('document.querySelectorAll(".patchList .habBtn").length === __game.save.sea.patches.length'), true);
+  assert.equal(await evaluate('document.activeElement === document.querySelector(".patchList .habBtn")'), true);
   // Hit the real canvas with a touch at a saved patch tile, using CSS bounds at phone width.
   const hit = await evaluate(`(() => {
     const s = __game.save.sea, p = s.patches.find(p => p.ground === 'mud'), t = p.tiles[Math.floor(p.tiles.length / 2)];
@@ -108,7 +141,8 @@ try {
   await send('Page.reload'); await until(booted);
   assert.equal(await evaluate('!!document.querySelector(".returnFeedback")'), false);
   const loaded = await state(); assert.equal(loaded.lives, 1); assert.equal(loaded.total, settled.total);
-  await click(`Continue from patch ${loaded.continuation.patch + 1}`);
+  const choices = await checkPlayNext();
+  await openNext();
   assert.equal(await evaluate('[...document.querySelectorAll(".metaWrap .liveBtn")].filter(b => b.textContent.startsWith("Live as")).length'), 4);
 
   await click('Map');
@@ -116,19 +150,22 @@ try {
   const distant = await evaluate(`(() => { const s = __game.save, p = s.sea.patches[s.continuation.patch]; return s.sea.patches.find(q => q.id !== p.id && !p.nb.includes(q.id)).id; })()`);
   await evaluate(`document.querySelectorAll('.patchList .habBtn').forEach(b => { if (b.querySelector('b').textContent.startsWith('Patch ${distant + 1} ·')) b.click(); })`);
   assert.equal(await evaluate('[...document.querySelectorAll(".patchWrap .liveBtn")].every(b => b.disabled)'), true);
-  await click('Map'); await click(`Continue from patch ${loaded.continuation.patch + 1}`);
+  await click('Map'); await openNext(1);
 
   // A failed next run leaves continuation intact and creates no additional population.
   await click('Live as trilobite'); await click('Start the Life'); await click('Start', '#cardButtons button');
   assert.equal(await evaluate('__game.life.plan'), 'trilobite');
+  assert.equal(await evaluate('__game.life.hab.patch'), choices[1]);
   await evaluate('__game.life.health = 0; document.querySelector("#wait").click();');
   await until('!__game.busy && !document.querySelector("#cardWrap").hidden');
   await click('Back to the sea', '#cardButtons button');
   settled = await state(); assert.equal(settled.lives, 2); assert.deepEqual(settled.continuation, loaded.continuation);
 
   assert.match(await evaluate('document.querySelector(".returnFeedback").textContent'), /No new eggs released/);
+  assert.deepEqual(await checkPlayNext(), choices);
   await send('Page.reload'); await until(booted);
   assert.equal((await state()).lives, 2);
+  assert.deepEqual(await checkPlayNext(), choices);
   assert.equal(await evaluate('!!document.querySelector(".returnFeedback")'), false);
 
   // Copy/import a design through Menu; neither operation grants population or a new launch point.
@@ -138,7 +175,7 @@ try {
   const before = await state();
   await click('Load design'); assert.deepEqual(await state(), before);
   assert.match(await evaluate('document.querySelector(".metaWrap:last-child").textContent'), /ready as a starting design/);
-  await click('Close'); await click(`Continue from patch ${before.continuation.patch + 1}`);
+  await click('Close'); await openNext();
   const designButton = await evaluate('[...document.querySelectorAll(".liveBtn")].find(b => b.textContent.startsWith("Use ")).textContent.trim()');
   await click(designButton); await click('Start the Life');
   assert.equal(await evaluate('__game.life.eggs'), 0); assert.deepEqual(await state(), before);
@@ -158,11 +195,12 @@ try {
   for (const mode of ['Mats', 'Oxygen', 'Hunters', 'Population']) await click(mode);
   const desktopShot = await send('Page.captureScreenshot', { format: 'png' });
   writeFileSync(`${tmpdir()}/clade-sea-map-desktop.png`, Buffer.from(desktopShot.data, 'base64'));
-  await click(`Continue from patch ${(await state()).continuation.patch + 1}`);
+  await checkPlayNext();
+  await openNext();
   const desktopPatchShot = await send('Page.captureScreenshot', { format: 'png' });
   writeFileSync(`${tmpdir()}/clade-sea-patch-desktop.png`, Buffer.from(desktopPatchShot.data, 'base64'));
   assert.deepEqual(errors, []);
-  console.log('✓ packaged smoke: canvas touch, patch card, return/dismiss/reload, empty founding, terminal/clutch reload, once-only settlement, all bodies, failed-run continuation, design import, storage retry and overlays (390×844 / 1200×900).');
+  console.log('✓ packaged smoke: canvas touch, patch card, return/dismiss/reload, empty founding, terminal/clutch reload, once-only settlement, Play next/card matching, neighbour launch, all bodies, zero-egg choices/reload, design import, storage retry and overlays (390×844 / 1200×900).');
   console.log(`Screenshot: ${tmpdir()}/clade-sea-smoke.png. Controlled terminal fixtures; no balance/phone playtest claim.`);
 } finally {
   if (chrome.exitCode === null && chrome.signalCode === null) {

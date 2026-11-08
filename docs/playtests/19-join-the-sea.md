@@ -82,3 +82,26 @@ seed, browser, run count, egg totals and timings were not supplied. No phone pla
 This supports the connected loop's appeal, visible consequences and habitat variety. It does not complete
 the full player protocol or establish numerical balance. Next-patch clarity, founding/eligibility comprehension,
 early-clutch/run timings and real-phone taps/background/performance remain open. Slice 19 stays open.
+
+
+## Part D automated navigation verification (8 Nov)
+
+Checkpoint: `feat: expose next-patch navigation` on `codex/slice19-part-d`, based on `2e3a9f9`.
+Packaged page 756 KB; installed headless Chrome in a disposable profile, fixed seed 1,
+390×844 mobile emulation and 1200×900 desktop. No personal saves accessed.
+
+- Before founding, the visible chooser opens the complete named-patch list and focuses its first button.
+- After a controlled real Lay/settlement of 3 eggs, Play next shows the saved clutch first and exactly its
+  direct neighbours. Patch numbers, habitat names and Last clutch/Neighbour labels match saved access.
+  Every choice opens its matching card; inspecting cards changes no continuation/population state.
+- A direct-neighbour trilobite Life launches through the new list. A controlled zero-egg failure retains
+  the previous choices immediately and after reload. The existing unavailable-patch inspection still works.
+- Controls fit without horizontal overflow at both widths. Map/card touch, pending/clutch reload,
+  single settlement, design sharing, storage retry and all map overlays still pass with no page exceptions.
+- Phone-width return and desktop map screenshots were visually inspected: the list sits directly below
+  the map, wraps to columns on desktop and stacks on phone width. Eligible patches have numbered labels;
+  clutch/selection/line cues remain. Six renderer/projection fixtures and the full 102-test suite pass.
+
+No player or real phone was available. Ask the player to find and open a next patch unaided; navigation
+comprehension, the remaining ordinary-Life protocol and phone hardware checks remain open. Body work
+was not started. This verification does not establish balance or frame-rate performance.

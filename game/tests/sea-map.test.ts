@@ -74,4 +74,29 @@ describe('living map projections', () => {
     }
     expect(serializeSeaSave(s)).toBe(before);
   });
+  it('numbers empty eligible neighbours in every overlay while retaining clutch, selection and line cues', () => {
+    const s = freshSeaSave(4, 0), labels: { text: string; colour: string }[] = [];
+    const context = new Proxy({ fillStyle: '' }, {
+      get: (target, key) => key === 'fillText' ? (text: string) => labels.push({ text, colour: target.fillStyle }) : key in target ? Reflect.get(target, key) : () => {},
+      set: (target, key, value) => Reflect.set(target, key, value),
+    });
+    const canvas = () => ({ width: 0, height: 0, getContext: () => context });
+    vi.stubGlobal('document', { createElement: canvas });
+    vi.stubGlobal('getComputedStyle', () => ({ fontFamily: 'sans-serif' }));
+    const map = makeMap(canvas() as unknown as HTMLCanvasElement); map.setSea(s.sea);
+    map.mark(launchPatches(s), null, null, []); map.draw();
+    expect(labels.map((l) => l.text)).toEqual(s.sea.patches.map((p) => `${p.id + 1}`));
+    s.continuation = { patch: 0, species: 'line:worm:burrower', plan: 'worm', role: 'burrower', eggs: 3 };
+    const ids = launchPatches(s), distant = s.sea.patches.find((p) => !ids.includes(p.id))!.id;
+    const selected = ids[1];
+    map.mark(ids, selected, 0, [distant]);
+    for (const view of ['holder', 'mats', 'oxygen', 'hunters'] as const) {
+      labels.length = 0; map.setView(view); map.draw();
+      expect(labels).toEqual(s.sea.patches.filter((p) => ids.includes(p.id) || p.id === distant).map((p) => ({
+        text: `${p.id === distant ? '•' : ''}${p.id + 1}`,
+        colour: p.id === 0 ? '#ffe033' : p.id === selected || p.id === distant ? '#ffffff' : '#68e8bd',
+      })));
+    }
+    expect(markerCounts(s.sea)).toEqual([]);
+  });
 });

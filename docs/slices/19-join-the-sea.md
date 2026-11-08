@@ -291,3 +291,9 @@ of poor discovery; the user has not identified a unique cause.
 clutch to a neighbour, through zero eggs and reload; desktop and phone-width layout. Ask the player to find
 and open a next patch unaided. Run `npm run check`, `npm run build:game` and the focused smoke path after
 implementation. Real-phone verification stays separately open if unavailable.
+
+
+**Implementation checkpoint (8 Nov):** `feat: expose next-patch navigation` on `codex/slice19-part-d`.
+Play next, the founding chooser and matching map labels are implemented. Typecheck, 102 tests, packaged
+build and extended desktop/phone-width browser smoke pass. See [verification notes](../playtests/19-join-the-sea.md#part-d-automated-navigation-verification-8-nov).
+Unaided player discovery and real-phone checks remain open; slice 19 is not marked complete.

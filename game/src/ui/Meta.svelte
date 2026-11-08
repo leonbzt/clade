@@ -13,6 +13,7 @@
   import { bump, ctx, ui } from './meta.svelte';
 
   let cv: HTMLCanvasElement | undefined = $state();
+  let patchList: HTMLDetailsElement | undefined = $state();
   let map = $state.raw<ReturnType<typeof makeMap> | null>(null);
   let view = $state<View>('holder'), selectedLine = $state<string | undefined>();
   let verbs: VerbId[] = $state([...STYLE_VERBS.digger]);
@@ -121,6 +122,19 @@
     {/each}
   </div>
   <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
+  <section class="playNext" aria-labelledby="playNextTitle">
+    <h3 id="playNextTitle">Play next</h3>
+    {#if continuation}
+      <div class="habList">
+        {#each eligible as id}
+          <button class="habBtn" onclick={() => openPatch(id)}><b>Patch {id + 1} · {HABITATS[g.patches[id].ground].name}</b><small>{id === continuation.patch ? 'Last clutch' : 'Neighbour'}</small></button>
+        {/each}
+      </div>
+    {:else}
+      <p class="mapKey">Every patch is available for your first worm Life.</p>
+      <button onclick={() => { if (patchList) { patchList.open = true; patchList.querySelector('button')?.focus(); } }}>Choose a founding patch</button>
+    {/if}
+  </section>
   <p class="mapKey">White: selected · gold: last clutch · green: eligible · •: current line. Tap water patches to inspect.</p>
   <p class="mapKey">{view === 'holder' ? 'Fill: dominant prey’s colour; brighter means more prey. Moving bars: animals; white tip: capture tools. Worms are long, trilobites broad; names and keys are below.' : view === 'mats' ? 'Green brightness: mats, 0–70+.' : view === 'oxygen' ? 'Red → blue: oxygen, 0–80+.' : 'Red brightness: hunters, 0–28+. Hunting comes from capture parts.'}</p>
   {#if activeLine}<p class="mapKey">{speciesKey(activeLine)}: current line in patches {distribution.map((id) => id + 1).join(', ') || 'none (continuation still available)'}. These are aggregate populations, including earlier clutches.</p>{/if}
@@ -128,8 +142,7 @@
     <p><i style:background={`rgb(${speciesColour(sp).join(',')})`}></i>{speciesKey(sp)}{feedsAs(sp).hunt ? ' · hunter' : ''}{!sp.plan || !PLAN_IDS.includes(sp.plan) ? ' · sea-only, generic marker' : ''}</p>
   {:else}<p>No animals; no animal markers.</p>{/each}</details>
   <p class="pitch">{continuation ? `Your last successful clutch is in patch ${continuation.patch + 1}. Start there or in a direct neighbour; retries remain available even after extinction.` : 'The sea has no animals yet. Choose a patch and found it with your first worm’s eggs.'}</p>
-  {#if continuation}<button class="go" onclick={() => openPatch(continuation.patch)}>Continue from patch {continuation.patch + 1}</button>{/if}
-  <details class="patchList"><summary>Named patches · {eligible.length} eligible</summary><div class="habList">
+  <details bind:this={patchList} class="patchList"><summary>Named patches · {eligible.length} eligible</summary><div class="habList">
     {#each [...g.patches].sort((a, b) => Number(eligible.includes(b.id)) - Number(eligible.includes(a.id)) || a.id - b.id) as p}
       <button class="habBtn" onclick={() => openPatch(p.id)}><b>Patch {p.id + 1} · {HABITATS[p.ground].name}</b><small>{eligible.includes(p.id) ? 'eligible' : 'outside clutch range'}</small></button>
     {/each}
@@ -199,6 +212,9 @@
 </div></div>
 {/if}
 <style>
+  .playNext { display: grid; gap: 6px; }
+  .playNext .habList { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
+  .playNext button { min-width: 0; overflow-wrap: anywhere; }
   .saveWarning { position: fixed; z-index: 100; top: 0; left: 0; right: 0; padding: 8px; background: #38231e; color: #ffe5c4; font-size: 14px; }
   .saveWarning p { margin: 0 0 4px; }
 </style>

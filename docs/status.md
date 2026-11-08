@@ -1,7 +1,7 @@
 # Status
 
-Updated 2026-11-08. Branch `codex/step5-body-spec`. Planning spec: [20 Join the bodies](slices/20-join-the-bodies.md).
-[Slice 19](slices/19-join-the-sea.md) remains open, with an accepted Part D navigation follow-up and player/phone checks.
+Updated 2026-11-08. Branch `codex/slice19-part-d`. Next separate task spec: [20 Join the bodies](slices/20-join-the-bodies.md).
+[Slice 19](slices/19-join-the-sea.md) remains open, with Part D navigation implemented and player/phone checks still open.
 Read this and the spec for the selected task first; open other docs and source files only as needed.
 
 ## Saved checkpoint
@@ -161,14 +161,35 @@ The roadmap order is unchanged.
   concrete review. Stage safely; the running game and its codec must agree at every verified checkpoint.
 - Docs-only checks: local links/anchors, consistency and diff/whitespace review. No gameplay tests repeated.
 
-**Next action:** review the saved spec, then use a fresh task session for the small slice-19 Part D navigation
-fix or preparing the 20A body/part contract. Keep remaining player/phone checks open. No runtime implementation
-was requested in this planning session; the spec distinguishes settled choices from proposed bounds.
+## Part D navigation checkpoint (8 Nov)
 
-> Read AGENTS.md and docs/status.md on `codex/step5-body-spec`. For the first bounded build, implement only
-> slice 19 Part D (Play next list and matching map labels), verify and commit. Do not start the body port in
-> that task. The next separate task is slice 20A: prepare/review all current part mappings and compatibility
-> before wiring six places into runtime. Preserve the existing loop; do not repeat the architecture audit.
+- Task base: `2e3a9f9` on `codex/step5-body-spec`; checkpoint: `feat: expose next-patch navigation`
+  on `codex/slice19-part-d`. This task implements only slice 19 Part D; body work remains separate.
+- An always-visible Play next group directly below the map uses existing `launchPatches` order:
+  Last clutch first, then every direct Neighbour, with matching patch numbers/habitat names and card buttons.
+  Before founding, Choose a founding patch opens/focuses the existing all-patch list; all patches remain available.
+- Eligible empty patches now receive map numbers in every overlay. Labels are enlarged for readability;
+  gold clutch, white selection, green eligibility and the occupied-line dot remain distinct. Existing named
+  fallback and unavailable-patch explanations remain. No simulation, graph, settlement, codec or body changes.
+- `npm run check` passes: typecheck and 102/102 tests, including six map fixtures. The new renderer fixture
+  covers founding labels, empty neighbours, every overlay, clutch/selection/line cues and no phantom markers.
+  An initial fixture missed a browser stub (fixed); an initial run also exceeded the existing garden timing
+  threshold. The complete rerun passed without changing that test or simulation code.
+- `npm run build:game` passes; packaged page 756 KB. Existing config/deprecation/chunk notices remain.
+  Extended `node scripts/sea-smoke.mjs` passes at 390×844 and 1200×900: founding chooser/focus, exact saved
+  choices and labels, every listed card, neighbour launch, zero-egg return and reload, no horizontal overflow,
+  existing lifecycle/design/storage paths and all overlays; no page exceptions. Disposable profiles only.
+  Phone-width return and desktop map screenshots were visually inspected. Chrome and the check wrapper
+  needed execution permission for the previously documented sandbox restrictions.
+- **Still open:** unaided player next-patch discovery, remaining ordinary-Life protocol and real-phone
+  taps/background/performance. Automated terminal fixtures and desktop emulation do not close these checks.
+
+**Next action:** have the player find/open a next patch unaided. Use a fresh session for slice 20A:
+prepare/review all 27 part mappings, locked defaults, repeated bonuses, injury/coverage and migration before
+runtime body integration. Do not treat that contract review as approval for broader body implementation.
+
+> Read AGENTS.md, docs/status.md and slice 20A. Prepare the body/part compatibility contract for review;
+> preserve the running game. Keep remaining slice-19 player/phone checks open.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in

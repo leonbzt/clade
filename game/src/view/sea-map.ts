@@ -121,11 +121,11 @@ export function makeMap(cv: HTMLCanvasElement) {
       g.fillRect(x - 1, y - 1, w + 1, h + 1);
     }
     for (const p of sea.patches) {
-      if (!occupied.has(p.id) && clutch !== p.id && selected !== p.id) continue;
+      if (!marked.has(p.id) && !occupied.has(p.id) && clutch !== p.id && selected !== p.id) continue;
       const t = p.tiles[Math.floor(p.tiles.length / 2)], x = (t % sea.isl.w + 0.5) * SCALE, y = (Math.floor(t / sea.isl.w) + 0.5) * SCALE;
-      g.fillStyle = '#08141c'; g.fillRect(x - 13, y - 9, 26, 18);
-      g.fillStyle = clutch === p.id ? '#ffe033' : '#ffffff'; g.font = 'bold 14px sans-serif'; g.textAlign = 'center';
-      g.fillText(`${occupied.has(p.id) ? '•' : ''}${p.id + 1}`, x, y + 5);
+      g.fillStyle = '#08141c'; g.fillRect(x - 22, y - 15, 44, 30);
+      g.fillStyle = clutch === p.id ? '#ffe033' : selected === p.id ? '#ffffff' : marked.has(p.id) ? '#68e8bd' : '#ffffff'; g.font = 'bold 24px sans-serif'; g.textAlign = 'center';
+      g.fillText(`${occupied.has(p.id) ? '•' : ''}${p.id + 1}`, x, y + 8);
     }
   }
 
