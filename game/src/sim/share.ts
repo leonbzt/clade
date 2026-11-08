@@ -8,9 +8,9 @@ import { tierName, type Garden, type News } from './garden';
 
 export interface Species { plan: PlanId; role: Role; hab: HabitatId; eggs: number; form?: PartId; verbs: VerbId[]; name: string }
 const PREFIX = 'CLADE-';
-const sum = (s: string) => [...s].reduce((n, c) => (n * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36).slice(-4).padStart(4, '0');
-const b64 = (s: string) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-const unb64 = (s: string) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
+export const sum = (s: string) => [...s].reduce((n, c) => (n * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36).slice(-4).padStart(4, '0');
+export const b64 = (s: string) => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+export const unb64 = (s: string) => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
 
 export function encode(sp: Species): string {
   const body = b64(JSON.stringify([sp.plan, sp.role, sp.hab, sp.eggs, sp.form ?? '', sp.verbs, sp.name.slice(0, 24)]));
