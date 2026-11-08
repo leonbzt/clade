@@ -97,7 +97,7 @@ app.ticker.add((tk) => {
   hunter.draw(above, shadows);
 });
 
-// ---- the sea and the existing island overview (the patch map follows in part C) ----
+// ---- the sea and living patch map ----
 let raw: string | null = null, unreadable = false;
 try { raw = localStorage.getItem(SAVE_KEY); }
 catch { unreadable = true; }
@@ -143,7 +143,7 @@ ctx.paste = (code) => {
 ctx.exportSave = () => serializeSeaSave(save);
 function useSave(next: SeaSave) {
   save = ctx.save = next; ctx.isl = save.sea.isl; ctx.spots = habitatSpots(ctx.isl);
-  ui.clutch = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
+  ui.feedback = null; ui.clutch = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
   hud.hideCard(); choose();
   if (save.pending) openClutch(save.pending);
 }
@@ -178,7 +178,8 @@ function openClutch(p: SeaPending) {
 function settle(p: SeaPending, card = -1) {
   if (!settlePending(save, p, card)) return;
   persist();
-  ui.clutch = null; ui.open = true; ui.hab = save.sea.patches[p.patch].ground; ui.patch = p.patch; ui.niche = null; bump();
+  ui.feedback = { patch: p.patch, species: p.species, eggs: p.eggs };
+  ui.clutch = null; ui.open = true; ui.hab = null; ui.patch = null; ui.niche = null; bump();
 }
 
 function newLife() {

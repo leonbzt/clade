@@ -11,6 +11,7 @@ import type { SeaPending, SeaSave } from '../sim/sea-save';
 export const ui = $state({
   open: false, patch: null as number | null, hab: null as HabitatId | null, niche: null as Role | null,
   away: null as null | { gens: number; news: Headline[] }, tick: 0,
+  feedback: null as null | { patch: number; species: string; eggs: number },
   notice: null as null | { title: string; text: string },
   menu: false, saveError: '', design: null as Species | null,
   clutch: null as null | SeaPending,

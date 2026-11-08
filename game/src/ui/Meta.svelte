@@ -27,7 +27,9 @@
   const stocks = $derived((ui.tick, patch ? [{ name: 'Mats', value: patch.mats }, { name: 'Detritus', value: patch.rot }, { name: 'Oxygen', value: patch.oxygen }] : []));
   const populations = $derived((ui.tick, patch ? g.species.map((sp, k) => ({ sp, pop: patch.pop[k] })).filter((e) => e.pop >= 1) : []));
 
-  const distribution = $derived((ui.tick, linePatches(g, selectedLine ?? continuation?.species)));
+  const activeSpecies = $derived(ui.feedback?.species ?? selectedLine ?? continuation?.species);
+  const activeLine = $derived(g.species.find((sp) => sp.id === activeSpecies));
+  const distribution = $derived((ui.tick, linePatches(g, activeSpecies)));
   const history = $derived((ui.tick, patch ? historyPaths(g, patch) : []));
   const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.away && !ui.notice);
   $effect(() => {
@@ -39,9 +41,16 @@
     void ui.tick;
     if (!map) return;
     map.setView(view); map.updateHerds();
-    map.mark(eligible, ui.patch, continuation?.patch ?? null, distribution);
+    map.mark(eligible, ui.patch ?? ui.feedback?.patch ?? null, continuation?.patch ?? null, distribution);
     map.draw();
   });
+  $effect(() => {
+    if (!map || !ui.feedback) return;
+    map.pulse(ui.feedback.patch, [255, 224, 51]);
+    cv?.closest('#meta')?.scrollTo(0, 0);
+  });
+  const feedbackPop = $derived((ui.tick, ui.feedback ? g.patches[ui.feedback.patch].pop[g.species.findIndex((sp) => sp.id === ui.feedback!.species)] ?? 0 : 0));
+  const feedbackName = $derived(ui.feedback ? g.species.find((sp) => sp.id === ui.feedback!.species)?.name ?? ui.feedback.species : '');
   $effect(() => {
     if (!map || !mapVisible) return;
     const renderer = map; let frame = 0, last = 0;
@@ -99,6 +108,13 @@
 {#if ui.open}
 <div id="meta" class="panel">
   <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button></div>
+  {#if ui.feedback}
+    <aside class="returnFeedback" role="status">
+      <p>{ui.feedback.eggs > 0 ? `${ui.feedback.eggs} eggs released · ${feedbackName} · patch ${ui.feedback.patch + 1}.` : 'No new eggs released. Your previous continuation remains available; before founding, retry any patch.'}</p>
+      <p>Current population of this line in that patch: {Math.round(feedbackPop)} after two sea generations. • marks its current occupied patches, including earlier populations.</p>
+      <button class="small" onclick={() => { selectedLine = ui.feedback!.species; ui.feedback = null; }}>Dismiss</button>
+    </aside>
+  {/if}
   <div class="mapViews" aria-label="Map view">
     {#each [['holder', 'Population'], ['mats', 'Mats'], ['oxygen', 'Oxygen'], ['hunters', 'Hunters']] as [id, name]}
       <button class="small" class:on={view === id} aria-pressed={view === id} onclick={() => view = id as View}>{name}</button>
@@ -107,6 +123,7 @@
   <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
   <p class="mapKey">White: selected · gold: last clutch · green: eligible · •: current line. Tap water patches to inspect.</p>
   <p class="mapKey">{view === 'holder' ? 'Fill: dominant prey’s colour; brighter means more prey. Moving bars: animals; white tip: capture tools. Worms are long, trilobites broad; names and keys are below.' : view === 'mats' ? 'Green brightness: mats, 0–70+.' : view === 'oxygen' ? 'Red → blue: oxygen, 0–80+.' : 'Red brightness: hunters, 0–28+. Hunting comes from capture parts.'}</p>
+  {#if activeLine}<p class="mapKey">{speciesKey(activeLine)}: current line in patches {distribution.map((id) => id + 1).join(', ') || 'none (continuation still available)'}. These are aggregate populations, including earlier clutches.</p>{/if}
   <details class="mapLegend"><summary>Species key</summary>{#each g.species.filter((_sp, k) => g.patches.some((p) => p.pop[k] >= 1)) as sp}
     <p><i style:background={`rgb(${speciesColour(sp).join(',')})`}></i>{speciesKey(sp)}{feedsAs(sp).hunt ? ' · hunter' : ''}{!sp.plan || !PLAN_IDS.includes(sp.plan) ? ' · sea-only, generic marker' : ''}</p>
   {:else}<p>No animals; no animal markers.</p>{/each}</details>
@@ -118,7 +135,7 @@
     {/each}
   </div></details>
   <h3>News</h3>
-  <ul class="news">{#each (ui.tick, ctx.save.news.slice(0, 8)) as n}<li class:yours={g.species[n.sp].line}>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines yet.</small></li>{/each}</ul>
+  <ul class="news">{#each (ui.tick, ctx.save.news.slice(0, 8)) as n}<li class:yours={g.species[n.sp].line} class:lineEvent={g.species[n.sp].id === activeSpecies}>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines yet.</small></li>{/each}</ul>
 </div>
 {/if}
 
