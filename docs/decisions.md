@@ -464,3 +464,28 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   [reported feedback and future play protocol](playtests/19-join-the-sea.md).
 - This session specifies and records the work; it does not implement gameplay, change release scope, or
   claim that the general review or phone playtest has happened.
+
+## 8 Nov, Part C navigation and the next body phase
+
+- **Navigation accepted:** “play next list would be good”. Specify visible eligible choices with matching
+  map labels as [slice 19 Part D](slices/19-join-the-sea.md#part-d-next-patch-navigation-follow-up-8-nov).
+- **Population suggestion:** “number of eggs from the first run in that area could be starting pop”. Read
+  as the eggs laid by the first Life played there founding that local population, matching the current rule.
+  Existing residents are retained and eggs add to them; this is not a decision to transfer/re-release the
+  previous patch's eggs at launch or overwrite population already spread into the neighbour.
+- **Step-5 specification requested:** “help me spec the next phase”. [Slice 20 draft](slices/20-join-the-bodies.md)
+  covers general bodies, the large equipment view, actual part-driven actions and continuity. No runtime
+  implementation, permanent lineage gates or expanded release geography was requested in this planning thread.
+- **Inheritance bridge selected:** “one chosen club part from the clutch”, with the qualification that it
+  “needs better integration with the species and lineage system lateron”. One compatible chosen clutch part
+  follows the continuing line into a neighbour for step 5; this does not settle final species inheritance.
+- **Later ideas, not current scope:** founding a new species; “the whole build as its one species”, or
+  “the whole build + mutations”. Revisit these in the species/lineage review for step 6 before fixing its model.
+  Step 5 retains aggregate body/diet populations and must label them honestly.
+- **Initial lineage strength selected:** “built in parts first”, “can start with built in”. Existing
+  movement/base differences remain. New extra lineage stat bonuses wait; the user still thinks different
+  base stats per lineage make sense and also likes strength coming from the body/build. This is a starting
+  choice for step 5, not a permanent prohibition on authored lineage stats.
+- **Equipment reference:** “the toy a life v2 is a good example, however it could be done differently”.
+  Use its visible body/slots and part-card interaction as a reference; the layout and interaction can improve.
+  This does not adopt the toy's old slot rules or progression instead of the step-5 body model.

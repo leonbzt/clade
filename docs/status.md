@@ -1,7 +1,8 @@
 # Status
 
-Updated 2026-11-08. Branch `codex/part-c-player-review`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
-Read this and that spec first; open other docs and source files only as needed.
+Updated 2026-11-08. Branch `codex/step5-body-spec`. Planning spec: [20 Join the bodies](slices/20-join-the-bodies.md).
+[Slice 19](slices/19-join-the-sea.md) remains open, with an accepted Part D navigation follow-up and player/phone checks.
+Read this and the spec for the selected task first; open other docs and source files only as needed.
 
 ## Saved checkpoint
 - Previous gameplay: `c9c20da`; project instructions: `d36588e`; reviewed spec: `bc4d87c`; Part A: `09dc4b0`.
@@ -12,8 +13,9 @@ Read this and that spec first; open other docs and source files only as needed.
 - Part C task base: `900cc01` (current `codex/part-c-review-plan` HEAD at task start).
   C1 map: `a1da0f1`; C2 feedback: `99c413d`; integrated verification/handoff:
   `4f6c783` (`test: verify the living sea map and save Part C handoff`).
-- Planning task base: `4f6c783`; feedback/proposal checkpoint: `docs: record Part C desktop feedback and navigation follow-up`.
-  Documentation only; gameplay remains at the Part C checkpoint.
+- Desktop feedback checkpoint: `8952a22` (`docs: record Part C desktop feedback and navigation follow-up`).
+- Step-5 planning task base: `8952a22`; specification checkpoint: `docs: specify body integration and next-patch navigation`.
+  Documentation only; gameplay remains at `4f6c783`. No equipment/body implementation in this session.
 - No new dependencies or push. Only disposable browser profiles were used; no personal browser saves were accessed.
   Remote state has not been freshly queried.
 
@@ -132,23 +134,46 @@ The roadmap order is unchanged.
   This is a qualitative report, not the complete 3–5-Life protocol or measured founding balance.
 - [Navigation proposal and review](design/part-c-and-gameplay-review.md#part-c-desktop-feedback-and-navigation-follow-up-8-nov):
   expose eligible next patches directly and label them on the map. Existing controls are partly collapsed;
-  eligible empty neighbours need not have number labels. No gameplay/UI change has been implemented or approved here.
+  eligible empty neighbours need not have number labels. Subsequently accepted by the user and specified as
+  [Part D](slices/19-join-the-sea.md#part-d-next-patch-navigation-follow-up-8-nov); not implemented here.
 - Reefs/more map structure are saved in [ideas](ideas.md). Step 9 covers UI/art and step 7 ecological variety;
   neither promises a new map layout. No roadmap or release-scope change.
 - Docs checks: local links/anchors, consistency and whitespace/diff review. Gameplay checks were not repeated
   for this documentation checkpoint; no browser saves were accessed.
 
-**Next action:** continue the gameplay/design review with this feedback, before specifying step 5.
-Retain the navigation follow-up and remaining player/phone checks; slice 19 stays open.
+## Step-5 specification checkpoint (8 Nov)
 
-> Continue planning from `codex/part-c-player-review`. Read status, reported Part C feedback and the review
-> agenda. Work through one build across Lives to settle body/identity/inheritance requirements for step 5;
-> retain XP/respec/reward pacing for step 6. Do not repeat A/B or the architecture audit. Next-patch clarity
-> and phone checks remain open; reefs are an idea. No equipment/progression implementation is authorized yet.
+- User requested the next-phase spec. [Slice 20](slices/20-join-the-bodies.md) specifies the four current
+  bodies as data, six occupied places, large equipment view, part-driven actions, general board rendering,
+  head-geometry repair and safe result/persistence integration. No new animals, XP, recipes, reefs or art overhaul.
+- A Life v2 is the user's equipment interaction reference, with freedom to change its layout: visible body,
+  clear places and part cards, effects/upkeep and placement/replacement. Relevant source is `toys/life2-ui.ts`.
+- **Decided for this phase:** one compatible chosen clutch part follows continuation into a neighbour;
+  start with built-in parts for extra lineage strength, preserving existing base/movement differences.
+  [Exact calls](decisions.md#8-nov-part-c-navigation-and-the-next-body-phase). Both are bounded starting choices.
+- The first Life played in an area contributes its actual eggs there, matching existing settlement. Existing
+  spread/residents remain. Launch does not re-release the previous clutch or replace the area's population.
+- [Focused review outcome](design/part-c-and-gameplay-review.md#step-5-review-outcome-8-nov) records system
+  roles, examples and risks. Later species founding, whole-build/mutation inheritance and extra lineage stats
+  remain open directions; XP/respec/rewards are still step 6. Aggregate population identity remains a bridge.
+- **Key implementation boundary:** 20A must publish all 27 part mappings, locked defaults, repeated-bonus
+  treatment, injury/coverage and migration before runtime cutover. Any unavoidable balance change needs a
+  concrete review. Stage safely; the running game and its codec must agree at every verified checkpoint.
+- Docs-only checks: local links/anchors, consistency and diff/whitespace review. No gameplay tests repeated.
+
+**Next action:** review the saved spec, then use a fresh task session for the small slice-19 Part D navigation
+fix or preparing the 20A body/part contract. Keep remaining player/phone checks open. No runtime implementation
+was requested in this planning session; the spec distinguishes settled choices from proposed bounds.
+
+> Read AGENTS.md and docs/status.md on `codex/step5-body-spec`. For the first bounded build, implement only
+> slice 19 Part D (Play next list and matching map labels), verify and commit. Do not start the body port in
+> that task. The next separate task is slice 20A: prepare/review all current part mappings and compatibility
+> before wiring six places into runtime. Preserve the existing loop; do not repeat the architecture audit.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in
   `c9c20da`; [body approach](design/body-approach.md) and [slice 18 playtest](playtests/18-body-toy.md) have details.
-- Step 6: parts entering new bases, respec and XP ownership remain open. [P46](proposals.md) retains the proposals.
+- Step 6: species founding/whole-build inheritance, recipe transitions, respec and XP ownership remain open.
+  [P46](proposals.md) retains the remaining shape-effects proposal; built-in power first is now decided for step 5.
 - Step 9: final style remains open, between OSRS and Stardew Valley. Step 3's three play checks are still open.
 - Research shortlist and biology-tooltip checks remain in their existing docs; no new research was needed here.

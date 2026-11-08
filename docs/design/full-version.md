@@ -28,6 +28,14 @@ This does not settle permanent progression. Food and environmental conditions ex
 come from releases and their descendants. The scope, migration requirements and remaining compatibility decisions
 are in [slice 19: Join the sea](../slices/19-join-the-sea.md).
 
+**Step 5 planning (8 Nov):** [Join the bodies, draft](../slices/20-join-the-bodies.md) specifies the general
+body and large equipment view. **Decided for this bridge:** one selected compatible clutch part follows
+continuation into a neighbour. The user explicitly wants this integrated better with species/lineages later;
+founding a custom species and inheriting its whole build, possibly with mutations, remain ideas for that review.
+**Also decided for step 5:** begin with built-in parts for extra lineage strength, retaining existing
+base/movement differences. Extra lineage stat bonuses remain a later possibility. Permanent progression
+is still step 6; this specification session does not implement it.
+
 ## 2. Who does what
 | System | Its one job | Where |
 |---|---|---|

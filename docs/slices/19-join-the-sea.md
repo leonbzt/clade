@@ -261,3 +261,33 @@ design session is one general gameplay review after C's playable loop and before
 
 Permanent species pacing and the large creature/slots/parts equipment view remain steps 5/6. The review
 should shape them before their implementation; these requests are recorded, not treated as fixed by Part C.
+
+## Part D: next-patch navigation follow-up (8 Nov)
+
+**Accepted direction:** “play next list would be good”. This is the bounded response to reported desktop
+difficulty finding the next patch, specified before the [step-5 body work](20-join-the-bodies.md). This
+planning session changes documentation only; slice 19's remaining player/phone criteria stay open.
+
+**Cause:** `Meta.svelte` has a current-clutch button, but its eligible-first patch list is collapsed.
+`sea-map.ts` outlines eligible neighbours without necessarily numbering them. These are plausible causes
+of poor discovery; the user has not identified a unique cause.
+
+**Smallest change:**
+
+- Show an always-visible “Play next” group directly below the map, before the long legend/news content.
+  With continuation, show its patch first (“Last clutch”), then all direct neighbours (“Neighbour”).
+  Each button includes the existing patch number and habitat name and opens that patch's card.
+- Number those eligible patches on the map using the same IDs as the buttons. Keep clutch, selection and
+  occupied-line distinctions legible in all overlays; these labels do not imply animals are present.
+- Use the existing `launchPatches` result, not distance or occupancy. With no continuation, all patches are
+  eligible for founding: show an obvious founding chooser using the existing patch list rather than a huge
+  permanent button stack. Do not narrow founding access or pretend a last clutch exists.
+- Retain inspection of all other patches and their unavailable explanation. Scroll/wrap the controls at
+  phone widths. Use real buttons for keyboard access; no automatic launch or automatic “best” patch choice.
+- Release, zero-egg retry, reload and extinction must update the choices from the same saved continuation.
+  Keep the named all-patch fallback. Do not add simulation steps, change the graph or release population.
+
+**Checks:** existing map/eligibility fixtures plus list-to-map/card matching; packaged smoke from a positive
+clutch to a neighbour, through zero eggs and reload; desktop and phone-width layout. Ask the player to find
+and open a next patch unaided. Run `npm run check`, `npm run build:game` and the focused smoke path after
+implementation. Real-phone verification stays separately open if unavailable.

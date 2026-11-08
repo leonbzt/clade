@@ -78,6 +78,34 @@ Step 9 already covers map UI/art as part of every screen; step 7 adds ecological
 are now in [ideas](../ideas.md), not committed release geography. My recommendation is to continue the body,
 inheritance and progression review, with this bounded navigation issue retained before closing slice 19.
 
+## Step-5 review outcome (8 Nov)
+
+The user requested the next phase's specification after the positive desktop report. The
+[slice 20 specification](../slices/20-join-the-bodies.md) follows one build from patch choice through
+equipment, growth, reproduction and a neighbouring Life. This is a focused design review, not measured
+balance evidence or closure of the remaining body/phone play checks.
+
+| System | Job for the next phase | Boundary |
+| --- | --- | --- |
+| Body/lineage | Shape, movement and characteristic parts; start with built-in parts for extra strength | Existing four bodies; extra lineage stats remain a later option |
+| Equipment | Make actual starting parts, actions, costs and appearance understandable | Six places; preserve starting allowance, no free full loadout |
+| Moult | Grow and change the current Life | Real offers, replacement costs and rare traits; no free swapping |
+| Clutch | One chosen compatible part follows continuation | User-selected temporary bridge; not final species inheritance |
+| Sea | Actual local releases and truthful aggregate populations | No population at launch; no independent population for every build yet |
+| Genes, recipes and trees | Later persistent possibilities, rare surprises and lineage changes | Step 6 must revisit founding species and whole-build/mutation inheritance |
+| Later minigames | Another way to play a Life and return a result | Keep the shared loop; no minigame framework now |
+
+**Ranked gaps:** (1) map all current part effects and directional damage into six places without accidental
+losses; (2) make equipment, moult and board show the same creature; (3) make the one-part continuation visible
+and reliable while preserving the later species design. Play-next discovery is separately specified as
+[slice 19 Part D](../slices/19-join-the-sea.md#part-d-next-patch-navigation-follow-up-8-nov).
+
+**Calls recorded:** one clutch part for now; built-in parts first for extra lineage strength. The user's
+interest in whole-build inheritance, mutations, founding species and lineage base stats remains open for
+later planning. XP ownership, respec, recipe rewards and the identity of persistent named species still need
+the step-6 review; this does not declare them solved. Before runtime body cutover, review the exact part
+mapping, especially repeated bonuses, physiological traits and locked-place injuries.
+
 ## When and how to do the general review
 
 **Recommendation: after Part C's connected-loop playtest, before implementing step 5.** Earlier, we would be

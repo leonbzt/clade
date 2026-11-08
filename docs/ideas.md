@@ -48,6 +48,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Hindsight names for big groups; partnerships (lichen, mycorrhiza) as a partner that changes the side-view rules
   (your "guilds change the rules").
 - Species similarity and a cumulative gene view; the lineage's family tree; the tree of life as a collection.
+- Found a custom species whose whole build, possibly plus mutations, is inherited (you, 8 Nov); revisit in the step-6 species/lineage review. Step 5's one chosen clutch part is explicitly temporary.
 - The nursery: crossing two lines, kept scarce. Sharing island seeds and genome codes (a code redraws the specimen).
 - Animals with staged assembly (Hatched): snails, springtails, spiders, then beetles, bees, bats; cute animals
   (hermit crabs, geckos, fruit bats, rails, doves, nēnē…). Diet through mouthparts.

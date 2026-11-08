@@ -2,7 +2,7 @@
 
 AI proposals waiting for your call or a spec. **At most three open at a time.** Each names the milestone it serves,
 gives options with an AI lean, and asks at most three questions. When you decide, your call goes to
-[decisions.md](decisions.md) (and [vision.md](vision.md)), and the proposal leaves this file. Anything without a
+[decisions.md](decisions.md) (and [full-version.md](design/full-version.md)), and the proposal leaves this file. Anything without a
 milestone goes to [ideas.md](ideas.md) as one line.
 
 Numbers continue from P35. P1–P33 in full are archived (`_archive/2026-11-01/systems.md`, reads blocked). Only the
@@ -12,13 +12,18 @@ open parts needed for M1 are kept here; the rest is parked in ideas.md.
 P44 (the run's core play) and P45 (next step, apex slot, world) were decided 4 Nov: see decisions.md.
 P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea replaces that model (see decisions.md).
 
-## P46: Six places instead of free slots (M2, step 3) *proposal, 6 Nov*
+## P46: Six places instead of free slots (M2, step 5; from step 3) *proposal, 6 Nov*
 Full reasoning and numbers: [design/body-approach.md](design/body-approach.md).
 
 **Your reactions (6 Nov, logged in decisions.md):** one place, one thing and locked places by lineage: yes. A locked place keeps its kind and can improve or reopen later. Front is the weapon slot. Rows for now, exact placement maybe later. Power from locked parts, authored numbers or both: still open.
 **Your call on looks (7 Nov):** recipes for a code painter; don't spend more time on the final style now. It waits for the art pass, step 9.
 **AI lean:** build six places as part of step 5, not as a separate toy, with the painter behind one draw call so the style stays swappable.
+The requested [slice 20 draft](slices/20-join-the-bodies.md) makes the equipment view, part mapping and checks
+concrete. The 8 Nov inheritance choice is one selected clutch part following continuation, explicitly a
+bridge to later species/lineage integration; that settled choice is in [decisions](decisions.md).
 
-**Questions, for step 5.**
-1. Does lineage power come from locked parts, authored numbers or both? (Your words: "still open".) AI lean: locked parts first.
-2. Body shape: visible only at first, or with small effects from the start? AI lean: visible first, then at most one trade-off for each of two named forms.
+**Power question closed for step 5 (8 Nov):** start with built-in parts, keeping current base/movement rules.
+Extra lineage stats remain a later possibility; [decision](decisions.md#8-nov-part-c-navigation-and-the-next-body-phase).
+
+**Remaining proposal:** body shape visible only at first, or small effects? The step-5 spec uses visible
+only as its bounded scope; further shape effects remain open for later review, rather than adding a shape stat now.
