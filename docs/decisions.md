@@ -556,3 +556,8 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   pushed; all old local and remote branches deleted (every one was already in `main`'s history).
 - **Automatic handoff:** "handoff should be done automatically once a large task is done so i dont have to rerun the
   command." The AI runs the `/handoff` steps itself at the end of a large task, then says it is ready for `/clear`.
+
+## 8 Nov, trimming slice 20
+- **Old share codes after the reset:** "no message needed, there is no saves or codes outside mine". Old saves and
+  `CLADE-` codes are simply dropped/invalid; no rejection message, no conversion. Slice 20 and 20A were trimmed by
+  deletion to match (no legacy layer); starter checks for codes and size-keeping lay snapshots are specified in 20A.

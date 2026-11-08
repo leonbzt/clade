@@ -42,7 +42,7 @@ whole choices, and legacy builds retain their semantics across the eventual vers
 for now: listed defaults/locks, basic built-ins included in base upkeep 1 through one leg/flap allowance,
 extra tools charged normally, and a provisional ceiling of three verbs with fewer allowed. Costs,
 defaults/locks and a possible lower ceiling remain open to revision after equipment playtesting. The
-[contract](20a-body-part-contract.md#review-first) is ready for pure definitions/fixtures before runtime integration.
+[contract](20a-body-part-contract.md) is ready for pure definitions/fixtures before runtime integration.
 
 ## 2. Who does what
 | System | Its one job | Where |
