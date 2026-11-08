@@ -489,3 +489,28 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
 - **Equipment reference:** “the toy a life v2 is a good example, however it could be done differently”.
   Use its visible body/slots and part-card interaction as a reference; the layout and interaction can improve.
   This does not adopt the toy's old slot rules or progression instead of the step-5 body model.
+
+## 8 Nov, slice 20A contract review (in progress)
+
+- **A — revision requested, not accepted:** the user selected “Revise A before acceptance”. The change to
+  starting upkeep, defaults/locks or the action limit has not yet been specified. Keep A's numbers and body
+  records proposed; the earlier built-in-parts direction alone does not accept their concrete costs.
+- **B — accepted as proposed:** the user selected “Accept B as proposed (recommended)”. New six-place builds
+  use one effect copy per choice and no repeated-ID stacking; size changes drawing count only. Retain explicit
+  walking/raking and walking/digging variants, frontal rakes, spined shield and action-preserving upgrades.
+  Compound/hook/deep retain Sense/Crush/Dig; spined arms retain capture. Accept the listed finite-place and
+  physiology conflicts and numeric stacking losses (two gills' oxygen 7 → 5; size-3 double-pouch eggs 9 → 6).
+  Legacy arrays keep their existing effects. Exact mappings and examples remain in the
+  [contract](design/20a-body-part-contract.md#place-and-variant-semantics). This accepts B's semantics, not
+  A's proposed default loadouts or starting costs; reconcile their overlap after A is revised.
+- **C — accepted as proposed:** the user selected “Accept C as proposed (recommended)”. Rows cover both
+  flanks where specified; a tear removes the whole row/variant, including its actions, effects and upkeep.
+  Locked/default rows remain damageable and shedable, without free restoration. Use the specified fixed
+  tear priority, guard bypass, softness and installation-order starvation rules. Eventual cutover uses v4
+  saves, tagged legacy versus placed builds, recoverable source JSON and exact versioned design exports.
+  Preserve legacy effects, RNG/populations/graph/progress, last-lay builds and exact once-only pending
+  settlement. Old launch conflicts need visible resolution; never silently discard parts. The contract's
+  continuation/local-form distinctions and old-code decoding remain required. This accepts future rules;
+  it does not authorize changing the running codec or beginning runtime integration in this review.
+- **Boundary:** documentation review only. Do not begin dependent pure-model or runtime implementation
+  until the remaining contract calls are settled. No balance/play/performance check is implied by acceptance.

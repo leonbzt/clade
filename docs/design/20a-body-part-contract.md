@@ -1,6 +1,6 @@
 # Slice 20A: body/part compatibility contract
 
-**Prepared 8 Nov 2026 for review. Not approved for runtime cutover.**
+**Reviewed 8 Nov 2026: B/C accepted; A revision requested. Not approved for implementation or runtime cutover.**
 Task base: `13b1ccb` (`feat: expose next-patch navigation`); branch `codex/slice20a-contract`.
 This is the model-contract deliverable of [slice 20](../slices/20-join-the-bodies.md#boundaries-and-build-order).
 It preserves the running game. No runtime model, save version, offers, drawing or balance changes here.
@@ -14,18 +14,59 @@ eleven visual parts do not describe production's 27 gameplay parts. This contrac
 bounded model: six choices, explicit combined variants only where needed, one copy's bonus per choice,
 and recoverable legacy builds. It does **not** claim unchanged balance.
 
-Three review groups need approval or amendment before implementing dependent rules:
+Review calls are recorded in the [decision log](../decisions.md#8-nov-slice-20a-contract-review-in-progress).
+Settle A's amendment before implementing dependent rules:
 
-| Review group | Recommended proposal | Concrete cost/tradeoff |
+| Review group | Proposal and review state | Concrete cost/tradeoff |
 | --- | --- | --- |
-| A: defaults and locks | Use the four body records below; charge ordinary upkeep for built-ins, credit overlapping starter choices | Arthropod/trilobite start with one paid leg bonus; swimmer starts with one paid flap bonus; worm keeps a free digging bulb unless replaced |
-| B: six choices and bonuses | One effect copy per place; retain walking/raking and walking/digging variants; upgrades retain the predecessor's capability | Repeated-copy builds lose stacking in **new** Lives; some mixed passive/action builds need replacement choices; defaults also use the three-verb limit |
-| C: damage and compatibility | Mirrored rows cover both flanks and are lost as a whole; keep old build semantics alongside new place records in a versioned save | One row guards more broadly but one injury can remove more anatomy; old conflicting designs need a visible resolution before launching |
+| A: defaults and locks — revision requested | Use the four body records below; charge ordinary upkeep for built-ins, credit overlapping starter choices; concrete amendment pending | Arthropod/trilobite start with one paid leg bonus; swimmer starts with one paid flap bonus; worm keeps a free digging bulb unless replaced |
+| B: six choices and bonuses — accepted | One effect copy per place; retain walking/raking and walking/digging variants; upgrades retain the predecessor's capability | Repeated-copy builds lose stacking in **new** Lives; some mixed passive/action builds need replacement choices; defaults' concrete starting effects/costs remain A's unresolved call |
+| C: damage and compatibility — accepted | Mirrored rows cover both flanks and are lost as a whole; keep old build semantics alongside new place records in a versioned save | One row guards more broadly but one injury can remove more anatomy; old conflicting designs need a visible resolution before launching |
 
-These are proposals, not new user decisions. The already selected one-part continuation and built-in
-lineage strength remain as recorded in [decisions](../decisions.md#8-nov-part-c-navigation-and-the-next-body-phase).
-Approval of this contract would authorize only its agreed rules; equipment/board and persistence cutover
-still follow the bounded implementation stages in the slice.
+B and C are now user decisions; A's body records and paid-default examples remain proposals. The already
+selected one-part continuation and built-in lineage strength remain as recorded in
+[decisions](../decisions.md#8-nov-part-c-navigation-and-the-next-body-phase). B's accepted variants do not
+implicitly accept A's proposed default loadouts, starting costs or default-action allocation. Reconcile
+that overlap when A is revised. Equipment/board and persistence cutover still follow the bounded stages
+in the slice after the remaining review is settled.
+
+## Review assessment (8 Nov)
+
+**Review in progress: the user requested revision of A before acceptance; B and C are accepted.**
+The requested A amendment is not yet specified. The review request itself does not approve the proposed
+balance or compatibility changes. Record only the user's actual calls in [decisions](../decisions.md);
+keep dependent implementation gated meanwhile. The initial AI assessment below recommended all three.
+
+- **A — costed defaults and family locks:** initial AI recommendation; user requested revision. Using
+  occupied, costed equipment avoids a hidden second source of lineage bonuses and preserves the selected
+  built-in-parts direction. The cost is material:
+  A Digger's upkeep rises from 2 to 3 with the same starting food 6; the swimmer gains speed 3 but pays upkeep
+  2 instead of 1. T gains a front guard alongside its existing stay-put enrolment. These are starting-balance
+  changes, not evidence that each body is stronger or equally viable. Default actions must appear in presets
+  and the three-verb check. The worm's optional bulb also changes a Sweeper's sea feeding to half mats/half rot.
+- **B — one effect copy and explicit variants:** accepted as proposed; see the
+  [decision log](../decisions.md#8-nov-slice-20a-contract-review-in-progress). This gives the six visible choices
+  a direct mechanical meaning without adding ranks or a second equipment system. Walking/raking and walking/digging
+  preserve the central combinations; retained upgrade actions avoid an improvement removing the old tool's
+  action. Accepting this also accepts lost stacking and finite-place conflicts: oxygen 7 becomes 5 for two old
+  gills versus one new row, and a size-3 double-pouch build's 9 eggs become 6. T's armour lock prevents the old
+  gill+gut+blood combination. Preserve those old builds as legacy evidence rather than claiming a lossless map.
+- **C — whole-row damage and versioned compatibility:** accepted as proposed. One bilateral row should have one
+  visible injury state. The broader flank guard is a benefit; losing both flanks or both walking/raking tools
+  in one tear is the cost. Fixed tear priority and a prospective-loss preview make the change explainable.
+  Keeping legacy semantics until a new representative legitimately replaces them is necessary to avoid
+  changing existing feeding, pending releases or saved results during migration. It adds a real compatibility
+  burden; stage tagged pure data/fixtures first, then switch runtime and its adapters together.
+
+The numeric comparisons and existing damage/feeding/offer rules were checked against `data/life.ts`,
+`sim/life.ts`, `sim/hunt.ts`, `sim/threat.ts`, `sim/verbs.ts` and `sim/feeding.ts`. This supports the stated
+differences; it does not establish the new model's balance or performance. No additional part, socket,
+progression rule or release scope is proposed. No new source defect needs a separate implementation here.
+
+The smallest change in this review is documentation: save the actual A–C calls, then align this contract,
+the slice and handoff. Verify local links/anchors, 27-ID/four-body coverage, consistency and diff scope.
+After accepted calls, use a fresh session for the pure definitions and focused fixtures listed below;
+runtime integration, save cutover, player balance and phone checks remain later work.
 
 ## Evidence and implementation boundary
 
@@ -90,7 +131,7 @@ Examples without a carried part: worm Digger = `bulb` + `eye`, upkeep 2, Dig/Sen
 + `eye`, upkeep 3, Dash/Dig/Sense (old upkeep 2, Dig/Sense). Swimmer starts with arms/flaps, upkeep 2 and
 speed 3 before frenzy/ambush (old arms-only upkeep 1 and speed 2). Trilobite Tank = walking Limbs, spined
 shield Back and claw Front, upkeep 4, Dash/Brace/Crush (old spine/claw upkeep 3, Brace/Crush).
-These extra starting effects and costs are review group A, not inferred balance approval.
+These extra starting effects and costs are review group A, which the user requested revising before acceptance.
 
 ## Place and variant semantics
 
@@ -117,7 +158,7 @@ Taking a `leg` offer on a walking/raking row may explicitly downgrade it to walk
 
 The three superseding rare upgrades and `spikes` keep their predecessor's capabilities without adding
 predecessor upkeep or a hidden extra damage buffer. Currently `compound`, `hook` and `deep` have no active
-verb in `PARTS`; gaining Sense/Crush/Dig is an explicit proposed rule change. `spikes` already captures
+verb in `PARTS`; gaining Sense/Crush/Dig is an explicit rule change accepted in B. `spikes` already captures
 without a separate `arms` copy. `lenses` is the swimmer's predictive eye, not the grazer `compound` ID.
 
 ## All 27 existing parts
@@ -170,7 +211,7 @@ represents that one ID/choice, not all the parent's parts. A valid legacy card i
 
 ## Repeated bonuses and explicit balance proposals
 
-The recommendation is **no ranks or repeated copies in new six-place builds**. This keeps a place one
+Accepted in B: **no ranks or repeated copies in new six-place builds**. This keeps a place one
 choice and avoids hidden per-appendage stats. A duplicate offer is replacement/repair, not a power increase;
 show this before commitment. Different homes for one ID do not allow two copies. Superseding upgrades
 cannot coexist with their predecessors in another place. Existing arrays keep their old meaning.
@@ -188,7 +229,7 @@ cannot coexist with their predecessors in another place. Existing arrays keep th
 
 Other named changes requiring review:
 
-- **Action-preserving upgrades:** compound/hook/deep gain Sense/Crush/Dig; existing range/recharge/food
+- **Action-preserving upgrades (accepted in B):** compound/hook/deep gain Sense/Crush/Dig; existing range/recharge/food
   numbers for these actions stay as defined in `VERBS`/`verbs.ts`. Hook's Crush can open an adjacent carcass
   at any size with the existing +4 bonus, where old hook alone only offered normal forward reach.
 - **Default feeding matters:** a worm Sweeper now retaining its default bulb has Graze/Dash/Dig and
@@ -207,8 +248,8 @@ Other named changes requiring review:
   the exact build and any conflict; do not silently trim their advertised pair of actions.
 - **Armour placement:** shield moves from head to Back but still guards front. This allows claw + shield
   + eyes together on A/T, unlike the old one-head-slot body. T receives shield as a new free-upkeep default.
-- **Damage is by row:** bilateral coverage, simultaneous loss of both flanks, shared Front/Eyes exposure,
-  and bundled variant loss are intentional directional-combat changes, specified next.
+- **Damage is by row (accepted in C):** bilateral coverage, simultaneous loss of both flanks, shared Front/Eyes
+  exposure and bundled variant loss are intentional directional-combat changes, specified next.
 
 If these costs are rejected, revise the contract before coding. Adding ranks, extra physiology sockets or
 arbitrary component stacks would be a different model proposal, not an implementation detail to improvise.
@@ -268,7 +309,7 @@ never make v3 arrays mean new rows simply by adding optional fields. New choices
 and variant, not only flatten to a list (e.g. frontal rake versus walking/raking has different coverage).
 Validate body/family restrictions, duplicate IDs, allowed variants, active verbs and counts before use.
 
-Proposed conversion policy:
+Conversion policy accepted in C, for eventual cutover:
 
 1. Preserve the exact imported v3 JSON as recoverable migration input, including any existing v1/v2
    `legacy.json`. Keep the current v1/v2 migration path and then apply the v3→v4 boundary; do not replace
@@ -300,7 +341,7 @@ Proposed conversion policy:
 For codes, retain the current `CLADE-` seven-field decoder as a legacy design decoder. It still grants no
 population, eggs, visitors or launch access. Decode and compatibility validation are separate: valid but
 conflicting old codes report their parts/places/verbs rather than becoming corrupt or silently trimmed.
-Publish new exports in a distinct versioned envelope (proposed `CLADE2-`) containing the exact starting
+Publish new exports in a distinct versioned envelope (`CLADE2-`) containing the exact starting
 choices/variants/placements and carried-part provenance needed to reproduce the offered build. Keep the
 checksum/validation approach; reject unknown versions. The old format cannot faithfully encode every new
 variant or placement. Never export an approximate verb-only design as though it were the equipped one.
@@ -350,7 +391,7 @@ Equipment drawing, head joins at sizes 1–5, real board performance comparison 
 belong to 20B/20C and remain open. Do not check off the whole slice's contract criterion until rules are
 approved and their staged fixtures exist. Do not repeat the completed art/performance audit for this review.
 
-**Next action:** review groups A–C, especially paid starting defaults, single-copy bonuses/physiology
-conflicts and bilateral row damage. Save accepted calls in `decisions.md`, revise this contract as necessary,
-then use a fresh implementation session to stage the approved pure model and fixtures. No broader runtime
-body integration is authorized by preparing this document.
+**Next action:** specify and review A's requested amendment, then record its accepted rule in `decisions.md`
+and align the body/default examples here. B/C are accepted; do not re-ask those calls unless A's revision
+requires changing them. Once the contract is settled, use a fresh implementation session to stage the
+approved pure model and fixtures. No runtime body integration is authorized by this review.

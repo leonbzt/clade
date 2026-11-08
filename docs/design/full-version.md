@@ -36,6 +36,12 @@ founding a custom species and inheriting its whole build, possibly with mutation
 base/movement differences. Extra lineage stat bonuses remain a later possibility. Permanent progression
 is still step 6; this specification session does not implement it.
 
+**Step 5 contract review (8 Nov):** [B/C accepted](../decisions.md#8-nov-slice-20a-contract-review-in-progress):
+new six-place builds use single-copy bonuses and explicit variants/upgrades; bilateral rows are lost as
+whole choices, and legacy builds retain their semantics across the eventual versioned cutover. A's concrete
+built-in defaults, locks and starting costs require revision before acceptance. The
+[contract](20a-body-part-contract.md#review-first) remains gated for implementation until that call is settled.
+
 ## 2. Who does what
 | System | Its one job | Where |
 |---|---|---|

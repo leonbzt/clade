@@ -1,6 +1,6 @@
 # Status
 
-Updated 2026-11-08. Branch `codex/slice20a-contract`. Current review: [20A body/part contract](design/20a-body-part-contract.md)
+Updated 2026-11-08. Branch `codex/slice20a-review`. Current review: [20A body/part contract](design/20a-body-part-contract.md)
 for [20 Join the bodies](slices/20-join-the-bodies.md). Gameplay remains at `13b1ccb`.
 [Slice 19](slices/19-join-the-sea.md) remains open, with Part D navigation implemented and player/phone checks still open.
 Read this and the spec for the selected task first; open other docs and source files only as needed.
@@ -207,13 +207,34 @@ The roadmap order is unchanged.
 - Slice 20's completion boxes stay open. Remaining slice-19 player discovery, ordinary-Life and real-phone
   checks stay open; this design task supplies no additional play or performance evidence.
 
-**Next action:** review/amend [contract groups A–C](design/20a-body-part-contract.md#review-first), then record
-accepted calls before staging 20A's pure model/fixtures in a fresh implementation session. Do not treat
-preparing this contract as approval for runtime body integration. Separately, have the player find/open
-a next patch unaided for slice 19.
+## Slice 20A review checkpoint (8 Nov; A remains open)
 
-> Read AGENTS.md, docs/status.md and docs/design/20a-body-part-contract.md. Review groups A–C and record
-> accepted calls; preserve the running game. Do not begin runtime body integration. Keep slice-19 checks open.
+- Task base: `c6c272d`; branch `codex/slice20a-review`; checkpoint subject:
+  `docs: record slice 20A B and C acceptance with A revision pending`. Documentation only; gameplay remains
+  at `13b1ccb`. No pure model, fixtures, runtime/codec changes or browser-save access.
+- [Accepted calls](decisions.md#8-nov-slice-20a-contract-review-in-progress): **B accepted as proposed**
+  (single-copy bonuses, explicit variants/upgrades, finite-place conflicts, old effects retained for legacy
+  builds); **C accepted as proposed** (bilateral whole-row damage, loss of locked rows, versioned compatibility,
+  recoverable input, old pending/feeding semantics and visible launch-conflict resolution).
+- **A not accepted:** the user requested revision before acceptance. A follow-up asks what should change
+  about starting upkeep, defaults/family locks or default actions within the three-verb limit. No amendment
+  has yet been supplied. Do not infer free built-ins, a changed food allowance or different locks.
+- [Review assessment](design/20a-body-part-contract.md#review-assessment-8-nov) records the recommendation,
+  numeric costs and risks. Accepted B variants do not silently accept A's default loadouts/starting costs.
+  Keep dependent implementation gated until A is settled and examples are reconciled.
+- Docs checks: local links/anchors, all 27 unique production part mappings/four body records, source
+  consistency and whitespace/diff scope. No gameplay tests repeated; no new balance/performance/play claim.
+  Slice 20 completion boxes and slice 19's outstanding player/phone checks remain open.
+
+**Next action:** obtain the concrete requested amendment to
+[group A](design/20a-body-part-contract.md#review-first), review its costs/conflicts, then record the accepted
+rule and reconcile the contract. B/C do not need re-approval unless that amendment changes them. Only after
+the contract is settled, use a fresh implementation session for 20A's pure model/fixtures. Runtime body
+integration is not authorized here. Separately, have the player find/open a next patch unaided for slice 19.
+
+> Read AGENTS.md, docs/status.md and docs/design/20a-body-part-contract.md. B/C are accepted; A needs the
+> user's concrete revision and acceptance. Finish that review and reconcile the contract before implementation.
+> Preserve the running game; do not begin runtime body integration. Keep slice-19 checks open.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in
