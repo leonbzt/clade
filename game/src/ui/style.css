@@ -191,3 +191,17 @@ button.small { min-height: 34px; font-size: 16px; padding: 2px 10px; color: var(
 .clutch .go:disabled { color: #7d6f55; }
 .form { font-size: 16px; color: #9fe3ff; }
 textarea { font: 14px/1.3 ui-monospace, monospace; width: 100%; background: var(--ink); color: var(--text); border: 3px solid var(--edge-lo); padding: 6px; user-select: text; -webkit-user-select: text; }
+
+/* Keep map cues visible above a scrollable patch sheet on phones. Loadout uses the existing full sheet. */
+.mapViews { display: flex; flex-wrap: wrap; gap: 4px; }
+.mapViews .on { color: var(--title); outline: 2px solid var(--brass); }
+.mapKey { font-size: 13px; margin: 0; color: var(--dim); }
+.mapLegend, .patchList { font-size: 14px; }
+.mapLegend p { margin: 4px 0; overflow-wrap: anywhere; }
+.mapLegend i, .populationKey i { display: inline-block; width: 12px; height: 8px; margin-right: 6px; border: 1px solid #fff; }
+.populationKey { font-size: 13px; text-align: left; overflow-wrap: anywhere; }
+.patchHistory { display: block; width: 100%; height: 74px; background: #101d24; }
+.patchWrap { top: 43%; padding: 0; background: transparent; pointer-events: none; align-items: stretch; }
+.patchWrap .habCard { pointer-events: auto; }
+.patchWrap.loadout { top: 0; background: rgba(8, 6, 3, 0.6); }
+.isle { flex-shrink: 0; }

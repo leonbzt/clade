@@ -1,15 +1,20 @@
-<!-- Part B: real patch selection and the existing loadout, on the current island overview. -->
+<!-- Living patch map and the existing Life loadout. -->
 <script lang="ts">
-  import { HABITATS, HAB_ORDER, type HabitatId } from '../data/habitats';
+  import { HABITATS } from '../data/habitats';
   import { HUNT, MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type GrazerId, type PlanId, type StyleId, type VerbId } from '../data/life';
   import { boardForPatch, nextBoard } from '../sim/door';
   import { formFor, launchBodies, launchPatches } from '../sim/sea-life';
   import { headlineText } from '../sim/sea-news';
   import { newLife, partsFor, startParts } from '../sim/life';
-  import { drawIsland, spotAt } from '../view/islandmap';
+  import { makeMap, type View } from '../view/sea-map';
+  import { historyPaths, linePatches, speciesColour, speciesKey } from '../view/sea-map-data';
+  import { feedsAs } from '../sim/feeding';
+  import { PLAN_IDS } from '../data/life';
   import { bump, ctx, ui } from './meta.svelte';
 
   let cv: HTMLCanvasElement | undefined = $state();
+  let map = $state.raw<ReturnType<typeof makeMap> | null>(null);
+  let view = $state<View>('holder'), selectedLine = $state<string | undefined>();
   let verbs: VerbId[] = $state([...STYLE_VERBS.digger]);
   let note = $state(''), body: PlanId = $state('worm'), carry = $state(true), usingDesign = $state(false);
   const g = $derived((ui.tick, ctx.save.sea));
@@ -22,18 +27,34 @@
   const stocks = $derived((ui.tick, patch ? [{ name: 'Mats', value: patch.mats }, { name: 'Detritus', value: patch.rot }, { name: 'Oxygen', value: patch.oxygen }] : []));
   const populations = $derived((ui.tick, patch ? g.species.map((sp, k) => ({ sp, pop: patch.pop[k] })).filter((e) => e.pop >= 1) : []));
 
+  const distribution = $derived((ui.tick, linePatches(g, selectedLine ?? continuation?.species)));
+  const history = $derived((ui.tick, patch ? historyPaths(g, patch) : []));
+  const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.away && !ui.notice);
+  $effect(() => {
+    if (!cv) return;
+    const renderer = makeMap(cv); renderer.setSea(g); map = renderer;
+    return () => { map = null; };
+  });
   $effect(() => {
     void ui.tick;
-    if (cv) drawIsland(cv, ctx.isl, ctx.spots, { scale: 4, selected: ui.hab });
+    if (!map) return;
+    map.setView(view); map.updateHerds();
+    map.mark(eligible, ui.patch, continuation?.patch ?? null, distribution);
+    map.draw();
+  });
+  $effect(() => {
+    if (!map || !mapVisible) return;
+    const renderer = map; let frame = 0, last = 0;
+    const draw = (now: number) => { if (now - last >= 32) { renderer.draw(); last = now; } frame = requestAnimationFrame(draw); };
+    frame = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(frame);
   });
   function tapMap(e: MouseEvent) {
-    if (!cv) return;
-    const r = cv.getBoundingClientRect(), tx = Math.floor(((e.clientX - r.left) / r.width) * ctx.isl.w), ty = Math.floor(((e.clientY - r.top) / r.height) * ctx.isl.h);
-    const id = spotAt(ctx.spots, tx, ty);
-    if (id) openHab(id);
+    const id = map?.patchAt(e.clientX, e.clientY) ?? -1;
+    if (id >= 0) openPatch(id);
   }
-  function openHab(id: HabitatId) { ui.hab = id; ui.patch = null; ui.niche = null; }
   function openPatch(id: number) { ui.patch = id; ui.hab = g.patches[id].ground; ui.niche = null; }
+  function backToMap() { ui.patch = null; ui.hab = null; ui.niche = null; }
   const defaults = (role: string) => [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']];
   function live(as: PlanId, shared = false) {
     body = as; usingDesign = shared; carry = true; note = '';
@@ -78,30 +99,32 @@
 {#if ui.open}
 <div id="meta" class="panel">
   <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button></div>
-  <canvas bind:this={cv} class="isle" onclick={tapMap}></canvas>
+  <div class="mapViews" aria-label="Map view">
+    {#each [['holder', 'Population'], ['mats', 'Mats'], ['oxygen', 'Oxygen'], ['hunters', 'Hunters']] as [id, name]}
+      <button class="small" class:on={view === id} aria-pressed={view === id} onclick={() => view = id as View}>{name}</button>
+    {/each}
+  </div>
+  <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
+  <p class="mapKey">White: selected · gold: last clutch · green: eligible · •: current line. Tap water patches to inspect.</p>
+  <p class="mapKey">{view === 'holder' ? 'Fill: dominant prey’s colour; brighter means more prey. Moving bars: animals; white tip: capture tools. Worms are long, trilobites broad; names and keys are below.' : view === 'mats' ? 'Green brightness: mats, 0–70+.' : view === 'oxygen' ? 'Red → blue: oxygen, 0–80+.' : 'Red brightness: hunters, 0–28+. Hunting comes from capture parts.'}</p>
+  <details class="mapLegend"><summary>Species key</summary>{#each g.species.filter((_sp, k) => g.patches.some((p) => p.pop[k] >= 1)) as sp}
+    <p><i style:background={`rgb(${speciesColour(sp).join(',')})`}></i>{speciesKey(sp)}{feedsAs(sp).hunt ? ' · hunter' : ''}{!sp.plan || !PLAN_IDS.includes(sp.plan) ? ' · sea-only, generic marker' : ''}</p>
+  {:else}<p>No animals; no animal markers.</p>{/each}</details>
   <p class="pitch">{continuation ? `Your last successful clutch is in patch ${continuation.patch + 1}. Start there or in a direct neighbour; retries remain available even after extinction.` : 'The sea has no animals yet. Choose a patch and found it with your first worm’s eggs.'}</p>
   {#if continuation}<button class="go" onclick={() => openPatch(continuation.patch)}>Continue from patch {continuation.patch + 1}</button>{/if}
-  <div class="habList">
-    {#each HAB_ORDER as id}<button class="habBtn" onclick={() => openHab(id)}><b>{HABITATS[id].name}</b><small>{g.patches.filter((p) => p.ground === id && eligible.includes(p.id)).length} eligible patches</small></button>{/each}
-  </div>
+  <details class="patchList"><summary>Named patches · {eligible.length} eligible</summary><div class="habList">
+    {#each [...g.patches].sort((a, b) => Number(eligible.includes(b.id)) - Number(eligible.includes(a.id)) || a.id - b.id) as p}
+      <button class="habBtn" onclick={() => openPatch(p.id)}><b>Patch {p.id + 1} · {HABITATS[p.ground].name}</b><small>{eligible.includes(p.id) ? 'eligible' : 'outside clutch range'}</small></button>
+    {/each}
+  </div></details>
   <h3>News</h3>
   <ul class="news">{#each (ui.tick, ctx.save.news.slice(0, 8)) as n}<li class:yours={g.species[n.sp].line}>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines yet.</small></li>{/each}</ul>
 </div>
 {/if}
 
-{#if ui.open && ui.hab && !patch}
-<div class="metaWrap"><div class="panel habCard">
-  <div class="metaTop"><h2>{HABITATS[ui.hab].name}</h2><button class="small" onclick={() => (ui.hab = null)}>Map</button></div>
-  <p class="pitch">Choose a patch. Only your last clutch and its direct neighbours allow continuation.</p>
-  {#each g.patches.filter((p) => p.ground === ui.hab).sort((a, b) => Number(eligible.includes(b.id)) - Number(eligible.includes(a.id)) || a.id - b.id) as p}
-    <button class="liveBtn" onclick={() => openPatch(p.id)}>Patch {p.id + 1} · {eligible.includes(p.id) ? 'eligible' : 'outside clutch range'}</button>
-  {/each}
-</div></div>
-{/if}
-
 {#if ui.open && patch && board}
-<div class="metaWrap"><div class="panel habCard">
-  <div class="metaTop"><h2>{board.name}</h2><button class="small" onclick={() => { ui.patch = null; ui.niche = null; }}>Patches</button></div>
+<div class="metaWrap patchWrap" class:loadout={!!ui.niche}><div class="panel habCard">
+  <div class="metaTop"><h2>{board.name}</h2><button class="small" onclick={backToMap}>Map</button></div>
   {#if !ui.niche}
     <p class="pitch">{eligible.includes(patch.id) ? continuation?.patch === patch.id ? 'Your last successful clutch: continue here or in a direct neighbour.' : continuation ? 'Direct neighbour of your last clutch: you can continue here.' : 'Founding patch: your first Life is a worm.' : 'Outside the last clutch’s direct neighbours. Descendant populations do not make this a launch point.'}</p>
     <div class="habStocks">
@@ -111,7 +134,10 @@
     </div>
     <p class="pitch next"><b>Next board:</b> {nextBoard(board)}. A few food spots near the start are protected.</p>
     <h3>Populations here</h3>
-    {#each populations as e}<p class="note">{e.sp.name} · {Math.round(e.pop)}</p>{:else}<p class="note">No animals here.</p>{/each}
+    {#each populations as e}<button class="populationKey" onclick={() => selectedLine = e.sp.id}><i style:background={`rgb(${speciesColour(e.sp).join(',')})`}></i>{speciesKey(e.sp)} · {Math.round(e.pop)}{feedsAs(e.sp).hunt ? ' · hunter' : ''}{!e.sp.plan || !PLAN_IDS.includes(e.sp.plan) ? ' · sea-only, generic marker' : ''}</button>{:else}<p class="note">No animals here.</p>{/each}
+    <p class="note">Current line in patches: {distribution.map((id) => id + 1).join(', ') || 'none'}. Aggregate body/diet populations; not individual ancestry. Tap a population name to highlight its distribution.</p>
+    <svg class="patchHistory" viewBox="0 0 300 74" role="img" aria-label="Recorded stock and prey history">{#each history as h}<polyline points={h.points} fill="none" stroke={h.colour} stroke-width="2" />{/each}</svg>
+    <p class="mapKey">Recorded generations {Math.max(0, g.gen - 59)}–{g.gen}. {#each history as h}<span style:color={h.colour}>{h.name} 0–{Math.round(h.scale)} </span>{/each}</p>
     {#each bodies as as}<button class="liveBtn" disabled={!eligible.includes(patch.id) || !!pending} onclick={() => live(as)}>Live as {PLANS[as].name.toLowerCase()}</button>{/each}
     {#if ui.design}
       <button class="liveBtn" disabled={!eligible.includes(patch.id) || !bodies.includes(ui.design.plan) || !!pending} onclick={() => live(ui.design!.plan, true)}>Use {ui.design.name}’s {PLANS[ui.design.plan].name.toLowerCase()} design</button>
