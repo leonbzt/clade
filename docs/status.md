@@ -207,41 +207,44 @@ The roadmap order is unchanged.
 - Slice 20's completion boxes stay open. Remaining slice-19 player discovery, ordinary-Life and real-phone
   checks stay open; this design task supplies no additional play or performance evidence.
 
-## Slice 20A review checkpoint (8 Nov; A remains open)
+## Slice 20A review checkpoint (8 Nov; contract accepted)
 
 - Task base: `c6c272d`; branch `codex/slice20a-review`; checkpoint subject:
-  `docs: specify provisional lighter-upkeep direction for slice 20A`. Prior review: `5ce8615`.
+  `docs: approve slice 20A contract and save model handoff`. Prior reviews: `5ce8615`, `e40f889`.
   Documentation only; gameplay remains at `13b1ccb`. No pure model, fixtures, runtime/codec changes or
   browser-save access.
-- [Accepted calls](decisions.md#8-nov-slice-20a-contract-review-in-progress): **B accepted as proposed**
+- [Accepted calls](decisions.md#8-nov-slice-20a-contract-review): **B accepted as proposed**
   (single-copy bonuses, explicit variants/upgrades, finite-place conflicts, old effects retained for legacy
   builds); **C accepted as proposed** (bilateral whole-row damage, loss of locked rows, versioned compatibility,
   recoverable input, old pending/feeding semantics and visible launch-conflict resolution).
-- **A follow-up:** defaults/locks sound acceptable provisionally; the user prefers light starting upkeep
-  and explicitly wants the rules open to revision. A possible lower verb limit is tentative. The
-  [concrete proposal](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit) includes
-  ordinary built-ins in base upkeep 1 with one explicit leg/flap allowance, extra tools cost normally,
-  and three stays a provisional ceiling (fewer allowed). Exact revision awaits a user call; do not treat
-  “maybe” as an accepted hard two-verb cap or the proposed cost allowance as already accepted.
+- **A approved provisionally:** “approve for now” accepts the
+  [concrete revision](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit).
+  Ordinary built-ins are included in base upkeep 1 with one allowance of 1 while A/T has `leg` or S has
+  `flap`, including variants and legal repairs; extra tools cost normally. Defaults/locks are retained;
+  three stays a provisional ceiling, with fewer allowed. A Digger costs 2, S 1 and T Tank 3 without a
+  carried part. Costs, defaults/locks and a possible lower ceiling stay open to revision after equipment
+  playtesting. No hard two-verb cap or verified balance is implied.
 - [Review assessment](design/20a-body-part-contract.md#review-assessment-8-nov) records the recommendation,
-  numeric costs and risks. Accepted B variants do not silently accept A's default loadouts/starting costs.
-  Keep dependent implementation gated until A is settled and examples are reconciled.
-- Docs checks: 108 local links/anchors, all 27 unique production part mappings/four body records, source
-  consistency and whitespace/diff scope. Proposed upkeep arithmetic passes for five starter examples and
-  all four default-only bodies against production nominal costs plus the proposed allowance. No gameplay
+  numeric costs and risks. A–C calls are settled; body/default and repeated-bonus examples are reconciled
+  with nominal component costs and A's effective whole-build allowance.
+- Docs checks: local links/anchors, all 27 unique production part mappings/four body records, source
+  consistency and whitespace/diff scope. Approved upkeep arithmetic checked for starter examples,
+  default-only builds and lost/repaired movement rows against production nominal costs. No gameplay
   tests repeated; no new balance/performance/play claim.
   Slice 20 completion boxes and slice 19's outstanding player/phone checks remain open.
 
-**Next action:** settle the [concrete A proposal](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit),
-then record the selected rule and reconcile the contract's nominal/effective cost examples. B/C do not
-need re-approval unless that amendment changes them. Only after the contract is settled, use a fresh
-implementation session for 20A's pure model/fixtures. Runtime body
-integration is not authorized here. Separately, have the player find/open a next patch unaided for slice 19.
+**Next action:** use a fresh implementation session for 20A's approved pure model and focused fixtures:
+definitions/places, starter and carried-part conflicts, variants/upgrades, effective upkeep, damage/shedding
+and legal replacement/skip projections. Leave `Life.slots`, runtime feeding/offers, v3 codec and UI unchanged.
+Run the relevant fixtures and `npm run check`, inspect the diff and commit a handoff. The contract completion
+box stays open until fixtures exist. Then proceed to 20B equipment/board and required 20C save/feeding/result
+adapters before runtime cutover; finish with integration checks and player/phone review. Separately, have
+the player find/open a next patch unaided for slice 19.
 
-> Read AGENTS.md, docs/status.md and docs/design/20a-body-part-contract.md. B/C are accepted; A's defaults/locks
-> are provisionally acceptable, with lighter upkeep preferred and a lower verb ceiling tentative. Settle the
-> concrete A cost proposal and reconcile the contract before implementation.
-> Preserve the running game; do not begin runtime body integration. Keep slice-19 checks open.
+> Read AGENTS.md, docs/status.md, docs/slices/20-join-the-bodies.md and docs/design/20a-body-part-contract.md.
+> Implement only 20A's approved pure definitions/helpers and focused fixtures on a task branch. A uses the
+> approved body upkeep allowance and provisional three-verb maximum; B/C are accepted. Preserve the running
+> game, `Life.slots`, v3 codec and UI. Do not begin runtime integration; keep slice-19 checks open.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in

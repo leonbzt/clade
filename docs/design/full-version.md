@@ -36,13 +36,13 @@ founding a custom species and inheriting its whole build, possibly with mutation
 base/movement differences. Extra lineage stat bonuses remain a later possibility. Permanent progression
 is still step 6; this specification session does not implement it.
 
-**Step 5 contract review (8 Nov):** [B/C accepted](../decisions.md#8-nov-slice-20a-contract-review-in-progress):
+**Step 5 contract review (8 Nov):** [A–C accepted](../decisions.md#8-nov-slice-20a-contract-review):
 new six-place builds use single-copy bonuses and explicit variants/upgrades; bilateral rows are lost as
-whole choices, and legacy builds retain their semantics across the eventual versioned cutover. A's defaults
-and locks are provisionally acceptable; lighter starting upkeep is preferred, with balance explicitly open
-to revision. A possible lower verb ceiling is tentative, not a hard two-verb decision. The concrete cost
-revision awaits selection; the [contract](20a-body-part-contract.md#review-first) remains gated for
-implementation until that call is settled.
+whole choices, and legacy builds retain their semantics across the eventual versioned cutover. A is approved
+for now: listed defaults/locks, basic built-ins included in base upkeep 1 through one leg/flap allowance,
+extra tools charged normally, and a provisional ceiling of three verbs with fewer allowed. Costs,
+defaults/locks and a possible lower ceiling remain open to revision after equipment playtesting. The
+[contract](20a-body-part-contract.md#review-first) is ready for pure definitions/fixtures before runtime integration.
 
 ## 2. Who does what
 | System | Its one job | Where |

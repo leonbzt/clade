@@ -1,7 +1,7 @@
 # Slice 20A: body/part compatibility contract
 
-**Reviewed 8 Nov 2026: B/C accepted; A provisional direction, exact cost pending. No implementation or runtime cutover.**
-Task base: `13b1ccb` (`feat: expose next-patch navigation`); branch `codex/slice20a-contract`.
+**Reviewed 8 Nov 2026: A approved provisionally as revised; B/C accepted. Ready for staged pure model/fixtures.**
+Preparation base: `13b1ccb` (`feat: expose next-patch navigation`); review branch `codex/slice20a-review`.
 This is the model-contract deliverable of [slice 20](../slices/20-join-the-bodies.md#boundaries-and-build-order).
 It preserves the running game. No runtime model, save version, offers, drawing or balance changes here.
 Slice 19's remaining player/phone checks remain open.
@@ -14,40 +14,35 @@ eleven visual parts do not describe production's 27 gameplay parts. This contrac
 bounded model: six choices, explicit combined variants only where needed, one copy's bonus per choice,
 and recoverable legacy builds. It does **not** claim unchanged balance.
 
-Review calls are recorded in the [decision log](../decisions.md#8-nov-slice-20a-contract-review-in-progress).
-Settle A's concrete upkeep amendment before implementing dependent rules:
+Review calls are recorded in the [decision log](../decisions.md#8-nov-slice-20a-contract-review).
+All three calls are settled for the staged model; A remains explicitly open to balance revision:
 
 | Review group | Proposal and review state | Concrete cost/tradeoff |
 | --- | --- | --- |
-| A: provisional direction; concrete revision pending | Defaults/locks acceptable for now; user prefers light starting upkeep and explicitly revisable balance; see the revision below | Proposed revision includes basic built-ins in base upkeep 1; extra tools still cost food; possible lower verb ceiling remains open |
-| B: six choices and bonuses — accepted | One effect copy per place; retain walking/raking and walking/digging variants; upgrades retain the predecessor's capability | Repeated-copy builds lose stacking in **new** Lives; some mixed passive/action builds need replacement choices; defaults' concrete starting effects/costs remain A's unresolved call |
+| A: revised rule approved provisionally | Retain defaults/locks; include basic built-ins in base upkeep 1 through one explicit leg/flap allowance; extra tools pay normally | Default-only upkeep is 1 on every body; extra tools can raise it; three verbs remains a provisional ceiling, with fewer allowed and a possible lower ceiling open |
+| B: six choices and bonuses — accepted | One effect copy per place; retain walking/raking and walking/digging variants; upgrades retain the predecessor's capability | Repeated-copy builds lose stacking in **new** Lives; some mixed passive/action builds need replacement choices; A's allowance applies to nominal component costs |
 | C: damage and compatibility — accepted | Mirrored rows cover both flanks and are lost as a whole; keep old build semantics alongside new place records in a versioned save | One row guards more broadly but one injury can remove more anatomy; old conflicting designs need a visible resolution before launching |
 
-B and C are now user decisions; A's defaults/locks are provisionally acceptable, while its original paid-default
-costs are superseded by the pending lighter-upkeep proposal below. The already
-selected one-part continuation and built-in lineage strength remain as recorded in
-[decisions](../decisions.md#8-nov-part-c-navigation-and-the-next-body-phase). B's accepted variants do not
-implicitly accept A's proposed default loadouts, starting costs or default-action allocation. Reconcile
-that overlap when A is revised. Equipment/board and persistence cutover still follow the bounded stages
-in the slice after the remaining review is settled.
+A–C are now recorded user calls. A's approved lighter-upkeep rule supersedes the original paid-default
+proposal; the part tables retain nominal costs and the explicit body allowance supplies effective upkeep.
+The already selected one-part continuation and built-in lineage strength remain as recorded in
+[decisions](../decisions.md#8-nov-part-c-navigation-and-the-next-body-phase). Equipment/board and persistence
+cutover still follow the bounded stages in the slice. This review implements no runtime changes.
 
 ## Review assessment (8 Nov)
 
-**Review in progress: A's defaults/locks are provisionally acceptable; the concrete lighter-upkeep revision
-awaits a call. B and C are accepted.** The user explicitly wants A open to revision and raised a possible
-lower verb limit. Keep that tentative idea separate from an accepted hard cap. Record only the user's
-actual calls in [decisions](../decisions.md); keep dependent implementation gated meanwhile. The initial
-assessment below explains the original paid-default proposal; the amendment follows it.
+**Review complete: A's concrete lighter-upkeep revision is approved for now; B/C are accepted.** The user
+explicitly wants A open to revision and raised a possible lower verb limit. Three remains a provisional
+ceiling, with fewer allowed; no hard two-verb cap was selected. The amended rule is specified below.
 
-- **A — costed defaults and family locks:** initial AI recommendation; user requested revision. Using
-  occupied, costed equipment avoids a hidden second source of lineage bonuses and preserves the selected
-  built-in-parts direction. The cost is material:
-  A Digger's upkeep rises from 2 to 3 with the same starting food 6; the swimmer gains speed 3 but pays upkeep
-  2 instead of 1. T gains a front guard alongside its existing stay-put enrolment. These are starting-balance
-  changes, not evidence that each body is stronger or equally viable. Default actions must appear in presets
-  and the three-verb check. The worm's optional bulb also changes a Sweeper's sea feeding to half mats/half rot.
+- **A — lighter upkeep and family locks:** approved provisionally after revision. The original fully paid
+  defaults would raise A Digger upkeep from 2 to 3 and S from 1 to 2. The approved allowance keeps those
+  costs at 2 and 1 while adding the default movement effects; A Sweeper becomes cheaper (3 → 2).
+  T gains a front guard alongside its existing stay-put enrolment. These are intentional starting-balance
+  changes, not evidence that bodies are equally viable. Default actions must appear in presets and the
+  three-verb check. The worm's optional bulb changes a Sweeper's sea feeding to half mats/half rot.
 - **B — one effect copy and explicit variants:** accepted as proposed; see the
-  [decision log](../decisions.md#8-nov-slice-20a-contract-review-in-progress). This gives the six visible choices
+  [decision log](../decisions.md#8-nov-slice-20a-contract-review). This gives the six visible choices
   a direct mechanical meaning without adding ranks or a second equipment system. Walking/raking and walking/digging
   preserve the central combinations; retained upgrade actions avoid an improvement removing the old tool's
   action. Accepting this also accepts lost stacking and finite-place conflicts: oxygen 7 becomes 5 for two old
@@ -65,18 +60,19 @@ The numeric comparisons and existing damage/feeding/offer rules were checked aga
 differences; it does not establish the new model's balance or performance. No additional part, socket,
 progression rule or release scope is proposed. No new source defect needs a separate implementation here.
 
-The smallest change in this review is documentation: save the actual A–C calls, then align this contract,
-the slice and handoff. Verify local links/anchors, 27-ID/four-body coverage, consistency and diff scope.
-After accepted calls, use a fresh session for the pure definitions and focused fixtures listed below;
+This review changes documentation only: accepted A–C calls, this contract, the slice and handoff. Verify
+local links/anchors, 27-ID/four-body coverage, upkeep arithmetic, consistency and diff scope.
+Next, use a fresh session for the pure definitions and focused fixtures listed below;
 runtime integration, save cutover, player balance and phone checks remain later work.
 
 ## A revision: light upkeep and open verb limit
 
 **User direction:** “maybe only light starting upkeep, otherwise sounds okay for now but document that
 this is open to revision. maybe there shoud be less than 3 verbs possible.” Defaults/family locks are
-acceptable provisionally. The user has not specified a number or selected a hard two-verb limit.
+acceptable provisionally. The follow-up “approve for now” accepts the concrete rule below, while retaining
+its explicit revision points. No hard two-verb limit was selected.
 
-**Concrete AI proposal, awaiting acceptance:**
+**Approved provisional rule:**
 
 - Include the ordinary built-in components in the body's base upkeep 1. Keep all parts' nominal costs
   below for comparison, but apply one explicit body allowance: subtract 1 when an A/T walking choice
@@ -85,9 +81,9 @@ acceptable provisionally. The user has not specified a number or selected a hard
   the total to 0. Show the allowance and final whole-build cost in equipment/moult previews.
 - The allowance belongs to the body's current ordinary component, not acquisition history. It applies
   within walking/raking or walking/digging and after legal repair, once only. Extra components such as
-  rake/spine/eye/claw, including carried choices, pay their normal costs. No discount applies when the leg/flap is absent;
-  base upkeep remains 1. Damage still removes the whole row's effects with no free restoration.
-- Retain the four proposed default loadouts and family locks. Occupied places remain the sole source
+  rake/spine/eye/claw, including carried choices, pay their normal costs. No discount applies when the
+  leg/flap is absent; base upkeep remains 1. Damage still removes the whole row's effects with no free restoration.
+- Retain the four listed default loadouts and family locks. Occupied places remain the sole source
   of equipment effects; the allowance changes food cost only. No new part, stat bonus or starting food.
 - Keep three as a **provisional maximum**, allowing fewer whenever the equipped build yields fewer.
   Do not fill to three, grant a free action or hide an equipped part's action. A hard two-verb ceiling is
@@ -95,7 +91,7 @@ acceptable provisionally. The user has not specified a number or selected a hard
   Dash/Brace/Crush. Lowering the ceiling now would make those builds illegal unless their choices/rules
   were also revised. Such a change needs an explicit review of the affected B capabilities and presets.
 
-| Starting build, no carried part | Original A proposal | Revised proposal, including base |
+| Starting build, no carried part | Superseded paid-default proposal | Approved upkeep, including base |
 | --- | --- | --- |
 | Defaults only, any current body | W 1; A/T/S 2 | 1 |
 | Worm Digger (`bulb` + `eye`) | 2 | 2 |
@@ -104,12 +100,11 @@ acceptable provisionally. The user has not specified a number or selected a hard
 | Swimmer (`arms` + `flap`) | 2 | 1 |
 | Trilobite Tank (walking + spined shield + `claw`) | 4 | 3 |
 
-These are proposals, not implemented measurements. Before acceptance, the later body/part tables retain
-the original nominal costs and original A examples; do not combine them with this amendment implicitly.
-If selected, reconcile those examples and fixtures with the allowance before implementation. Upkeep,
-defaults/locks and the verb ceiling remain balance choices open to revision after equipment playtesting;
-review starting-food pressure, action clarity and at least the affected Digger/Tank builds. No two-verb
-ceiling or promised balanced result is inferred from the user's tentative suggestion.
+These are approved target costs, not implemented measurements. The later part/variant tables retain
+nominal component costs; apply this allowance once to obtain effective whole-build upkeep. The defaults,
+examples and fixture requirements below use that rule. Upkeep, defaults/locks and the verb ceiling remain
+balance choices open to revision after equipment playtesting; review starting-food pressure, action clarity
+and at least the affected Digger/Tank builds. No hard two-verb ceiling or verified balance is implied.
 
 ## Evidence and implementation boundary
 
@@ -135,7 +130,7 @@ the saving, feeding and result adapters in the same verified checkpoint. Planned
 Stable IDs remain `worm`, `arthropod`, `trilobite`, `swimmer`. `swimmer` uses the toy's anomalocaris drawing
 as a reference; it is never renamed in saves or codes. Shape/material/gait data select the current rules:
 
-| Body | Shape/material/gait | Base rules retained | Built-in choices, in initial installation order | Locked family; open places |
+| Body | Shape/material/gait | Base rules retained | Built-in choices, in initial installation order; nominal upkeep | Locked family; open places |
 | --- | --- | --- | --- | --- |
 | Worm | Flexible soft rings; ripple | Crawl 1; connected-mud tunnel 3; mud hides from ordinary strikes; sense 2; moult extra 2; no moult softness | Tail: `bulb`, upkeep 0, Dig | No family lock; all six open. The bulb is a default that may be explicitly replaced |
 | Arthropod | Stiff plated spine; walking legs | Base range 2 straight; mud ends movement; sense 1; moult extra 3; soft for moult turn | Limbs: `leg`, upkeep 1, +1 range and Dash | Limbs: walking family; five open |
@@ -148,8 +143,9 @@ only one ordinary member: repair/replacement is legal and finishing growth witho
 No new part ID, rare default, free ordinary eye, tail fan or second hidden leg row is added.
 Plates, seams, antennae and body shape alone grant no guard, sensing or other bonus.
 
-All defaults occupy the same places used by equipment and drawing. They have the listed ordinary upkeep;
-there is no separate free built-in stat channel. Locking restricts replacement, not damage or starvation.
+All defaults occupy the same places used by equipment and drawing. Their nominal costs are listed above;
+the approved body allowance includes basic built-ins in base upkeep 1, so all four default-only builds cost
+1. Equipment effects still come only from occupied choices. Locking restricts replacement, not damage or starvation.
 An injured locked row stays empty until legally repaired at a moult; no automatic refill. Existing base
 movement and trilobite enrolment survive loss of equipment. The painter must show lost rows rather than
 drawing the original built-in over an empty place.
@@ -166,22 +162,23 @@ explicit compatible carried part, and these listed defaults. Empty rows are not 
 4. Default verbs count toward the same three-active-verb limit. An overlap consumes no additional verb.
    A fourth distinct verb or a competing place is a visible conflict that must be resolved before launch.
    Never take the first three and hide the rest. Show the same check on a moult preview.
-5. Show the exact whole-build upkeep, including defaults. Base upkeep remains 1; start food 6, health 3,
-   oxygen 3, lay cost 4, sizes 1–5 and growth costs remain unchanged. `deep` in mud still overrides total upkeep.
+5. Show exact whole-build upkeep: base 1 + nominal occupied-choice costs − one body allowance while A/T
+   has `leg` or S has `flap`. Otherwise allowance is 0; no acquisition-history discount. Start food 6,
+   health 3, oxygen 3, lay cost 4, sizes 1–5 and growth costs remain unchanged. `deep` in mud overrides the total.
 
 Examples without a carried part: worm Digger = `bulb` + `eye`, upkeep 2, Dig/Sense, as now. Arthropod Sweeper
-= walking/raking Limbs, upkeep 3 including base, Graze/Dash, as now. Arthropod Digger = walking/digging Limbs
-+ `eye`, upkeep 3, Dash/Dig/Sense (old upkeep 2, Dig/Sense). Swimmer starts with arms/flaps, upkeep 2 and
+= walking/raking Limbs, upkeep 2 including base, Graze/Dash (old upkeep 3). Arthropod Digger = walking/digging Limbs
++ `eye`, upkeep 2, Dash/Dig/Sense (old upkeep 2, Dig/Sense). Swimmer starts with arms/flaps, upkeep 1 and
 speed 3 before frenzy/ambush (old arms-only upkeep 1 and speed 2). Trilobite Tank = walking Limbs, spined
-shield Back and claw Front, upkeep 4, Dash/Brace/Crush (old spine/claw upkeep 3, Brace/Crush).
-These extra starting effects and costs are review group A, which the user requested revising before acceptance.
+shield Back and claw Front, upkeep 3, Dash/Brace/Crush (old spine/claw upkeep 3, Brace/Crush).
+These are group A's approved provisional costs and starting effects, subject to the stated playtest review.
 
 ## Place and variant semantics
 
 Each place holds one choice or is empty. Size controls only how many appendages are drawn, never the
 number of effect copies or upkeep payments. Variants are a short explicit list, not arbitrary bags of parts:
 
-| Choice/variant | Existing IDs represented; total upkeep | Result |
+| Choice/variant | Existing IDs represented; nominal component upkeep before body allowance | Result |
 | --- | --- | --- |
 | Walking limbs | `leg`; 1 | +1 range, Dash |
 | Walking/raking limbs | `leg` + `rake`; 2 | +1 range, Dash and Graze; draw one walking row with raking tips |
@@ -212,12 +209,13 @@ current starter-verb mapping, **C** as a compatible carried clutch/local form, *
 **R** the existing rare route. A default is separately identified in the body table. All common parts
 remain in common clutch pools; no new odds or habitat pool changes are proposed.
 
-Effects below describe the proposed new model. Each ID contributes at most once, including within a
-variant. Upkeep is food per world turn before `deep`'s override. Every row follows the injury/shed rules
-below; coverage means both guarding (only if stated) and eligibility to be torn, not automatic protection.
+Effects below describe the approved target model. Each ID contributes at most once, including within a
+variant. Upkeep entries are nominal component food per world turn before the single body allowance and
+`deep`'s override. Every row follows the injury/shed rules below; coverage means both guarding (only if
+stated) and eligibility to be torn, not automatic protection.
 The final column is a mapping candidate for old arrays, **never permission to discard a conflicting entry**.
 
-| ID | Bodies; place / family | Effect and verb; upkeep | Visual treatment | Access; legacy mapping |
+| ID | Bodies; place / family | Effect and verb; nominal upkeep | Visual treatment | Access; legacy mapping |
 | --- | --- | --- | --- | --- |
 | `claw` | A/T; Front / crushing | Reach ahead; normal shells; Crush; 1 | Paired front pincers | V/C/M; old head → Front |
 | `shield` | A/T; Back / cephalic armour | Guard front; no verb; 0 | Cephalic plate extending from Back over head; retains visible front tool | C/M; old head → Back |
@@ -259,10 +257,10 @@ choice and avoids hidden per-appendage stats. A duplicate offer is replacement/r
 show this before commitment. Different homes for one ID do not allow two copies. Superseding upgrades
 cannot coexist with their predecessors in another place. Existing arrays keep their old meaning.
 
-| Current repeated effect | Proposed new effect | Before → after example (otherwise same build) |
+| Current repeated effect | Approved target effect | Before → after example (otherwise same build) |
 | --- | --- | --- |
-| Each `leg`: +1 range and +1 upkeep | One walking-row bonus, +1 range and +1 upkeep | Two legs on A: range 4, upkeep 3 → one row: range 3, upkeep 2 |
-| Each `flap`: +1 speed and +1 upkeep | One flap-row bonus | Two flaps: speed 4, upkeep 3 → speed 3, upkeep 2 before frenzy/ambush |
+| Each `leg`: +1 range and +1 upkeep | One walking-row bonus, +1 range; nominal 1 covered by A/T allowance | Two legs on A: range 4, upkeep 3 → one row: range 3, upkeep 1 |
+| Each `flap`: +1 speed and +1 upkeep | One flap-row bonus; nominal 1 covered by S allowance | Two flaps: speed 4, upkeep 3 → speed 3, upkeep 1 before frenzy/ambush |
 | Each `chaetae`: +1 tunnel, no upkeep | One +1 tunnel bonus | Two bristles: tunnel 5 → tunnel 4; worm's sand crawl stays 1 even with Dash |
 | Each `gill`: +2 oxygen, no upkeep | One +2 oxygen bonus | Two gills: max oxygen 7 → 5 |
 | Each `gut`: +2 per meal and +1 upkeep | One +2 food bonus | Two guts on a mat: gain 9, upkeep 3 → gain 7, upkeep 2 |
@@ -270,7 +268,7 @@ cannot coexist with their predecessors in another place. Existing arrays keep th
 | Each `eye`/`compound`: +2/+20 sense and +1 upkeep | One sensing choice; compound replaces eye | Old single grazer head cannot hold both, but valid saved arrays may: A eye+compound means sense 23 → compound choice sense 21; preserve that old array as legacy |
 | Repeated guards or boolean traits | One choice; effects do not multiply | Two side sclerites can be torn separately now → one mirrored row covers both flanks but is lost together |
 
-Other named changes requiring review:
+Other reviewed changes:
 
 - **Action-preserving upgrades (accepted in B):** compound/hook/deep gain Sense/Crush/Dig; existing range/recharge/food
   numbers for these actions stay as defined in `VERBS`/`verbs.ts`. Hook's Crush can open an adjacent carcass
@@ -294,8 +292,8 @@ Other named changes requiring review:
 - **Damage is by row (accepted in C):** bilateral coverage, simultaneous loss of both flanks, shared Front/Eyes
   exposure and bundled variant loss are intentional directional-combat changes, specified next.
 
-If these costs are rejected, revise the contract before coding. Adding ranks, extra physiology sockets or
-arbitrary component stacks would be a different model proposal, not an implementation detail to improvise.
+Upkeep and the verb ceiling remain explicit balance revision points after equipment playtesting. Adding
+ranks, extra physiology sockets or arbitrary component stacks would require a separate model proposal.
 
 ## Directional guard, injury and shedding contract
 
@@ -321,8 +319,10 @@ not installation order; show the prospective lost row in the strike preview. A n
 No eligible part means 1 health damage; a tear absorbs that base damage. Softness adds 1 health damage to
 an unblocked hit whether or not a row was torn, as now. Empty locked places provide no damage buffer.
 
-Tearing removes the **whole choice** and all its effects, verbs and upkeep. A walking/raking tear loses
-Dash, Graze and +1 range at once; a torn spined shield loses Brace and the shield. This is harsher than
+Tearing removes the **whole choice** and all its effects, verbs and nominal upkeep. Recompute the body
+allowance too: losing `leg`/`flap` removes its allowance, leaving base upkeep 1 plus surviving paid tools.
+A walking/raking tear loses Dash, Graze and +1 range at once; a torn spined shield loses Brace and the
+shield. This is harsher than
 losing one old leg/rake copy. A Sides guard protects both flanks where one old side copy protected only
 its own flank, but a bypass removes that entire protection. A non-guard gut in Back can absorb a flank
 strike, as an old gut could absorb its assigned side's strike; the inset explains its loss without drawing
@@ -423,7 +423,7 @@ After the review, before any runtime switch, stage deterministic pure fixtures f
 | --- | --- |
 | Definitions | Exactly all 27 production IDs and four body IDs; six unique places; at least three open places; legal/costed defaults; every part has a legal home on every listed body |
 | Starters/variants | All current presets on each body; carried part × body × preset conflicts visible; no free passive fills; no duplicate defaults/bonuses; walking/raking coexist; capture/sensing/crush/dig preserved by declared upgrades; fourth verb rejected |
-| Bonuses | Numeric before/after examples above; size does not multiply bonuses; ordinary upkeep sums once; `deep` override; mat/bloom/prey food; clutch sizes; legacy arrays retain their old semantics |
+| Bonuses | Numeric before/after examples above; size does not multiply bonuses; nominal costs sum once with one current-component body allowance; four default-only builds cost 1; loss/repair/variants/overlap never double-discount; `deep` override; mat/bloom/prey food; clutch sizes; legacy arrays retain their old semantics |
 | Injury | Four directions × four facings; guards and bypass priority; Eyes/Front and mirrored rows; whole variant loss; softness; every locked/default/physiological row can be lost; starvation order; no free restoration; gill oxygen clamp |
 | Growth | Full/locked bodies, no fitting common/rare offer, replacement and downgrade previews, duplicate repair, skip with growth/cost retained, rare passing only after a real install and lay; no phase trap |
 | Persistence | v1/v2/v3→v4 and v4 round trip; repeat/mixed/unknown builds, nested backups, unchanged population/RNG/graph/progress; old/new pending reload and exact once-only settlement; last-lay build after later injury |
@@ -434,7 +434,10 @@ Equipment drawing, head joins at sizes 1–5, real board performance comparison 
 belong to 20B/20C and remain open. Do not check off the whole slice's contract criterion until rules are
 approved and their staged fixtures exist. Do not repeat the completed art/performance audit for this review.
 
-**Next action:** review the concrete lighter-upkeep A proposal above, then record the selected rule in
-`decisions.md` and align the body/default examples here. B/C are accepted; do not re-ask those calls unless A's revision
-requires changing them. Once the contract is settled, use a fresh implementation session to stage the
-approved pure model and fixtures. No runtime body integration is authorized by this review.
+**Next action:** in a fresh implementation session, stage the approved pure body/part definitions,
+compatibility/preview helpers and focused fixtures. Keep `Life.slots`, runtime offers/feeding, the v3 codec
+and UI unchanged at this checkpoint. Test definitions, starters/variants/conflicts, allowance arithmetic,
+injury/shedding and legal replacement/skip projections; retain existing regressions and save a verified
+handoff. Persistence/code round trips and integrated equipment/board checks follow in their dependent
+stages. No runtime body integration is authorized by this review. Revisit A's costs/locks/verb ceiling
+after equipment playtesting; accepted calls need not be re-asked to stage their model.

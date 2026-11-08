@@ -490,25 +490,30 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   Use its visible body/slots and part-card interaction as a reference; the layout and interaction can improve.
   This does not adopt the toy's old slot rules or progression instead of the step-5 body model.
 
-## 8 Nov, slice 20A contract review (in progress)
+## 8 Nov, slice 20A contract review
 
-- **A — provisional direction, exact revision pending:** after selecting “Revise A before acceptance”, the
+- **A — revised rule approved provisionally:** after selecting “Revise A before acceptance”, the
   user clarified: “maybe only light starting upkeep, otherwise sounds okay for now but document that this
   is open to revision. maybe there shoud be less than 3 verbs possible.” Defaults/family locks are acceptable
   provisionally; lighter starting upkeep is preferred, with costs and the action limit explicitly revisable.
   The possible lower verb limit is a tentative idea, not an accepted hard two-verb cap. Builds may already
   have fewer than three verbs; the existing ceiling is not a required number of actions.
-  The [concrete A revision](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit)
-  proposes including basic built-ins in base upkeep 1, charging extra tools normally and retaining the
-  provisional three-verb ceiling pending playtesting. Those exact cost rules await the user's call.
+  The user then approved the [concrete A revision](design/20a-body-part-contract.md#a-revision-light-upkeep-and-open-verb-limit):
+  “approve for now”. Include basic built-ins in base upkeep 1; charge extra tools normally. Apply one
+  explicit allowance of 1 while A/T has its `leg` component or S has `flap`, including within walking
+  variants and after legal repair; otherwise no allowance. Base upkeep stays 1 even after loss. Preserve
+  the listed defaults/locks and the provisional ceiling of three verbs, with fewer allowed and no hidden
+  equipped actions. Default-only upkeep is 1 for every body; A Digger 2, S 1 and T Tank 3 without a carried
+  part. Costs, defaults/locks and a possible lower verb ceiling remain open to revision after equipment
+  playtesting. This closes A's decision gate for the staged model; it does not claim balance is verified.
 - **B — accepted as proposed:** the user selected “Accept B as proposed (recommended)”. New six-place builds
   use one effect copy per choice and no repeated-ID stacking; size changes drawing count only. Retain explicit
   walking/raking and walking/digging variants, frontal rakes, spined shield and action-preserving upgrades.
   Compound/hook/deep retain Sense/Crush/Dig; spined arms retain capture. Accept the listed finite-place and
   physiology conflicts and numeric stacking losses (two gills' oxygen 7 → 5; size-3 double-pouch eggs 9 → 6).
   Legacy arrays keep their existing effects. Exact mappings and examples remain in the
-  [contract](design/20a-body-part-contract.md#place-and-variant-semantics). This accepts B's semantics, not
-  A's proposed default loadouts or starting costs; reconcile their overlap after A is revised.
+  [contract](design/20a-body-part-contract.md#place-and-variant-semantics). B's nominal component costs remain;
+  A's subsequently approved allowance determines effective whole-build upkeep.
 - **C — accepted as proposed:** the user selected “Accept C as proposed (recommended)”. Rows cover both
   flanks where specified; a tear removes the whole row/variant, including its actions, effects and upkeep.
   Locked/default rows remain damageable and shedable, without free restoration. Use the specified fixed
@@ -518,5 +523,7 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   settlement. Old launch conflicts need visible resolution; never silently discard parts. The contract's
   continuation/local-form distinctions and old-code decoding remain required. This accepts future rules;
   it does not authorize changing the running codec or beginning runtime integration in this review.
-- **Boundary:** documentation review only. Do not begin dependent pure-model or runtime implementation
-  until the remaining contract calls are settled. No balance/play/performance check is implied by acceptance.
+- **Boundary:** the contract calls are settled for the next staged model. Use a fresh implementation
+  session for pure definitions/helpers and deterministic fixtures, preserving the running slot model and
+  v3 codec. Equipment/board work and persistence/feeding/result cutover follow the bounded stages; this
+  review changes documentation only. No balance/play/performance check is implied by acceptance.
