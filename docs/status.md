@@ -1,28 +1,27 @@
 # Status
 
-Updated 8 Nov 2026 (Claude). Everything is on `main` (the `codex/*` stack fast-forwarded, old branches pruned; all their
-commits stay in `main`'s history). Gameplay is at `13b1ccb`. The long Codex-era status is at `git show 8b5b202:docs/status.md`.
+Updated 8 Nov 2026 (Claude). Everything is on `main`; work starts on a task branch. Gameplay is at `13b1ccb`. The long Codex-era status is at `git show 8b5b202:docs/status.md`.
 
 **Milestone:** M2. Step 4, [slice 19](slices/19-join-the-sea.md): built, human checks open. Step 5,
 [slice 20](slices/20-join-the-bodies.md) with the [20A contract](design/20a-body-part-contract.md): specified, no code yet.
 
 **Done (8 Nov):**
-- [Review of the Codex stretch](design/m2-review-8-nov.md): measured state, five problems, next steps.
-- TierZoo: [research](research/tier-zoo.md) (glossary; export in `docs/research/tier-zoo-data/`, `wiki.json` gitignored) and
-  [concepts for Clade](design/tierzoo-concepts.md) with the term table and a note on what's free to use; open as P47.
-- Slice 20 and 20A carry an "8 Nov" note on what the calls below replace; the old text isn't trimmed yet.
+- [Review of the Codex stretch](design/m2-review-8-nov.md); TierZoo [research](research/tier-zoo.md) and
+  [concepts](design/tierzoo-concepts.md) (open as P47). Slice 20/20A carry an "8 Nov" note; old text not trimmed yet.
+- Housekeeping: `npm run check` 7.4 s (steps in parallel, `scripts/check.mjs`); `AGENTS.md` aligned (saves no priority
+  before release, short docs, 1–2 sessions per slice); `main` merged, pushed, all other branches deleted.
+- Handoff runs unasked after a large task (`CLAUDE.md`, `docs/workflow.md`).
 
 **Decided (8 Nov, [decisions](decisions.md#8-nov-review-of-the-codex-stretch-and-tierzoo)):**
-- Reset the sea save at the body cutover (drops 20A/20C's v4 legacy layer). Dash sits outside the three-verb ceiling.
-- Merge the `codex/*` stack into `main` "if everything is in order", maybe in its own thread. Gitignore the wiki.
-- TierZoo: "really keep going into that direction" (the term table and comparisons). Liked: patch notes with a cause,
-  a tier letter per niche, strong vs / weak vs, trade-off tooltips.
+- Reset the sea save at the body cutover (drops the v4 legacy layer). Dash sits outside the three-verb ceiling.
+- TierZoo: "really keep going into that direction". Liked: patch notes with a cause, a tier letter per niche,
+  strong vs / weak vs, trade-off tooltips. Merge to `main` and prune: "go ahead". Automatic handoff after large tasks.
 
 **Next:**
-1. ~~Housekeeping~~ done 8 Nov: docs committed, `npm run check` 7.4 s (steps run in parallel), merged to `main`, branches
-   pruned, `AGENTS.md` aligned (saves no priority before release, short docs, 1–2 sessions per slice).
-2. Trim slice 20/20A by deletion (legacy layer, Dash in the ceiling); settle the critical review's two gaps.
-3. Build the 20A model and fixtures, then the 20B equipment view, then the cutover with the reset. Play it.
+1. Trim [slice 20](slices/20-join-the-bodies.md)/[20A](design/20a-body-part-contract.md) by deletion: drop the v4 legacy
+   layer, legacy representatives and old-build conversion; move Dash outside the ceiling. Settle the two gaps: starter
+   eligibility for share codes, and lay snapshots that keep their size ([review](design/m2-review-8-nov.md) §2).
+2. Build the 20A pure model and fixtures, then the 20B equipment view, then the cutover with the reset. Play it.
 
 **Open:**
 - P47: start era (lean: Cambrian as the open beta); build/moves/EP as the game's words; stat bars in slice 20 or step 6.

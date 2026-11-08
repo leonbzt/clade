@@ -550,3 +550,9 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   - Open: "maybe with this setup it makes more sense to start more recent" (see P47).
 - **TierZoo direction (at the handoff):** "i really liked the table and the proposed comparisons and want to really keep
   going into that direction." The P47 questions (start era, the game's words, when the stat bars come) stay open.
+
+## 8 Nov, housekeeping and the automatic handoff
+- **Merge and prune:** "go ahead, commit and do all of the tasks": `main` fast-forwarded to the `codex/*` stack and
+  pushed; all old local and remote branches deleted (every one was already in `main`'s history).
+- **Automatic handoff:** "handoff should be done automatically once a large task is done so i dont have to rerun the
+  command." The AI runs the `/handoff` steps itself at the end of a large task, then says it is ready for `/clear`.

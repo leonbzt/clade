@@ -39,7 +39,7 @@ idea ──► ideas.md (one line) ──► proposals.md (when a milestone need
   limitations, unresolved decisions and one exact next action. Record decisions in `decisions.md`, not only chat.
   Commit the handoff with its work; its checkpoint can name a stable earlier commit plus the new commit's subject
   (avoid a self-referential hash). Supply the resulting hash and a short next-session prompt in the reply.
-- In Claude sessions, the existing `/handoff` and `/clear` workflow may be used; save the handoff before clearing.
+- In Claude sessions, run the `/handoff` steps unasked when a large task is done (8 Nov), then the user can `/clear`.
   If context runs short mid-task, preserve progress and outstanding work before compacting or changing sessions.
 - **Investigation before implementation.** Identify the relevant files, cause, smallest change and checks first.
   Get approval before implementing unless the user already authorized that change; do not re-ask settled design calls.

@@ -46,4 +46,4 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 
 ## Session flow
 `/kickoff <topic>` to start · `/spec <slice>` to write a spec · `/handoff` before `/clear`.
-How we work: `docs/workflow.md`; shared context and Git rules: `AGENTS.md`. Save a handoff and remind the user to start a fresh session at task boundaries. One agent by default; delegation requires an explicit request and an independent task.
+How we work: `docs/workflow.md`; shared context and Git rules: `AGENTS.md`. When a large task is done, run the `/handoff` steps yourself without being asked (*decided 8 Nov*), then tell the user it is ready for `/clear`. One agent by default; delegation requires an explicit request and an independent task.
