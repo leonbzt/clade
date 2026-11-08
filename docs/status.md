@@ -1,6 +1,7 @@
 # Status
 
-Updated 2026-11-08. Branch `codex/slice20a-review`. Current review: [20A body/part contract](design/20a-body-part-contract.md)
+Updated 2026-11-08. Branch `codex/slice20-critical-review`. Current review: [slice 20 and the equipped creature](design/20-critical-review.md),
+building on the accepted [20A body/part contract](design/20a-body-part-contract.md)
 for [20 Join the bodies](slices/20-join-the-bodies.md). Gameplay remains at `13b1ccb`.
 [Slice 19](slices/19-join-the-sea.md) remains open, with Part D navigation implemented and player/phone checks still open.
 Read this and the spec for the selected task first; open other docs and source files only as needed.
@@ -233,7 +234,7 @@ The roadmap order is unchanged.
   tests repeated; no new balance/performance/play claim.
   Slice 20 completion boxes and slice 19's outstanding player/phone checks remain open.
 
-**Next action:** use a fresh implementation session for 20A's approved pure model and focused fixtures:
+**Prior implementation handoff (retained; see the critical review below):** use a fresh implementation session for 20A's approved pure model and focused fixtures:
 definitions/places, starter and carried-part conflicts, variants/upgrades, effective upkeep, damage/shedding
 and legal replacement/skip projections. Leave `Life.slots`, runtime feeding/offers, v3 codec and UI unchanged.
 Run the relevant fixtures and `npm run check`, inspect the diff and commit a handoff. The contract completion
@@ -245,6 +246,34 @@ the player find/open a next patch unaided for slice 19.
 > Implement only 20A's approved pure definitions/helpers and focused fixtures on a task branch. A uses the
 > approved body upkeep allowance and provisional three-verb maximum; B/C are accepted. Preserve the running
 > game, `Life.slots`, v3 codec and UI. Do not begin runtime integration; keep slice-19 checks open.
+
+## Slice 20 critical review checkpoint (8 Nov)
+
+- Task base: `94d79dc`; branch `codex/slice20-critical-review`; checkpoint subject:
+  `docs: review slice 20 equipment and continuity risks`. [Full review](design/20-critical-review.md).
+  Documentation only; gameplay remains at `13b1ccb`. No new user decisions or changes to accepted A/B/C.
+- Keep six places and staged implementation. Two specification gaps need concrete treatment before runtime:
+  distinguish anatomical validity from starter eligibility and immutable lay snapshots; carry representative
+  builds through prey/rival snapshots and define the intentionally simplified resident effects.
+- Accepted-design risks: required Dash consumes action capacity; Tank cannot add compound as one legal
+  change; duplicates lose reward value; worm Limbs has no fitting part; T physiology conflicts are substantial;
+  carried traits, last-lay builds and global population representatives can differ. No new sockets, ranks,
+  verb policy, reward-pool change or species system is approved by this review.
+- Deterministic source/contract checks passed: exact 27-ID/body restriction coverage, four default upkeep
+  totals, common-pool counts, unsupported worm Limbs and Tank's fourth-action conflict. Initial scratch
+  harness cross-realm comparison corrected, then rerun successfully. Local links/anchors and whitespace/diff
+  reviewed. No gameplay suite, browser saves, balance measurement or human/phone playtest in this docs task.
+
+**Next action:** in a fresh session, make the starter/snapshot and resident boundaries concrete, then stage
+the approved 20A pure model and fixtures. This review does not revoke authorization for that isolated model
+or reopen accepted calls; it recommends resolving those specification gaps before dependent runtime work.
+Stage 20B preview/drawing first and prepare the necessary 20C adapters before the shared runtime switch.
+Keep slice 19's outstanding checks open.
+
+> Read AGENTS.md, docs/status.md, docs/design/20-critical-review.md, docs/slices/20-join-the-bodies.md and
+> docs/design/20a-body-part-contract.md. Clarify starter versus snapshot validation and resident build
+> transport/effect boundaries. Preserve approved A/B/C and keep runtime integration separate from 20A's
+> pure definitions and fixtures; propose any gameplay-rule revision explicitly.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in
