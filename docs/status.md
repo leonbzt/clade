@@ -1,20 +1,23 @@
 # Status
 
-Updated 2026-11-07. Branch `codex/part-c-review-plan`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
+Updated 2026-11-08. Branch `codex/part-c-living-map`. Active spec: [19 Join the sea](slices/19-join-the-sea.md).
 Read this and that spec first; open other docs and source files only as needed.
 
 ## Saved checkpoint
 - Previous gameplay: `c9c20da`; project instructions: `d36588e`; reviewed spec: `bc4d87c`; Part A: `09dc4b0`.
 - Part B simulation/lifecycle checkpoint: `b6ccf69` (`feat: connect patch boards and recover sea clutches`).
   Latest gameplay: `a8a54b8` (`feat: run sea lives with creature design sharing`).
-- Part C specification, reported feedback and review agenda: `docs: specify Part C and gameplay review handoff`
-  on the current branch; use `git log -1 --oneline` for that documentation checkpoint. No runtime changes.
+- Part C specification, reported feedback and review agenda: `900cc01`
+  (`docs: specify Part C and gameplay review handoff`), the documentation-only task base.
+- Part C task base: `900cc01` (current `codex/part-c-review-plan` HEAD at task start).
+  C1 map: `a1da0f1`; C2 feedback: `99c413d`; integrated verification/handoff:
+  `test: verify the living sea map and save Part C handoff` on this branch.
 - No new dependencies or push. Only disposable browser profiles were used; no personal browser saves were accessed.
   Remote state has not been freshly queried.
 
 ## Current milestone and decisions
 M2 steps 1/2 are complete. Step 3 retains three open play checks. Step 4 parts A/B are implemented;
-Part C's patch-map presentation and playtesting remain; its implementation spec is now concrete.
+Part C's map/feedback are implemented and automated checks pass; ordinary player and real-phone checks remain.
 The roadmap order is unchanged.
 
 - New seas have food/environment and zero animals. A worm Life founds the population through its actual eggs.
@@ -50,7 +53,7 @@ The roadmap order is unchanged.
 - Species codes export/import starting designs: body, one carried form and fitting verbs. Existing codes still
   decode. Imported presets last for the visit; the code can be pasted again. No design-library system was added.
 
-## Part C planning checkpoint
+## Part C specification and retained scope
 - [Part C spec](slices/19-join-the-sea.md#part-c-implementation-specification): port the living patch map,
   expose launch range and patch history, connect truthful release/line highlighting, then verify and play.
 - [User's Part B feedback](playtests/19-join-the-sea.md): mostly good; missing living map, species access too
@@ -60,8 +63,8 @@ The roadmap order is unchanged.
   and later minigames together. This timing is a recommendation, not a change to the adopted roadmap.
 - The large equipment view is an explicit step-5 deliverable. Permanent species progression remains steps 5/6;
   no temporary unlock gates were added. One carried part and aggregate body/diet populations remain bridges.
-- This session changed documentation only. Local links/anchors, consistency and diff scope were checked;
-  gameplay checks below are the prior Part B results, not new runs. No new human/phone test was performed.
+- The planning base changed documentation only. The Part C implementation and new verification are recorded below;
+  no new human/phone test was performed.
 
 ## Part B verification and remaining limits
 - **96/96 automated tests across 14 files**, including 11 new Part B checks; direct suite completed in 4.01 s.
@@ -84,18 +87,50 @@ The roadmap order is unchanged.
   Subsequent user-reported feedback is saved above. The real map and its taps,
   pacing and player understanding remain Part C work; do not mark the whole slice complete.
 - Unknown migrated body types remain in the ecology and are explicitly listed as sea-only in board previews.
-  Their representation still needs review in C. The staged seed/patch graph compatibility boundary remains.
+  Part C adds generic map markers and explicit identity keys; human representation review remains open.
+  The staged seed/patch graph compatibility boundary remains.
+
+## Part C implementation and verification (8 Nov)
+
+- Home now uses the ported canvas patch map, with population/mats/oxygen/hunter views, transitions,
+  capped decorative motion (200 markers maximum), stable species colours plus printed identity keys,
+  honest generic/sea-only migrated identities and a named-patch fallback list. No simulation RNG is used.
+- Direct canvas taps open the scrollable patch sheet. Selection, clutch, eligible neighbours and current
+  line distribution have distinct cues. Patch details retain loadout/board previews and show recorded
+  stock/prey history only. Animation stops behind loadout, clutch, menu and blocking notices.
+- Settlement still belongs solely to Part B. After its existing save, transient feedback pulses the result
+  patch and separates actual released eggs from current population after two generations. Dismissal is
+  read-only; reload reconstructs continuation/distribution without replaying feedback or settlement.
+  Zero eggs retain the previous continuation. Line highlights mean aggregate body/diet populations.
+- `npm run check` passes, including five new focused map tests: resized/content-box coordinates (including
+  CSS borders), empty markers/cap, species/feeding identity, recorded ring history, and render/save/RNG purity.
+  Existing lifecycle, migration, codec and sharing checks remain in the integrated suite.
+- `npm run build:game` passes; packaged `game/dist/clade.html` is 755 KB. Existing Svelte-config fallback,
+  inlineDynamicImports deprecation and large-chunk notices remain.
+- Updated `node scripts/sea-smoke.mjs` passes in installed desktop Chrome using a disposable profile:
+  real CDP canvas touch at 390×844; matching patch card; out-of-range fallback; all four post-founding
+  bodies; pending/clutch reload; single settlement; return dismissal/reload; zero-egg continuation;
+  design import; storage retry; all overlays; 1200×900 desktop layout. No page exceptions observed.
+  Initial edge-tile touch failed; using the tile centre and accounting for CSS borders fixed the hit.
+  All patch tiles with bordered/resized coordinates are also covered by the renderer fixture.
+- Map, patch sheet and return screenshots were visually inspected at phone width; desktop map/return
+  and patch-sheet views were also inspected.
+  Screenshots are disposable `/tmp/clade-sea-*.png` artifacts. This is desktop emulation, not phone hardware.
+- The check wrapper and Chrome required execution permission (nested launcher / crash-handler socket);
+  permitted runs passed. Personal browser saves were not accessed; no balance or population tuning occurred.
+- **Open:** ordinary 3–5-Life player protocol, founding/return pacing, player comprehension and desire to
+  replay, real-phone taps/background/performance. No human player or phone was available. Automated terminal
+  fixtures and earlier deterministic founding viability do not close those criteria. Slice 19 stays open.
 
 ## Next session
-The Part C spec is a saved boundary. Start a fresh implementation session from this branch/checkpoint.
 
-> Implement slice 19 Part C from `codex/part-c-review-plan`, on a task branch based on its current HEAD.
-> Read AGENTS.md, docs/status.md and docs/slices/19-join-the-sea.md, especially the Part C implementation spec.
-> Begin with C1's map, then C2's release feedback, and run C3's integrated checks. Reuse the Part B lifecycle
-> and codec. Preserve temporary body access; equipment and permanent progression remain steps 5/6.
-> Use one agent, no new dependencies, and targeted source reads. Do not repeat the A/B or architecture audit.
-> Save focused commits and a handoff. Report actual player/phone tests separately from automated fixtures;
-> leave unavailable human checks open. Remind me at the next verified boundary.
+This is the verified Part C implementation boundary. Start a fresh session for the player pass, then the
+proposed general gameplay/design review before step 5. No equipment/progression implementation is authorized here.
+
+> Continue from `codex/part-c-living-map`. Read status and playtest 19. Run the ordinary player protocol in
+> a separate save/profile, record device/build/seed/eggs/pacing and comprehension separately from fixtures,
+> and check an actual phone when available. Leave unavailable human/device checks open. Do not repeat A/B
+> or the architecture audit, tune permanent gates, or begin equipment/progression before the design review.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in

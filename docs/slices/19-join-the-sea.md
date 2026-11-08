@@ -3,7 +3,7 @@
 **Milestone:** M2, step 4 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Does each Life visibly change the sea and determine where you play next?
 **Status:** parts A/B implemented on 7 Nov: sea model, v3 runtime, patch snapshots, completion/continuation and
-creature-design sharing. Part C is specified below; implementation and playtesting remain.
+creature-design sharing. Part C map/feedback are implemented and automated verification passes; ordinary player and real-phone checks remain.
 Verification is recorded in `docs/status.md`.
 **Builds on:** [7 Nov decisions](../decisions.md#7-nov-join-the-sea-empty-founding-and-continuation-resumed-in-codex),
 [the release vision](../design/full-version.md), the sea toy (slice 17), and the existing Life, clutch and save systems.
@@ -99,8 +99,8 @@ needed without rewriting movement, parts or event playback. No new framework, de
 - [x] Offline tests cover below, at and above eight hours, repeated calls, and clock rollback; catch-up meets the roadmap budget.
 - [x] Species-code compatibility is documented and tested; any temporary limitation is explicitly approved.
 - [x] `npm run check` and `npm run build:game` pass. The packaged page is smoke-tested through founding, continuation and reload.
-- [ ] The home is the living patch map; selection, launch range and named populations are readable.
-- [ ] Return from a Life shows its actual release, current line distribution and next eligible patches without replaying settlement.
+- [x] The home is the living patch map; selection, launch range and named populations are readable.
+- [x] Return from a Life shows its actual release, current line distribution and next eligible patches without replaying settlement.
 - [ ] A phone playtest checks map readability, taps and performance; limitations are reported if no device is available.
 - [ ] The user can explain where the first animals came from and why the next run can start where it does;
   notes are saved in `docs/playtests/19-join-the-sea.md` after actual play.

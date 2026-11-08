@@ -39,7 +39,35 @@ confusing decisions and whether the player wants another run. Do not tune perman
 Ask without explaining first: “Where did these animals come from?”, “What did your last Life change?”,
 “Where can you start next, and why?”, and “What would you change in your next build?”
 
-## Results still pending
+## Part C automated verification (8 Nov)
 
-No Part C implementation or new human/phone playtest has occurred in this planning session.
-Save observations, fixes, remaining limitations and the user's verdict here when they occur.
+Build: task branch `codex/part-c-living-map`, C1 `a1da0f1`, C2 `99c413d`, plus the integrated-check
+commit named in status. Packaged `game/dist/clade.html`, 755 KB; installed headless desktop Chrome,
+390×844 mobile emulation and 1200×900 desktop, disposable browser profile. Fixed seed 1 from the smoke
+runner's deterministic startup random source. Initial populations: zero.
+
+- A CDP touch on the actual map opens the matching mud patch. The first edge-tile attempt failed;
+  the final test uses the tile centre and content bounds, with CSS borders excluded from hit mapping.
+- A controlled terminal lay releases 3 actual eggs through the normal lifecycle. Pending playback and
+  clutch reload preserve the result; settlement occurs once. Return text distinguishes 3 released eggs
+  from the current population after two generations. Dismissal changes no save state.
+- A zero-egg terminal fixture retains continuation. Reload while feedback is visible reconstructs the
+  clutch marker without replaying feedback. Out-of-range patches remain inspectable and cannot launch.
+- Existing smoke coverage for four bodies, design sharing, storage retry and reload still passes.
+  All overlays are exercised; no page exceptions observed. Five pure/renderer map fixtures and the
+  existing integrated suite pass via `npm run check`; `npm run build:game` passes.
+- Screenshots of map, patch and return views were visually inspected at phone width; desktop map/return
+  and patch-sheet views were also inspected. The phone patch
+  sheet leaves map cues above it and scrolls to history/loadout actions. The real map and return view
+  retain the existing pixel geography and panel style. Screenshots are in `/tmp/clade-sea-*.png`.
+
+These are automated correctness fixtures and desktop layout observations. They do not establish ordinary
+founding balance, fun, comprehension, production frame rate or real-device touch performance. No numerical
+tuning was made. The prior Part B deterministic viability test was not repeated as a player test.
+
+## Human and real-phone results still pending
+
+No observed human playtest or real-phone device was available during Part C implementation. The ordinary
+3–5-Life protocol above, actual early-clutch/run timings, the comprehension questions, the player's verdict,
+and phone/background/performance checks remain open. Save those observations here in the next fresh session;
+slice 19 is not complete until its player criteria pass.

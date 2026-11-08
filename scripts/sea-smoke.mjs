@@ -1,4 +1,4 @@
-// Packaged Part B smoke check, using installed Chrome and a disposable profile. No browser dependencies or user saves.
+// Packaged Part C smoke check, using installed Chrome and a disposable profile. No browser dependencies or user saves.
 // npm run build:game && node scripts/sea-smoke.mjs
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -66,9 +66,23 @@ try {
   await send('Page.navigate', { url: pathToFileURL(resolve('game/dist/clade.html')).href });
   await until(booted);
   assert.equal((await state()).total, 0);
-  await click('Mud flats', '.habBtn');
-  const first = await evaluate('document.querySelector(".metaWrap .liveBtn").textContent.trim()');
-  await click(first);
+  // Hit the real canvas with a touch at a saved patch tile, using CSS bounds at phone width.
+  const hit = await evaluate(`(() => {
+    const s = __game.save.sea, p = s.patches.find(p => p.ground === 'mud'), t = p.tiles[Math.floor(p.tiles.length / 2)];
+    const cv = document.querySelector('.isle'); cv.scrollIntoView({block:'center'});
+    const r = cv.getBoundingClientRect();
+    return { patch: p.id, x: r.left + cv.clientLeft + (t % s.isl.w + .5) / s.isl.w * (r.width - 2 * cv.clientLeft),
+      y: r.top + cv.clientTop + (Math.floor(t / s.isl.w) + .5) / s.isl.h * (r.height - 2 * cv.clientTop) };
+  })()`);
+  await send('Emulation.setTouchEmulationEnabled', { enabled: true });
+  const hitShot = await send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(`${tmpdir()}/clade-sea-map-phone.png`, Buffer.from(hitShot.data, 'base64'));
+  await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: hit.x, y: hit.y }] });
+  await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await until('!!document.querySelector(".patchWrap")');
+  assert.match(await evaluate('document.querySelector(".patchWrap h2").textContent'), new RegExp(`Patch ${hit.patch + 1}\\b`, 'i'));
+  const patchShot = await send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(`${tmpdir()}/clade-sea-patch-phone.png`, Buffer.from(patchShot.data, 'base64'));
   assert.deepEqual(await evaluate('[...document.querySelectorAll(".metaWrap .liveBtn")].map(b => b.textContent.trim())'), ['Live as worm']);
   await click('Live as worm'); await click('Start the Life'); await click('Start', '#cardButtons button');
   assert.equal(await evaluate('__game.life.hab.prey.length + __game.life.hab.rivals.length'), 0);
@@ -85,10 +99,24 @@ try {
   await send('Page.reload'); await until(booted); await until('!!document.querySelector(".clutch")');
   await click('Keep no form');
   let settled = await state(); assert.equal(settled.lives, 1); assert.equal(settled.pending, undefined); assert(settled.total > 0);
+  assert.match(await evaluate('document.querySelector(".returnFeedback").textContent'), /3 eggs released/);
+  assert.equal(await evaluate('!!document.querySelector(".patchWrap")'), false);
+  const returnShot = await send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(`${tmpdir()}/clade-sea-return-phone.png`, Buffer.from(returnShot.data, 'base64'));
+  await click('Dismiss'); assert.deepEqual(await state(), settled);
+  // Successful feedback is dismissed; zero-egg feedback below is reloaded while visible.
   await send('Page.reload'); await until(booted);
+  assert.equal(await evaluate('!!document.querySelector(".returnFeedback")'), false);
   const loaded = await state(); assert.equal(loaded.lives, 1); assert.equal(loaded.total, settled.total);
   await click(`Continue from patch ${loaded.continuation.patch + 1}`);
   assert.equal(await evaluate('[...document.querySelectorAll(".metaWrap .liveBtn")].filter(b => b.textContent.startsWith("Live as")).length'), 4);
+
+  await click('Map');
+  await evaluate('document.querySelector(".patchList").open = true');
+  const distant = await evaluate(`(() => { const s = __game.save, p = s.sea.patches[s.continuation.patch]; return s.sea.patches.find(q => q.id !== p.id && !p.nb.includes(q.id)).id; })()`);
+  await evaluate(`document.querySelectorAll('.patchList .habBtn').forEach(b => { if (b.querySelector('b').textContent.startsWith('Patch ${distant + 1} ·')) b.click(); })`);
+  assert.equal(await evaluate('[...document.querySelectorAll(".patchWrap .liveBtn")].every(b => b.disabled)'), true);
+  await click('Map'); await click(`Continue from patch ${loaded.continuation.patch + 1}`);
 
   // A failed next run leaves continuation intact and creates no additional population.
   await click('Live as trilobite'); await click('Start the Life'); await click('Start', '#cardButtons button');
@@ -98,8 +126,13 @@ try {
   await click('Back to the sea', '#cardButtons button');
   settled = await state(); assert.equal(settled.lives, 2); assert.deepEqual(settled.continuation, loaded.continuation);
 
+  assert.match(await evaluate('document.querySelector(".returnFeedback").textContent'), /No new eggs released/);
+  await send('Page.reload'); await until(booted);
+  assert.equal((await state()).lives, 2);
+  assert.equal(await evaluate('!!document.querySelector(".returnFeedback")'), false);
+
   // Copy/import a design through Menu; neither operation grants population or a new launch point.
-  await click('Patches'); await click('Map'); await click('Menu');
+  await click('Menu');
   const copyName = await evaluate('[...document.querySelectorAll("button")].find(b => b.textContent.startsWith("Copy: ")).textContent.trim()');
   await click(copyName);
   const before = await state();
@@ -121,7 +154,15 @@ try {
   const shot = await send('Page.captureScreenshot', { format: 'png' });
   writeFileSync(`${tmpdir()}/clade-sea-smoke.png`, Buffer.from(shot.data, 'base64'));
   assert.deepEqual(errors, []);
-  console.log('✓ packaged smoke: empty founding, terminal/clutch reload, once-only settlement, all bodies, failed-run continuation, design import and storage retry (390×844).');
+  await send('Emulation.setDeviceMetricsOverride', { width: 1200, height: 900, deviceScaleFactor: 1, mobile: false });
+  for (const mode of ['Mats', 'Oxygen', 'Hunters', 'Population']) await click(mode);
+  const desktopShot = await send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(`${tmpdir()}/clade-sea-map-desktop.png`, Buffer.from(desktopShot.data, 'base64'));
+  await click(`Continue from patch ${(await state()).continuation.patch + 1}`);
+  const desktopPatchShot = await send('Page.captureScreenshot', { format: 'png' });
+  writeFileSync(`${tmpdir()}/clade-sea-patch-desktop.png`, Buffer.from(desktopPatchShot.data, 'base64'));
+  assert.deepEqual(errors, []);
+  console.log('✓ packaged smoke: canvas touch, patch card, return/dismiss/reload, empty founding, terminal/clutch reload, once-only settlement, all bodies, failed-run continuation, design import, storage retry and overlays (390×844 / 1200×900).');
   console.log(`Screenshot: ${tmpdir()}/clade-sea-smoke.png. Controlled terminal fixtures; no balance/phone playtest claim.`);
 } finally {
   if (chrome.exitCode === null && chrome.signalCode === null) {

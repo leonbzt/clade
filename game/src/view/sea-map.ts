@@ -137,6 +137,12 @@ export function makeMap(cv: HTMLCanvasElement) {
       occupied.clear(); line.forEach((id) => occupied.add(id));
     },
     pulse: (id: number, c: RGB) => { if (shown[id]) { shown[id].pulse = 1; shown[id].pulseC = c; } },
-    patchAt: (px: number, py: number) => patchAtPoint(sea, cv.getBoundingClientRect(), px, py),
+    patchAt: (px: number, py: number) => {
+      // CSS borders are outside the rendered island; tiny coastal patches need the content box.
+      const r = cv.getBoundingClientRect(), css = getComputedStyle(cv);
+      const left = parseFloat(css.borderLeftWidth) || 0, right = parseFloat(css.borderRightWidth) || 0;
+      const top = parseFloat(css.borderTopWidth) || 0, bottom = parseFloat(css.borderBottomWidth) || 0;
+      return patchAtPoint(sea, { left: r.left + left, top: r.top + top, width: r.width - left - right, height: r.height - top - bottom }, px, py);
+    },
   };
 }

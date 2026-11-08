@@ -59,9 +59,16 @@ describe('living map projections', () => {
     const context = new Proxy({}, { get: () => () => {}, set: () => true });
     const canvas = () => ({ width: 0, height: 0, getContext: () => context, getBoundingClientRect: () => ({ left: 0, top: 0, width: 390, height: 240 }) });
     vi.stubGlobal('document', { createElement: canvas });
-    vi.stubGlobal('getComputedStyle', () => ({ fontFamily: 'sans-serif' }));
+    vi.stubGlobal('getComputedStyle', () => ({ fontFamily: 'sans-serif', borderLeftWidth: '3px', borderRightWidth: '3px', borderTopWidth: '3px', borderBottomWidth: '3px' }));
     const map = makeMap(canvas() as unknown as HTMLCanvasElement);
-    map.setSea(s.sea); map.mark(launchPatches(s), 0, 0, [0]); map.pulse(0, [255, 255, 255]);
+    map.setSea(s.sea);
+    for (const p of s.sea.patches) for (const t of p.tiles) {
+      const x = 3 + (t % s.sea.isl.w + 0.5) / s.sea.isl.w * 384;
+      const y = 3 + (Math.floor(t / s.sea.isl.w) + 0.5) / s.sea.isl.h * 234;
+      expect(map.patchAt(x, y)).toBe(p.id);
+    }
+    expect(map.patchAt(1, 1)).toBe(-1);
+    map.mark(launchPatches(s), 0, 0, [0]); map.pulse(0, [255, 255, 255]);
     for (const view of ['holder', 'mats', 'oxygen', 'hunters'] as const) {
       map.setView(view); map.updateHerds(); for (let i = 0; i < 5; i++) map.draw();
     }
