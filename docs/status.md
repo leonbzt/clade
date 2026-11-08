@@ -1,32 +1,31 @@
 # Status
 
-Updated 8 Nov 2026 (Claude). Branch `slice-20a-model` (from `main`), 20A committed as `b34e9cc`. The long Codex-era
-status is at `git show 8b5b202:docs/status.md`.
+Updated 9 Nov 2026 (Claude). Branch `slice-20a-model`; 20A committed as `b34e9cc`, **20B uncommitted**. The long
+Codex-era status is at `git show 8b5b202:docs/status.md`.
 
 **Milestone:** M2. Step 4, [slice 19](slices/19-join-the-sea.md): built, human checks open. Step 5,
-[slice 20](slices/20-join-the-bodies.md): **20A model built**, 20B (equipment view) and 20C (cutover) next.
+[slice 20](slices/20-join-the-bodies.md): 20A model built, **20B equipment view built (preview)**, 20C cutover next.
 
-**Done (8 Nov, this session):** the [20A contract](design/20a-body-part-contract.md) as a pure model, runtime untouched.
-- `game/src/data/body.ts`: six places, homes per part, three variants, upgrades, defaults/locks, allowance, presets.
-- `game/src/sim/body.ts`: anatomy/build checks, stats (upkeep, range, speed, tunnel, sense, oxygen, food, clutch),
-  verbs with the ceiling (walking Dash free), `startBuild` (defaults → carried → design, conflicts listed),
-  `changesFor`/`legalOffers`/`rareOffer`/`moultBuild`.
-- `game/src/sim/body-hurt.ts`: `strikeOn` by side, whole-row `loseRow`, `shed`, frozen `snapshot`/`parseBuild`,
-  `CLADE2-` `encodeDesign`/`decodeDesign`, `nextTrait`/`traitFits`. `share.ts` now exports its b64/sum helpers.
-- `game/tests/body.test.ts`: 18 fixtures, all groups except the sea save version and neighbour-following (20C).
-- `npm run check`: passes in ~7.9 s, but `garden.test.ts:65` (old garden step budget, 0.1 ms) fails ~1 run in 3.
+**Done (9 Nov, this session):** 20B, runtime untouched (the Life still starts from the verb picker).
+- Painter port (no imports from `toys/`): `data/body-look.ts` (shape per body), `view/body.ts` (spine, gaits, skin,
+  shield), `view/body-parts.ts` (one painter per place, all 27 parts, lost-limb stumps).
+- Head poke fixed: with a head shield the ridge hull starts under it and has no front cap.
+- `view/equip-stage.ts` + `ui/equip.ts` + `ui/Equip.svelte`: large creature with six labelled places and leader lines,
+  option cards (effect, verb, upkeep, replaces, gains/loses, problems), sizes 1–5, presets, carried part with origin
+  and home choice, habitat context, board-size copy walking a circle, phone layout (stacked under 720 px).
+- Opened from Meta's loadout: "Equipment (preview of the new body)". Check page: `/toys/equip.html?body=&carry=&preset=&size=`.
+- `tests/equip.test.ts`: choices, locks, variant swap, carried state, painter finite at sizes 1–5 on every body.
+- `npm run check` ~9 s; `garden.test.ts:65` timing budget still fails ~1 run in 3. `build:game` 793 KB.
 
 **Decided:** nothing new this session.
 
 **Next:**
-1. 20B: port the painter, fix the head poke, equipment preview in the launch flow (not launching yet).
-2. 20C: switch runtime to `Build` (parts, feeding, offers, drawing, saves, reset) in one change; play it.
+1. You play the equipment view (desktop + phone): do the builds read apart? Labels, cards, board-size copy.
+2. 20C: switch runtime to `Build` (parts, feeding, offers, drawing, saves, reset) in one change; moult-offer preview
+   in the view; measure draw cost on a packed board.
 
 **Open:**
-- AI readings of the contract, for your OK (all in code, easy to change): a starter that extends a default row keeps
-  its install position; a variant needs its base (rake can't repair empty walking limbs); spined shield is T only;
-  any offer that changes nothing is filtered (fixes the ~8% empty swimmer rewards); offering a predecessor when you
-  hold its upgrade is a duplicate.
-- Flaky `garden.test.ts` timing budget under the parallel check: loosen or drop it (the garden is the archive's).
-- P47 (start era, game words, stat bars), P46 (body shape effects). Slice 19 checks: unaided next-patch discovery,
-  3–5 Lives, a real phone; founding-map labels; code terms in the UI.
+- AI readings of the 20A contract, for your OK (see `git show 7f2f356:docs/status.md`).
+- Look: worm reads as a smooth tube at large size; swimmer shadow is large.
+- Flaky `garden.test.ts` timing budget: loosen or drop it. `npm run look` needs Playwright installed locally.
+- P47, P46. Slice 19 checks: unaided next-patch discovery, 3–5 Lives, a real phone; founding-map labels; code terms.

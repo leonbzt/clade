@@ -11,12 +11,15 @@
   import { feedsAs } from '../sim/feeding';
   import { PLAN_IDS } from '../data/life';
   import { bump, ctx, ui } from './meta.svelte';
+  import Equip from './Equip.svelte';
+  import type { PresetId } from '../data/body';
 
   let cv: HTMLCanvasElement | undefined = $state();
   let patchList: HTMLDetailsElement | undefined = $state();
   let map = $state.raw<ReturnType<typeof makeMap> | null>(null);
   let view = $state<View>('holder'), selectedLine = $state<string | undefined>();
   let verbs: VerbId[] = $state([...STYLE_VERBS.digger]);
+  let equipOpen = $state(false);
   let note = $state(''), body: PlanId = $state('worm'), carry = $state(true), usingDesign = $state(false);
   const g = $derived((ui.tick, ctx.save.sea));
   const eligible = $derived((ui.tick, launchPatches(ctx.save)));
@@ -100,6 +103,9 @@
   }
   function toggleCarry() { carry = !carry; note = ''; if (ui.niche) verbs = roomFor(defaults(ui.niche)); }
   const upkeep = $derived(RULE.baseUpkeep + startParts(plan, verbs, carried).reduce((n, p) => n + PARTS[p].upkeep, 0));
+  const equipPreset = $derived<PresetId | undefined>(plan === 'swimmer' ? 'hunter' : ui.niche === 'grazer' ? 'sweeper' : ui.niche === 'burrower' ? 'digger' : undefined);
+  const equipContext = $derived(patch && board ? `Patch ${patch.id + 1} · ${HABITATS[patch.ground].name}. ${nextBoard(board)}` : '');
+  const equipOrigin = $derived(continuation ? `From your last clutch, patch ${continuation.patch + 1}.` : 'From your line.');
   function start() { if (ui.patch !== null && ui.niche) ctx.start(ui.patch!, ui.niche, verbs, plan, carried); }
 </script>
 
@@ -196,9 +202,14 @@
         </div>
         <div class="note">{note || `${verbs.length} of ${MAX_VERBS} verbs · upkeep ${upkeep} food a turn at the start.`}</div>
       {/if}
+      <button class="small" onclick={() => (equipOpen = true)}>Equipment (preview of the new body)</button>
       <div class="row2"><button onclick={() => (ui.niche = null)}>Back</button><button class="go" onclick={start}>Start the Life</button></div>
   {/if}
 </div></div>
+{/if}
+
+{#if ui.open && patch && board && ui.niche && equipOpen}
+  <Equip {plan} carriedPart={carried} origin={equipOrigin} context={equipContext} preset={equipPreset} onclose={() => (equipOpen = false)} />
 {/if}
 
 {#if ui.notice}
