@@ -1,34 +1,32 @@
 # Status
 
-Updated 8 Nov 2026 (Claude). Everything is on `main`; work starts on a task branch. Gameplay is at `13b1ccb`. The long Codex-era status is at `git show 8b5b202:docs/status.md`.
+Updated 8 Nov 2026 (Claude). Branch `slice-20a-model` (from `main`), 20A committed as `b34e9cc`. The long Codex-era
+status is at `git show 8b5b202:docs/status.md`.
 
 **Milestone:** M2. Step 4, [slice 19](slices/19-join-the-sea.md): built, human checks open. Step 5,
-[slice 20](slices/20-join-the-bodies.md) with the [20A contract](design/20a-body-part-contract.md): trimmed (112 + 220
-lines, was 229 + 446), no code yet.
+[slice 20](slices/20-join-the-bodies.md): **20A model built**, 20B (equipment view) and 20C (cutover) next.
 
-**Done (8 Nov):**
-- [Review of the Codex stretch](design/m2-review-8-nov.md); TierZoo [research](research/tier-zoo.md) and
-  [concepts](design/tierzoo-concepts.md) (open as P47).
-- Housekeeping: `npm run check` 7.4 s (steps in parallel, `scripts/check.mjs`); `AGENTS.md` aligned (saves no priority
-  before release, short docs, 1–2 sessions per slice); `main` merged, pushed, all other branches deleted.
-- Handoff runs unasked after a large task (`CLAUDE.md`, `docs/workflow.md`).
+**Done (8 Nov, this session):** the [20A contract](design/20a-body-part-contract.md) as a pure model, runtime untouched.
+- `game/src/data/body.ts`: six places, homes per part, three variants, upgrades, defaults/locks, allowance, presets.
+- `game/src/sim/body.ts`: anatomy/build checks, stats (upkeep, range, speed, tunnel, sense, oxygen, food, clutch),
+  verbs with the ceiling (walking Dash free), `startBuild` (defaults → carried → design, conflicts listed),
+  `changesFor`/`legalOffers`/`rareOffer`/`moultBuild`.
+- `game/src/sim/body-hurt.ts`: `strikeOn` by side, whole-row `loseRow`, `shed`, frozen `snapshot`/`parseBuild`,
+  `CLADE2-` `encodeDesign`/`decodeDesign`, `nextTrait`/`traitFits`. `share.ts` now exports its b64/sum helpers.
+- `game/tests/body.test.ts`: 18 fixtures, all groups except the sea save version and neighbour-following (20C).
+- `npm run check`: passes in ~7.9 s, but `garden.test.ts:65` (old garden step budget, 0.1 ms) fails ~1 run in 3.
 
-**Decided (8 Nov, [decisions](decisions.md#8-nov-review-of-the-codex-stretch-and-tierzoo)):**
-- Reset the sea save at the body cutover (drops the v4 legacy layer). Dash sits outside the three-verb ceiling.
-- TierZoo: "really keep going into that direction". Liked: patch notes with a cause, a tier letter per niche,
-  strong vs / weak vs, trade-off tooltips. Merge to `main` and prune: "go ahead". Automatic handoff after large tasks.
-
-**Done (8 Nov, later):** slice 20/20A trimmed by deletion: no legacy layer, Dash outside the ceiling (Tank can take a
-compound eye), four build checks (anatomy, starter, moult, lay snapshot), `CLADE2-` codes pass the starter check,
-snapshots keep size and injuries, residents carry builds for drawing only, worm Limbs marked unsupported. Call logged:
-old saves/codes dropped without a message.
+**Decided:** nothing new this session.
 
 **Next:**
-1. Build the 20A pure model and its fixtures (20A "Fixtures"), runtime untouched.
-2. Then 20B equipment view, then the 20C cutover with the reset. Play it; tune A's costs/locks from play.
+1. 20B: port the painter, fix the head poke, equipment preview in the launch flow (not launching yet).
+2. 20C: switch runtime to `Build` (parts, feeding, offers, drawing, saves, reset) in one change; play it.
 
 **Open:**
-- P47: start era (lean: Cambrian as the open beta); build/moves/EP as the game's words; stat bars in slice 20 or step 6.
-- P46: body shape visible only, or small effects.
-- Still open from the review: about 8% of swimmer common-card pairs offer parts it already has (empty rewards).
-- Slice 19 checks: unaided next-patch discovery, 3–5 Lives, a real phone. Founding-map labels; code terms in the UI.
+- AI readings of the contract, for your OK (all in code, easy to change): a starter that extends a default row keeps
+  its install position; a variant needs its base (rake can't repair empty walking limbs); spined shield is T only;
+  any offer that changes nothing is filtered (fixes the ~8% empty swimmer rewards); offering a predecessor when you
+  hold its upgrade is a duplicate.
+- Flaky `garden.test.ts` timing budget under the parallel check: loosen or drop it (the garden is the archive's).
+- P47 (start era, game words, stat bars), P46 (body shape effects). Slice 19 checks: unaided next-patch discovery,
+  3–5 Lives, a real phone; founding-map labels; code terms in the UI.

@@ -216,5 +216,5 @@ A continuation's trait is **none** or **one chosen part** with its source (patch
 | Continuation | Part follows to a neighbour; zero eggs/extinction keep it; no card clears it; body change keeps it stored |
 
 Equipment drawing, head joins at sizes 1–5, board performance and player/phone checks belong to 20B/20C.
-**Next:** stage the pure definitions, check helpers and these fixtures; `Life.slots`, runtime offers/feeding, the
-v3 codec and the UI stay unchanged until the cutover.
+**Built 8 Nov:** `game/src/data/body.ts`, `game/src/sim/body.ts`, `game/src/sim/body-hurt.ts`, fixtures in
+`game/tests/body.test.ts`. Sea save version and the part following to a neighbour are tested at the 20C cutover.
