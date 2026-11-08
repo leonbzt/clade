@@ -184,7 +184,7 @@ describe('20A saves and codes', () => {
 });
 
 describe('20A continuation', () => {
-  const t: H.Trait = { part: 'claw', patch: 'p1', line: 'arthropod/grazer', life: 1 };
+  const t: H.Trait = { part: 'claw', patch: 3, line: 'arthropod/grazer', life: 1 };
   it('a positive result records the card or none; zero eggs keep it; a body change keeps it stored', () => {
     expect(H.nextTrait(t, 0, null)).toBe(t);
     expect(H.nextTrait(t, 5, null)).toBeNull();

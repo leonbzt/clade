@@ -51,9 +51,9 @@ export class Hud {
   private track: HTMLElement[] = [];
   private bannerT = 0;
 
-  constructor(private on: { wait: () => void; moult: () => void; lay: () => void; verb: (v: VerbId) => void }) {
+  constructor(private on: { wait: () => void; moult: () => void; lay: () => void; body: () => void; verb: (v: VerbId) => void }) {
     for (let k = 0; k < TURNS; k++) { const i = document.createElement('i'); $('track').appendChild(i); this.track.push(i); }
-    $('wait').onclick = on.wait; $('moult').onclick = on.moult; $('lay').onclick = on.lay;
+    $('wait').onclick = on.wait; $('moult').onclick = on.moult; $('lay').onclick = on.lay; $('bodyBtn').onclick = on.body;
     let last = performance.now();
     const loop = (now: number) => {
       const dt = Math.min(0.1, (now - last) / 1000); last = now;
@@ -77,12 +77,12 @@ export class Hud {
     this.hp.set(l.health, RULE.health, instant);
     const nt = L.nextTier(l.hab, l.eggs);
     const hunt = l.plan === 'swimmer' ? ` · speed ${speed(l)}${l.still ? ' (ambush)' : ''}${l.frenzy ? ` · frenzy ${l.frenzy}` : ''}` : '';
-    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${l.size} (${L.stage(l)}) · upkeep ${L.upkeep(l)}${hunt}` +
+    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${L.size(l)} (${L.stage(l)}) · upkeep ${L.upkeep(l)}${hunt}` +
       (L.mature(l) && nt ? ` · ${nt[0]} at ${nt[1]} eggs` : '');
     const play = l.phase === 'play' && !busy, w = $<HTMLButtonElement>('wait');
     w.disabled = !play; w.textContent = l.plan === 'swimmer' ? 'Lurk' : 'Wait';
     const m = $<HTMLButtonElement>('moult');
-    m.textContent = l.size >= RULE.maxSize ? 'Full grown' : `Moult −${L.moultCost(l)}`;
+    m.textContent = L.size(l) >= RULE.maxSize ? 'Full grown' : `Moult −${L.moultCost(l)}`;
     m.disabled = !play || !L.canMoult(l);
     const ly = $<HTMLButtonElement>('lay');
     ly.textContent = L.mature(l) ? `Lay +${L.clutch(l)}` : `Lay (size ${RULE.adultSize})`;

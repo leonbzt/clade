@@ -76,16 +76,10 @@ export function boardFor(g: Garden, id: HabitatId, forms: Record<string, PartId>
 
 const count = (b: Habitat, nodes: string) => [...b.map.join('')].filter((c) => nodes.includes(c)).length;
 
-/** Only use a body we can actually draw, never disguise a migrated species as another animal. */
-export function boardKind(sp: Species): PreyKind | null {
-  if (sp.plan) return sp.plan;
-  if (sp.id === 'legacy:wiwaxia:grazer') return 'wiwaxia';
-  if (sp.id === 'legacy:olenoides:grazer') return 'trilobite';
-  if (/^legacy:(burgesso|selkirkia|ottoia):/.test(sp.id)) return 'worm';
-  if (sp.id === 'legacy:sidneyia:predator') return 'arthropod';
-  if (sp.id === 'legacy:anomalocaris:predator') return 'swimmer';
-  return null;
-}
+/** Only use a body we can actually draw. */
+export const boardKind = (sp: Species): PreyKind | null => sp.plan ?? null;
+/** A resident's look: its line's representative snapshot, detached from the sea. */
+const lookOf = (sp: Species) => (sp.build ? { build: structuredClone(sp.build) } : {});
 
 /** A detached snapshot of one patch, using the existing terrain templates and only its actual residents. */
 export function boardForPatch(sea: Sea, patch: number): Habitat {
@@ -112,12 +106,12 @@ export function boardForPatch(sea: Sea, patch: number): Habitat {
     let added = false;
     for (const e of preyResidents) {
       if (round >= Math.max(1, Math.floor(e.pop / BOARD.rivalAt)) || prey.length >= base.prey.length) continue;
-      prey.push({ kind: e.kind!, at: [...base.prey[prey.length].at], species: e.sp.id, name: e.sp.name, eats: food(e) }); added = true;
+      prey.push({ kind: e.kind!, at: [...base.prey[prey.length].at], species: e.sp.id, name: e.sp.name, eats: food(e), ...lookOf(e.sp) }); added = true;
     }
     if (!added) break;
   }
   const rival = preyResidents.find((e) => e.pop >= BOARD.rivalAt), spot = base.rivals[0];
-  const rivals: Habitat['rivals'] = rival && spot ? [{ ...spot, name: rival.sp.name, species: rival.sp.id, kind: rival.kind!, eats: food(rival) }] : [];
+  const rivals: Habitat['rivals'] = rival && spot ? [{ ...spot, name: rival.sp.name, species: rival.sp.id, kind: rival.kind!, eats: food(rival), ...lookOf(rival.sp) }] : [];
   const hunter = residents.filter((e) => e.feeding.hunt && e.kind === 'swimmer' && e.pop >= BOARD.predatorAt)
     .sort((a, b) => b.fit - a.fit || b.pop - a.pop)[0];
   const shift = hunter && p.normal.hunters > 0 ? Math.round(Math.log2(hunter.pop / p.normal.hunters) * BOARD.spread) : 0;

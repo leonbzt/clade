@@ -1,23 +1,26 @@
-// Slice 19: the runtime v3 boundary, including optional inherited builds added in part B.
-// JSON columns follow the saved species registry, never the current content order.
+// The sea save (v4 since the 20C cutover; older saves start a fresh sea, decided 8 Nov). Builds are 20A lay
+// snapshots; the one-part continuation trait replaces the old forms. JSON columns follow the saved species registry,
+// never the current content order.
 import { ROLE_IDS } from '../data/garden';
 import { HAB_ORDER } from '../data/habitats';
 import { SEA as WATER } from '../data/island';
-import { NODES, PARTS, PART_IDS, PLAN_IDS, type PartId } from '../data/life';
+import { NODES, PART_IDS, PLAN_IDS } from '../data/life';
 import { PLAYER_SPECIES, SEA, lineId, type Diet, type Species } from '../data/sea';
+import { parseBuild, type Trait } from './body-hurt';
+import type { Build } from './body';
 import { makeIsland } from './island';
-import { parseSave, type Pending, type Save } from './save';
+import type { Pending, Save } from './save';
 import { finite, integer, oneOf, record, rngState, text, validPending, validProgress } from './save-validation';
 import { newSea, step, type Sea, type SeaPatch } from './sea';
 import { tell, type Headline } from './sea-news';
-import { migrateLegacySea } from './sea-migration';
 
-export const SEA_SAVE_VERSION = 3;
+export const SEA_SAVE_VERSION = 4;
 export interface Continuation { patch: number; species: string; plan: Pending['plan']; role: Pending['role']; eggs: number }
-export interface SeaPending extends Pending { patch: number; species: string; parts?: PartId[]; diet?: Diet }
-export interface SeaSave extends Omit<Save, 'v' | 'garden' | 'pending'> {
+/** A finished Life waiting to settle: `build` is the latest lay's snapshot (none without eggs). */
+export interface SeaPending extends Pending { patch: number; species: string; build?: Build; diet?: Diet }
+export interface SeaSave extends Omit<Save, 'v' | 'garden' | 'pending' | 'forms'> {
   v: typeof SEA_SAVE_VERSION; sea: Sea; news: Headline[]; pending?: SeaPending; continuation?: Continuation;
-  legacy?: { json: string }; // the exact input, recoverable without browser storage access
+  trait?: Trait; // the one part the next Life may carry (20A)
 }
 
 const floats = ['pop', 'fit', 'peak', 'low'] as const;
@@ -26,7 +29,7 @@ type WirePatch = Omit<SeaPatch, typeof floats[number] | typeof ints[number] | 'l
   & Record<typeof floats[number] | typeof ints[number] | 'lost' | 'hist', number[]>;
 
 export function freshSeaSave(seed: number, now: number): SeaSave {
-  return { v: SEA_SAVE_VERSION, seed, at: now, sea: newSea(seed), news: [], best: {}, lives: 0, forms: {}, unlocks: {} };
+  return { v: SEA_SAVE_VERSION, seed, at: now, sea: newSea(seed), news: [], best: {}, lives: 0, unlocks: {} };
 }
 
 export function serializeSeaSave(s: SeaSave): string {
@@ -48,9 +51,9 @@ function validSpecies(v: unknown): v is Species {
     && (v.line ? oneOf(v.plan, PLAN_IDS) && v.id === lineId(v.plan, v.role) : !v.id.startsWith('line:')) && validBuild(v);
 }
 
+/** An optional lay snapshot: legal anatomy of the record's own body. */
 function validBuild(v: Record<string, unknown>): boolean {
-  return (v.parts === undefined || (Array.isArray(v.parts) && v.parts.length <= 16
-    && v.parts.every((p) => oneOf(p, PART_IDS) && (v.plan === undefined || PARTS[p].plans.includes(v.plan as Pending['plan'])))))
+  return (v.build === undefined || (parseBuild(v.build) !== null && (v.plan === undefined || (v.build as Build).body === v.plan)))
     && (v.diet === undefined || (record(v.diet) && Object.entries(v.diet).every(([key, n]) => (key === 'prey' || Object.hasOwn(NODES, key)) && finite(n))));
 }
 
@@ -94,6 +97,8 @@ function readSea(value: unknown, seed: number): Sea | null {
     patchCrashes: value.patchCrashes as number[], moved: new Float64Array(N * S) };
 }
 
+const validTrait = (v: unknown): boolean => record(v) && oneOf(v.part, PART_IDS) && integer(v.patch) && text(v.line) && integer(v.life);
+
 function validReference(v: unknown, sea: Sea): v is Continuation {
   if (!record(v) || !patchRef(v.patch, sea.patches.length) || !text(v.species) || !integer(v.eggs)) return false;
   const sp = sea.species.find((sp) => sp.id === v.species);
@@ -107,15 +112,12 @@ export function parseSeaSave(json: string | null): Parsed {
     const s: unknown = JSON.parse(json);
     if (!record(s) || !integer(s.v, 1)) return { save: null, problem: 'broken' };
     if (s.v > SEA_SAVE_VERSION) return { save: null, problem: 'newer' };
-    if (s.v < SEA_SAVE_VERSION) {
-      const old = parseSave(json);
-      return old.save ? { save: migrateLegacySea(old.save, json), problem: null } : { save: null, problem: 'broken' };
-    }
-    if (!validProgress(s)) return { save: null, problem: 'broken' };
+    if (s.v < SEA_SAVE_VERSION) return { save: null, problem: 'none' }; // the cutover reset: a fresh sea, no message
+    if (!validProgress(s) || (s.trait !== undefined && !validTrait(s.trait))) return { save: null, problem: 'broken' };
     const sea = readSea(s.sea, s.seed as number);
     if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea) || !validBuild(s.pending as unknown as Record<string, unknown>)))
       || (s.continuation !== undefined && (!validReference(s.continuation, sea) || s.continuation.eggs <= 0))
-      || (s.legacy !== undefined && (!record(s.legacy) || typeof s.legacy.json !== 'string'))) return { save: null, problem: 'broken' };
+      || (s.trait !== undefined && !patchRef((s.trait as Trait).patch, sea.patches.length))) return { save: null, problem: 'broken' };
     if (!Array.isArray(s.news) || s.news.length > SEA.keepLines) return { save: null, problem: 'broken' };
     const news: Headline[] = [];
     for (const n of s.news) {
@@ -128,9 +130,9 @@ export function parseSeaSave(json: string | null): Parsed {
     }
     // Each field above has been validated; unknown top-level fields are deliberately not copied.
     return { save: { v: SEA_SAVE_VERSION, seed: s.seed as number, at: s.at as number, lives: s.lives as number,
-      best: s.best as SeaSave['best'], forms: s.forms as SeaSave['forms'], unlocks: s.unlocks as SeaSave['unlocks'],
+      best: s.best as SeaSave['best'], unlocks: s.unlocks as SeaSave['unlocks'],
       sea, news, pending: s.pending as SeaPending | undefined, continuation: s.continuation as Continuation | undefined,
-      legacy: s.legacy as SeaSave['legacy'] }, problem: null };
+      ...(s.trait ? { trait: s.trait as Trait } : {}) }, problem: null };
   } catch { return { save: null, problem: 'broken' }; }
 }
 

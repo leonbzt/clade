@@ -1,21 +1,23 @@
 <!-- Slice 20B: the equipment view. The creature large with its six places, the choices at the chosen place as
-     trade-off cards, the same build at board size. A preview: the Life still starts from the verb picker until 20C. -->
+     trade-off cards, the same build at board size. Since 20C it is the Life's launcher. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { BODY_RULE, PLACES, PLACE_NAMES, type PlaceId, type PresetId, type Rows } from '../data/body';
   import { PARTS, PLANS, STYLES, type PartId, type PlanId } from '../data/life';
+  import type { Placement } from '../sim/body';
   import * as B from '../sim/body';
   import { makeEquipStage, type EquipStage } from '../view/equip-stage';
   import { homes, numbers, optionsAt, places, presetsOf, startDesign, verbName, type Option } from './equip';
   import { feel } from './feel';
 
-  let { plan, carriedPart, origin, context, preset, size = 1, onclose }: {
-    plan: PlanId; carriedPart?: PartId; origin: string; context: string; preset?: PresetId; size?: number; onclose: () => void;
+  let { plan, carriedPart, origin, context, preset, design: given, size = 1, onstart, onclose }: {
+    plan: PlanId; carriedPart?: PartId; origin: string; context: string; preset?: PresetId; design?: Rows; size?: number;
+    onstart?: (design: Rows, carried?: Placement) => void; onclose: () => void;
   } = $props();
 
-  let design: Rows = $state(startDesign(plan, preset));
-  let carriedAt: PlaceId | null = $state(carriedPart ? homes(plan, carriedPart)[0] ?? null : null);
-  let sel: PlaceId = $state('front'), hover: PartId | null = $state(null), presetOn: PresetId | null = $state(preset ?? null);
+  let design: Rows = $state(untrack(() => (given ? ($state.snapshot(given) as Rows) : startDesign(plan, preset))));
+  let carriedAt: PlaceId | null = $state(untrack(() => (carriedPart ? homes(plan, carriedPart)[0] ?? null : null)));
+  let sel: PlaceId = $state('front'), hover: PartId | null = $state(null), presetOn: PresetId | null = $state(untrack(() => (given ? null : preset ?? null)));
   let host: HTMLDivElement | undefined = $state();
   let grown = $state(untrack(() => size));
   let stage = $state.raw<EquipStage | null>(null);
@@ -60,7 +62,7 @@
 </script>
 
 <div class="metaWrap equipWrap"><div class="panel habCard equip">
-  <div class="metaTop"><h2>{PLANS[plan].name} · equipment</h2><button class="small" onclick={onclose}>Back</button></div>
+  <div class="metaTop"><h2>{PLANS[plan].name} · starting body</h2><button class="small" onclick={onclose}>Back</button></div>
   <p class="note">{context}</p>
   <div class="equipGrid">
     <div class="stageBox" bind:this={host}>
@@ -103,7 +105,8 @@
         <p><small>{nums.move} · sense {nums.sense} · oxygen {nums.oxygen} · clutch {nums.clutch} at size 3</small></p>
         {#each res.problems as p}<p class="bad">{p}</p>{/each}
       </div>
-      <p class="note">Preview of the new body. Until the cutover the Life still starts from the verb picker; at most {BODY_RULE.maxVerbs} verbs, Dash from walking legs is free.</p>
+      <p class="note">At most {BODY_RULE.maxVerbs} verbs; Dash from walking legs is free. Moults add the rest.</p>
+      {#if onstart}<button class="go" disabled={res.problems.length > 0} onclick={() => onstart($state.snapshot(design), carried && $state.snapshot(carried))}>Start the Life</button>{/if}
     </div>
   </div>
 </div></div>
@@ -132,6 +135,7 @@
   .equipSide h3 { margin: 4px 0 0; }
   .sum p { margin: 2px 0; }
   .bad { color: var(--red); }
+  .equip .go { position: sticky; bottom: 4px; z-index: 2; }
   @media (max-width: 720px) {
     .equipGrid { grid-template-columns: 1fr; grid-template-areas: 'stage' 'sizes' 'side'; }
     .stageBox { height: 58vh; min-height: 320px; }

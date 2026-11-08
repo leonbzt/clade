@@ -86,7 +86,7 @@ export function decodeDesign(code: string): Design | null {
 }
 
 // ---- the one-part continuation ----
-export interface Trait { part: PartId; patch: string; line: string; life: number }
+export interface Trait { part: PartId; patch: number; line: string; life: number }
 /** After a Life: a positive result records the chosen card, or none; zero eggs (or extinction) keep the old trait. */
 export const nextTrait = (prev: Trait | null, eggs: number, chosen: Trait | null): Trait | null => (eggs > 0 ? chosen : prev);
 /** Whether a stored trait can come along on this body. A body change keeps it stored either way. */

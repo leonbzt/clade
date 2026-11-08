@@ -16,7 +16,7 @@ const stocks = (v: Record<string, unknown>) => ['mats', 'rot', 'oxygen'].every((
 
 export function validProgress(s: Record<string, unknown>): boolean {
   return rngState(s.seed) && integer(s.at) && integer(s.lives)
-    && dictionary(s.best, (v) => oneOf(v, tiers)) && dictionary(s.forms, (v) => oneOf(v, PART_IDS))
+    && dictionary(s.best, (v) => oneOf(v, tiers))
     && dictionary(s.unlocks, (v) => typeof v === 'boolean');
 }
 
@@ -28,7 +28,7 @@ export function validPending(v: unknown): v is Pending {
 }
 
 export function validLegacy(s: Record<string, unknown>): s is Record<string, unknown> & Save {
-  if (!validProgress(s) || (s.pending !== undefined && !validPending(s.pending))) return false;
+  if (!validProgress(s) || !dictionary(s.forms, (v) => oneOf(v, PART_IDS)) || (s.pending !== undefined && !validPending(s.pending))) return false;
   const g = s.garden;
   if (!record(g) || !integer(g.gen) || !rngState(g.r) || !record(g.habs) || !record(g.normal) || !Array.isArray(g.news)) return false;
   for (const id of HAB_ORDER) {

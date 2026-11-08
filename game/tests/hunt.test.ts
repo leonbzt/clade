@@ -1,9 +1,10 @@
 // Slice 11: the swimmer's moves, ambush, frenzy, and prey that flee by one rule each.
 import { describe, expect, it } from 'vitest';
 import { HABITATS, MUD_FLATS } from '../src/data/habitats';
-import { HUNT, PLANS } from '../src/data/life';
+import { HUNT } from '../src/data/life';
 import { PREY_BACK } from '../src/data/prey';
 import * as L from '../src/sim/life';
+import { partsOf, swimSpeed } from '../src/sim/body';
 import { nextStep, predict, speed } from '../src/sim/hunt';
 
 const swim = (hab = MUD_FLATS) => L.newLife(4, 'swimmer', hab);
@@ -12,7 +13,7 @@ const only = (l: L.Life, k: number) => { l.prey.forEach((p, j) => { if (j !== k)
 describe('the predator Life', () => {
   it('the swimmer has arms, prey instead of rivals, and no hunter', () => {
     const l = swim();
-    expect(l.slots.flatMap((s) => (s.part ? [s.part] : []))).toEqual(['arms']);
+    expect(partsOf(l.build.rows).sort()).toEqual(['arms', 'flap']);
     expect([l.rivals.length, l.prey.length]).toEqual([0, 5]);
     l.food = 99;
     for (let k = 0; k < 8; k++) L.stay(l);
@@ -25,7 +26,7 @@ describe('the predator Life', () => {
     const ds = L.dests(l);
     expect(ds.has(L.at(2, 1))).toBe(true); // over the basalt at (2,2)
     expect(ds.has(L.at(3, 3))).toBe(false); // vent water
-    expect(Math.max(...[...ds.values()].map((d) => d.path.length))).toBe(PLANS.swimmer.range);
+    expect(Math.max(...[...ds.values()].map((d) => d.path.length))).toBe(swimSpeed(l.build));
   });
 
   it('lurking doubles the next swim; prey ignore a still hunter', () => {
@@ -34,7 +35,7 @@ describe('the predator Life', () => {
     const p = only(l, 0); p.x = 1; p.y = 3; l.x = 1; l.y = 1;
     L.stay(l);
     expect(l.still).toBe(true);
-    expect(speed(l)).toBe(PLANS.swimmer.range * HUNT.ambush);
+    expect(speed(l)).toBe(swimSpeed(l.build) * HUNT.ambush);
     expect(p.alarmed).toBe(false);
   });
 
@@ -67,7 +68,7 @@ describe('the predator Life', () => {
     expect(p.alive).toBe(false);
     expect(l.health).toBe(2); // cut by its spines
     expect(l.frenzy).toBe(1);
-    expect(speed(l)).toBe(PLANS.swimmer.range + 1);
+    expect(speed(l)).toBe(swimSpeed(l.build) + 1);
     for (let t = 0; t < PREY_BACK; t++) L.stay(l);
     expect(p.alive).toBe(true);
     expect(l.frenzy).toBe(0);

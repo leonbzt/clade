@@ -1,26 +1,24 @@
-<!-- Living patch map and the existing Life loadout. -->
+<!-- Living patch map and the Life launcher (the equipment view, 20C). -->
 <script lang="ts">
   import { HABITATS } from '../data/habitats';
-  import { HUNT, MAX_VERBS, PARTS, PLANS, RULE, STYLES, STYLE_VERBS, VERBS, VERB_IDS, VERB_PART, type GrazerId, type PlanId, type StyleId, type VerbId } from '../data/life';
+  import { HUNT, PLANS, type PlanId } from '../data/life';
   import { boardForPatch, nextBoard } from '../sim/door';
-  import { formFor, launchBodies, launchPatches } from '../sim/sea-life';
+  import { carriable, launchBodies, launchPatches } from '../sim/sea-life';
   import { headlineText } from '../sim/sea-news';
-  import { newLife, partsFor, startParts } from '../sim/life';
   import { makeMap, type View } from '../view/sea-map';
   import { historyPaths, linePatches, speciesColour, speciesKey } from '../view/sea-map-data';
   import { feedsAs } from '../sim/feeding';
   import { PLAN_IDS } from '../data/life';
   import { bump, ctx, ui } from './meta.svelte';
   import Equip from './Equip.svelte';
-  import type { PresetId } from '../data/body';
+  import type { PresetId, Rows } from '../data/body';
+  import type { Placement } from '../sim/body';
 
   let cv: HTMLCanvasElement | undefined = $state();
   let patchList: HTMLDetailsElement | undefined = $state();
   let map = $state.raw<ReturnType<typeof makeMap> | null>(null);
   let view = $state<View>('holder'), selectedLine = $state<string | undefined>();
-  let verbs: VerbId[] = $state([...STYLE_VERBS.digger]);
-  let equipOpen = $state(false);
-  let note = $state(''), body: PlanId = $state('worm'), carry = $state(true), usingDesign = $state(false);
+  let body: PlanId = $state('worm'), usingDesign = $state(false);
   const g = $derived((ui.tick, ctx.save.sea));
   const eligible = $derived((ui.tick, launchPatches(ctx.save)));
   const bodies = $derived((ui.tick, launchBodies(ctx.save)));
@@ -68,45 +66,17 @@
   }
   function openPatch(id: number) { ui.patch = id; ui.hab = g.patches[id].ground; ui.niche = null; }
   function backToMap() { ui.patch = null; ui.hab = null; ui.niche = null; }
-  const defaults = (role: string) => [...STYLE_VERBS[role === 'grazer' ? 'sweeper' : 'digger']];
   function live(as: PlanId, shared = false) {
-    body = as; usingDesign = shared; carry = true; note = '';
-    ui.niche = shared ? ui.design!.role : continuation?.plan === as ? continuation.role : as === 'worm' ? 'burrower' : as === 'swimmer' ? 'predator' : 'grazer';
-    verbs = shared ? [...ui.design!.verbs] : roomFor(defaults(ui.niche));
+    body = as; usingDesign = shared;
+    ui.niche = continuation?.plan === as ? continuation.role : as === 'worm' ? 'burrower' : as === 'swimmer' ? 'predator' : 'grazer';
   }
   const plan = $derived<PlanId>(body);
-  const form = $derived((ui.tick, usingDesign ? ui.design?.form : patch && ui.niche ? formFor(ctx.save, patch.id, plan, ui.niche) : undefined));
-  const formFits = $derived(!!form && PARTS[form].plans.includes(plan));
-  const carried = $derived(carry && formFits ? form : undefined);
-  function fits(vs: VerbId[]) {
-    const parts = startParts(plan, vs, carried), l = newLife(1, plan, HABITATS[ui.hab ?? 'mud'], parts);
-    return l.order.length === parts.length && new Set(parts.map((p) => PARTS[p].verb).filter(Boolean)).size <= MAX_VERBS;
-  }
-  /** As many of these verbs as the body has room for, in order; if none fit, the first verb that does. */
-  function roomFor(vs: VerbId[]) {
-    const out: VerbId[] = [];
-    for (const v of vs) if (fits([...out, v])) out.push(v);
-    if (!out.length) { const v = VERB_IDS.find((q) => fits([q])); if (v) out.push(v); }
-    return out;
-  }
-  function toggle(v: VerbId) {
-    note = '';
-    if (verbs.includes(v)) { if (verbs.length > 1) verbs = verbs.filter((q) => q !== v); else note = 'Keep at least one verb.'; return; }
-    const next = [...verbs, v];
-    if (next.length > MAX_VERBS) { note = 'Three verbs at most: drop one first.'; return; }
-    if (!fits(next)) { note = `No room: ${PARTS[partsFor(plan, [v])[0]].name} needs a slot your form or another verb's part already takes, or you're at three verbs.`; return; }
-    verbs = next;
-  }
-  function pickStyle(s: StyleId) {
-    verbs = roomFor([...STYLE_VERBS[s]]);
-    note = STYLES[s].blurb + (verbs.length < STYLE_VERBS[s].length ? ' Your form holds a slot one of its verbs needs.' : '');
-  }
-  function toggleCarry() { carry = !carry; note = ''; if (ui.niche) verbs = roomFor(defaults(ui.niche)); }
-  const upkeep = $derived(RULE.baseUpkeep + startParts(plan, verbs, carried).reduce((n, p) => n + PARTS[p].upkeep, 0));
+  const carried = $derived((ui.tick, carriable(ctx.save, plan)));
+  const design0 = $derived<Rows | undefined>(usingDesign && ui.design?.body === plan ? ui.design.rows : undefined);
   const equipPreset = $derived<PresetId | undefined>(plan === 'swimmer' ? 'hunter' : ui.niche === 'grazer' ? 'sweeper' : ui.niche === 'burrower' ? 'digger' : undefined);
-  const equipContext = $derived(patch && board ? `Patch ${patch.id + 1} · ${HABITATS[patch.ground].name}. ${nextBoard(board)}` : '');
-  const equipOrigin = $derived(continuation ? `From your last clutch, patch ${continuation.patch + 1}.` : 'From your line.');
-  function start() { if (ui.patch !== null && ui.niche) ctx.start(ui.patch!, ui.niche, verbs, plan, carried); }
+  const equipContext = $derived(patch && board ? `Patch ${patch.id + 1} · ${HABITATS[patch.ground].name}. ${nextBoard(board)}${plan === 'swimmer' ? ` Lurk a turn: prey don't notice you, and your next swim goes ${HUNT.ambush}× as far. Frenzy: +1 speed for each catch in a row.` : ''}` : '');
+  const equipOrigin = $derived(ctx.save.trait ? `Kept from your clutch in patch ${ctx.save.trait.patch + 1}.` : 'From your line.');
+  function start(d: Rows, c?: Placement) { if (ui.patch !== null) ctx.start(ui.patch, plan, d, c); }
 </script>
 
 {#if ui.saveError}
@@ -159,7 +129,7 @@
 {/if}
 
 {#if ui.open && patch && board}
-<div class="metaWrap patchWrap" class:loadout={!!ui.niche}><div class="panel habCard">
+<div class="metaWrap patchWrap" hidden={!!ui.niche}><div class="panel habCard">
   <div class="metaTop"><h2>{board.name}</h2><button class="small" onclick={backToMap}>Map</button></div>
   {#if !ui.niche}
     <p class="pitch">{eligible.includes(patch.id) ? continuation?.patch === patch.id ? 'Your last successful clutch: continue here or in a direct neighbour.' : continuation ? 'Direct neighbour of your last clutch: you can continue here.' : 'Founding patch: your first Life is a worm.' : 'Outside the last clutch’s direct neighbours. Descendant populations do not make this a launch point.'}</p>
@@ -176,40 +146,16 @@
     <p class="mapKey">Recorded generations {Math.max(0, g.gen - 59)}–{g.gen}. {#each history as h}<span style:color={h.colour}>{h.name} 0–{Math.round(h.scale)} </span>{/each}</p>
     {#each bodies as as}<button class="liveBtn" disabled={!eligible.includes(patch.id) || !!pending} onclick={() => live(as)}>Live as {PLANS[as].name.toLowerCase()}</button>{/each}
     {#if ui.design}
-      <button class="liveBtn" disabled={!eligible.includes(patch.id) || !bodies.includes(ui.design.plan) || !!pending} onclick={() => live(ui.design!.plan, true)}>Use {ui.design.name}’s {PLANS[ui.design.plan].name.toLowerCase()} design</button>
-      {#if !bodies.includes(ui.design.plan)}<p class="note">Found the sea with a worm before using this body.</p>{/if}
+      <button class="liveBtn" disabled={!eligible.includes(patch.id) || !bodies.includes(ui.design.body) || !!pending} onclick={() => live(ui.design!.body, true)}>Use the pasted {PLANS[ui.design.body].name.toLowerCase()} design</button>
+      {#if !bodies.includes(ui.design.body)}<p class="note">Found the sea with a worm before using this body.</p>{/if}
     {/if}
     <h3>News here</h3><ul class="news">{#each (ui.tick, ctx.save.news.filter((n) => n.patches.includes(patch.id)).slice(0, 6)) as n}<li>{headlineText(g, n)}</li>{:else}<li><small>Quiet so far.</small></li>{/each}</ul>
-  {:else}
-    <p class="pitch">{PLANS[plan].name} in patch {patch.id + 1}. {PLANS[plan].blurb} Parts and verbs determine feeding; diet is recorded during play.</p>
-    <p class="note">{nextBoard(board)}</p>
-      {#if form}
-        <div class="form">
-          {#if formFits}<button class="chip" class:on={carry} onclick={toggleCarry}>{carry ? 'Carrying' : 'Leaving behind'}: {PARTS[form].name}</button> <small>{PARTS[form].does} Holds the {PARTS[form].slots.join(' or ')} slot.</small>
-          {:else}Your form here, {PARTS[form].name}, doesn't fit this body.{/if}
-        </div>
-      {/if}
-      {#if plan === 'swimmer'}
-        <div class="rules"><b>The hunter's rules</b><small><b>Lurk</b> a turn: prey don't notice you, and your next swim goes {HUNT.ambush}× as far.</small><small><b>Frenzy</b>: +1 speed for each catch in a row.</small></div>
-      {:else}
-        <h3>Verbs <span class="hint">pick 1–3 · each grows its part</span></h3>
-        <div class="chips">{#each Object.keys(STYLES) as StyleId[] as s}<button class="chip" class:on={STYLE_VERBS[s].every((v) => verbs.includes(v)) && verbs.length === 2} onclick={() => pickStyle(s)}>{STYLES[s].name}</button>{/each}</div>
-        <div class="pickList two">
-          {#each VERB_IDS as v}
-            {@const part = PARTS[VERB_PART[plan as GrazerId][v]]}
-            <button class="verbCard" class:on={verbs.includes(v)} onclick={() => toggle(v)}><b>{VERBS[v].name}</b><small>{VERBS[v].does}</small><em>{part.name} · upkeep {part.upkeep} · {VERBS[v].free ? 'free' : 'your turn'}, every {VERBS[v].recharge}</em></button>
-          {/each}
-        </div>
-        <div class="note">{note || `${verbs.length} of ${MAX_VERBS} verbs · upkeep ${upkeep} food a turn at the start.`}</div>
-      {/if}
-      <button class="small" onclick={() => (equipOpen = true)}>Equipment (preview of the new body)</button>
-      <div class="row2"><button onclick={() => (ui.niche = null)}>Back</button><button class="go" onclick={start}>Start the Life</button></div>
   {/if}
 </div></div>
 {/if}
 
-{#if ui.open && patch && board && ui.niche && equipOpen}
-  <Equip {plan} carriedPart={carried} origin={equipOrigin} context={equipContext} preset={equipPreset} onclose={() => (equipOpen = false)} />
+{#if ui.open && patch && board && ui.niche}
+  {#key `${plan}${usingDesign}`}<Equip {plan} carriedPart={carried} origin={equipOrigin} context={equipContext} preset={equipPreset} design={design0} onstart={start} onclose={() => (ui.niche = null)} />{/key}
 {/if}
 
 {#if ui.notice}

@@ -1,29 +1,25 @@
 // The hunter on a grazer's board: it tracks you, marks a strike, strikes, rests. When the board's hunter is your own
 // line (slice 14), it hunts the way you do: it lurks a turn then swims twice as far, gains a step per hit, and your
 // line's form changes it (compound eyes see into mud, flaps add a step, arm spines tear through a guard).
-import { PARTS, RULE, VERB_PART } from '../data/life';
+import { PARTS, RULE } from '../data/life';
+import { describeRow } from './body';
+import { sideOf, strikeOn } from './body-hurt';
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
-import { buriedAt, emit, has, say, tile, type Hit, type Life, type Predator, type Side } from './life';
+import { buriedAt, emit, loseAt, say, tile, type Hit, type Life, type Predator } from './life';
 
-const SIDES: Side[] = ['front', 'right', 'back', 'left'];
 const DIR_NAMES = ['north', 'east', 'south', 'west'];
 const yours = (l: Life) => !!l.hab.hunter?.yours;
 const their = (l: Life, part: string) => !!l.hab.hunter?.parts.includes(part as never);
 /** Whether mud hides you from this hunter (your own compound-eyed line sees into it). */
 const hidden = (l: Life, x: number, y: number) => buriedAt(l, x, y) && !(yours(l) && their(l, 'lenses'));
 
-/** What a strike from `dir` would do to you at (x, y), facing `facing`. */
+/** What a strike from `dir` would do to you at (x, y), facing `facing`: 20A's order (mud, Dig, rolled up, Brace,
+ * a passive guard, then a whole-row tear or damage). Your own line's arm spines bypass passive guards. */
 export function hitOn(l: Life, dir: Dir, facing: Dir, x: number, y: number): Hit {
-  const side = SIDES[(dir - facing + 4) % 4];
-  if (hidden(l, x, y)) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
-  if (l.dug) return { side, kind: 'buried', part: null, tear: -1, damage: 0 };
-  if ((has(l, 'enrol') || l.plan === 'trilobite') && !l.moved) return { side, kind: 'enrolled', part: has(l, 'enrol') ? 'enrol' : null, tear: -1, damage: 0 };
-  if (l.braced && l.plan !== 'swimmer') return { side, kind: 'blocked', part: VERB_PART[l.plan].brace, tear: -1, damage: 0 };
-  const guard = l.slots.findIndex((s) => s.side === side && s.part && PARTS[s.part].guard);
-  if (guard >= 0 && !(yours(l) && their(l, 'spikes'))) return { side, kind: 'blocked', part: l.slots[guard].part, tear: -1, damage: 0 };
-  let tear = guard;
-  if (tear < 0) l.slots.forEach((s, k) => { if (s.side === side && s.part) tear = k; });
-  return { side, kind: 'hit', part: tear >= 0 ? l.slots[tear].part : null, tear, damage: (tear < 0 ? 1 : 0) + (l.soft ? 1 : 0) };
+  const side = sideOf(dir, facing), b = l.build;
+  const h = strikeOn(b, side, { buried: hidden(l, x, y), dug: l.dug, stayed: !l.moved, braced: l.braced, soft: l.soft, bypass: yours(l) && their(l, 'spikes') });
+  const part = h.kind === 'enrolled' ? (b.rows.tail?.includes('enrol') ? 'enrol' : null) : h.guard ?? (h.tear ? b.rows[h.tear]![0] : null);
+  return { side, kind: h.kind, part, tear: h.tear, damage: h.damage, rest: h.rest };
 }
 
 function strike(l: Life) {
@@ -35,13 +31,12 @@ function strike(l: Life) {
     return;
   }
   const h = hitOn(l, p.dir, l.facing, l.x, l.y);
+  p.rest = h.rest;
   if (h.kind === 'buried') say(l, 'You are buried: the strike misses.');
   else if (h.kind === 'enrolled') say(l, 'You roll up: the strike glances off.');
-  else if (h.kind === 'blocked') {
-    say(l, `Your ${PARTS[h.part!].name.toLowerCase()} blocks a strike on your ${h.side}.`);
-    if (h.part === 'spine' || l.braced) p.rest = RULE.restAfterSpine;
-  } else {
-    if (h.tear >= 0) { const n = PARTS[h.part!].name.toLowerCase(); say(l, `Hit on your ${h.side}: your ${n} ${n.endsWith('s') ? 'are' : 'is'} torn off.`); l.slots[h.tear].part = null; l.order = l.order.filter((k) => k !== h.tear); }
+  else if (h.kind === 'blocked') say(l, h.part ? `Your ${PARTS[h.part].name.toLowerCase()} blocks a strike on your ${h.side}.` : `You are braced: the strike on your ${h.side} glances off.`);
+  else {
+    if (h.tear) { const n = describeRow(l.build.rows[h.tear]!).toLowerCase(); say(l, `Hit on your ${h.side}: your ${n} ${n.endsWith('s') ? 'are' : 'is'} torn off.`); loseAt(l, h.tear); }
     if (h.damage) { say(l, `Hit on your ${h.side}: −${h.damage} health${l.soft ? ' (soft from moulting)' : ''}.`); l.health -= h.damage; }
     if (yours(l)) { p.bonus = Math.min(2, p.bonus + 1); say(l, 'Your own hunter grows bolder: +1 step.'); }
   }

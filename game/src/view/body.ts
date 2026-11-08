@@ -1,7 +1,7 @@
 // Slice 20B: the one general body, ported from toys/creature-body.ts. A chain of joints follows the head, as loose or as
 // stiff as the look says; the gait moves it; a skin (rings or a plated ridge) goes over it; the build's six places are
-// painted on by view/body-parts.ts. It draws a 20A `Build` and offers the board's `Creature` fields, so that 20C can
-// swap it in for the per-body classes. Drawing only: it never touches the sim or its RNG.
+// painted on by view/body-parts.ts. It draws a 20A `Build`: you, residents with a known build, prey and the
+// equipment view. Drawing only: it never touches the sim or its RNG.
 import type { Graphics } from 'pixi.js';
 import { LOOKS, SHIELD_HEAD, spanAt, type Head, type Look } from '../data/body-look';
 import type { PlaceId } from '../data/body';
@@ -16,6 +16,16 @@ const BASE: Record<Build['body'], Ramp> = { worm: PAL.flesh, arthropod: PAL.ambe
 /** Under the body first, then over it; Front last so a tool reads in front of the head. */
 const UNDER: PlaceId[] = ['tail', 'limbs', 'sides', 'eyes', 'back', 'front'];
 const OVER: PlaceId[] = ['back', 'sides', 'tail', 'eyes', 'front'];
+
+export interface Seg { x: number; y: number; r: number; a: number }
+/** What the board needs from anything it draws: you, a rival, the prey. */
+export interface Creature {
+  head: { x: number; y: number }; stretch: { v: number }; reach: { v: number }; flash: { v: number }; moving: { v: number }; squash: number;
+  place(x: number, y: number, heading: number): void;
+  update(dt: number): void;
+  segs(): Seg[];
+  draw(g: Graphics, sh: Graphics, inMud: (x: number, y: number) => boolean): void;
+}
 
 interface Joint { x: number; y: number; a: number }
 interface Beat { t: number; step: number; moving: number; joints: number }
@@ -33,7 +43,7 @@ const GAITS: Record<Look['gait'], (b: Beat, f: number, side: number, out: Pose) 
 };
 const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
 
-export class Body {
+export class Body implements Creature {
   head = { x: 0, y: 0 };
   stretch = { v: 0 }; reach = { v: 0 }; flash = { v: 0 }; moving = { v: 0 };
   heading = 0; squash = 0.3; soft = false;
@@ -121,7 +131,7 @@ export class Body {
   limb(f: number, side: number) { GAITS[this.look.gait](this.beat, f, side, this.pose); return this.pose.limb; }
   time() { return this.t; }
   headLen() { return this.hd ? this.L * this.hd.len : this.R * 0.9; }
-  segs() { this.poseJoints(); return this.J.map((j, k) => ({ x: j.x, y: j.y, r: this.w(k / (this.J.length - 1)), a: j.a })); }
+  segs(): Seg[] { this.poseJoints(); return this.J.map((j, k) => ({ x: j.x, y: j.y, r: this.w(k / (this.J.length - 1)), a: j.a })); }
   /** Where a place sits now, for labels and highlights: Eyes and Limbs on the left, Sides on the right. */
   placeAt(place: PlaceId): [number, number] {
     this.poseJoints();

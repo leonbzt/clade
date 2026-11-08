@@ -4,6 +4,7 @@ import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
 import { mount } from 'svelte';
 import { NODES, PARTS, PLANS, RULE, TERRAIN, VERBS, type PartId, type PlanId, type VerbId } from './data/life';
+import { PLACE_NAMES, type PlaceId, type Rows } from './data/body';
 import { HABITATS, type HabitatId } from './data/habitats';
 import { MODEL } from './data/garden';
 import { PREY } from './data/prey';
@@ -13,18 +14,20 @@ import { useVerb } from './sim/verbs';
 import { nextBoard, resultOf } from './sim/door';
 import { step } from './sim/sea';
 import { tell } from './sim/sea-news';
-import { partsOf } from './sim/feeding';
-import { canLaunch, completeLife, formFor, settlePending, startSeaLife } from './sim/sea-life';
+import { defaultBuild, type Placement } from './sim/body';
+import { decodeDesign, encodeDesign } from './sim/body-hurt';
+import { canLaunch, completeLife, settlePending, startSeaLife } from './sim/sea-life';
 import { advanceSeaSave, freshSeaSave, parseSeaSave, serializeSeaSave, type SeaPending, type SeaSave } from './sim/sea-save';
 import { importSeaSave, writeSeaSave } from './sim/sea-storage';
 import { habitatSpots } from './sim/island';
 import { BACKUP_KEY, SAVE_KEY } from './sim/save';
-import { decode, designProblem, designVerbs, encode } from './sim/share';
+import { designOf } from './sim/share';
 import Meta from './ui/Meta.svelte';
 import Clutch from './ui/Clutch.svelte';
+import LifeBody from './ui/LifeBody.svelte';
 import Menu from './ui/Menu.svelte';
 import { bump, ctx, ui } from './ui/meta.svelte';
-import { S, centre, dirAngle, screen } from './scene';
+import { S, centre, dirAngle, dress, screen } from './scene';
 import { bounce, play } from './playback';
 import { feel, onFeel } from './ui/feel';
 import { Camera } from './view/camera';
@@ -34,9 +37,7 @@ import { Hunter } from './view/hunter';
 import { Marks } from './view/marks';
 import { C, PAL, mixRamp, type Ramp } from './view/shade';
 import { startTweens, wait } from './view/tween';
-import { Worm, type Creature } from './view/worm';
-import { Arthropod } from './view/arthropod';
-import { Swimmer } from './view/swimmer';
+import { Body } from './view/body';
 import { preyBody } from './view/preyview';
 import { Hud } from './ui/hud';
 import { devPanel } from './ui/dev';
@@ -56,20 +57,19 @@ shadowLayer.addChild(shadows); shadowLayer.filters = [new AlphaFilter({ alpha: 0
 world.addChild(floor.root, fx.under, shadowLayer, marks.g, bodies, above, fx.over);
 app.stage.addChild(world);
 
-const BODIES: Record<PlanId, Creature> = { worm: new Worm(PAL.you), arthropod: new Arthropod(PAL.you, 1.2), trilobite: new Arthropod(PAL.you, 1.1, true), swimmer: new Swimmer(PAL.you) };
-const hud = new Hud({ wait: () => act(() => L.stay(S.life)), moult: () => doMoult(), lay: () => act(() => L.lay(S.life)), verb: (v) => doVerb(v) });
+const hud = new Hud({ wait: () => act(() => L.stay(S.life)), moult: () => doMoult(), lay: () => act(() => L.lay(S.life)), body: () => { if (!S.busy && !hud.cardOpen && !ui.open) openBody(); }, verb: (v) => doVerb(v) });
 const cam = new Camera(world, app.canvas, (x, y) => tap(x, y), (x, y) => hover(x, y));
 const HUNTERS = { native: new Hunter(), yours: new Hunter(mixRamp(PAL.you, 0x2a0f2e, 0.45)) }; // yours: your colours, darker
-Object.assign(S, { app, floor, fx, marks, cam, hud, hunter: HUNTERS.native, you: BODIES.worm, rival: new Worm(PAL.rival, true, 0.85), prey: [], busy: false });
+Object.assign(S, { app, floor, fx, marks, cam, hud, hunter: HUNTERS.native, you: new Body(L.presetBuild('worm')), rival: preyBody('worm'), prey: [], busy: false });
 devPanel();
 skin();
 
 let patchId = 0;
-let habId: HabitatId = 'mud', plan: PlanId = 'worm', verbs: VerbId[] = [], carried: PartId | undefined;
+let habId: HabitatId = 'mud', plan: PlanId = 'worm', design: Rows = {}, carried: Placement | undefined;
 const inMud = (x: number, y: number) => { const tx = Math.floor(x / C), ty = Math.floor(y / C); return L.inB(tx, ty) && L.tile(S.life, tx, ty).t === 'mud'; };
 
 function applyFeel() {
-  for (const b of Object.values(BODIES)) b.squash = feel.squash;
+  S.you.squash = feel.squash;
   cam.zoomSpeed = feel.zoomSpeed; cam.shakeAmt = feel.shake;
   if (Math.abs(app.renderer.resolution - 1 / feel.pixel) > 1e-6) app.renderer.resize(stage.clientWidth, stage.clientHeight, 1 / feel.pixel);
 }
@@ -118,27 +118,22 @@ const persist = () => {
 };
 ctx.retrySave = () => { persist(); };
 { const away = advanceSeaSave(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
-ctx.start = (patch, _role, vs, body, form) => {
+ctx.start = (patch, body, d, c) => {
   if (!canLaunch(save, patch, body)) { ui.notice = { title: 'Choose an eligible patch', text: 'Finish your clutch first. After founding, start in the last clutch’s patch or a direct neighbour.' }; return; }
-  patchId = patch; habId = save.sea.patches[patch].ground; plan = body; verbs = vs; carried = form;
+  patchId = patch; habId = save.sea.patches[patch].ground; plan = body; design = d; carried = c;
   ui.open = false; newLife();
 };
 ctx.skip = () => { if (save.pending) return; for (let k = 0; k < MODEL.skip; k++) tell(save.sea, save.news, step(save.sea)); persist(); };
 ctx.code = (patch, species) => {
   const sp = save.sea.species.find((e) => e.id === species), p = save.sea.patches[patch];
   if (!sp?.line || !sp.plan || !p) return '';
-  const form = formFor(save, patch, sp.plan, sp.role);
-  const fittingForm = form && PARTS[form].plans.includes(sp.plan) ? form : undefined;
-  return encode({ plan: sp.plan, role: sp.role, hab: p.ground, eggs: Math.min(200, Math.round(p.fit[save.sea.species.indexOf(sp)])),
-    form: fittingForm, verbs: designVerbs(sp.plan, partsOf(sp), fittingForm), name: sp.name.replace('Your ', 'Our ') });
+  return encodeDesign(designOf(sp.build ?? defaultBuild(sp.plan)));
 };
 ctx.paste = (code) => {
-  const sp = decode(code);
-  if (!sp) return "That isn't a Clade species code.";
-  const problem = designProblem(sp);
-  if (problem) return problem;
-  ui.design = sp; bump();
-  return `${sp.name} is ready as a starting design. Choose an eligible patch and use the design there.${!save.continuation && sp.plan !== 'worm' ? ' Found the sea with a worm first.' : ''} Its score grants no eggs.`;
+  const d = decodeDesign(code);
+  if (!d) return "That isn't a Clade design code.";
+  ui.design = d; bump();
+  return `A ${PLANS[d.body].name.toLowerCase()} body is ready as a starting design. Choose an eligible patch and use it there.${!save.continuation && d.body !== 'worm' ? ' Found the sea with a worm first.' : ''}`;
 };
 ctx.exportSave = () => serializeSeaSave(save);
 function useSave(next: SeaSave) {
@@ -157,11 +152,12 @@ ctx.reset = () => {
   if (error) { ui.saveError = 'The new sea could not be saved. Your current sea is unchanged.'; return false; }
   ui.saveError = ''; useSave(next); return true;
 };
-ctx.backup = () => { try { return protectedRaw ?? save.legacy?.json ?? localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return protectedRaw ?? save.legacy?.json ?? ''; } };
+ctx.backup = () => { try { return protectedRaw ?? localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return protectedRaw ?? ''; } };
 void document.fonts?.ready.then(bump); // the map's labels are drawn on a canvas: redraw once the font is in
 setInterval(() => { if (ui.open && advanceSeaSave(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
 mount(Clutch, { target: document.getElementById('metaRoot')! });
+mount(LifeBody, { target: document.getElementById('metaRoot')! });
 mount(Menu, { target: document.getElementById('metaRoot')! });
 
 function choose() { ui.open = true; bump(); }
@@ -183,22 +179,21 @@ function settle(p: SeaPending, card = -1) {
 }
 
 function newLife() {
-  const life = S.life = startSeaLife(save, (Math.random() * 2 ** 31) | 0, patchId, plan, verbs, carried);
-  const form = carried && L.has(life, carried) ? carried : undefined;
+  const life = S.life = startSeaLife(save, (Math.random() * 2 ** 31) | 0, patchId, plan, design, carried);
+  const form = carried && L.has(life, carried.part) ? carried.part : undefined;
   S.hunter = life.hab.hunter?.yours ? HUNTERS.yours : HUNTERS.native;
-  S.you = BODIES[plan];
   floor.set(life); fx.clear();
   const s = centre(L.at(life.x, life.y));
-  S.you.setBody(life.size, life.slots, false); S.you.place(s.x, s.y, dirAngle(life.facing));
-  if (life.rivals.length) { const v = life.rivals[0], r = centre(L.at(v.x, v.y)); S.rival = preyBody(v.kind ?? 'worm'); S.rival.place(r.x, r.y, -Math.PI / 2); }
-  S.prey = life.prey.map((p) => { const body = preyBody(p.kind), c = centre(L.at(p.x, p.y)); body.place(c.x, c.y, Math.PI / 2); return { kind: p.kind, body, visible: true }; });
+  dress(S.you, life); S.you.place(s.x, s.y, dirAngle(life.facing));
+  if (life.rivals.length) { const v = life.rivals[0], r = centre(L.at(v.x, v.y)); S.rival = preyBody(v.kind ?? 'worm', v.build); S.rival.place(r.x, r.y, -Math.PI / 2); }
+  S.prey = life.prey.map((p, k) => { const body = preyBody(p.kind, life.hab.prey[k]?.build), c = centre(L.at(p.x, p.y)); body.place(c.x, c.y, Math.PI / 2); return { kind: p.kind, body, visible: true }; });
   S.hunter.show.v = 0;
   marks.marks = []; marks.burrows.clear(); marks.aim = -1; marks.preview = [];
   sync();
   hud.refresh(life, true);
   hud.info('Tap a lit tile to move.');
   const h = life.hab, P = PLANS[plan];
-  const role = `Your parts determine how your descendants feed.${form ? ` Your line here carries ${PARTS[form].name.toLowerCase()}.` : ''} `;
+  const role = `Your parts determine how your descendants feed.${form ? ` You carry ${PARTS[form].name.toLowerCase()} from your last clutch.` : ''} `;
   const who = role + (plan === 'swimmer'
     ? `You are the hunter here. ${P.blurb}\nLurk a turn and prey won't notice you; your next swim goes twice as far. Each catch in a row adds speed.`
     : `You are a${plan === 'arthropod' ? 'n' : ''} ${P.name.toLowerCase()}. ${P.blurb} Grow to size ${RULE.adultSize} to lay eggs.\n${h.predatorAt > 20 ? 'No hunter here this time.' : h.hunter?.yours
@@ -210,7 +205,7 @@ function newLife() {
 function sync(instant = false) {
   const life = S.life;
   floor.refresh();
-  S.you.setBody(life.size, life.slots, life.soft);
+  dress(S.you, life);
   S.hunter.resting = life.pred?.state === 'rest';
   if (life.pred?.state !== 'strike') marks.marks = [];
   marks.entry = !life.pred && life.plan !== 'swimmer' && life.phase !== 'over' && life.turn < life.hab.predatorAt ? L.at(...life.hab.entry) : -1;
@@ -220,7 +215,7 @@ function sync(instant = false) {
 
 async function act(f: () => void) {
   const life = S.life;
-  if (S.busy || life.phase !== 'play' || hud.cardOpen || ui.open) return;
+  if (S.busy || life.phase !== 'play' || hud.cardOpen || ui.open || ui.body) return;
   S.busy = true; marks.dests = new Map(); marks.hover = -1; marks.aim = -1; marks.preview = [];
   f();
   if ((life.phase as L.Life['phase']) === 'over') closeLife();
@@ -235,7 +230,7 @@ async function act(f: () => void) {
 
 function doVerb(v: VerbId) {
   const life = S.life;
-  if (S.busy || hud.cardOpen || ui.open || !L.ready(life, v)) return;
+  if (S.busy || hud.cardOpen || ui.open || ui.body || !L.ready(life, v)) return;
   if (VERBS[v].free) { // no world turn: play its look, stay ready to move
     if (!useVerb(life, v)) { hud.info(life.lines.at(-1) ?? ''); return; }
     const evs = life.events.slice();
@@ -248,27 +243,31 @@ function doVerb(v: VerbId) {
 
 function doMoult() {
   const life = S.life;
-  if (S.busy || !L.canMoult(life) || hud.cardOpen) return;
+  if (S.busy || !L.canMoult(life) || hud.cardOpen || ui.body) return;
   fx.husk(S.you.segs());
   L.moult(life);
   hud.food.set(life.food);
   bounce(0.4);
   fx.burst(S.you.head.x, S.you.head.y, PAL.pale, feel.particles, 0.7);
-  hud.showCard(`Moult: size ${life.size}`, 'You shed your skin. Pick a part for your new body.', life.offers.map((id) => {
-    const p = PARTS[id], k = L.freeSlotFor(life, id), old = k >= 0 ? life.slots[k].part : null;
-    const verb = p.verb && !L.verbs(life).includes(p.verb) ? ` Gives ${VERBS[p.verb].name}.` : '';
-    return { label: (p.rare ? 'Rare: ' : '') + p.name, rare: !!p.rare, note: p.does + verb + (old ? ` Replaces your ${PARTS[old].name.toLowerCase()}.` : ''), on: () => pickPart(id) };
-  }));
+  openBody();
   sync();
 }
 
-function pickPart(id: PartId) {
-  hud.hideCard();
-  L.pick(S.life, id);
+/** The body view during a Life: inspection, or the moult's offers, one row per legal place, and growing without a part. */
+function openBody() {
+  const life = S.life;
+  const options = life.phase !== 'offer' ? [] : [...life.offers.flatMap((id) => L.offerChanges(life, id).map((c) => ({ part: id as PartId | null, change: c }))), { part: null, change: null }];
+  ui.body = { build: structuredClone(life.build), options, upkeep: L.upkeep(life), moultSize: life.phase === 'offer' ? L.size(life) : 0 };
+  ctx.pick = (part, place) => { ui.body = null; if (life.phase === 'offer') pickPart(part, place); };
+}
+
+function pickPart(id: PartId | null, place?: PlaceId) {
+  L.pick(S.life, id, place);
   sync();
   bounce();
+  if (!id) { hud.info(`You finish growing to size ${L.size(S.life)} without a new part.`); return; }
   fx.burst(S.you.head.x, S.you.head.y, PART_RAMP[id] ?? PAL.you, feel.particles, 0.8);
-  hud.info(`${PARTS[id].name}: ${PARTS[id].does}`);
+  hud.info(`${PARTS[id].name} in ${PLACE_NAMES[place ?? 'front']}: ${PARTS[id].does}`);
 }
 
 function endCard() {
@@ -285,7 +284,7 @@ const eyes = () => S.life.plan === 'swimmer' && L.has(S.life, 'lenses');
 
 function tap(x: number, y: number) {
   const i = tileAt(x, y), life = S.life;
-  if (S.busy || i < 0 || hud.cardOpen || ui.open) return;
+  if (S.busy || i < 0 || hud.cardOpen || ui.open || ui.body) return;
   if (life.phase === 'play' && L.dests(life).has(i)) {
     if (eyes() && marks.aim !== i) { marks.aim = i; marks.preview = predict(life, i); hud.info('Your eyes show where the prey will go. Tap again to swim there.'); return; }
     act(() => L.move(life, i));
@@ -304,7 +303,7 @@ function tileText(i: number) {
   if (v) return `${v.name[0].toUpperCase()}${v.name.slice(1)}. It eats ${NODES[v.eats].name.toLowerCase()}.`;
   const p = life.prey.find((q) => q.alive && !q.hidden && L.at(q.x, q.y) === i);
   if (p) { const P = PREY[p.kind]; return `${p.name ?? P.name}, ${P.food} food. ${P.flees}`; }
-  if (life.x === x && life.y === y) return `You: ${PLANS[life.plan].name.toLowerCase()}, size ${life.size}. ${life.plan === 'swimmer' ? 'Lurk to ambush.' : 'Wait to stay put.'}`;
+  if (life.x === x && life.y === y) return `You: ${PLANS[life.plan].name.toLowerCase()}, size ${L.size(life)}. ${life.plan === 'swimmer' ? 'Lurk to ambush.' : 'Wait to stay put.'}`;
   if (t.t === 'mud' && !t.seen) return "Mud. You can't see what's buried here yet.";
   let s: string = TERRAIN[t.t];
   if (t.node) {
@@ -322,7 +321,7 @@ window.addEventListener('keydown', (e) => {
   if (e.key === 'l') act(() => L.lay(S.life));
   if (e.key === 'm') doMoult();
   if (e.key === '0') cam.reset();
-  const n = '123'.indexOf(e.key);
+  const n = '1234'.indexOf(e.key); // three counted verbs plus a free Dash
   if (n >= 0 && S.life) { const v = L.verbs(S.life)[n]; if (v) doVerb(v); }
 });
 

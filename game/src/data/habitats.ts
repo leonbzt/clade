@@ -1,6 +1,7 @@
 // The habitat boards: plain data (the garden will write them). The mud flats are ported from toys/life2-habitats.ts
 // with R2's corrections; the sand shallows and volcanic rock are new for slice 09 (geology, plan.md 5 Nov).
 // Maps are 8 columns × 11 rows, the shore at the top. x and y count from 0 at the top left.
+import type { Build } from '../sim/body';
 import type { NodeId, PartId, PlanId, Terrain } from './life';
 import type { PreyKind } from './prey';
 
@@ -13,7 +14,8 @@ export const CELL: Record<string, [Terrain, NodeId | null]> = {
 
 export type HabitatId = 'mud' | 'sand' | 'rock';
 export type Ground = 'mud' | 'sand' | 'basalt';
-export interface Rival { at: [number, number]; name: string; eats: NodeId; kind?: PreyKind; species?: string }
+/** `build`: a resident line's representative snapshot, for drawing only (20A). */
+export interface Rival { at: [number, number]; name: string; eats: NodeId; kind?: PreyKind; species?: string; build?: Build }
 /** A board event: from turn to turn, on one terrain or all, optionally only in rows [top, bottom]. */
 export interface BoardEvent { from: number; to: number; where: 'all' | Terrain; rows?: [number, number]; name: string; text: string; look: 'murk' | 'dry' | 'haze' }
 export interface Habitat {
@@ -23,7 +25,7 @@ export interface Habitat {
   id: HabitatId; name: string; ground: Ground; pitch: string; blurb: string; real: string; map: string[];
   start: [number, number]; entry: [number, number]; predatorAt: number; predator: string; rivals: Rival[];
   event: BoardEvent; rares: Record<PlanId, PartId[]>; tiers: [string, number][];
-  prey: { kind: PreyKind; at: [number, number]; species?: string; name?: string; eats?: NodeId }[];
+  prey: { kind: PreyKind; at: [number, number]; species?: string; name?: string; eats?: NodeId; build?: Build }[];
   hunter?: { yours: boolean; parts: PartId[]; species?: string };
 }
 

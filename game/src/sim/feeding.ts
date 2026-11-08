@@ -1,6 +1,7 @@
 // Feeding comes from the inherited tools, not the food a parent happened to find.
 import { PARTS, type PartId } from '../data/life';
 import type { Species } from '../data/sea';
+import { partsOf as buildParts } from './body';
 
 export function feeding(parts: readonly PartId[]) {
   const verbs = new Set(parts.map((p) => PARTS[p].verb));
@@ -11,11 +12,11 @@ export function feeding(parts: readonly PartId[]) {
   return { mats: Number(mats) / sources, rot: Number(rot) / sources, hunt: Number(hunt) / sources, dig };
 }
 
-/** Older saves did not record builds. Keep their IDs and use a bounded, body-compatible starting design. */
+/** A line's representative parts; a line nobody has laid for yet feeds as its role's usual tools. */
 export function partsOf(sp: Species): PartId[] {
-  if (sp.parts) return sp.parts;
-  if (sp.plan === 'swimmer' || sp.id === 'legacy:anomalocaris:predator') return ['arms'];
-  if (sp.role === 'predator') return sp.plan === 'worm' || sp.id === 'legacy:ottoia:predator' ? ['proboscis'] : ['claw'];
+  if (sp.build) return buildParts(sp.build.rows);
+  if (sp.plan === 'swimmer') return ['arms'];
+  if (sp.role === 'predator') return sp.plan === 'worm' ? ['proboscis'] : ['claw'];
   if (sp.role === 'burrower') return sp.plan === 'arthropod' || sp.plan === 'trilobite' ? ['digger'] : ['bulb'];
   return sp.plan === 'worm' ? ['tentacles'] : ['rake'];
 }
