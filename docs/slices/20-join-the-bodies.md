@@ -9,6 +9,9 @@ allowed), and B/C accepted (single-copy bonuses/variants, row damage and compati
 and fixtures; runtime cutover remains a later boundary. Inheritance and initial lineage-power choices are below.
 The request authorizes specification, not runtime implementation. Slice 19's navigation follow-up and
 outstanding player/phone checks remain separate.
+**8 Nov update ([decisions](../decisions.md#8-nov-review-of-the-codex-stretch-and-tierzoo)):** the sea save resets at the
+body cutover, and default movement (Dash) sits outside the three-verb ceiling. Text below about v4 legacy compatibility,
+legacy representatives and old-build conversion is superseded; trim it before implementing.
 **Builds on:** [release vision](../design/full-version.md), [body decisions](../decisions.md#6-nov-after-the-body-toy-slots-and-style-style-still-open),
 [body approach](../design/body-approach.md), [review](../design/part-c-and-gameplay-review.md),
 [Part C desktop feedback](../playtests/19-join-the-sea.md#reported-part-c-desktop-feedback-8-nov).

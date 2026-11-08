@@ -527,3 +527,26 @@ Logged on your call ("Document and save everything"). You had asked to hold logg
   session for pure definitions/helpers and deterministic fixtures, preserving the running slot model and
   v3 codec. Equipment/board work and persistence/feeding/result cutover follow the bounded stages; this
   review changes documentation only. No balance/play/performance check is implied by acceptance.
+
+## 8 Nov, review of the Codex stretch and TierZoo
+
+From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](design/tierzoo-concepts.md).
+- **Reset the sea save at the body cutover:** asked to choose between a reset, a rough conversion and the full
+  compatibility layer, the user chose "reset sea save". This supersedes C's v4 legacy layer: old v3 part rules
+  beside the new places, legacy representatives keeping old effects, and conversion of old pending results and
+  designs. C's damage rules (bilateral whole rows, tear order, no free restoration) stand. Old share codes are an
+  open detail (AI lean: reject them with a message).
+- **Default movement is outside the verb ceiling:** "yes". Dash from the default `leg` (A/T) or `flap` (S) no longer counts
+  toward the three-verb ceiling. This amends A; a T Tank can then take a compound eye as one legal change.
+- **Merge to main:** "yes, if everything is in order and the continued build makes sense", possibly in another thread.
+- **Wiki export:** "gitignore the wiki". `wiki.json` is ignored; `infoboxes.json` is kept.
+- **TierZoo reactions:**
+  - Likes: patch notes with a cause, a tier letter per niche, "strong vs/weak vs or some kind of triangle", and
+    trade-off tooltips.
+  - Borrow the genre, not the names or text: agreed "mostly", since "it's great inspiration".
+  - "A full dex or numeric stat sheets would be cool in the future."
+  - "This whole system aligns closely to my vision that you can pick a build and level it along these lines;
+    also ties in closely with the evolution points/skill tree/body parts."
+  - Open: "maybe with this setup it makes more sense to start more recent" (see P47).
+- **TierZoo direction (at the handoff):** "i really liked the table and the proposed comparisons and want to really keep
+  going into that direction." The P47 questions (start era, the game's words, when the stat bars come) stay open.

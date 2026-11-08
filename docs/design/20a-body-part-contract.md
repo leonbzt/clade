@@ -1,6 +1,9 @@
 # Slice 20A: body/part compatibility contract
 
 **Reviewed 8 Nov 2026: A approved provisionally as revised; B/C accepted. Ready for staged pure model/fixtures.**
+**Later on 8 Nov ([decisions](../decisions.md#8-nov-review-of-the-codex-stretch-and-tierzoo)):** the sea save resets at the
+cutover, which drops C's v4 legacy layer, legacy representatives and old-build conversion; C's damage rules stand. Default
+movement (Dash) no longer counts toward A's three-verb ceiling.
 Preparation base: `13b1ccb` (`feat: expose next-patch navigation`); review branch `codex/slice20a-review`.
 This is the model-contract deliverable of [slice 20](../slices/20-join-the-bodies.md#boundaries-and-build-order).
 It preserves the running game. No runtime model, save version, offers, drawing or balance changes here.

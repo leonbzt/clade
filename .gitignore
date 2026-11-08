@@ -5,3 +5,6 @@ _old/
 
 # Fonts for the comparison page only; GNF may not be published, FS Pixel is 1 MB
 toys/fonts-local/
+
+# TierZoo wiki export (5.9 MB, CC BY-SA); the small infoboxes.json is kept
+docs/research/tier-zoo-data/wiki.json

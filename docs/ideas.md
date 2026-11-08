@@ -153,3 +153,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Today's floor rendered on the 16 px grid, so 16 px animals share its pixels; untried (AI, 7 Nov).
 - AI art test for concept and card art only: Retro Diffusion, your key, under $4 (AI, 6 Nov; not answered).
 - Animals on the sea map: the same recipe baked at about 12 px, a capped few roaming each patch, small portraits instead of numbers on the patch card (AI, 7 Nov). For step 4.
+- A full dex and numeric stat sheets per animal, TierZoo-like (you, 8 Nov: "would be cool in the future"). The rest of the TierZoo concepts are P47; [research](research/tier-zoo.md).

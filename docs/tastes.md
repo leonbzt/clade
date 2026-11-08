@@ -48,6 +48,9 @@ has to fit.
   Obelisk Miner and Dark Souls; a build where many things stack into one strong attack; IdleOn-style placing of effects.
 - **Tier talk is the voice of the game:** "no upkeep in mud was a gamechanger for the worm and brought it to s tier. i think this is
   exactly the way someone should talk about the game" (4 Nov).
+- **The TierZoo frame:** of the table mapping TierZoo's terms onto Clade, "i really liked the table and the proposed
+  comparisons and want to really keep going into that direction" (8 Nov). Liked most: patch notes with a cause, a tier letter
+  per niche, strong vs / weak vs or a triangle, trade-off tooltips. Borrow the genre, not the names or text ("mostly").
 
 ## Evolution and life
 - **Genes appear and spread by themselves**, and that stays at the heart. Mutations can be an unexpected reward.

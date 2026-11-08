@@ -27,3 +27,22 @@ Extra lineage stats remain a later possibility; [decision](decisions.md#8-nov-pa
 
 **Remaining proposal:** body shape visible only at first, or small effects? The step-5 spec uses visible
 only as its bounded scope; further shape effects remain open for later review, rather than adding a shape stat now.
+
+## P47: The TierZoo frame for builds and levelling (M2, steps 5–6) *proposal, 8 Nov*
+Full mapping: [design/tierzoo-concepts.md](design/tierzoo-concepts.md); first-hand terms: [research/tier-zoo.md](research/tier-zoo.md).
+**Your reactions (8 Nov, in decisions.md):** you like patch notes with a cause, a tier letter per niche, strong vs/weak vs
+or a triangle, and trade-off tooltips; a dex and stat sheets later; it fits "pick a build and level it" with EP, the skill
+tree and body parts.
+**At the handoff (8 Nov):** "i really liked the table and the proposed comparisons and want to really keep going into
+that direction." The direction stands; the three questions below stay open.
+**AI lean:**
+- Step 5: builds, moves and signature moves (naming only), plus six derived stat bars with trade-off tooltips on the
+  equipment screen.
+- Step 6: evolution points from the main quest, spent on trait chains per place, with fixation into signature parts; a
+  derived tier letter per niche; patch notes; the triangle once the sea model confirms it.
+- Keep the Cambrian start as the open beta.
+
+**Questions:**
+1. Start era: keep the Cambrian (lean), a later sea (Devonian), or modern?
+2. Use build / moves / signature move / evolution points as the game's words?
+3. Should the derived stat bars and trade-off tooltips join slice 20's equipment screen, or wait for step 6?
