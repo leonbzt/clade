@@ -1,6 +1,7 @@
 # Status
 
-Updated 2026-11-08. Branch `codex/slice19-part-d`. Next separate task spec: [20 Join the bodies](slices/20-join-the-bodies.md).
+Updated 2026-11-08. Branch `codex/slice20a-contract`. Current review: [20A body/part contract](design/20a-body-part-contract.md)
+for [20 Join the bodies](slices/20-join-the-bodies.md). Gameplay remains at `13b1ccb`.
 [Slice 19](slices/19-join-the-sea.md) remains open, with Part D navigation implemented and player/phone checks still open.
 Read this and the spec for the selected task first; open other docs and source files only as needed.
 
@@ -184,12 +185,35 @@ The roadmap order is unchanged.
 - **Still open:** unaided player next-patch discovery, remaining ordinary-Life protocol and real-phone
   taps/background/performance. Automated terminal fixtures and desktop emulation do not close these checks.
 
-**Next action:** have the player find/open a next patch unaided. Use a fresh session for slice 20A:
-prepare/review all 27 part mappings, locked defaults, repeated bonuses, injury/coverage and migration before
-runtime body integration. Do not treat that contract review as approval for broader body implementation.
+## Slice 20A contract checkpoint (8 Nov)
 
-> Read AGENTS.md, docs/status.md and slice 20A. Prepare the body/part compatibility contract for review;
-> preserve the running game. Keep remaining slice-19 player/phone checks open.
+- Task base: `13b1ccb`; branch `codex/slice20a-contract`; checkpoint subject:
+  `docs: prepare slice 20A body and part compatibility contract`. Documentation only; gameplay is unchanged.
+- [Contract for review](design/20a-body-part-contract.md) maps all 27 production IDs and four bodies:
+  places/families, visuals, actions/effects/upkeep, starter/moult/rare routes, replacement variants,
+  locked defaults, directional guards, row injuries/starvation and legacy mappings.
+- Three **proposed**, unapproved groups: costed built-in defaults/locks; single-copy bonuses with explicit
+  walking/raking and upgrade variants; bilateral row damage and versioned legacy compatibility. Numeric
+  before/after examples expose lost stacking, new starting costs/actions and physiological-place conflicts.
+  This is not a promise of unchanged balance. No new user decision was inferred or logged as accepted.
+- Migration proposal preserves original v3 arrays and their semantics, pending eggs/cards/last-lay builds,
+  populations, graph and RNG; new place records would require v4 and exact versioned sharing. Continuation
+  distinguishes unknown legacy evidence, explicitly no trait and a chosen part, retaining source/local forms.
+- Docs checks: all 27 unique part rows and four bodies, exact source body restrictions/default costs,
+  46 local links/anchors, consistency and whitespace/diff review. No gameplay tests were repeated.
+  No pure model fixtures or runtime changes were added, and no
+  browser saves were accessed.
+  The contract lists the deterministic fixtures required after review and before dependent implementation.
+- Slice 20's completion boxes stay open. Remaining slice-19 player discovery, ordinary-Life and real-phone
+  checks stay open; this design task supplies no additional play or performance evidence.
+
+**Next action:** review/amend [contract groups A–C](design/20a-body-part-contract.md#review-first), then record
+accepted calls before staging 20A's pure model/fixtures in a fresh implementation session. Do not treat
+preparing this contract as approval for runtime body integration. Separately, have the player find/open
+a next patch unaided for slice 19.
+
+> Read AGENTS.md, docs/status.md and docs/design/20a-body-part-contract.md. Review groups A–C and record
+> accepted calls; preserve the running game. Do not begin runtime body integration. Keep slice-19 checks open.
 
 ## Later work retained
 - Step 5: general bodies/six places and arthropod/trilobite head geometry. Body toy/rendering spike remain in

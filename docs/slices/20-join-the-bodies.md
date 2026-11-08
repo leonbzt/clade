@@ -2,7 +2,9 @@
 
 **Milestone:** M2, step 5 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Is the creature I equip the one I play, with readable choices that preserve the fun of different habitats?
-**Status:** specified for review 8 Nov; inheritance and initial lineage-power choices are recorded below.
+**Status:** specified for review 8 Nov; [20A's body/part contract](../design/20a-body-part-contract.md)
+is prepared for review, with defaults, balance changes and migration still proposed. Inheritance and
+initial lineage-power choices are recorded below.
 The request authorizes specification, not runtime implementation. Slice 19's navigation follow-up and
 outstanding player/phone checks remain separate.
 **Builds on:** [release vision](../design/full-version.md), [body decisions](../decisions.md#6-nov-after-the-body-toy-slots-and-style-style-still-open),
@@ -163,7 +165,7 @@ against step 6 without adding a tree or temporary unlock ladder now.
 | Boundary | Deliverable | Files to inspect/change when that part begins |
 | --- | --- | --- |
 | Slice 19 follow-up | Approved visible Play next choices and eligible map labels; separate small commit | `ui/Meta.svelte`, `view/sea-map.ts`, map fixtures/smoke runner; [spec](19-join-the-sea.md#part-d-next-patch-navigation-follow-up-8-nov) |
-| 20A: model contract | All current parts and four bodies mapped; explicit effects/coverage/migration; focused pure fixtures before replacing the runtime model | `data/life.ts`, `sim/life.ts`, `sim/verbs.ts`, `sim/hunt.ts`, `sim/threat.ts`; reference `toys/creature-data.ts`, `toys/creature-model.ts` |
+| 20A: model contract | [Reviewable contract](../design/20a-body-part-contract.md): all current parts and four bodies mapped; explicit effects/coverage/migration; focused pure fixtures follow approval, before replacing the runtime model | `data/life.ts`, `sim/life.ts`, `sim/verbs.ts`, `sim/hunt.ts`, `sim/threat.ts`; reference `toys/creature-data.ts`, `toys/creature-model.ts` |
 | 20B: equipment and board | General drawing, six-place editor, legal starters/moults, consistent actions and injuries; known head fix | `main.ts`, `scene.ts`, `playback.ts`, `ui/Meta.svelte`, `ui/hud.ts`, new focused body view; reference `toys/creature-body.ts`, `toys/creature-parts.ts`, `toys/creature-gait.ts`, `spikes/body-render/polyplus.ts`, `toys/life2-ui.ts`, `toys/life2-view.ts` |
 | 20C: result and continuity | Chosen inheritance rule, exact result snapshots, compatible persistence/sharing, resident identity, integrated play pass | `sim/sea-life.ts`, `sim/sea-save.ts`, `sim/sea-migration.ts`, `sim/save-validation.ts`, `sim/share.ts`, `sim/feeding.ts`, `sim/door.ts`, `ui/Clutch.svelte`, resident views |
 
