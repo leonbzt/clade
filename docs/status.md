@@ -1,28 +1,27 @@
 # Status
 
-Updated 9 Nov 2026 (Claude). Branch `slice-20a-model`, all committed (`32cae7b` 21A+21B, then docs).
+Updated 9 Nov 2026 (Codex). Branch `slice-21c-build`, local only; not pushed.
+**Milestone:** M2, step 6, [slice 21](slices/21-the-climb.md). **21C built; Claude review and your playtest next.**
+**Checkpoint:** base `41ddcf5`; parts 1–4 `2503471`, `6d63e9a`, `bf4f221`, `1499d2a`; final commit “feat(21C-5): add lineage tree and review handoff”.
 
-**Milestone:** M2, step 6, [slice 21, the climb](slices/21-the-climb.md). 21B played; **21C is briefed for Codex.**
+**Done (brief order, one commit each):**
+- 1: inactive map/HUD frames hidden behind sheets; launcher no longer mounts a hidden patch panel (`Meta.svelte`, `style.css`). No separate empty modal reproduced; confirm the original reported box in play.
+- 2: `placePending`, validated `pending.place`, neighbour-only release and continuation; `release` keeps the Life's ground proven when eggs move (`sim/sea-life.ts`, `sea-save.ts`, `sea.ts`).
+- 3: map placement, ground/holder/hunters/risk preview, Release here → hatching (`ui/Placement.svelte`, `after-life.ts`). Reload before confirmation resumes choice at the Life patch; afterward resumes hatching.
+- 4: atomic settlement returns two population/headline frames; 1.5 s each, growth/fall pulses, tap-to-skip (`ui/Replay.svelte`, `replay.ts`, map renderer). Playback never advances the sim. Final review kept empty replay patches dark.
+- 5: CSS recipe tree, locked silhouettes, levels, newest three species/+N, close-up return (`ui/Tree.svelte`, `Lines.svelte`, `LineView.svelte`). Compact portraits reuse `Creature`; `main.ts` is 329 lines.
 
-**Done (9 Nov, a planning session):**
-- Committed 21A and 21B (`npm run check` passed).
-- 21B play notes in [playtests/21-the-climb.md](playtests/21-the-climb.md): hatching, XP screen and close-up "really
-  cool"; the hidden box is still there; not pulled to play lately ("the fresh start over and over").
-- **Claude plans, Codex builds:** `AGENTS.md` (section "Claude and Codex") and `workflow.md` (Delegation).
-- **21C build brief** at the end of the 21C section in the slice spec: 1 hidden box, 2–3 place it (sim, UI),
-  4 watch it spread (replay frames), 5 the tree screen.
-- [P48](proposals.md): don't start over, a body you keep growing (options A/B/C, lean C).
+**Verified:**
+- `npm run check` passed after final code edits (10.90 s: over the 10 s target). Placement/save rejection/defaults, frame isolation and ancestry are covered by tests.
+- `npm run build:game` passed; packaged placement/reload/skip and timed replay browser checks passed. Build still warns about bundle size and deprecated `inlineDynamicImports`.
+- `npm run look`: before/after panel states, placement, both reload paths, replay completion/skip, tree fresh/unlocked/species/navigation; tree and close-ups fit 360 px. No runtime exceptions; look logged an incidental resource 404.
+- Reproducible scenarios: `scripts/look/21c-{placement,replay,tree}.json`. Screenshots: `.shots/21c-{before,after}-*.png`, `21c-placing*.png`, `21c-replay-frame.png`, `21c-tree-*.png` (local, gitignored).
+- Local look uses existing Playwright: `NODE_PATH=/home/leon/.npm/_npx/e41f203b7505f1fb/node_modules CHROME_BIN=/usr/bin/google-chrome npm run look -- /game/ scripts/look/21c-tree.json` (prefix `W=360` for phone). No dependencies added.
 
-**Decided (9 Nov, in decisions.md):** the A split; 21C is "place then watch"; the linear map waits for step 9;
-hatching keeps offering genes from outside the line.
+**Decided:** no new design calls; built the approved brief. The map, wild moult offers and P48 remain outside this build.
 
 **Next:**
-1. **Codex:** `codex` in the repo root, then "kickoff build 21C": it builds the brief's parts in order, one commit
-   each, and rewrites this file naming what to review.
-2. **Claude:** review Codex's diff (`/kickoff review 21C`), then you play 21C and answer P48.
+1. Fresh Claude session: `/kickoff review 21C`. Review `41ddcf5..slice-21c-build`, especially inactive panels, placement/proven-ground fitness, once-only settlement/replay and tree phone layout.
+2. Play 21C, add your notes to [playtests/21-the-climb.md](playtests/21-the-climb.md), then answer P48. Slice/roadmap play-completion boxes remain unchecked.
 
-**Open:**
-- P48 (start over vs a body you keep growing), P47, P46.
-- The garden budget test is flaky under the parallel run (passed today).
-- Parked: grown parts kept over runs (now in P48), a wild moult offer, recipes from real traits, build identity,
-  upkeep "really high" (step 10), the map "clunky and rough" (step 9).
+**Open:** P48, P47, P46. Existing garden timing test failed once at 0.122 ms/step under parallel load; subsequent full checks passed, test unchanged. Human confirmation of the original hidden box and play feel is still needed.

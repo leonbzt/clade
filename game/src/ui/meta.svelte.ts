@@ -23,6 +23,7 @@ export const ui = $state({
   replay: null as Spread | null, replayFrame: -1,
   gain: null as null | Gain, // 21B: the line's XP after hatching
   line: null as null | PlanId, // 21B: a line's close-up
+  tree: false,
   /** The body view during a Life: no options = inspection; else the moult's changes (`part` null = grow without one). */
   body: null as null | { build: Build; upkeep: number; moultSize: number; options: { part: PartId | null; change: Change | null }[] },
 });

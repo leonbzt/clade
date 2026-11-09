@@ -111,7 +111,8 @@ export function makeMap(cv: HTMLCanvasElement) {
     if (!sea) return;
     g.drawImage(back, 0, 0);
     sea.patches.forEach((p, i) => {
-      const t = replay ? { c: speciesColour(sea.species[replay.species]), fill: Math.min(1, replay.pop[p.id] / 30) } : target(sea, p, view), s = shown[i];
+      const t = replay ? (replay.pop[p.id] < 1 ? { c: [20, 34, 44] as RGB, fill: 0.1 }
+        : { c: speciesColour(sea.species[replay.species]), fill: Math.min(1, replay.pop[p.id] / 30) }) : target(sea, p, view), s = shown[i];
       for (let c = 0; c < 3; c++) s.c[c] = mix(s.c[c], t.c[c], FADE);
       s.fill = mix(s.fill, t.fill, FADE); s.pulse *= 0.96;
       drawPatch(p, s);

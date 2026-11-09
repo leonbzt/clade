@@ -7,8 +7,8 @@
   import { makeEquipStage, type EquipStage } from '../view/equip-stage';
   import { feel } from './feel';
 
-  let { build, mark = null, legal = [], height = 320, children }: {
-    build: Build; mark?: PlaceId | null; legal?: PlaceId[]; height?: number; children?: Snippet;
+  let { build, mark = null, legal = [], height = 320, compact = false, children }: {
+    build: Build; mark?: PlaceId | null; legal?: PlaceId[]; height?: number; compact?: boolean; children?: Snippet;
   } = $props();
   let host: HTMLDivElement | undefined = $state();
   let stage = $state.raw<EquipStage | null>(null);
@@ -16,7 +16,7 @@
   $effect(() => {
     if (!host) return;
     let alive = true, made: EquipStage | null = null;
-    makeEquipStage(host, untrack(() => $state.snapshot(build) as Build), feel.pixel).then((s) => { if (alive) { made = s; stage = s; } else s.destroy(); });
+    makeEquipStage(host, untrack(() => $state.snapshot(build) as Build), feel.pixel, compact).then((s) => { if (alive) { made = s; stage = s; } else s.destroy(); });
     return () => { alive = false; made?.destroy(); stage = null; };
   });
   $effect(() => { stage?.setBuild($state.snapshot(build) as Build); });
@@ -24,12 +24,13 @@
 </script>
 
 <div class="creature">
-  <div class="box" bind:this={host} style:height="{height}px"></div>
+  <div class="box" class:compact bind:this={host} style:height="{height}px"></div>
   {@render children?.()}
 </div>
 
 <style>
   .creature { position: relative; min-width: 0; }
   .box { position: relative; min-height: 200px; background: #0b2730; border: 3px solid var(--ink); overflow: hidden; }
+  .box.compact { min-height: 0; }
   .box :global(canvas) { position: absolute; inset: 0; }
 </style>

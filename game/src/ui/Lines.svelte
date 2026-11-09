@@ -11,7 +11,7 @@
 </script>
 
 <section class="lines" aria-labelledby="linesTitle">
-  <h3 id="linesTitle">Your lines · {lines.length} of {PLAN_IDS.length} lineages</h3>
+  <div class="heading"><h3 id="linesTitle">Your lines · {lines.length} of {PLAN_IDS.length} lineages</h3><button class="small treeButton" onclick={() => (ui.tree = true)}>Tree of life</button></div>
   <div class="habList">
     {#each lines as { plan, line }}
       <button class="habBtn" onclick={() => (ui.line = plan)}>
@@ -28,4 +28,5 @@
 <style>
   .lines { display: grid; gap: 6px; }
   .lines p { margin: 2px 0; }
+  .heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
 </style>

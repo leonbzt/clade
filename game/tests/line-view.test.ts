@@ -1,9 +1,25 @@
 // Slice 21B: the words and numbers the line screens show.
 import { describe, expect, it } from 'vitest';
-import { LINE_RULE } from '../src/data/lineages';
+import { LINEAGES, LINEAGE_IDS, LINE_RULE } from '../src/data/lineages';
+import type { PlanId } from '../src/data/life';
 import { newLine, settleLine, type Lines } from '../src/sim/lineage';
 import * as B from '../src/sim/body';
-import { afterLines, bar, levelLines, partsAt, rankText, slotUpkeep, track } from '../src/ui/line';
+import { afterLines, bar, childrenOf, levelLines, partsAt, rankText, slotUpkeep, track } from '../src/ui/line';
+
+it('every lineage reaches the worm exactly once through its recipe ancestry', () => {
+  const seen = new Set<PlanId>();
+  function visit(plan: PlanId) {
+    expect(seen.has(plan), `cycle or duplicate at ${plan}`).toBe(false);
+    seen.add(plan);
+    for (const child of childrenOf(plan)) {
+      expect(LINEAGES[child].recipe?.from).toBe(plan);
+      visit(child);
+    }
+  }
+  expect(LINEAGES.worm.recipe).toBeNull();
+  visit('worm');
+  expect([...seen].sort()).toEqual([...LINEAGE_IDS].sort());
+});
 
 describe('21B line screens', () => {
   it('the bar, the track and the lines a Life reveals', () => {

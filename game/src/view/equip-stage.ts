@@ -13,7 +13,7 @@ export interface EquipStage {
   destroy(): void;
 }
 
-export async function makeEquipStage(host: HTMLElement, build: Build, pixel: number): Promise<EquipStage> {
+export async function makeEquipStage(host: HTMLElement, build: Build, pixel: number, compact = false): Promise<EquipStage> {
   const app = new Application();
   await app.init({ antialias: false, backgroundAlpha: 0, resolution: 1 / pixel, autoDensity: true, resizeTo: host, preference: 'webgl' });
   host.appendChild(app.canvas);
@@ -23,6 +23,7 @@ export async function makeEquipStage(host: HTMLElement, build: Build, pixel: num
   const sShadows = new Container(); sShadows.addChild(sShadow); sShadows.filters = [new AlphaFilter({ alpha: 0.3 })];
   bigC.addChild(shadows, g, rings); smallC.addChild(tile, sShadows, sg);
   app.stage.addChild(bigC, smallC);
+  smallC.visible = !compact; // Tree portraits only need the large creature, without the board-size comparison.
   big.treadmill = 2.2; big.moving.v = 0.6; small.moving.v = 0.6;
   let on: PlaceId | null = null, legal: PlaceId[] = [], k = 1, a = 0;
   const lap = 0.2 * C; // the board-size one walks a slow circle on its tile, so every heading shows

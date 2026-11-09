@@ -15,6 +15,7 @@
   import LineView from './LineView.svelte';
   import Placement from './Placement.svelte';
   import Replay from './Replay.svelte';
+  import Tree from './Tree.svelte';
   import { changes } from './replay';
   import { toggleDev } from './dev';
   import type { PresetId, Rows } from '../data/body';
@@ -40,7 +41,7 @@
   const distribution = $derived((ui.tick, linePatches(g, activeSpecies)));
   const history = $derived((ui.tick, patch ? historyPaths(g, patch) : []));
   const replayFrame = $derived(ui.replay && ui.replayFrame >= 0 ? ui.replay.frames[ui.replayFrame] : null);
-  const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.gain && !ui.line && !ui.away && !ui.notice);
+  const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.gain && !ui.line && !ui.tree && !ui.away && !ui.notice);
   $effect(() => {
     if (!cv) return;
     const renderer = makeMap(cv); renderer.setSea(g); map = renderer;
@@ -187,6 +188,8 @@
 {#if ui.open && ui.line && ctx.save.lines[ui.line]}
   {#key ui.line}<LineView plan={ui.line} />{/key}
 {/if}
+
+{#if ui.open && ui.tree && !ui.line}<Tree />{/if}
 
 {#if ui.notice}
 <div class="metaWrap"><div class="panel habCard"><h2>{ui.notice.title}</h2><p class="pitch">{ui.notice.text}</p><button class="go" onclick={() => (ui.notice = null)}>Continue</button></div></div>

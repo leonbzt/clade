@@ -144,6 +144,7 @@ ctx.paste = (code) => {
 ctx.exportSave = () => serializeSeaSave(save);
 function useSave(next: SeaSave) {
   ctx.skipReplay();
+  ui.tree = false;
   save = ctx.save = next; ctx.isl = save.sea.isl; ctx.spots = habitatSpots(ctx.isl);
   ui.feedback = null; ui.clutch = null; ui.placing = false; ui.gain = null; ui.line = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
   hud.hideCard(); choose();

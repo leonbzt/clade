@@ -37,7 +37,7 @@
 </script>
 
 <div class="metaWrap lineWrap"><div class="panel habCard lineView">
-  <div class="metaTop"><h2>{LINEAGES[plan].name} line</h2><button class="small" onclick={() => (ui.line = null)}>Map</button></div>
+  <div class="metaTop"><h2>{LINEAGES[plan].name} line</h2><button class="small" onclick={() => (ui.line = null)}>{ui.tree ? 'Tree of life' : 'Map'}</button></div>
   <XpBar to={line.xp} />
   <ol class="levels" aria-label="Level track">
     {#each track(plan, line) as t}
@@ -84,6 +84,7 @@
 </div></div>
 
 <style>
+  .lineView .metaTop { flex-wrap: wrap; }
   .lineWrap { position: fixed; inset: 0; z-index: 30; overflow: auto; place-items: start center; }
   .lineView { max-width: 900px; width: min(900px, 96vw); box-sizing: border-box; }
   .levels { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
