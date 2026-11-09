@@ -46,3 +46,19 @@ that direction." The direction stands; the three questions below stay open.
 1. Start era: keep the Cambrian (lean), a later sea (Devonian), or modern?
 2. Use build / moves / signature move / evolution points as the game's words?
 3. Should the derived stat bars and trade-off tooltips join slice 20's equipment screen, or wait for step 6?
+
+## P48: Don't start over: a body you keep growing (M2, after 21C or step 7) *proposal, 9 Nov*
+From the 21B play: "most important here is that you don't have to start over and over but still have something to
+do in each run." Your long loop: pick server → habitat → niche → build → adapt → optimize → rewards. Today the
+sea is the server, the patch the habitat, body and diet the niche, the species the build, moults adapt, ranks
+optimize, XP and genes reward. The gap: every Life regrows the same opening, so "adapt" repeats.
+- **A, planted then grown (your idea, AI lean):** a species keeps its whole grown body as a plan. A Life starts as a
+  larva with that plan's parts as buds; moult food grows a bud (cheap) or puts a new part in a free or swapped slot
+  (dear, from the pool or a hatched gene). Adapting is what to grow first for this patch and what to swap. Over
+  Lives the species fills up ("a body you finish"), then ranks; a swap that lays well branches a new species.
+- **B, a genome (v1-like):** a species is ~20 genes; parts and stats are expressed from it; hatching rolls
+  mutations. Most fluid and surprising; the biggest change, past the 10-gene budget, and slots get harder to read.
+- **C, A plus variants:** A now; B's surprise as part variants from hatching ("long proboscis"), with step 7.
+**AI lean:** C: A as slice 22 right after 21C, variants with step 7's lineages.
+**Questions:** 1. A, B or C? 2. Slice 22 after 21C, or inside step 7? 3. "Pick server": several seas
+(islands or eras) to choose from, or the one sea?

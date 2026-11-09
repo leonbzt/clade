@@ -47,11 +47,38 @@ is text, and the story of founding and continuation got "a little more confusing
 - **The close-up tree** (the line's screen): the level track with its unlocks, part ranks on the six slots
   (reuses `Slots.svelte`), the species list.
 
-## 21C: the tree of life and watching it spread
+## 21C: the tree of life, place it and watch it spread
 - **One tree screen:** lineages as nodes from the worm, recipes as edges; locked ones as silhouettes with a recipe
   hint; species under each. Tap a node for its close-up. One tap from the map.
-- **Watch it spread:** after hatching, the map plays the two sea generations in a few seconds: your line's patches
-  pulse, and the causes show as headlines. This should make "where the animals came from" clear.
+- **Place it, then watch** (*decided 9 Nov*, replaces "watch it spread"): you choose where the eggs settle, then the
+  map plays the two sea generations in a few seconds: your line's patches pulse, the causes show as headlines.
+- The map stays linear until step 9 (*decided 9 Nov*). Hatching keeps offering genes from outside the line.
+
+### Build brief (Codex; one commit per part, in order)
+Read `AGENTS.md`, this spec, `docs/status.md`. Files under ~400 lines (`main.ts` is 339: put new flow in `ui/`).
+1. **The hidden box** (still there after 21B's `.metaWrap[hidden]` fix). Find it with `npm run look` on the map,
+   with and without the launcher open, after a Life (Dev: fake one) and after closing the close-up. Suspects: every
+   `.metaWrap` / `.panel` that renders empty (`Meta.svelte` 135, 169, 172; `Hatch`, `LineView`, `Equip`,
+   `LifeBody`, `Menu`). Done: no empty panel in any of those states; before/after screenshots.
+2. **Place it (sim).** The pending result gets a chosen release patch: `placePending(s, p, patch)` in
+   `sim/sea-life.ts`, allowed only for the Life's patch or its neighbours (`patches[p.patch].nb`); default the
+   Life's patch. `settlePending` releases there and sets `continuation.patch` to it. `release` already halves the
+   score off the proven ground (`SEA.unproven`), which is the risk of moving. Validate `place` in `sea-save.ts`.
+   Tests (`tests/sea-life.test.ts`): a neighbour gets the eggs; an illegal patch changes nothing; no choice = today.
+3. **Place it (UI).** The end card's "Release your eggs" opens the map in a placing mode: the Life's patch and its
+   neighbours lit, others dim; tapping one shows one line (ground, who holds it, hunters, "proven" or "new ground:
+   half strength") and a "Release here" button; then hatching as today. A reload mid-choice resumes it.
+4. **Watch it spread.** `settlePending` keeps the save atomic but also returns frames for its `afterLife` steps:
+   per generation, your line's population per patch and that step's headlines (`sea-news.ts tell`). After the XP
+   screen's Continue, the map replays them, about 1.5 s per generation: patches where your line grew pulse in its
+   colour, a fall pulses red, the headlines show under the map; if nothing moved: "Your line held patch N". Skippable
+   with a tap.
+5. **The tree screen** (`ui/Tree.svelte`, a "Tree of life" button next to the map's lines): Svelte and CSS, no
+   canvas; rows from the worm by `recipe.from` (`childrenOf` in `ui/line.ts`). An open node: `Creature.svelte`,
+   name, level, its species' names (newest three, "+N"); a locked one: a dark silhouette and `recipeText`. Tap an
+   open node for `LineView`. Fits a phone (360 px) without side scrolling. Test: every lineage reaches the worm.
+- **Checks:** `npm run check`; `npm run look` screenshots of placing mode, one replay frame, the tree (fresh and
+  after Dev "Open all lineages"). Not in this brief: a 2D map, a wild moult offer, P48.
 
 ## Out
 - New lineages and their rules, recipe content beyond the four bodies: step 7.
@@ -62,9 +89,9 @@ is text, and the story of founding and continuation got "a little more confusing
 ## Done when
 - [x] 21A (9 Nov, `tests/lineage.test.ts`; not played yet): a model test plays Lives into XP, levels, points, ranks, species and a recipe; the launcher only offers
   unlocked parts; a recipe opens a lineage. `npm run check` passes.
-- [ ] 21B (built 9 Nov, `tests/line-view.test.ts`; not played yet): in play, the end of a Life shows hatching, the XP and any new lineage; the close-up spends points.
+- [x] 21B (played 9 Nov: "really cool approaches"; built 9 Nov, `tests/line-view.test.ts`): in play, the end of a Life shows hatching, the XP and any new lineage; the close-up spends points.
   Also from the 21A play: species are launch bodies (decided 9 Nov), the moult view shows each part once, upkeep per slot.
-- [ ] 21C: in play, the tree shows how my lineages came from the worm; the map shows my line spreading.
+- [ ] 21C: in play, the tree shows how my lineages came from the worm; I choose where my eggs settle and see the line spread.
 - [ ] Your notes in `docs/playtests/21-the-climb.md` after each part; then tick roadmap step 6.
 
 ## Size check

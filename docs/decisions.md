@@ -603,3 +603,8 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   (ChatGPT Pro) builds from the brief. Set up in `AGENTS.md` and `workflow.md`. 21A and 21B committed first.
 - **21B play:** hatching, the XP screen and the close-up are "really cool approaches"; lines level fast, "okay".
   Not pulled to play lately; worries about repetition and "a heavy authorship direction" (notes in the playtest).
+- **21C:** "place then watch" (you choose where the eggs settle, then watch it spread); the linear map waits for
+  step 9; hatching bringing new parts "is good" (it already offers genes outside the line). Build brief in the spec.
+- **Direction (not decided):** "you don't have to start over and over but still have something to do in each run";
+  a body you finish, more upgrades, lineages and species, surprises, maybe a larger genome with mutations like v1.
+  The long loop: "pick server, pick habitat, pick niche, pick build, adapt build, optimize build, get rewards". P48.
