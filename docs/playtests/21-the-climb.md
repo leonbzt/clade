@@ -32,3 +32,10 @@ repetitive, but it might just be the fresh start over and over. all of the recen
 game, but maybe we just need the balancing pass lateron. also the map being linear seems a little boring. lines level
 really fast but that's also okay. I also feel a little like we're moving in a heavy authorship direction, instead of
 the more free appearing gene combinations like in v1, where life is more fluid, but that could be ok as well."
+
+## 21C first look (9 Nov, at the review)
+"i don't quite get the logic of having a replay right after the play, it feels okay but I don't understand
+everything right now and why it was done that way." The map "needs to be larger and zoomable". The tree: "maybe the
+tree needs rework later, its cool for now". The hidden box "is gone".
+Changed at the review: the replay opens with the eggs settling and says the sea moves on two generations after each
+Life; the map zooms (+/−, auto while placing and in the replay).

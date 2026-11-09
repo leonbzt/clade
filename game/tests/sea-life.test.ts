@@ -12,7 +12,7 @@ import { preyStep, swimMove } from '../src/sim/hunt';
 import * as L from '../src/sim/life';
 import { release, step } from '../src/sim/sea';
 import { newLine } from '../src/sim/lineage';
-import { canLaunch, completeLife, launchBodies, launchPatches, placePending, settlePending, startSeaLife } from '../src/sim/sea-life';
+import { canLaunch, completeLife, launchBodies, launchPatches, placePending, releaseStrength, settlePending, startSeaLife } from '../src/sim/sea-life';
 import { freshSeaSave, parseSeaSave, serializeSeaSave, type SeaSave } from '../src/sim/sea-save';
 import { importSeaSave, writeSeaSave } from '../src/sim/sea-storage';
 import { designOf } from '../src/sim/share';
@@ -129,25 +129,46 @@ describe('patch snapshots', () => {
 });
 
 describe('completed results and continuation', () => {
-  it('returns each generation\'s populations and headlines without leaving a partial settlement', () => {
+  it('returns the release and each generation\'s populations and headlines without leaving a partial settlement', () => {
     const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0), expected = reload(s);
-    release(expected.sea, p.patch, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
     const k = expected.sea.species.findIndex((sp) => sp.id === p.species);
     const snapshot = () => expected.sea.patches.map((q) => q.pop[k]);
-    const before = snapshot(), frames = [];
+    const before = snapshot();
+    release(expected.sea, p.patch, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    const frames = [{ gen: expected.sea.gen, pop: snapshot(), news: [] as Headline[] }];
     for (let n = 0; n < MODEL.afterLife; n++) {
       const news: Headline[] = [];
       tell(expected.sea, news, step(expected.sea));
       frames.push({ gen: expected.sea.gen, pop: snapshot(), news });
     }
-    const result = settlePending(s, p)!;
-    expect(result.spread).toEqual({ species: p.species, patch: p.patch, before, frames });
+    const result = settlePending(s, p)!, spread = result.spread!;
+    expect(spread).toEqual({ species: p.species, patch: p.patch, eggs: p.eggs, before, frames });
+    expect(spread.frames[0].pop[p.patch] - before[p.patch]).toBe(p.eggs);
     expect(s.pending).toBeUndefined(); expect(reload(s).lives).toBe(1);
     const once = serializeSeaSave(s);
-    result.spread.frames[0].pop.fill(999); result.spread.before.fill(888);
-    result.spread.frames[0].news.push({ kind: 'boom', sp: k, patches: [0], gen: 1, cause: 'test', from: 0, to: 999 });
+    spread.frames[0].pop.fill(999); spread.before.fill(888);
+    spread.frames[1].news.push({ kind: 'boom', sp: k, patches: [0], gen: 1, cause: 'test', from: 0, to: 999 });
     expect(serializeSeaSave(s)).toBe(once);
     expect(settlePending(s, p)).toBeNull();
+  });
+
+  it('a Life without eggs has nothing to replay, but the sea still moves on', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0, false), gen = s.sea.gen;
+    expect(p.eggs).toBe(0);
+    expect(settlePending(s, p)!.spread).toBeNull();
+    expect(s.sea.gen).toBe(gen + MODEL.afterLife);
+  });
+
+  it('the release strength: full on the Life\'s ground, half on new ground, full where the line already holds it', () => {
+    const s = freshSeaSave(1, 0), origin = s.sea.patches.find((q) => q.nb.some((n) => s.sea.patches[n].ground !== q.ground))!;
+    const next = origin.nb.find((n) => s.sea.patches[n].ground !== origin.ground)!;
+    const { pending: p } = finish(s, origin.id), k = s.sea.species.findIndex((sp) => sp.id === p.species);
+    expect(releaseStrength(s, p, origin.id)).toBe(1);
+    expect(releaseStrength(s, p, next)).toBe(SEA.unproven);
+    s.sea.patches[next].fit[k] = p.eggs * 0.75;
+    expect(releaseStrength(s, p, next)).toBe(0.75);
+    s.sea.patches[next].fit[k] = p.eggs * 2;
+    expect(releaseStrength(s, p, next)).toBe(1);
   });
 
   it('places eggs in a neighbour after reload and retains the Life\'s proven ground', () => {

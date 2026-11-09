@@ -1,6 +1,6 @@
 <script lang="ts">
   import { ctx, ui } from './meta.svelte';
-  import { replayLines } from './replay';
+  import { replayLines, replayTitle } from './replay';
 
   const spread = $derived(ui.replay!);
   const frame = $derived(spread.frames[ui.replayFrame]);
@@ -15,9 +15,9 @@
   });
 </script>
 
-<section class="spread" aria-label="Your line spreading" aria-live="polite" data-generation={frame.gen}>
-  <h3>Watch your line · generation {frame.gen}</h3>
-  <p class="mapKey">Your line’s colour: growth · red: a fall. Tap the map to skip.</p>
+<section class="spread" aria-label="Your line spreading" aria-live="polite" data-generation={frame.gen} data-frame={ui.replayFrame}>
+  <h3>{replayTitle(spread, ui.replayFrame)} · generation {frame.gen}</h3>
+  <p class="mapKey">After each Life the sea moves on {spread.frames.length - 1} generations before your next one. Gold: your eggs · your line’s colour: growth · red: a fall. Tap the map to skip.</p>
   <ul class="news">{#each lines as line}<li>{line}</li>{/each}</ul>
   <button class="small" onclick={() => ctx.skipReplay()}>Skip replay</button>
 </section>

@@ -15,7 +15,7 @@
   {"until": "!!document.querySelector('.placement')"},
   {"assert": "__game.save.pending.place === undefined && __game.save.lives === 0"},
   {"click": ".choices button:nth-child(2)"},
-  {"assert": "document.querySelector('.placeInfo').textContent.includes('new ground: half strength')"},
+  {"assert": "document.querySelector('.placeInfo').textContent.includes('new ground: 50% strength')"},
   {"shot": "21c-placing-neighbour"},
   {"click": ".placement .go"},
   {"until": "!!document.querySelector('.after .egg')"},

@@ -79,10 +79,13 @@ Read `AGENTS.md`, this spec, `docs/status.md`. Files under ~400 lines (`main.ts`
    open node for `LineView`. Fits a phone (360 px) without side scrolling. Test: every lineage reaches the worm.
 - **Checks:** `npm run check`; `npm run look` screenshots of placing mode, one replay frame, the tree (fresh and
   after Dev "Open all lineages"). Not in this brief: a 2D map, a wild moult offer, P48.
+- **Review fixes (Claude, 9 Nov):** no replay after a Life without eggs; the placing line shows the real strength
+  (`releaseStrength`); the replay opens with the release ("Your eggs settle") and explains the two generations; the
+  map zooms (`ui/MapZoom.svelte`: +/−, drag, auto zoom while placing and in the replay). Hidden box: gone (your look).
 
 ## Out
 - New lineages and their rules, recipe content beyond the four bodies: step 7.
-- Tier letters per niche, patch notes, stat bars (P47, still open): parked until you answer P47.
+- Tier letters per niche, patch notes, stat bars (P47 closed 9 Nov): step 9 or ideas.md.
 - Renaming species, respec, a whole-line XP pool: `ideas.md` (step 6 review lines).
 - Upkeep balance beyond Lean ranks, clutch size: step 10. Map polish: step 9.
 

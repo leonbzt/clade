@@ -13,6 +13,7 @@
   import Equip from './Equip.svelte';
   import Lines from './Lines.svelte';
   import LineView from './LineView.svelte';
+  import MapZoom from './MapZoom.svelte';
   import Placement from './Placement.svelte';
   import Replay from './Replay.svelte';
   import Tree from './Tree.svelte';
@@ -41,6 +42,8 @@
   const distribution = $derived((ui.tick, linePatches(g, activeSpecies)));
   const history = $derived((ui.tick, patch ? historyPaths(g, patch) : []));
   const replayFrame = $derived(ui.replay && ui.replayFrame >= 0 ? ui.replay.frames[ui.replayFrame] : null);
+  /** The patches the map zooms to: the release choices while placing, the release and its neighbours in the replay. */
+  const mapFocus = $derived(ui.placing ? releaseChoices : replayFrame && ui.replay ? [ui.replay.patch, ...g.patches[ui.replay.patch].nb] : []);
   const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.gain && !ui.line && !ui.tree && !ui.away && !ui.notice);
   $effect(() => {
     if (!cv) return;
@@ -64,7 +67,7 @@
   $effect(() => {
     if (!map || !ui.replay || !replayFrame) return;
     const sp = g.species.find((sp) => sp.id === ui.replay!.species)!;
-    for (const c of changes(ui.replay, ui.replayFrame)) map.pulse(c.patch, c.grew ? speciesColour(sp) : [255, 70, 55]);
+    for (const c of changes(ui.replay, ui.replayFrame)) map.pulse(c.patch, !c.grew ? [255, 70, 55] : ui.replayFrame === 0 ? [255, 224, 51] : speciesColour(sp));
     cv?.closest('#meta')?.scrollTo(0, 0);
   });
   const feedbackPop = $derived((ui.tick, ui.feedback ? g.patches[ui.feedback.patch].pop[g.species.findIndex((sp) => sp.id === ui.feedback!.species)] ?? 0 : 0));
@@ -117,7 +120,9 @@
       <button class="small" class:on={view === id} aria-pressed={view === id} onclick={() => view = id as View}>{name}</button>
     {/each}
   </div>
-  <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
+  <MapZoom sea={g} focus={mapFocus}>
+    <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
+  </MapZoom>
   {#if replayFrame}
     <Replay />
   {:else if ui.placing && pending}

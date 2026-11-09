@@ -3,7 +3,7 @@
 import { MODEL } from '../data/garden';
 import type { Rows } from '../data/body';
 import { PLAN_IDS, type PlanId } from '../data/life';
-import { lineId } from '../data/sea';
+import { SEA, lineId } from '../data/sea';
 import { startBuild } from './body';
 import { rollClutch } from './clutch';
 import { boardForPatch, resultOf } from './door';
@@ -15,8 +15,10 @@ import { tell, type Headline } from './sea-news';
 import type { SeaPending, SeaSave } from './sea-save';
 
 export interface SpreadFrame { gen: number; pop: number[]; news: Headline[] }
-export interface Spread { species: string; patch: number; before: number[]; frames: SpreadFrame[] }
-export type Settlement = Gain & { spread: Spread };
+/** A release to replay: frame 0 is the eggs settling, then one frame per generation the sea passes after a Life. */
+export interface Spread { species: string; patch: number; eggs: number; before: number[]; frames: SpreadFrame[] }
+/** `spread` is null when no eggs were released: the sea still moves on, but there is nothing of yours to watch. */
+export type Settlement = Gain & { spread: Spread | null };
 
 export function launchPatches(s: SeaSave): number[] {
   if (!s.continuation) return s.sea.patches.map((p) => p.id);
@@ -59,22 +61,34 @@ export function placePending(s: SeaSave, p: SeaPending, patch: number): boolean 
   return true;
 }
 
+/** How strong the eggs start on a patch, 0–1: full on the Life's own ground, else what the line already holds there
+ * or the unproven share, whichever is more (`release` keeps the higher fitness). */
+export function releaseStrength(s: SeaSave, p: SeaPending, patch: number): number {
+  const q = s.sea.patches[patch], k = s.sea.species.findIndex((sp) => sp.id === p.species);
+  if (!q || p.eggs <= 0 || q.ground === p.hab) return 1;
+  return Math.min(1, Math.max(q.fit[k] ?? 0, p.eggs * SEA.unproven) / p.eggs);
+}
+
 /** A stale/double click cannot release again, move the line twice, or advance the sea twice. The kept card (or none)
  * unlocks its part and becomes the new species' mutation. Returns what the line gained, or null. */
 export function settlePending(s: SeaSave, p: SeaPending, card = -1): Settlement | null {
   if (s.pending !== p || !Number.isInteger(card) || card < -1 || card >= p.cards.length) return null;
   const gain = settleLine(s.lines, p.plan, p.eggs, p.tier, p.build, card >= 0 ? p.cards[card].part : null, s.lives + 1, p.launch);
+  const k = s.sea.species.findIndex((sp) => sp.id === p.species), at = p.place ?? p.patch;
+  const snapshot = () => s.sea.patches.map((q) => q.pop[k]);
+  let spread: Spread | null = null;
   if (p.eggs > 0) {
-    const patch = p.place ?? p.patch;
-    release(s.sea, patch, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
-    s.continuation = { patch, species: p.species, plan: p.plan, role: p.role, eggs: p.eggs };
+    spread = { species: p.species, patch: at, eggs: p.eggs, before: snapshot(), frames: [] };
+    release(s.sea, at, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    spread.frames.push({ gen: s.sea.gen, pop: snapshot(), news: [] });
+    s.continuation = { patch: at, species: p.species, plan: p.plan, role: p.role, eggs: p.eggs };
   }
-  const species = s.sea.species.findIndex((sp) => sp.id === p.species);
-  const snapshot = () => s.sea.patches.map((patch) => patch.pop[species]);
-  const spread: Spread = { species: p.species, patch: p.place ?? p.patch, before: snapshot(), frames: [] };
-  for (let k = 0; k < MODEL.afterLife; k++) {
-    const events = step(s.sea), news: Headline[] = [];
-    tell(s.sea, s.news, events); tell(s.sea, news, events);
+  for (let n = 0; n < MODEL.afterLife; n++) {
+    const events = step(s.sea);
+    tell(s.sea, s.news, events);
+    if (!spread) continue;
+    const news: Headline[] = [];
+    tell(s.sea, news, events);
     spread.frames.push({ gen: s.sea.gen, pop: snapshot(), news });
   }
   const key = `${p.hab}:${p.role}`;
