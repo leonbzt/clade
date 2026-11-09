@@ -5,8 +5,9 @@ import {
   HUNT, NODES, PARTS, PART_IDS, PLANS, RULE, STAGES, STARTER_PLAN, TURNS,
   type NodeId, type PartId, type PlanId, type Terrain, type VerbId,
 } from '../data/life';
-import { PRESETS, type PlaceId, type Row, type Rows } from '../data/body';
+import { PRESETS, type PlaceId, type Row } from '../data/body';
 import * as B from './body';
+import * as P from './plan';
 import { loseRow, shed, snapshot, type Side } from './body-hurt';
 import { CELL, MUD_FLATS, type Habitat, type Rival } from '../data/habitats';
 import type { PreyKind } from '../data/prey';
@@ -66,7 +67,8 @@ export interface Life {
   ate: Partial<Record<NodeId | 'prey', number>>; // food by source: the garden reads your role from it
   laid?: Readonly<B.Build>; // the latest clutch's build, frozen at the lay
   pool?: PartId[]; // the line's parts (21A): the only commons a moult offers; none = every part of the body
-  launch?: Rows; // the body it started as (21B): with the kept card, the new species
+  growth: P.Plan; // inherited rows; tears never change them
+  laidPlan?: Readonly<P.Plan>; // frozen with the latest clutch
 }
 
 export function rnd(l: { r: number }) { // the toy's mulberry32
@@ -102,7 +104,13 @@ export const ready = (l: Life, v: VerbId) => l.phase === 'play' && verbs(l).incl
 export const sense = (l: Life) => B.sense(l.build);
 export const clutch = (l: Life) => B.clutch(l.build, onMud(l));
 export const size = (l: Life) => l.build.size;
-export const moultCost = (l: Life) => size(l) + PLANS[l.plan].moultExtra;
+export const fullMoultCost = (l: Life) => size(l) + PLANS[l.plan].moultExtra;
+export const moultCost = (l: Life) => Math.ceil(fullMoultCost(l) * RULE.budShare);
+/** Prices shown during an offer include the food already paid by moult(). */
+export const pickCost = (l: Life, bud = false) => {
+  const full = size(l) - 1 + PLANS[l.plan].moultExtra;
+  return bud ? Math.ceil(full * RULE.budShare) : full;
+};
 export const canMoult = (l: Life) => l.phase === 'play' && !l.moulted && size(l) < RULE.maxSize && l.food >= moultCost(l);
 export const mature = (l: Life) => B.mature(l.build);
 export const canLay = (l: Life) => l.phase === 'play' && mature(l) && l.food >= RULE.layCost;
@@ -140,12 +148,13 @@ export const emit = (l: Life, e: Ev) => { l.events.push(e); };
 /** A Life on a starting build; the caller has run the starter check (sim/body.ts `startBuild`). */
 export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, build: B.Build = presetBuild(plan)): Life {
   if (build.body !== plan || B.buildProblems(build).length) throw new Error('A Life needs a legal build of its body');
+  const start = P.larva(build);
   const l: Life = {
     plan, hab, r: (seed ^ 0x5bd1e995) | 0,
     tiles: hab.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
     x: hab.start[0], y: hab.start[1], facing: 1, rivals: plan === 'swimmer' ? [] : hab.rivals.map((v) => ({ ...v, x: v.at[0], y: v.at[1] })),
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, xp: 0, eaten: 0,
-    build: structuredClone({ ...build, size: 1 }), phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
+    build: start.build, growth: start.growth, phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
     moulted: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
     recharge: {}, dash: false, braced: false, dug: false, prey: [], frenzy: 0, still: false, caught: false, catches: 0, ate: {},
   };
@@ -169,14 +178,15 @@ export function moult(l: Life) {
   if (size(l) === RULE.maxSize) { l.health = RULE.health; say(l, 'Full grown: your body is finished and your wounds close.'); }
   const pool = PART_IDS.filter((id) => !PARTS[id].rare && PARTS[id].plans.includes(l.plan) && (!l.pool || l.pool.includes(id)));
   for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(rnd(l) * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
-  l.offers = B.legalOffers(l.build, pool);
-  if (l.moults >= l.rareAt && !l.rareGot) { const rare = B.rareOffer(l.build, l.hab.rares[l.plan]); if (rare) l.offers.push(rare); }
+  const buds = P.budParts(l.build);
+  l.offers = [...buds, ...pool.filter((p) => !buds.includes(p) && P.changesFor(l.build, l.growth, p).length).slice(0, 3)];
+  if (l.moults >= l.rareAt && !l.rareGot) { const rare = l.hab.rares[l.plan].find((p) => !l.offers.includes(p) && P.changesFor(l.build, l.growth, p).length); if (rare) l.offers.push(rare); }
   l.phase = 'offer';
   emit(l, { k: 'moult', size: size(l), food: l.food });
 }
 
 /** The legal ways to take an offer: one per place it can change. */
-export const offerChanges = (l: Life, part: PartId) => (l.phase === 'offer' && l.offers.includes(part) ? B.changesFor(l.build, part) : []);
+export const offerChanges = (l: Life, part: PartId) => (l.phase === 'offer' && l.offers.includes(part) ? P.changesFor(l.build, l.growth, part) : []);
 
 /** Take an offer at a place (its first legal place if none is given), or `null` to finish growing without a part. */
 export function pick(l: Life, part: PartId | null, place?: PlaceId) {
@@ -185,6 +195,10 @@ export function pick(l: Life, part: PartId | null, place?: PlaceId) {
   const change = part ? offerChanges(l, part).find((c) => !place || c.place === place) : null;
   if (part && !change) return;
   if (change) {
+    const extra = pickCost(l, change.bud) - pickCost(l, true);
+    if (l.food < extra) return;
+    l.food -= extra;
+    l.growth = { ...l.growth, rows: structuredClone(change.planned), branched: l.growth.branched || change.branches };
     l.build = { ...change.build, size: size(l) };
     emit(l, { k: 'part', place: change.place, part: part!, row: change.row, was: change.was });
     if (PARTS[part!].rare) { l.rareGot = part; l.rarePassed = false; say(l, `Rare: ${PARTS[part!].name}. Lay an egg to pass it on.`); }
@@ -275,7 +289,7 @@ export function lay(l: Life) {
   if (!canLay(l)) return;
   const n = clutch(l);
   l.food -= RULE.layCost; l.eggs += n; l.moved = false;
-  l.laid = snapshot(l.build);
+  l.laid = snapshot(l.build); l.laidPlan = Object.freeze(structuredClone(l.growth));
   say(l, `Laid ${n} egg${n > 1 ? 's' : ''}.`);
   emit(l, { k: 'lay', n, eggs: l.eggs, food: l.food });
   if (l.rareGot && !l.rarePassed) { l.rarePassed = true; say(l, `${PARTS[l.rareGot].name} passed on.`); }
@@ -307,7 +321,7 @@ function rivalStep(l: Life, idx: number) {
 // ---- the world's turn ----
 /** Lose a whole row: a tear or a shed. Its effects, verbs, upkeep and allowance go with it; oxygen clamps. */
 export function loseAt(l: Life, place: PlaceId) {
-  l.build = loseRow(l.build, place);
+  l.build = P.withBuds(loseRow(l.build, place), l.growth.rows);
   l.oxygen = Math.min(l.oxygen, oxygenMax(l));
 }
 

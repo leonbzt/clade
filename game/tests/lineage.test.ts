@@ -13,6 +13,7 @@ const bld = (body: PlanId, rows: Rows, size = 3): B.Build => ({ body, size, rows
 /** One Life: launch, lay at size 3, then settle as `eggs` at `tier` keeping card `card`. */
 function live(s: SeaSave, rows: Rows, eggs: number, tier: string, card = 0, plan: PlanId = 'worm') {
   const patch = s.continuation?.patch ?? 0, l = startSeaLife(s, 7, patch, plan, rows);
+  l.build = B.startBuild(plan, rows, s.lines[plan]).build;
   l.turn = TURNS; l.food = 100; l.build.size = 3; L.lay(l);
   const p = completeLife(s, l, 11);
   p.eggs = eggs; p.tier = tier;
@@ -75,11 +76,11 @@ describe('21A the climb: the model', () => {
     expect(line.species[0].rows.sides).toEqual(['gill']);
   });
 
-  it('21B: a species is the launch body plus the kept card, not the parts the Life grew', () => {
+  it('22: a species keeps its whole frozen plan plus the kept card', () => {
     const line = newLine('worm'), grown = bld('worm', { ...DIG, front: ['tentacles'] });
-    const sp = saveSpecies(line, grown, 'gill', 1, 'C', DIG);
-    expect(sp.rows).toEqual({ ...DIG, sides: ['gill'] });
-    expect(speciesOf(line, grown, null, DIG)).toEqual({ rows: DIG, place: null });
+    const sp = saveSpecies(line, grown, 'gill', 1, 'C');
+    expect(sp.rows).toEqual({ ...grown.rows, sides: ['gill'] });
+    expect(speciesOf(line, grown, null)).toEqual({ rows: grown.rows, place: null });
   });
 
   it('a recipe at tier B opens a lineage with its built-ins; a weaker Life does not', () => {

@@ -22,8 +22,8 @@
   const line = $derived(c ? ctx.save.lines[c.plan] : undefined);
   const known = $derived(line?.parts ?? []);
   const kept = $derived(c && chosen >= 0 && open[chosen] ? c.cards[chosen].part : null);
-  const before = $derived(c?.build && line ? speciesOf(line, c.build, null, c.launch) : null);
-  const after = $derived(c?.build && line && kept ? speciesOf(line, c.build, kept, c.launch) : null);
+  const before = $derived(c?.build && line ? speciesOf(line, c.build, null, c.growth) : null);
+  const after = $derived(c?.build && line && kept ? speciesOf(line, c.build, kept, c.growth) : null);
   const shown = $derived(c && before ? asBuild(c.plan, before.rows, line?.ranks) : null);
   const change = $derived(after?.place ? { place: after.place, row: after.rows[after.place]! } : null);
   const name = $derived(c && line ? nextSpeciesName(c.plan, line, kept) : '');

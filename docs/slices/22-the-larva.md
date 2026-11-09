@@ -71,7 +71,7 @@ in `data/life.ts` `RULE`.
 - Respec, renaming or merging species: ideas.md. Bud and part prices beyond the headline: by feel, step 10.
 
 ## Done when
-- [ ] 22A: the model tests above pass; `npm run check` passes.
+- [x] 22A: the model tests above pass; `npm run check` passes.
 - [ ] 22B: in play, my second Life of a species starts as a larva with my last body as buds. I regrow it faster and
   spend what's left to change something, and a change that lays well becomes a new species.
 - [ ] Your notes are in `docs/playtests/22-the-larva.md`; then tick roadmap step 6 (with 21C).

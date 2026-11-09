@@ -1,4 +1,4 @@
-// The sea save (v5 since 21A: the lines; older saves start a fresh sea, decided 8 Nov). Builds are 20A lay
+// The sea save (v6: inherited plans; v5 lines and species are retained). Builds are 20A lay
 // snapshots. JSON columns follow the saved species registry, never the current content order.
 import { ROLE_IDS } from '../data/garden';
 import { HAB_ORDER } from '../data/habitats';
@@ -7,7 +7,8 @@ import { NODES, PART_IDS, PLAN_IDS, type PlanId } from '../data/life';
 import { PLACES, type Rows } from '../data/body';
 import { PLAYER_SPECIES, SEA, lineId, type Diet, type Species } from '../data/sea';
 import { parseBuild } from './body-hurt';
-import { anatomyProblems, type Build } from './body';
+import { anatomyProblems, verbProblems, type Build } from './body';
+import { planBuild, type Plan } from './plan';
 import { makeIsland } from './island';
 import { freshLines, validLines, type Lines } from './lineage';
 import type { Pending, Save } from './save';
@@ -15,11 +16,11 @@ import { finite, integer, oneOf, record, rngState, text, validPending, validProg
 import { newSea, step, type Sea, type SeaPatch } from './sea';
 import { tell, type Headline } from './sea-news';
 
-export const SEA_SAVE_VERSION = 5;
+export const SEA_SAVE_VERSION = 6;
 export interface Continuation { patch: number; species: string; plan: Pending['plan']; role: Pending['role']; eggs: number }
 /** A finished Life waiting to settle: `build` is the latest lay's snapshot (none without eggs). */
-/** `launch`: the body the Life started as (21B); with the kept card it becomes the new species. */
-export interface SeaPending extends Pending { patch: number; place?: number; species: string; build?: Build; diet?: Diet; launch?: Rows }
+/** `growth`: the frozen plan and its source species, saved with the clutch. */
+export interface SeaPending extends Pending { patch: number; place?: number; species: string; build?: Build; diet?: Diet; growth?: Plan }
 export interface SeaSave extends Omit<Save, 'v' | 'garden' | 'pending' | 'forms'> {
   v: typeof SEA_SAVE_VERSION; sea: Sea; news: Headline[]; pending?: SeaPending; continuation?: Continuation;
   lines: Lines; // one per open lineage (21A)
@@ -56,8 +57,11 @@ function validSpecies(v: unknown): v is Species {
 /** An optional lay snapshot: legal anatomy of the record's own body. */
 function validBuild(v: Record<string, unknown>): boolean {
   return (v.build === undefined || (parseBuild(v.build) !== null && (v.plan === undefined || (v.build as Build).body === v.plan)))
-    && (v.launch === undefined || (record(v.launch) && v.plan !== undefined && Object.entries(v.launch).every(([k, r]) => oneOf(k, PLACES) && Array.isArray(r) && r.every((x) => oneOf(x, PART_IDS)))
-      && !anatomyProblems(v.plan as PlanId, v.launch as Rows).length))
+    && (v.growth === undefined || (record(v.growth) && record(v.growth.rows) && v.plan !== undefined
+      && typeof v.growth.branched === 'boolean' && (v.growth.origin === undefined || text(v.growth.origin))
+      && Object.entries(v.growth.rows).every(([k, r]) => oneOf(k, PLACES) && Array.isArray(r) && r.every((x) => oneOf(x, PART_IDS)))
+      && !anatomyProblems(v.plan as PlanId, v.growth.rows as Rows).length
+      && !verbProblems(planBuild({ body: v.plan as PlanId, size: 1, rows: {}, order: [], ranks: (v.build as Build | undefined)?.ranks }, v.growth.rows as Rows)).length))
     && (v.diet === undefined || (record(v.diet) && Object.entries(v.diet).every(([key, n]) => (key === 'prey' || Object.hasOwn(NODES, key)) && finite(n))));
 }
 
@@ -119,7 +123,12 @@ export function parseSeaSave(json: string | null): Parsed {
     const s: unknown = JSON.parse(json);
     if (!record(s) || !integer(s.v, 1)) return { save: null, problem: 'broken' };
     if (s.v > SEA_SAVE_VERSION) return { save: null, problem: 'newer' };
-    if (s.v < SEA_SAVE_VERSION) return { save: null, problem: 'none' }; // the cutover reset: a fresh sea, no message
+    if (s.v < 5) return { save: null, problem: 'none' }; // the cutover reset: a fresh sea, no message
+    if (s.v === 5 && record(s.pending)) {
+      const rows = s.pending.launch ?? (record(s.pending.build) ? s.pending.build.rows : undefined);
+      if (rows) s.pending.growth = { rows, branched: false };
+      delete s.pending.launch;
+    }
     if (!validProgress(s) || !validLines(s.lines)) return { save: null, problem: 'broken' };
     const sea = readSea(s.sea, s.seed as number);
     if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea) || !validPlace(s.pending as unknown as Record<string, unknown>, sea) || !validBuild(s.pending as unknown as Record<string, unknown>)))

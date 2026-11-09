@@ -1,3 +1,4 @@
+import { grownLife } from './build';
 // The Life's rules: the stack test's checks (both halves ran these).
 import { describe, expect, it } from 'vitest';
 import { PLACES, type Rows } from '../src/data/body';
@@ -15,15 +16,15 @@ const WORM = build('worm', { sides: ['gut'], tail: ['sclerite'] });
 
 describe('the starting build', () => {
   it('every body has a legal preset; a Life refuses another body or an illegal build', () => {
-    for (const plan of PLAN_IDS) expect(L.newLife(1, plan).build.body).toBe(plan);
-    expect(() => L.newLife(1, 'worm', undefined, L.presetBuild('arthropod'))).toThrow();
-    expect(() => L.newLife(1, 'worm', undefined, build('worm', { limbs: ['chaetae'] }))).toThrow();
+    for (const plan of PLAN_IDS) expect(grownLife(1, plan).build.body).toBe(plan);
+    expect(() => grownLife(1, 'worm', undefined, L.presetBuild('arthropod'))).toThrow();
+    expect(() => grownLife(1, 'worm', undefined, build('worm', { limbs: ['chaetae'] }))).toThrow();
   });
 });
 
 describe('the mud flats Life', () => {
   it('starts with the fixed body', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     expect([l.x, l.y, L.size(l), l.food]).toEqual([3, 1, 1, RULE.startFood]);
     expect(parts(l).sort()).toEqual(['gut', 'sclerite']);
     expect(L.upkeep(l)).toBe(2);
@@ -32,7 +33,7 @@ describe('the mud flats Life', () => {
   });
 
   it('crawls on sand and tunnels through mud', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     let ds = L.dests(l);
     expect(ds.has(T(2, 3)) && ds.has(T(0, 3)) && ds.has(T(1, 2))).toBe(true);
     expect(ds.has(T(1, 4))).toBe(false); // rock blocks
@@ -44,7 +45,7 @@ describe('the mud flats Life', () => {
   });
 
   it('eats, and locks what it cannot eat', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     L.move(l, T(2, 3));
     L.move(l, T(3, 3));
     const eats = l.events.filter((e) => e.k === 'eat');
@@ -57,10 +58,10 @@ describe('the mud flats Life', () => {
   });
 
   it('moults, picks a part and lays', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     l.food = 40;
     expect(L.canLay(l)).toBe(false);
-    expect(L.moultCost(l)).toBe(3);
+    expect(L.moultCost(l)).toBe(2);
     L.moult(l);
     expect([L.size(l), l.phase]).toEqual([2, 'offer']);
     expect(l.offers.length).toBeGreaterThanOrEqual(3);
@@ -81,7 +82,7 @@ describe('the mud flats Life', () => {
   });
 
   it('starves: sheds the newest row, then loses health', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     l.food = 0; L.stay(l);
     expect(parts(l)).toEqual(['gut']);
     l.food = 0; L.stay(l);
@@ -90,7 +91,7 @@ describe('the mud flats Life', () => {
   });
 
   it('the hunter arrives, marks, strikes and rests', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     l.food = 99;
     for (let k = 0; k < 5; k++) L.stay(l);
     expect(l.turn).toBe(6);
@@ -111,7 +112,7 @@ describe('the mud flats Life', () => {
   });
 
   it('mud hides you; guards block by side', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     expect(L.hitOn(l, 2, 2, 3, 2).kind).toBe('buried');
     expect(L.hitOn(l, 2, 0, 3, 1).kind).toBe('blocked'); // sclerites on the tail, a strike from behind
     const h = L.hitOn(l, 1, 2, 3, 1); // from the east while facing south: your left side
@@ -119,7 +120,7 @@ describe('the mud flats Life', () => {
   });
 
   it('the mudslide takes oxygen in mud', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     l.food = 99;
     L.move(l, T(2, 3));
     while (l.turn < 12) L.stay(l);
@@ -129,7 +130,7 @@ describe('the mud flats Life', () => {
   });
 
   it('a season ends after 20 turns', () => {
-    const l = L.newLife(7, 'worm', MUD_FLATS, WORM);
+    const l = grownLife(7, 'worm', MUD_FLATS, WORM);
     l.food = 999;
     L.move(l, T(2, 3));
     l.x = 5; l.y = 4; // deep in the mud field

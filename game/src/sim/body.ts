@@ -8,7 +8,7 @@ import { NODES, PARTS, PLANS, RULE, type NodeId, type PartId, type PlanId, type 
 import { ENHANCED, type RankId, type Ranks } from '../data/lineages';
 
 /** `ranks`: the line's upgrades at launch (21A), carried through moults and into the lay snapshot. */
-export interface Build { body: PlanId; size: number; rows: Rows; order: PlaceId[]; lost?: PlaceId[]; ranks?: Ranks }
+export interface Build { body: PlanId; size: number; rows: Rows; order: PlaceId[]; lost?: PlaceId[]; buds?: Rows; ranks?: Ranks }
 /** What a line lets a starting build use: its pool of parts and its ranks. */
 export interface LinePool { parts: readonly PartId[]; ranks?: Ranks }
 
@@ -100,7 +100,7 @@ function rowWith(body: PlanId, cur: Row | undefined, part: PartId, place: PlaceI
   return legal([part]) ? [part] : null;
 }
 /** Set a row; it becomes the newest install unless `keep` holds its place in the order (a starter extending a default). */
-function setRow(b: Build, place: PlaceId, row: Row | null, keep = false): Build {
+export function setRow(b: Build, place: PlaceId, row: Row | null, keep = false): Build {
   const rows = { ...b.rows }, order = row && keep && b.order.includes(place) ? [...b.order] : b.order.filter((p) => p !== place);
   if (row) { rows[place] = row; if (!order.includes(place)) order.push(place); } else delete rows[place];
   const next: Build = { ...b, rows, order }, lost = (b.lost ?? []).filter((p) => p !== place);

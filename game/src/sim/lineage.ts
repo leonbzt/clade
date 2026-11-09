@@ -4,9 +4,9 @@
 import { PLACES, type PlaceId, type Rows } from '../data/body';
 import { LINEAGES, LINEAGE_IDS, LINE_RULE, UPGRADES, type Ranks, type RankId, type Upgrade } from '../data/lineages';
 import { PARTS, PART_IDS, type PartId, type PlanId } from '../data/life';
-import { anatomyProblems, changesFor, homesOf, partsOf, startBuild, type Build } from './body';
+import { anatomyProblems, changesFor, homesOf, partsOf, type Build } from './body';
 import { integer, oneOf, record, text, tiers } from './save-validation';
-import { designOf } from './share';
+import { planBuild, sameRow, type Plan } from './plan';
 
 export interface Species { name: string; rows: Rows; mutation: PartId | null; life: number; tier: string }
 export interface Line { xp: number; points: number; parts: PartId[]; ranks: Ranks; species: Species[] }
@@ -14,7 +14,7 @@ export type Lines = Partial<Record<PlanId, Line>>;
 /** What a settled Life did to its line, for the return line. */
 export interface Gain {
   plan: PlanId; xp: number; xpFrom: number; from: number; level: number; unlocked: PartId[]; title: string | null;
-  species: string | null; opened: PlanId[];
+  species: string | null; grew?: boolean; opened: PlanId[];
 }
 
 /** A new line: the lineage's start pool, plus any built-ins its recipe gives (they join the pool at Signature). */
@@ -80,19 +80,27 @@ export function buy(plan: PlanId, line: Line, id: string): boolean {
 }
 
 // ---- saved species ----
-/** A new species' body: the body the Life launched as (else its laid build) with the kept card put in where it fits,
- * as a starting design of the line's pool. `place` is where the card went (null if it found no place). */
-export function speciesOf(line: Line, laid: Build, mutation: PartId | null, launch?: Rows): { rows: Rows; place: PlaceId | null } {
-  const pool = mutation && !line.parts.includes(mutation) ? { ...line, parts: [...line.parts, mutation] } : line; // the card unlocks its part
-  const base = launch ? startBuild(laid.body, launch, pool).build : laid;
-  const change = mutation ? changesFor(base, mutation)[0] : undefined;
-  return { rows: designOf(change ? change.build : base, pool).rows, place: change?.place ?? null };
+/** The frozen plan plus the kept gene: prefer a free place before replacing a held row. */
+export function speciesOf(_line: Line, laid: Build, mutation: PartId | null, growth?: Plan): { rows: Rows; place: PlaceId | null } {
+  const base = planBuild(laid, growth?.rows ?? laid.rows);
+  const choices = mutation ? changesFor(base, mutation) : [];
+  const change = choices.find((c) => !c.was) ?? choices[0];
+  return { rows: structuredClone(change?.build.rows ?? base.rows), place: change?.place ?? null };
 }
-/** Save a species (21B: the launch body plus the kept card; the parts a Life grew stay with that Life). The newest
- * comes first; the oldest drops past the limit. */
-export function saveSpecies(line: Line, laid: Build, mutation: PartId | null, life: number, tier: string, launch?: Rows): Species {
-  const sp: Species = { name: speciesName(laid.body, line, mutation), rows: speciesOf(line, laid, mutation, launch).rows, mutation, life, tier };
-  line.species = [sp, ...line.species].slice(0, LINE_RULE.species);
+/** Shared by hatching and settlement, so a preview names the same fill or branch that is saved. */
+export function speciesPreview(line: Line, laid: Build, mutation: PartId | null, growth?: Plan) {
+  const result = speciesOf(line, laid, mutation, growth);
+  const origin = growth?.origin && !growth.branched ? line.species.find((sp) => sp.name === growth.origin) : undefined;
+  const grows = !!origin && !(result.place && growth?.rows[result.place]?.length) && PLACES.every((p) => !origin.rows[p]?.length || sameRow(origin.rows[p], result.rows[p]));
+  return { ...result, grows, name: grows ? origin!.name : speciesName(laid.body, line, mutation) };
+}
+/** A fill updates its species in place; a swap (even one later reversed) saves a new branch. */
+export function saveSpecies(line: Line, laid: Build, mutation: PartId | null, life: number, tier: string, growth?: Plan): Species {
+  const next = speciesPreview(line, laid, mutation, growth), old = next.grows ? line.species.find((sp) => sp.name === next.name) : undefined;
+  const sp: Species = { name: next.name, rows: next.rows, mutation: mutation ?? old?.mutation ?? null, life,
+    tier: old && TIER.indexOf(old.tier) < TIER.indexOf(tier) ? old.tier : tier };
+  for (const p of partsOf(sp.rows)) unlock(line, p);
+  line.species = [sp, ...line.species.filter((s) => s !== old)].slice(0, LINE_RULE.species);
   return sp;
 }
 export const nextSpeciesName = (plan: PlanId, line: Line, m: PartId | null) => speciesName(plan, line, m);
@@ -113,21 +121,23 @@ export function recipesMet(lines: Lines, laid: Build, tier: string): PlanId[] {
 }
 
 /** Settle a Life on its line: XP, levels, the kept card's part, the species, any recipe met. */
-export function settleLine(lines: Lines, plan: PlanId, eggs: number, tier: string, laid: Build | undefined, kept: PartId | null, life: number, launch?: Rows): Gain {
+export function settleLine(lines: Lines, plan: PlanId, eggs: number, tier: string, laid: Build | undefined, kept: PartId | null, life: number, growth?: Plan): Gain {
   const line = lines[plan] ??= newLine(plan), from = levelOf(line.xp), xpFrom = line.xp, xp = xpFor(eggs, tier);
   const unlocked = addXp(plan, line, xp);
   if (eggs > 0 && kept && unlock(line, kept)) unlocked.push(kept);
-  const species = eggs > 0 && laid ? saveSpecies(line, laid, kept, life, tier, launch).name : null;
+  if (eggs > 0 && laid) for (const p of partsOf(growth?.rows ?? laid.rows)) if (unlock(line, p)) unlocked.push(p);
+  const preview = eggs > 0 && laid ? speciesPreview(line, laid, kept, growth) : null;
+  const species = preview && laid ? saveSpecies(line, laid, kept, life, tier, growth).name : null;
   const opened = eggs > 0 && laid ? recipesMet(lines, laid, tier) : [];
   for (const id of opened) lines[id] = newLine(id);
-  return { plan, xp, xpFrom, from, level: levelOf(line.xp), unlocked, title: from < LINE_RULE.cap && levelOf(line.xp) >= LINE_RULE.cap ? LINEAGES[plan].endPoint : null, species, opened };
+  return { plan, xp, xpFrom, from, level: levelOf(line.xp), unlocked, title: from < LINE_RULE.cap && levelOf(line.xp) >= LINE_RULE.cap ? LINEAGES[plan].endPoint : null, species, grew: preview?.grows ?? false, opened };
 }
 
 /** The return line: "+72 XP · Worm line level 2 · unlocked Gill". */
 export function gainText(g: Gain): string {
   const bits = [`+${g.xp} XP`, `${LINEAGES[g.plan].name} line level ${g.level}${g.level > g.from ? ' (up)' : ''}`];
   if (g.unlocked.length) bits.push(`unlocked ${g.unlocked.map((p) => PARTS[p].name).join(', ')}`);
-  if (g.species) bits.push(`new species: ${g.species}`);
+  if (g.species) bits.push(g.grew ? `${g.species} grows` : `new species: ${g.species}`);
   if (g.title) bits.push(`your line became ${g.title}`);
   for (const id of g.opened) bits.push(`your form became a${id === 'arthropod' ? 'n' : ''} ${LINEAGES[id].name.toLowerCase()}: a new lineage`);
   return bits.join(' · ');

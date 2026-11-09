@@ -3,6 +3,7 @@
 export const COLS = 8, ROWS = 11, TURNS = 20; // portrait: the toy's board turned a quarter
 
 export const RULE = {
+  budShare: 0.5, // fraction of a full moult paid for regrowth (rounded up)
   startFood: 6, baseUpkeep: 1, oxygen: 3, health: 3,
   layCost: 4, gutFood: 2, gillOxygen: 2, eyeSense: 2, compoundSense: 20, maxRange: 5,
   adultSize: 3, maxSize: 5, // lay from size 3; every moult adds a size, a part and eggs per lay

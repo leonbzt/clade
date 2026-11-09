@@ -1,3 +1,4 @@
+import { grownLife } from './build';
 // Slice 10: verbs come from parts; 1–3 picked; each does its one thing and recharges.
 import { describe, expect, it } from 'vitest';
 import { HABITATS, MUD_FLATS } from '../src/data/habitats';
@@ -8,7 +9,7 @@ import * as L from '../src/sim/life';
 import { useVerb } from '../src/sim/verbs';
 
 const life = (style: StyleId, plan: 'worm' | 'arthropod' = 'worm', hab = MUD_FLATS) =>
-  L.newLife(9, plan, hab, startBuild(plan, PRESETS[plan][style]!).build);
+  grownLife(9, plan, hab, startBuild(plan, PRESETS[plan][style]!).build);
 
 describe('verbs', () => {
   it('a preset is a starting body; its parts give the verbs', () => {

@@ -5,6 +5,7 @@ import type { Rows } from '../data/body';
 import { PLAN_IDS, type PlanId } from '../data/life';
 import { SEA, lineId } from '../data/sea';
 import { startBuild } from './body';
+import { samePlan } from './plan';
 import { rollClutch } from './clutch';
 import { boardForPatch, resultOf } from './door';
 import { tierName } from './garden';
@@ -37,7 +38,7 @@ export function startSeaLife(s: SeaSave, seed: number, patch: number, plan: Plan
   if (problems.length) throw new Error(`Illegal starting build: ${problems.join('; ')}`);
   const l = newLife(seed, plan, boardForPatch(s.sea, patch), build);
   l.pool = [...line.parts];
-  l.launch = structuredClone(build.rows);
+  l.growth.origin = line.species.find((sp) => samePlan(sp.rows, build.rows))?.name;
   return l;
 }
 
@@ -46,7 +47,7 @@ export function completeLife(s: SeaSave, life: Life, clutchSeed: number): SeaPen
   if (life.phase !== 'over' || life.hab.patch === undefined || !s.sea.patches[life.hab.patch]) throw new Error('Life has no completed patch result');
   const r = resultOf(life), tier = tierName(r.hab, r.eggs);
   const p: SeaPending = { ...r, patch: life.hab.patch, species: lineId(r.plan, r.role), tier,
-    ...(life.laid && r.eggs > 0 ? { build: structuredClone(life.laid), ...(life.launch ? { launch: structuredClone(life.launch) } : {}) } : {}), diet: { ...life.ate },
+    ...(life.laid && r.eggs > 0 ? { build: structuredClone(life.laid), ...(life.laidPlan ? { growth: structuredClone(life.laidPlan) } : {}) } : {}), diet: { ...life.ate },
     cards: rollClutch(clutchSeed, r.plan, r.hab, r.eggs, tier, life.rarePassed ? life.rareGot : null) };
   s.pending = p;
   if (p.eggs > 0) s.continuation = { patch: p.patch, species: p.species, plan: p.plan, role: p.role, eggs: p.eggs };
@@ -73,7 +74,7 @@ export function releaseStrength(s: SeaSave, p: SeaPending, patch: number): numbe
  * unlocks its part and becomes the new species' mutation. Returns what the line gained, or null. */
 export function settlePending(s: SeaSave, p: SeaPending, card = -1): Settlement | null {
   if (s.pending !== p || !Number.isInteger(card) || card < -1 || card >= p.cards.length) return null;
-  const gain = settleLine(s.lines, p.plan, p.eggs, p.tier, p.build, card >= 0 ? p.cards[card].part : null, s.lives + 1, p.launch);
+  const gain = settleLine(s.lines, p.plan, p.eggs, p.tier, p.build, card >= 0 ? p.cards[card].part : null, s.lives + 1, p.growth);
   const k = s.sea.species.findIndex((sp) => sp.id === p.species), at = p.place ?? p.patch;
   const snapshot = () => s.sea.patches.map((q) => q.pop[k]);
   let spread: Spread | null = null;

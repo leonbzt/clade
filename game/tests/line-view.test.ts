@@ -26,7 +26,7 @@ describe('21B line screens', () => {
     expect(bar(LINE_RULE.xpAt[2] + 7)).toMatchObject({ level: 2, into: 7, step: LINE_RULE.xpAt[3] - LINE_RULE.xpAt[2] });
     expect(bar(1e6)).toMatchObject({ level: LINE_RULE.cap, pct: 1 });
     const lines: Lines = { worm: newLine('worm') }, laid = B.defaultBuild('worm');
-    const g = settleLine(lines, 'worm', 40, 'B', laid, 'pouch', 1, laid.rows); // 160 XP: levels 2 and 3
+    const g = settleLine(lines, 'worm', 40, 'B', laid, 'pouch', 1, { rows: laid.rows, branched: false }); // 160 XP: levels 2 and 3
     expect(levelLines(g).map((l) => l.text)).toEqual(['Level 2: +1 point · unlocked Gill', 'Level 3: +1 point · unlocked Proboscis']);
     expect(afterLines(g)).toEqual(["Kept card: Brood pouch joins your line's parts", 'New species: Worm 1 (brood pouch)']);
     expect(track('worm', lines.worm!).filter((t) => t.reached).length).toBe(3);

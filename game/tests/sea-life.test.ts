@@ -40,8 +40,8 @@ describe('patch snapshots', () => {
       for (let turn = 0; turn < TURNS && l.phase !== 'over'; turn++) {
         if (L.size(l) < 3 && L.canMoult(l)) {
           L.moult(l);
-          const pick = [...l.offers].sort((a, b) => PARTS[a].upkeep - PARTS[b].upkeep || a.localeCompare(b))[0];
-          L.pick(l, pick);
+          const pick = l.offers.filter((p) => L.offerChanges(l, p).some((c) => l.food >= L.pickCost(l, c.bud) - L.pickCost(l, true))).sort((a, b) => PARTS[a].upkeep - PARTS[b].upkeep || a.localeCompare(b))[0];
+          L.pick(l, pick ?? null);
         }
         if (L.canLay(l) && l.food >= 4 + L.upkeep(l) + 2) { L.lay(l); continue; }
         const nearby = l.tiles.reduce((n, t, i) => n + (t.node === 'buried' && L.dist(l.x, l.y, ...L.xy(i)) <= 1 ? 1 : 0), 0);
@@ -291,7 +291,7 @@ describe('storage and design sharing', () => {
     for (const text of ['bad', '{"v":4}', '{"v":3}', '{"v":2}']) expect(importSeaSave(text, write).save).toBeNull();
     expect(writes).toBe(0); expect(stored).toBe(serializeSeaSave(s));
     expect(importSeaSave(serializeSeaSave(freshSeaSave(2, 0)), () => { throw new Error('quota'); }).save).toBeNull();
-    expect(importSeaSave(stored, write).save?.v).toBe(5);
+    expect(importSeaSave(stored, write).save?.v).toBe(6);
     const raw = JSON.parse(stored); raw.sea.species[0].build = bld('swimmer', { front: ['arms'], limbs: ['flap'] }); raw.sea.species[0].plan = 'worm';
     expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken');
   });

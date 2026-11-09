@@ -20,9 +20,10 @@ describe('the three boards', () => {
     }
   });
 
-  it('the arthropod starts with its verbs\' parts, and runs 2 tiles on sand', () => {
+  it('the arthropod starts with walking legs and its preset as buds, and runs 2 tiles on sand', () => {
     const l = sand();
-    expect(parts(l)).toEqual(['digger', 'eye', 'leg']); // the digger preset: walking/digging limbs and an eye
+    expect(parts(l)).toEqual(['leg']);
+    expect(l.build.buds).toEqual({ eyes: ['eye'], limbs: ['leg', 'digger'] }); // the digger preset: walking/digging limbs and an eye
     expect(L.dests(l).has(L.at(4, 8))).toBe(true); // two tiles south over open sand
   });
 

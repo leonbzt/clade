@@ -89,7 +89,7 @@ describe('sea saves', () => {
     ];
     for (const change of changes) { const raw = JSON.parse(original); change(raw); expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken'); }
     expect(parseSeaSave('{oops').problem).toBe('broken'); expect(parseSeaSave(null).problem).toBe('none');
-    expect(parseSeaSave('{"v":6}').problem).toBe('newer');
+    expect(parseSeaSave('{"v":7}').problem).toBe('newer');
     expect(serializeSeaSave(active)).toBe(original);
   });
 });
@@ -105,7 +105,7 @@ describe('the 20C cutover', () => {
     const r = parseSeaSave(serializeSeaSave(s));
     expect(r.problem).toBeNull();
     expect(wire(r.save!)).toEqual(wire(s));
-    expect(r.save!.v).toBe(5);
+    expect(r.save!.v).toBe(6);
   });
 });
 
