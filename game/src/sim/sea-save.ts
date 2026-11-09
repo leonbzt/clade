@@ -19,7 +19,7 @@ export const SEA_SAVE_VERSION = 5;
 export interface Continuation { patch: number; species: string; plan: Pending['plan']; role: Pending['role']; eggs: number }
 /** A finished Life waiting to settle: `build` is the latest lay's snapshot (none without eggs). */
 /** `launch`: the body the Life started as (21B); with the kept card it becomes the new species. */
-export interface SeaPending extends Pending { patch: number; species: string; build?: Build; diet?: Diet; launch?: Rows }
+export interface SeaPending extends Pending { patch: number; place?: number; species: string; build?: Build; diet?: Diet; launch?: Rows }
 export interface SeaSave extends Omit<Save, 'v' | 'garden' | 'pending' | 'forms'> {
   v: typeof SEA_SAVE_VERSION; sea: Sea; news: Headline[]; pending?: SeaPending; continuation?: Continuation;
   lines: Lines; // one per open lineage (21A)
@@ -107,6 +107,11 @@ function validReference(v: unknown, sea: Sea): v is Continuation {
   return !!sp?.line && sp.plan === v.plan && sp.role === v.role;
 }
 
+function validPlace(v: Record<string, unknown>, sea: Sea): boolean {
+  return v.place === undefined || (patchRef(v.place, sea.patches.length)
+    && (v.place === v.patch || sea.patches[v.patch as number].nb.includes(v.place as number)));
+}
+
 type Parsed = { save: SeaSave | null; problem: 'none' | 'broken' | 'newer' | null };
 export function parseSeaSave(json: string | null): Parsed {
   if (!json) return { save: null, problem: 'none' };
@@ -117,7 +122,7 @@ export function parseSeaSave(json: string | null): Parsed {
     if (s.v < SEA_SAVE_VERSION) return { save: null, problem: 'none' }; // the cutover reset: a fresh sea, no message
     if (!validProgress(s) || !validLines(s.lines)) return { save: null, problem: 'broken' };
     const sea = readSea(s.sea, s.seed as number);
-    if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea) || !validBuild(s.pending as unknown as Record<string, unknown>)))
+    if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea) || !validPlace(s.pending as unknown as Record<string, unknown>, sea) || !validBuild(s.pending as unknown as Record<string, unknown>)))
       || (s.continuation !== undefined && (!validReference(s.continuation, sea) || s.continuation.eggs <= 0))) return { save: null, problem: 'broken' };
     if (!Array.isArray(s.news) || s.news.length > SEA.keepLines) return { save: null, problem: 'broken' };
     const news: Headline[] = [];

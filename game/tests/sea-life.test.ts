@@ -4,14 +4,15 @@ import { PLACES, type Rows } from '../src/data/body';
 import { PARTS, TURNS, type PlanId } from '../src/data/life';
 import { type Build } from '../src/sim/body';
 import { decodeDesign, encodeDesign } from '../src/sim/body-hurt';
-import { lineId } from '../src/data/sea';
+import { SEA, lineId } from '../src/data/sea';
+import { MODEL } from '../src/data/garden';
 import { boardFacts, boardForPatch } from '../src/sim/door';
 import { feeding } from '../src/sim/feeding';
 import { preyStep, swimMove } from '../src/sim/hunt';
 import * as L from '../src/sim/life';
 import { release, step } from '../src/sim/sea';
 import { newLine } from '../src/sim/lineage';
-import { canLaunch, completeLife, launchBodies, launchPatches, settlePending, startSeaLife } from '../src/sim/sea-life';
+import { canLaunch, completeLife, launchBodies, launchPatches, placePending, settlePending, startSeaLife } from '../src/sim/sea-life';
 import { freshSeaSave, parseSeaSave, serializeSeaSave, type SeaSave } from '../src/sim/sea-save';
 import { importSeaSave, writeSeaSave } from '../src/sim/sea-storage';
 import { designOf } from '../src/sim/share';
@@ -127,6 +128,50 @@ describe('patch snapshots', () => {
 });
 
 describe('completed results and continuation', () => {
+  it('places eggs in a neighbour after reload and retains the Life\'s proven ground', () => {
+    const s = freshSeaSave(1, 0), origin = s.sea.patches.find((p) => p.nb.some((n) => s.sea.patches[n].ground !== p.ground))!;
+    const next = origin.nb.find((n) => s.sea.patches[n].ground !== origin.ground)!;
+    const { pending: p } = finish(s, origin.id);
+    expect(placePending(s, p, next)).toBe(true);
+    expect(population(s)).toBe(0);
+    const restored = reload(s), expected = reload(s), q = restored.pending!;
+    expect(q.place).toBe(next);
+    release(expected.sea, next, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    for (let k = 0; k < MODEL.afterLife; k++) step(expected.sea);
+    settlePending(restored, q);
+    expect(restored.sea).toEqual(expected.sea);
+    expect(restored.continuation?.patch).toBe(next);
+    const k = restored.sea.species.findIndex((sp) => sp.id === p.species);
+    expect(restored.sea.patches[next].fit[k]).toBe(p.eggs * SEA.unproven);
+    expect(restored.sea.patches[origin.id].fit[k]).toBe(p.eggs);
+  });
+
+  it('rejects illegal, malformed and stale placement without changing the save', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0);
+    const far = s.sea.patches.find((q) => q.id !== p.patch && !s.sea.patches[p.patch].nb.includes(q.id))!.id;
+    const before = serializeSeaSave(s);
+    for (const patch of [far, -1, 0.5, NaN, s.sea.patches.length]) {
+      expect(placePending(s, p, patch)).toBe(false);
+      expect(serializeSeaSave(s)).toBe(before);
+    }
+    for (const place of [far, -1, 0.5, null, '0']) {
+      const raw = JSON.parse(before); raw.pending.place = place;
+      expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken');
+    }
+    expect(placePending(s, { ...p }, p.patch)).toBe(false);
+    settlePending(s, p);
+    const settled = serializeSeaSave(s);
+    expect(placePending(s, p, p.patch)).toBe(false);
+    expect(serializeSeaSave(s)).toBe(settled);
+  });
+
+  it('defaults to the Life\'s patch exactly as an explicit choice of that patch', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0), chosen = reload(s);
+    expect(placePending(chosen, chosen.pending!, p.patch)).toBe(true);
+    settlePending(s, p); settlePending(chosen, chosen.pending!);
+    expect(JSON.parse(serializeSeaSave(s))).toEqual(JSON.parse(serializeSeaSave(chosen)));
+  });
+
   it('round-trips a real terminal lay before playback and settles once after reload', () => {
     const s = freshSeaSave(1, 0), { life, pending } = finish(s, 0);
     expect(pending.eggs).toBe(life.eggs); expect(pending.eggs).toBeGreaterThan(0);

@@ -199,14 +199,14 @@ function boomCause(s: Sea, p: SeaPatch, k: number): string {
 }
 
 /** Actual eggs only. A weaker clutch never lowers fitness, on this ground or elsewhere. */
-export function release(s: Sea, patch: number, plan: PlanId, role: Role, eggs: number, build?: Build, diet?: Diet): string {
+export function release(s: Sea, patch: number, plan: PlanId, role: Role, eggs: number, build?: Build, diet?: Diet, proven = s.patches[patch]?.ground): string {
   const id = lineId(plan, role), k = s.species.findIndex((x) => x.id === id), p = s.patches[patch];
   if (!p || k < 0 || !Number.isSafeInteger(eggs) || eggs < 0) throw new Error('Invalid sea release');
   if (eggs === 0) return id;
   if (build && eggs >= Math.max(...s.patches.map((q) => q.fit[k]))) { // the strongest release sets the line's look, latest on ties
     s.species[k].build = structuredClone(build); s.species[k].diet = diet ? { ...diet } : undefined;
   }
-  for (const q of s.patches) q.fit[k] = Math.max(q.fit[k], q.ground === p.ground ? eggs : eggs * SEA.unproven);
+  for (const q of s.patches) q.fit[k] = Math.max(q.fit[k], q.ground === proven ? eggs : eggs * SEA.unproven);
   p.pop[k] += eggs; p.peak[k] = Math.max(p.peak[k], p.pop[k]); p.low[k] = p.pop[k]; p.came[k] = -2;
   return id;
 }

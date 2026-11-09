@@ -47,14 +47,23 @@ export function completeLife(s: SeaSave, life: Life, clutchSeed: number): SeaPen
   return p;
 }
 
+/** Choose a release point without settling or changing the proven ground. */
+export function placePending(s: SeaSave, p: SeaPending, patch: number): boolean {
+  if (s.pending !== p || p.eggs <= 0 || !Number.isInteger(patch)
+    || (patch !== p.patch && !s.sea.patches[p.patch].nb.includes(patch))) return false;
+  p.place = patch;
+  return true;
+}
+
 /** A stale/double click cannot release again, move the line twice, or advance the sea twice. The kept card (or none)
  * unlocks its part and becomes the new species' mutation. Returns what the line gained, or null. */
 export function settlePending(s: SeaSave, p: SeaPending, card = -1): Gain | null {
   if (s.pending !== p || !Number.isInteger(card) || card < -1 || card >= p.cards.length) return null;
   const gain = settleLine(s.lines, p.plan, p.eggs, p.tier, p.build, card >= 0 ? p.cards[card].part : null, s.lives + 1, p.launch);
   if (p.eggs > 0) {
-    release(s.sea, p.patch, p.plan, p.role, p.eggs, p.build, p.diet);
-    s.continuation = { patch: p.patch, species: p.species, plan: p.plan, role: p.role, eggs: p.eggs };
+    const patch = p.place ?? p.patch;
+    release(s.sea, patch, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    s.continuation = { patch, species: p.species, plan: p.plan, role: p.role, eggs: p.eggs };
   }
   for (let k = 0; k < MODEL.afterLife; k++) tell(s.sea, s.news, step(s.sea));
   const key = `${p.hab}:${p.role}`;
