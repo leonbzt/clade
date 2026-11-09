@@ -597,3 +597,9 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   could be kept? or upgraded? could be a longer process that plays over multiple runs", is in ideas.md.
 - **The pool stays strict for now:** "leave it for now, lean wild moult offer maybe and show cards better but for now
   its ok". Both are in ideas.md; the hatching screen marks new genes anyway.
+
+## 9 Nov, the 21B play and the work split
+- **Claude plans, Codex builds:** "A": Claude (Opus) does kickoff, triage, specs, build briefs and reviews; Codex
+  (ChatGPT Pro) builds from the brief. Set up in `AGENTS.md` and `workflow.md`. 21A and 21B committed first.
+- **21B play:** hatching, the XP screen and the close-up are "really cool approaches"; lines level fast, "okay".
+  Not pulled to play lately; worries about repetition and "a heavy authorship direction" (notes in the playtest).

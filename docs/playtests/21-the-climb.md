@@ -23,3 +23,12 @@ just unlocked arthropods, it didn't make sense that they have sclerite and probo
 - No leg for worms: the worm → arthropod recipe is sclerites + proboscis (levels 4 and 3), a stand-in until step 7's lobopod. Ideas.
 - Only unlocked parts: left for now (your call); new genes are marked "New" in hatching.
 - Dev menu: the map covered the top bar's Feel button; the map has a Dev button now. Hidden box: the patch card's `hidden` didn't apply, so it showed empty behind the launcher; fixed.
+
+## 21B play (9 Nov)
+"hatching the xp screen and line close-up are all really cool approaches." The hidden box still seems to be there.
+"I haven't been pulled to play more since a while, maybe I just replayed too much, I think in life v2 it was the most
+fun for me, and also finding places for different species was pretty fun. I'm not sure what changed to make it more
+repetitive, but it might just be the fresh start over and over. all of the recent changes are good for the ui and the
+game, but maybe we just need the balancing pass lateron. also the map being linear seems a little boring. lines level
+really fast but that's also okay. I also feel a little like we're moving in a heavy authorship direction, instead of
+the more free appearing gene combinations like in v1, where life is more fluid, but that could be ok as well."

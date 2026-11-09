@@ -81,6 +81,13 @@ idea ──► ideas.md (one line) ──► proposals.md (when a milestone need
 independent. Give each a bounded file scope and avoid overlapping edits. Searches, routine checks and small tasks
 do not justify delegation; parallel agents can multiply tokens and conflicting changes.
 
+### Claude plans, Codex builds (*decided 9 Nov*)
+- **Claude (Opus):** kickoff, play triage, design calls, specs, the **build brief** (a short section at the end of
+  the slice spec: files, behaviour, checks) and the review of Codex's diff.
+- **Codex (ChatGPT Pro):** builds one brief per session on the slice branch, runs `npm run check` (and
+  `npm run look` for screens), commits, updates `status.md`. It asks instead of deciding design.
+- The commands live in `.claude/commands/` (`kickoff`, `spec`, `handoff`); Codex follows the same files (`AGENTS.md`).
+
 | Agent | Defined in | What it does |
 | --- | --- | --- |
 | `researcher` | `.claude/agents/researcher.md` | Web research; writes a sourced summary to `docs/research/`; replies in under 10 lines |

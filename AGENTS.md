@@ -60,6 +60,16 @@ are in docs/workflow.md.
 - Use one agent by default. Subagents require an explicit request
   and a genuinely independent task.
 
+## Claude and Codex (9 Nov)
+Claude plans and reviews; Codex builds (docs/workflow.md, Delegation).
+- "kickoff", "spec", "handoff": follow `.claude/commands/<name>.md`
+  (`$ARGUMENTS` is the rest of the user's message).
+- A build session implements the "Build brief" at the end of the
+  active slice spec, in its order, and nothing else. A design
+  question goes back to the user (or Claude), never decided here.
+- End with `npm run check` passing, one commit per brief part,
+  and a handoff in docs/status.md naming what Claude should review.
+
 ## Scope
 Do not expand the release scope without approval.
 
