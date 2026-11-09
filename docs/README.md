@@ -3,7 +3,7 @@
 Open only what the task needs. Top to bottom is the order of authority: when two docs disagree, the higher one
 wins (and the code is the truth for what's built).
 
-**Current task:** [slice 19: Join the sea](slices/19-join-the-sea.md), M2 step 4. Start with [status.md](status.md)
+**Current task:** [slice 21: The climb](slices/21-the-climb.md), M2 step 6; then [slice 22: The larva](slices/22-the-larva.md) (P48 A). Start with [status.md](status.md)
 and that spec; open the documents below only as the task needs them.
 
 | File | What it holds | Who changes it | When to read it |

@@ -105,6 +105,10 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   - When the slots are full, a moult could rank up a held part, or a run could spend food to strengthen one ("make the body then just grow", you, 9 Nov).
   - Recipes from real traits: the worm → arthropod step should use legs (lobopod limbs), not sclerites and a proboscis; a recipe's key trait could be a rare unlock, or need a combination plus a good score (you, 9 Nov). For step 7.
   - A stronger "pick a build" identity, later (you, 9 Nov; P47).
+  - P47's leftovers (closed 9 Nov): a tier letter per niche, patch notes with a cause, six stat bars with trade-off tooltips, a strong vs / weak vs triangle (you liked them 8 Nov). For step 9.
+  - Several seas to choose from, "pick server": the server select picks the era and a rough region (you, 9 Nov: "future work"); M2 keeps the one sea.
+  - The tree screen: smaller portraits or one shared canvas, so 6–15 lineages fit a phone and stay under the browser's ~16 WebGL contexts (you, 9 Nov: "cool for now"). For step 7.
+  - The map: labels hide the small coastal patches; pinch zoom (AI, 9 Nov, after the quick zoom). For step 9.
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
@@ -158,7 +162,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Today's floor rendered on the 16 px grid, so 16 px animals share its pixels; untried (AI, 7 Nov).
 - AI art test for concept and card art only: Retro Diffusion, your key, under $4 (AI, 6 Nov; not answered).
 - Animals on the sea map: the same recipe baked at about 12 px, a capped few roaming each patch, small portraits instead of numbers on the patch card (AI, 7 Nov). For step 4.
-- A full dex and numeric stat sheets per animal, TierZoo-like (you, 8 Nov: "would be cool in the future"). The rest of the TierZoo concepts are P47; [research](research/tier-zoo.md).
+- A full dex and numeric stat sheets per animal, TierZoo-like (you, 8 Nov: "would be cool in the future"). The rest of the TierZoo concepts were P47 (closed 9 Nov; leftovers above); [research](research/tier-zoo.md).
 - Equipment view polish (you, 9 Nov: "works for now, will need a little more work later"). Also: a result portrait from the lay snapshot (AI, 9 Nov).
 - More icons and symbols instead of text, across screens (you, 9 Nov). For step 9.
 - Draw only some grown parts (e.g. the front) to keep creatures simple (you, 9 Nov: "not sure").

@@ -1,27 +1,23 @@
 # Status
 
-Updated 9 Nov 2026 (Codex). Branch `slice-21c-build`, local only; not pushed.
-**Milestone:** M2, step 6, [slice 21](slices/21-the-climb.md). **21C built; Claude review and your playtest next.**
-**Checkpoint:** base `41ddcf5`; parts 1–4 `2503471`, `6d63e9a`, `bf4f221`, `1499d2a`; final commit “feat(21C-5): add lineage tree and review handoff”.
+Updated 9 Nov 2026 (Claude, 21C review). Branch `slice-21c-build`, local; review fixes **uncommitted** (not asked).
+**Milestone:** M2, step 6, [slice 21](slices/21-the-climb.md). **21C reviewed and fixed; slice 22 specced (in step 6, one sea); your 21C play next.**
 
-**Done (brief order, one commit each):**
-- 1: inactive map/HUD frames hidden behind sheets; launcher no longer mounts a hidden patch panel (`Meta.svelte`, `style.css`). No separate empty modal reproduced; confirm the original reported box in play.
-- 2: `placePending`, validated `pending.place`, neighbour-only release and continuation; `release` keeps the Life's ground proven when eggs move (`sim/sea-life.ts`, `sea-save.ts`, `sea.ts`).
-- 3: map placement, ground/holder/hunters/risk preview, Release here → hatching (`ui/Placement.svelte`, `after-life.ts`). Reload before confirmation resumes choice at the Life patch; afterward resumes hatching.
-- 4: atomic settlement returns two population/headline frames; 1.5 s each, growth/fall pulses, tap-to-skip (`ui/Replay.svelte`, `replay.ts`, map renderer). Playback never advances the sim. Final review kept empty replay patches dark.
-- 5: CSS recipe tree, locked silhouettes, levels, newest three species/+N, close-up return (`ui/Tree.svelte`, `Lines.svelte`, `LineView.svelte`). Compact portraits reuse `Creature`; `main.ts` is 329 lines.
+**Done (review of `41ddcf5..74fb30b`, then fixes):**
+- Review: matches the brief; placement/once-only settlement/save checks hold. Default release unchanged (Life hab = patch ground).
+- No replay after a Life without eggs: `settlePending` returns `spread: null`; the sea still passes 2 generations (`sim/sea-life.ts`).
+- Placing line shows the real start: `releaseStrength` (full on the Life's ground, else max(line's fit, half)); `ui/Placement.svelte`.
+- Replay opens with the release ("Your eggs settle", gold pulse), then "The sea moves on · 1 of 2"; a line explains why (`ui/replay.ts`, `Replay.svelte`, `Meta.svelte`).
+- Map zoom: `ui/MapZoom.svelte` (+/−, 1–3×, touch scroll, mouse drag; auto 2× on the release choices while placing and in the replay). The frame moved from `.isle` to it.
+- Check reliability: dropped the M1 garden's 0.1 ms step timing (flaked under load; the sea's budgets stay); island labels 200 → 60 seeds (2.3 s, timed out under load).
 
-**Verified:**
-- `npm run check` passed after final code edits (10.90 s: over the 10 s target). Placement/save rejection/defaults, frame isolation and ancestry are covered by tests.
-- `npm run build:game` passed; packaged placement/reload/skip and timed replay browser checks passed. Build still warns about bundle size and deprecated `inlineDynamicImports`.
-- `npm run look`: before/after panel states, placement, both reload paths, replay completion/skip, tree fresh/unlocked/species/navigation; tree and close-ups fit 360 px. No runtime exceptions; look logged an incidental resource 404.
-- Reproducible scenarios: `scripts/look/21c-{placement,replay,tree}.json`. Screenshots: `.shots/21c-{before,after}-*.png`, `21c-placing*.png`, `21c-replay-frame.png`, `21c-tree-*.png` (local, gitignored).
-- Local look uses existing Playwright: `NODE_PATH=/home/leon/.npm/_npx/e41f203b7505f1fb/node_modules CHROME_BIN=/usr/bin/google-chrome npm run look -- /game/ scripts/look/21c-tree.json` (prefix `W=360` for phone). No dependencies added.
+**Verified:** `npm run check` 4/4 passes, 8.5–8.7 s (was 9.0–10.9 s, failing 4 of 6 under load). `npm run look` 21c placement/replay/tree pass at 360 px; placement at 1280 px. No WebGL leak over 8 tree open/closes.
 
-**Decided:** no new design calls; built the approved brief. The map, wild moult offers and P48 remain outside this build.
+**Decided (9 Nov, decisions.md):** P48: C (confirm "slice 22 before step 7, one sea" at its kickoff). P46 and P47 closed. Map zoom built on your call. Hidden box: gone.
 
 **Next:**
-1. Fresh Claude session: `/kickoff review 21C`. Review `41ddcf5..slice-21c-build`, especially inactive panels, placement/proven-ground fitness, once-only settlement/replay and tree phone layout.
-2. Play 21C, add your notes to [playtests/21-the-climb.md](playtests/21-the-climb.md), then answer P48. Slice/roadmap play-completion boxes remain unchecked.
+1. Play 21C fully (review fixes and the slice 22 spec committed 9 Nov); notes in [playtests/21-the-climb.md](playtests/21-the-climb.md). Tick 21C after.
+2. Read [slice 22: The larva](slices/22-the-larva.md) (spec 9 Nov; its questions answered: the defaults), then Codex builds 22A, then 22B.
+3. Shared build (9 Nov, the 21C working tree): https://claude.ai/artifact/M6LoHUuraYzC5bTdf2SjEn (the 5 Nov link, updated; private until shared from its Share menu).
 
-**Open:** P48, P47, P46. Existing garden timing test failed once at 0.122 ms/step under parallel load; subsequent full checks passed, test unchanged. Human confirmation of the original hidden box and play feel is still needed.
+**Open:** none in proposals.md. For later (ideas.md): tree portraits or one shared canvas (step 7); P47 leftovers and map labels over small patches (step 9). The tree is ~1,040 px tall on a phone with 4 lineages.

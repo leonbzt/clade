@@ -608,3 +608,22 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Direction (not decided):** "you don't have to start over and over but still have something to do in each run";
   a body you finish, more upgrades, lineages and species, surprises, maybe a larger genome with mutations like v1.
   The long loop: "pick server, pick habitat, pick niche, pick build, adapt build, optimize build, get rewards". P48.
+
+## 9 Nov, the 21C review
+- **P48: C** ("p48: c"): A now (a species keeps its whole grown body as a plan; a Life starts as a larva with those
+  parts as buds; moult food grows a bud or puts a new part in a slot), then B's surprise as part variants from
+  hatching, with step 7's lineages. Asked as "C as slice 22 before step 7, and the one sea for M2?"; the answer
+  named C, so confirm the timing and the one sea at the slice 22 kickoff.
+- **P46 closed** ("as above"): body shape stays visible only, as built.
+- **P47 closed** ("as above"): the Cambrian stays, and the game keeps its words (line, species, part, rank, XP).
+  Tier letters per niche, patch notes with a cause and stat bars go to step 9 or ideas.md.
+- **The map** "needs to be larger and zoomable. add quick zoom if cheap now": built (+/−, drag, auto zoom while placing
+  and in the replay). "make the fixes now": a Life without eggs has no replay; the placing line shows the real
+  strength; the replay shows the release first.
+- **The tree:** "cool for now"; "smaller portraits are okay, one shared canvas as well works" (ideas.md, step 7).
+
+## 9 Nov, the slice 22 kickoff
+- **Slice 22 is P48 A, in step 6, in the one sea** ("yes, step 6, one sea"): built before step 7's lineages.
+  "in the future the server select should pick the era, and rough region, but thats future work" (ideas.md).
+- **Slice 22's three questions: the defaults** ("defaults are fine, commit everything"): presets and fresh designs
+  start as buds; the kept hatching card goes into the plan as a bud; a bud costs about half a moult.
