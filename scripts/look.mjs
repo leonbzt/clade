@@ -1,23 +1,26 @@
 // The AI's eyes (cloud sessions; uses the pre-installed Playwright): starts the dev server, opens a page in headless
 // Chromium at phone size, runs steps, saves screenshots to .shots/ and prints page errors and eval results.
-//   npm run look -- [page] [steps-json]          page defaults to /game/
+//   npm run look -- [page] [steps-json-or-file.json]          page defaults to /game/
 // Steps: {"click":"#sel"} {"tap":tile} {"key":"w"} {"wait":ms} {"shot":"name"} {"eval":"expr"} {"play":turns}
 // "tap" taps a board tile by index; "play" plays turns with real taps (greedy for food, using ready verbs), via window.__game.
-// Env: W and H (viewport, default 390 x 844), DSF (pixel ratio, default 1; use 2 for shots a person will see).
+// Also: {"until":"boolean expression"} {"assert":"boolean expression"} {"reload":true}.
+// Env: W/H (390 x 844), DSF (1); CHROME_BIN uses an installed Chrome, NODE_PATH can locate existing Playwright.
 import { createRequire } from 'node:module';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const page = process.argv[2] || '/game/';
-const steps = JSON.parse(process.argv[3] || '[{"click":"#cardButtons button"},{"wait":400},{"shot":"game"}]');
+const input = process.argv[3];
+const steps = JSON.parse(input?.endsWith('.json') ? readFileSync(input, 'utf8') : input || '[{"click":"#cardButtons button"},{"wait":400},{"shot":"game"}]');
 mkdirSync('.shots', { recursive: true });
 
 const server = await createServer({ server: { port: 5199, strictPort: false }, logLevel: 'error' });
 await server.listen();
 const url = server.resolvedUrls.local[0].replace(/\/$/, '') + page;
-const browser = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
+const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await browser.newPage({ viewport: { width: +(process.env.W || 390), height: +(process.env.H || 844) }, deviceScaleFactor: +(process.env.DSF || 1) });
 const out = [];
 p.on('pageerror', (e) => out.push(`page error: ${e.message}`));
@@ -65,17 +68,22 @@ try {
   await p.goto(url);
   await p.waitForTimeout(1200);
   for (const s of steps) {
+    if (s.reload) { await p.reload(); await p.waitForFunction(() => !!window.__game); }
+    if (s.until) await p.waitForFunction(s.until);
     if (s.click) await p.click(s.click);
     if (s.key) await p.keyboard.press(s.key);
     if (s.tap !== undefined) { await tapTile(s.tap); await idle(); }
     if (s.play) await play(s.play);
     if (s.eval) out.push(`eval: ${JSON.stringify(await p.evaluate(s.eval))}`);
+    if (s.assert) assert.equal(await p.evaluate(s.assert), true, s.assert);
     if (s.wait) await p.waitForTimeout(s.wait);
     if (s.shot) { await p.screenshot({ path: `.shots/${s.shot}.png` }); out.push(`shot: .shots/${s.shot}.png`); }
   }
 } catch (e) {
   out.push(`step failed: ${e.message.split('\n')[0]}`);
+  process.exitCode = 1;
 }
+if (out.some((line) => line.startsWith('page error:'))) process.exitCode = 1;
 console.log(out.join('\n') || 'ok, no errors');
 await browser.close();
 await server.close();

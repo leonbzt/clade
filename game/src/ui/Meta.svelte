@@ -84,7 +84,7 @@
   <aside class="saveWarning" role="alert"><p>{ui.saveError}</p><button onclick={() => ctx.retrySave()}>Retry saving</button></aside>
 {/if}
 {#if ui.open}
-<div id="meta" class="panel">
+<div id="meta" class="panel" hidden={!mapVisible}>
   <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button>{#if import.meta.env.DEV}<button class="small" onclick={toggleDev}>Dev</button>{/if}</div>
   {#if ui.feedback}
     <aside class="returnFeedback" role="status">
@@ -131,8 +131,8 @@
 </div>
 {/if}
 
-{#if ui.open && patch && board}
-<div class="metaWrap patchWrap" hidden={!!ui.niche}><div class="panel habCard">
+{#if ui.open && patch && board && !ui.niche}
+<div class="metaWrap patchWrap"><div class="panel habCard">
   <div class="metaTop"><h2>{board.name}</h2><button class="small" onclick={backToMap}>Map</button></div>
   {#if !ui.niche}
     <p class="pitch">{eligible.includes(patch.id) ? continuation?.patch === patch.id ? 'Your last successful clutch: continue here or in a direct neighbour.' : continuation ? 'Direct neighbour of your last clutch: you can continue here.' : 'Founding patch: your first Life is a worm.' : 'Outside the last clutch’s direct neighbours. Descendant populations do not make this a launch point.'}</p>
