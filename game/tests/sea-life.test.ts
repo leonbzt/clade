@@ -17,6 +17,7 @@ import { freshSeaSave, parseSeaSave, serializeSeaSave, type SeaSave } from '../s
 import { importSeaSave, writeSeaSave } from '../src/sim/sea-storage';
 import { designOf } from '../src/sim/share';
 import { useVerb } from '../src/sim/verbs';
+import { tell, type Headline } from '../src/sim/sea-news';
 
 const reload = (s: SeaSave) => parseSeaSave(serializeSeaSave(s)).save!;
 const bld = (body: PlanId, rows: Rows): Build => ({ body, size: 1, rows, order: PLACES.filter((p) => rows[p]) });
@@ -128,6 +129,27 @@ describe('patch snapshots', () => {
 });
 
 describe('completed results and continuation', () => {
+  it('returns each generation\'s populations and headlines without leaving a partial settlement', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0), expected = reload(s);
+    release(expected.sea, p.patch, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    const k = expected.sea.species.findIndex((sp) => sp.id === p.species);
+    const snapshot = () => expected.sea.patches.map((q) => q.pop[k]);
+    const before = snapshot(), frames = [];
+    for (let n = 0; n < MODEL.afterLife; n++) {
+      const news: Headline[] = [];
+      tell(expected.sea, news, step(expected.sea));
+      frames.push({ gen: expected.sea.gen, pop: snapshot(), news });
+    }
+    const result = settlePending(s, p)!;
+    expect(result.spread).toEqual({ species: p.species, patch: p.patch, before, frames });
+    expect(s.pending).toBeUndefined(); expect(reload(s).lives).toBe(1);
+    const once = serializeSeaSave(s);
+    result.spread.frames[0].pop.fill(999); result.spread.before.fill(888);
+    result.spread.frames[0].news.push({ kind: 'boom', sp: k, patches: [0], gen: 1, cause: 'test', from: 0, to: 999 });
+    expect(serializeSeaSave(s)).toBe(once);
+    expect(settlePending(s, p)).toBeNull();
+  });
+
   it('places eggs in a neighbour after reload and retains the Life\'s proven ground', () => {
     const s = freshSeaSave(1, 0), origin = s.sea.patches.find((p) => p.nb.some((n) => s.sea.patches[n].ground !== p.ground))!;
     const next = origin.nb.find((n) => s.sea.patches[n].ground !== origin.ground)!;

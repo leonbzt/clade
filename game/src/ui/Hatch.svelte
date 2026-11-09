@@ -91,7 +91,7 @@
       <p class="note">A new lineage: {LINEAGES[id].name}, ending in {LINEAGES[id].endPoint}. Live as it from any eligible patch.</p>
     {/each}
   {/if}
-  <button class="go" onclick={() => (ui.gain = null)}>To the sea</button>
+  <button class="go" onclick={() => ctx.continueGain()}>To the sea</button>
 </div></div>
 {/if}
 

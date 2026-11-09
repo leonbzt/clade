@@ -11,13 +11,15 @@ export function speciesColour(sp: Species): [number, number, number] {
   for (const c of sp.id) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
   return [100 + ((h >>> 0) % 156), 100 + ((h >>> 8) % 156), 100 + ((h >>> 16) % 156)];
 }
-export function markerCounts(sea: Sea) {
+export interface PopulationFrame { species: number; pop: number[] }
+export function markerCounts(sea: Sea, frame?: PopulationFrame | null) {
   const out: { patch: number; species: number; count: number }[] = [];
   let room = 200;
   for (const p of sea.patches) for (let k = 0; k < sea.species.length; k++) {
-    if (p.pop[k] < 1 || room === 0) continue;
+    const pop = frame ? (k === frame.species ? frame.pop[p.id] : 0) : p.pop[k];
+    if (pop < 1 || room === 0) continue;
     const hunt = !!feedsAs(sea.species[k]).hunt;
-    const count = Math.min(room, hunt ? 1 : 2, Math.ceil(p.pop[k] / (hunt ? 14 : 25)));
+    const count = Math.min(room, hunt ? 1 : 2, Math.ceil(pop / (hunt ? 14 : 25)));
     out.push({ patch: p.id, species: k, count }); room -= count;
   }
   return out;

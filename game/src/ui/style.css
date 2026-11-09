@@ -201,6 +201,7 @@ textarea { font: 14px/1.3 ui-monospace, monospace; width: 100%; background: var(
 
 /* Keep map cues visible above a scrollable patch sheet on phones. Loadout uses the existing full sheet. */
 .mapViews { display: flex; flex-wrap: wrap; gap: 4px; }
+.mapViews[hidden] { display: none; }
 .mapViews .on { color: var(--title); outline: 2px solid var(--brass); }
 .mapKey { font-size: 13px; margin: 0; color: var(--dim); }
 .mapLegend, .patchList { font-size: 14px; }

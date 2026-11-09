@@ -14,6 +14,8 @@
   import Lines from './Lines.svelte';
   import LineView from './LineView.svelte';
   import Placement from './Placement.svelte';
+  import Replay from './Replay.svelte';
+  import { changes } from './replay';
   import { toggleDev } from './dev';
   import type { PresetId, Rows } from '../data/body';
 
@@ -37,6 +39,7 @@
   const activeLine = $derived(g.species.find((sp) => sp.id === activeSpecies));
   const distribution = $derived((ui.tick, linePatches(g, activeSpecies)));
   const history = $derived((ui.tick, patch ? historyPaths(g, patch) : []));
+  const replayFrame = $derived(ui.replay && ui.replayFrame >= 0 ? ui.replay.frames[ui.replayFrame] : null);
   const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.gain && !ui.line && !ui.away && !ui.notice);
   $effect(() => {
     if (!cv) return;
@@ -46,13 +49,21 @@
   $effect(() => {
     void ui.tick;
     if (!map) return;
+    map.setReplay(replayFrame && ui.replay ? { species: g.species.findIndex((sp) => sp.id === ui.replay!.species), pop: replayFrame.pop } : null);
     map.setView(view); map.updateHerds();
-    map.mark(ui.placing ? releaseChoices : eligible, ui.patch ?? ui.feedback?.patch ?? null, continuation?.patch ?? null, distribution, ui.placing);
+    map.mark(ui.placing ? releaseChoices : replayFrame ? [] : eligible, ui.patch ?? ui.feedback?.patch ?? null, continuation?.patch ?? null,
+      replayFrame ? replayFrame.pop.flatMap((n, k) => n >= 1 ? [k] : []) : distribution, ui.placing);
     map.draw();
   });
   $effect(() => {
-    if (!map || !ui.feedback) return;
+    if (!map || !ui.feedback || ui.replay) return;
     map.pulse(ui.feedback.patch, [255, 224, 51]);
+    cv?.closest('#meta')?.scrollTo(0, 0);
+  });
+  $effect(() => {
+    if (!map || !ui.replay || !replayFrame) return;
+    const sp = g.species.find((sp) => sp.id === ui.replay!.species)!;
+    for (const c of changes(ui.replay, ui.replayFrame)) map.pulse(c.patch, c.grew ? speciesColour(sp) : [255, 70, 55]);
     cv?.closest('#meta')?.scrollTo(0, 0);
   });
   const feedbackPop = $derived((ui.tick, ui.feedback ? g.patches[ui.feedback.patch].pop[g.species.findIndex((sp) => sp.id === ui.feedback!.species)] ?? 0 : 0));
@@ -65,6 +76,7 @@
     return () => cancelAnimationFrame(frame);
   });
   function tapMap(e: MouseEvent) {
+    if (replayFrame) { ctx.skipReplay(); return; }
     const id = map?.patchAt(e.clientX, e.clientY) ?? -1;
     if (id >= 0) openPatch(id);
   }
@@ -90,8 +102,8 @@
 {/if}
 {#if ui.open}
 <div id="meta" class="panel" hidden={!mapVisible}>
-  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button>{#if import.meta.env.DEV}<button class="small" onclick={toggleDev}>Dev</button>{/if}</div>
-  {#if ui.feedback}
+  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {replayFrame?.gen ?? (ui.tick, g.gen)}</span><button class="small" disabled={!!pending || !!replayFrame} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" disabled={!!replayFrame} onclick={() => (ui.menu = true)}>Menu</button>{#if import.meta.env.DEV}<button class="small" onclick={toggleDev}>Dev</button>{/if}</div>
+  {#if ui.feedback && !replayFrame}
     <aside class="returnFeedback" role="status">
       {#if ui.feedback.gain}<p><b>{ui.feedback.gain}</b></p>{/if}
       <p>{ui.feedback.eggs > 0 ? `${ui.feedback.eggs} eggs released · ${feedbackName} · patch ${ui.feedback.patch + 1}.` : 'No new eggs released. Your previous continuation remains available; before founding, retry any patch.'}</p>
@@ -99,13 +111,15 @@
       <button class="small" onclick={() => { selectedLine = ui.feedback!.species; ui.feedback = null; }}>Dismiss</button>
     </aside>
   {/if}
-  <div class="mapViews" aria-label="Map view">
+  <div class="mapViews" aria-label="Map view" hidden={!!replayFrame}>
     {#each [['holder', 'Population'], ['mats', 'Mats'], ['oxygen', 'Oxygen'], ['hunters', 'Hunters']] as [id, name]}
       <button class="small" class:on={view === id} aria-pressed={view === id} onclick={() => view = id as View}>{name}</button>
     {/each}
   </div>
   <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
-  {#if ui.placing && pending}
+  {#if replayFrame}
+    <Replay />
+  {:else if ui.placing && pending}
     <Placement />
   {:else}
   <section class="playNext" aria-labelledby="playNextTitle">

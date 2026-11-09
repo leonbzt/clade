@@ -143,6 +143,7 @@ ctx.paste = (code) => {
 };
 ctx.exportSave = () => serializeSeaSave(save);
 function useSave(next: SeaSave) {
+  ctx.skipReplay();
   save = ctx.save = next; ctx.isl = save.sea.isl; ctx.spots = habitatSpots(ctx.isl);
   ui.feedback = null; ui.clutch = null; ui.placing = false; ui.gain = null; ui.line = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
   hud.hideCard(); choose();
@@ -160,7 +161,7 @@ ctx.reset = () => {
 };
 ctx.backup = () => { try { return protectedRaw ?? localStorage.getItem(BACKUP_KEY) ?? ''; } catch { return protectedRaw ?? ''; } };
 void document.fonts?.ready.then(bump); // the map's labels are drawn on a canvas: redraw once the font is in
-setInterval(() => { if (ui.open && advanceSeaSave(save, Date.now()).gens) { bump(); persist(); } }, 5000);
+setInterval(() => { if (ui.open && !ui.gain && !ui.replay && advanceSeaSave(save, Date.now()).gens) { bump(); persist(); } }, 5000);
 mount(Meta, { target: document.getElementById('metaRoot')! });
 mount(Hatch, { target: document.getElementById('metaRoot')! });
 mount(LifeBody, { target: document.getElementById('metaRoot')! });
