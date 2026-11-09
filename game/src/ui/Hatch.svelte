@@ -45,7 +45,7 @@
 {#if c}
 <div class="metaWrap afterWrap"><div class="panel habCard after">
   <h2>Hatching</h2>
-  <p class="pitch">{c.eggs} eggs in the {HABITATS[c.hab].name.toLowerCase()}, patch {c.patch + 1}, tier {c.tier}. {c.cards.length} hatch where you can see them. Keep one gene: it joins your line's parts and makes a new species of the body you started as.</p>
+  <p class="pitch">{c.eggs} eggs settle in the {HABITATS[ctx.save.sea.patches[c.place ?? c.patch].ground].name.toLowerCase()}, patch {(c.place ?? c.patch) + 1}. Your Life reached tier {c.tier}. {c.cards.length} hatch where you can see them. Keep one gene: it joins your line's parts and makes a new species of the body you started as.</p>
   <div class="grid">
     {#if shown && before}
       <Creature build={after ? asBuild(c.plan, after.rows, line?.ranks) : shown} mark={after?.place ?? null} height={300}>

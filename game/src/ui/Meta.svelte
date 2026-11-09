@@ -13,6 +13,7 @@
   import Equip from './Equip.svelte';
   import Lines from './Lines.svelte';
   import LineView from './LineView.svelte';
+  import Placement from './Placement.svelte';
   import { toggleDev } from './dev';
   import type { PresetId, Rows } from '../data/body';
 
@@ -28,6 +29,7 @@
   const board = $derived((ui.tick, patch ? boardForPatch(g, patch.id) : null));
   const continuation = $derived((ui.tick, ctx.save.continuation));
   const pending = $derived((ui.tick, ctx.save.pending));
+  const releaseChoices = $derived(pending ? [pending.patch, ...g.patches[pending.patch].nb] : []);
   const stocks = $derived((ui.tick, patch ? [{ name: 'Mats', value: patch.mats }, { name: 'Detritus', value: patch.rot }, { name: 'Oxygen', value: patch.oxygen }] : []));
   const populations = $derived((ui.tick, patch ? g.species.map((sp, k) => ({ sp, pop: patch.pop[k] })).filter((e) => e.pop >= 1) : []));
 
@@ -45,7 +47,7 @@
     void ui.tick;
     if (!map) return;
     map.setView(view); map.updateHerds();
-    map.mark(eligible, ui.patch ?? ui.feedback?.patch ?? null, continuation?.patch ?? null, distribution);
+    map.mark(ui.placing ? releaseChoices : eligible, ui.patch ?? ui.feedback?.patch ?? null, continuation?.patch ?? null, distribution, ui.placing);
     map.draw();
   });
   $effect(() => {
@@ -66,7 +68,10 @@
     const id = map?.patchAt(e.clientX, e.clientY) ?? -1;
     if (id >= 0) openPatch(id);
   }
-  function openPatch(id: number) { ui.patch = id; ui.hab = g.patches[id].ground; ui.niche = null; }
+  function openPatch(id: number) {
+    if (ui.placing && !releaseChoices.includes(id)) return;
+    ui.patch = id; ui.hab = g.patches[id].ground; ui.niche = null;
+  }
   function backToMap() { ui.patch = null; ui.hab = null; ui.niche = null; }
   function live(as: PlanId, shared = false) {
     body = as; usingDesign = shared;
@@ -100,6 +105,9 @@
     {/each}
   </div>
   <canvas bind:this={cv} class="isle" onclick={tapMap} aria-label="Living sea patches; choose a patch below for keyboard access"></canvas>
+  {#if ui.placing && pending}
+    <Placement />
+  {:else}
   <section class="playNext" aria-labelledby="playNextTitle">
     <h3 id="playNextTitle">Play next</h3>
     {#if continuation}
@@ -128,10 +136,11 @@
   <Lines />
   <h3>News</h3>
   <ul class="news">{#each (ui.tick, ctx.save.news.slice(0, 8)) as n}<li class:yours={g.species[n.sp].line} class:lineEvent={g.species[n.sp].id === activeSpecies}>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines yet.</small></li>{/each}</ul>
+  {/if}
 </div>
 {/if}
 
-{#if ui.open && patch && board && !ui.niche}
+{#if mapVisible && patch && board && !ui.placing}
 <div class="metaWrap patchWrap"><div class="panel habCard">
   <div class="metaTop"><h2>{board.name}</h2><button class="small" onclick={backToMap}>Map</button></div>
   {#if !ui.niche}

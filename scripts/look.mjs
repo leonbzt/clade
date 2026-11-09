@@ -3,7 +3,7 @@
 //   npm run look -- [page] [steps-json-or-file.json]          page defaults to /game/
 // Steps: {"click":"#sel"} {"tap":tile} {"key":"w"} {"wait":ms} {"shot":"name"} {"eval":"expr"} {"play":turns}
 // "tap" taps a board tile by index; "play" plays turns with real taps (greedy for food, using ready verbs), via window.__game.
-// Also: {"until":"boolean expression"} {"assert":"boolean expression"} {"reload":true}.
+// Also: {"until":"boolean expression"} {"assert":"boolean expression"} {"reload":true}; first step can set "init".
 // Env: W/H (390 x 844), DSF (1); CHROME_BIN uses an installed Chrome, NODE_PATH can locate existing Playwright.
 import { createRequire } from 'node:module';
 import { mkdirSync, readFileSync } from 'node:fs';
@@ -65,6 +65,7 @@ async function play(turns) {
 }
 
 try {
+  if (steps[0]?.init) await p.addInitScript(steps[0].init);
   await p.goto(url);
   await p.waitForTimeout(1200);
   for (const s of steps) {

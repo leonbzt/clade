@@ -16,13 +16,14 @@ import { step } from './sim/sea';
 import { tell } from './sim/sea-news';
 import { defaultBuild, upkeep as buildUpkeep } from './sim/body';
 import { decodeDesign, encodeDesign } from './sim/body-hurt';
-import { canLaunch, completeLife, settlePending, startSeaLife } from './sim/sea-life';
-import { advanceSeaSave, freshSeaSave, parseSeaSave, serializeSeaSave, type SeaPending, type SeaSave } from './sim/sea-save';
+import { canLaunch, completeLife, startSeaLife } from './sim/sea-life';
+import { advanceSeaSave, freshSeaSave, parseSeaSave, serializeSeaSave, type SeaSave } from './sim/sea-save';
 import { importSeaSave, writeSeaSave } from './sim/sea-storage';
 import { habitatSpots } from './sim/island';
 import { BACKUP_KEY, SAVE_KEY } from './sim/save';
 import { designOf } from './sim/share';
-import { addXp, buy, gainText, newLine } from './sim/lineage';
+import { addXp, buy, newLine } from './sim/lineage';
+import { afterLife } from './ui/after-life';
 import Meta from './ui/Meta.svelte';
 import Hatch from './ui/Hatch.svelte';
 import LifeBody from './ui/LifeBody.svelte';
@@ -118,6 +119,7 @@ const persist = () => {
   return !error;
 };
 ctx.retrySave = () => { persist(); };
+const resumeResult = afterLife(persist);
 { const away = advanceSeaSave(save, Date.now()); if (away.gens >= 2) ui.away = away; persist(); }
 ctx.start = (patch, body, d) => {
   if (!canLaunch(save, patch, body)) { ui.notice = { title: 'Choose an eligible patch', text: 'Finish your clutch first. After founding, start in the last clutch’s patch or a direct neighbour.' }; return; }
@@ -142,9 +144,9 @@ ctx.paste = (code) => {
 ctx.exportSave = () => serializeSeaSave(save);
 function useSave(next: SeaSave) {
   save = ctx.save = next; ctx.isl = save.sea.isl; ctx.spots = habitatSpots(ctx.isl);
-  ui.feedback = null; ui.clutch = null; ui.gain = null; ui.line = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
+  ui.feedback = null; ui.clutch = null; ui.placing = false; ui.gain = null; ui.line = null; ui.niche = null; ui.hab = null; ui.patch = null; ui.away = null; ui.design = null; ui.menu = false;
   hud.hideCard(); choose();
-  if (save.pending) openClutch(save.pending);
+  if (save.pending) resumeResult(save.pending);
 }
 ctx.importSave = (text) => {
   const loaded = importSeaSave(text, write);
@@ -168,20 +170,6 @@ function choose() { ui.open = true; bump(); }
 
 /** Persist the complete result before starting any terminal playback. */
 function closeLife() { completeLife(save, S.life, (Math.random() * 2 ** 31) | 0); persist(); }
-
-function openClutch(p: SeaPending) {
-  if (!p.cards.length) { settle(p); return; }
-  ui.clutch = p; ui.open = true; ui.hab = null; ui.patch = null; bump();
-  ctx.keep = (k) => { settle(p, k); };
-}
-
-function settle(p: SeaPending, card = -1) {
-  const gain = settlePending(save, p, card);
-  if (!gain) return;
-  persist();
-  ui.feedback = { patch: p.patch, species: p.species, eggs: p.eggs, gain: gainText(gain) };
-  ui.gain = gain; ui.clutch = null; ui.open = true; ui.hab = null; ui.patch = null; ui.niche = null; bump();
-}
 
 function newLife() {
   const life = S.life = startSeaLife(save, (Math.random() * 2 ** 31) | 0, patchId, plan, design);
@@ -279,7 +267,7 @@ function endCard() {
   const lived = `Your diet was mostly ${r.role === 'predator' ? 'meat' : r.role === 'burrower' ? 'buried food' : 'grazed food'}. Your inherited parts determine feeding behaviour.`;
   hud.showCard(life.cause === 'season' ? 'The season ends' : `You died on turn ${life.turn}`,
     `You laid ${life.eggs} eggs: tier ${tier} in the ${life.hab.name.toLowerCase()}. ${lived}${nt ? `\n${nt[0]} needs ${nt[1]}.` : ''}`,
-    [{ label: life.eggs ? 'Release your eggs' : 'Back to the sea', note: life.eggs ? `They establish your ${PLANS[r.plan].name.toLowerCase()} population in patch ${life.hab.patch! + 1}.` : undefined, on: () => { hud.hideCard(); if (save.pending) openClutch(save.pending); } }]);
+    [{ label: life.eggs ? 'Release your eggs' : 'Back to the sea', note: life.eggs ? 'Choose this patch or a neighbour for your eggs.' : undefined, on: () => { hud.hideCard(); if (save.pending) resumeResult(save.pending); } }]);
 }
 
 // ---- input ----
@@ -335,5 +323,5 @@ Object.assign(window, { __game: { get life() { return S.life; }, get save() { re
 S.life = L.newLife(1, plan, HABITATS[habId]); floor.set(S.life); sync(true);
 
 choose();
-if (save.pending) openClutch(save.pending); // the page closed after a Life ended: pick up where it stopped
+if (save.pending) resumeResult(save.pending); // the page closed after a Life ended: pick up where it stopped
 performance.mark('first-board'); // read by the spike's load check

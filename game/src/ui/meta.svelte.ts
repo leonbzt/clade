@@ -18,6 +18,7 @@ export const ui = $state({
   notice: null as null | { title: string; text: string },
   menu: false, saveError: '', design: null as Design | null, // a pasted CLADE2- design
   clutch: null as null | SeaPending,
+  placing: false,
   gain: null as null | Gain, // 21B: the line's XP after hatching
   line: null as null | PlanId, // 21B: a line's close-up
   /** The body view during a Life: no options = inspection; else the moult's changes (`part` null = grow without one). */
@@ -29,6 +30,7 @@ export const ctx = {
   buy: (_plan: PlanId, _upgrade: string) => {}, devXp: (_xp: number) => {}, devOpenAll: () => {},
   skip: () => {}, retrySave: () => {},
   keep: (_card: number) => {}, // a card's index, or -1 to take none and keep what you have
+  place: (_patch: number) => {},
   pick: (_part: PartId | null, _place?: PlaceId) => {}, // a moult choice, from the body view
   code: (_patch: number, _species: string) => '', paste: (_code: string) => '',
   exportSave: () => '', importSave: (_text: string) => '', reset: () => false, backup: () => '',

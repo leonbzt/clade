@@ -28,6 +28,7 @@ export function makeMap(cv: HTMLCanvasElement) {
   let sea: Sea, shown: Shown[] = [], herds = new Map<string, Sprite[]>(), edges: [number, number, number, number, number][] = [];
   let view: View = 'holder';
   let selected: number | null = null, clutch: number | null = null;
+  let placing = false;
   const marked = new Set<number>(), occupied = new Set<number>();
 
   function setSea(next: Sea) {
@@ -116,6 +117,12 @@ export function makeMap(cv: HTMLCanvasElement) {
     g.fillStyle = 'rgba(6,14,20,0.45)';
     for (const [x, y, w, h] of edges) g.fillRect(x, y, w, h);
     drawCreatures();
+    if (placing) {
+      g.fillStyle = 'rgba(6,14,20,0.8)';
+      for (const p of sea.patches) if (!marked.has(p.id)) {
+        for (const t of p.tiles) g.fillRect((t % sea.isl.w) * SCALE, ((t / sea.isl.w) | 0) * SCALE, SCALE, SCALE);
+      }
+    }
     for (const [x, y, w, h, id] of edges) {
       g.fillStyle = selected === id ? '#ffffff' : clutch === id ? '#ffe033' : marked.has(id) ? '#68e8bd' : 'transparent';
       g.fillRect(x - 1, y - 1, w + 1, h + 1);
@@ -132,7 +139,8 @@ export function makeMap(cv: HTMLCanvasElement) {
   return {
     setSea, draw, updateHerds,
     setView: (v: View) => { view = v; },
-    mark: (ids: number[], chosen: number | null, last: number | null, line: number[]) => {
+    mark: (ids: number[], chosen: number | null, last: number | null, line: number[], dim = false) => {
+      placing = dim;
       marked.clear(); ids.forEach((id) => marked.add(id)); selected = chosen; clutch = last;
       occupied.clear(); line.forEach((id) => occupied.add(id));
     },
