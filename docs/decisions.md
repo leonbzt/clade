@@ -584,3 +584,9 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **XP:** "spend points gotten by leveling, some levels could unlock things and the currency could be used for
   further upgrades."
 - **Order:** model first.
+- **Upgrades (slice 21 Q1):** "maybe better stats if applicable, sometimes less upkeep sometimes more bonuses ...
+  first go lean/enhanced for less upkeep or more effect and then signature to get the free built in. not sure on this
+  one. needs to feel cool, maybe we have to integrate it carefully with future changes" (skill tree, moves). Taken:
+  rank 1 Lean or Enhanced, rank 2 Signature, as data records the skill tree can extend; revisited in 21B.
+- **Bodies from recipes (Q2):** yes, as planned in the ladder; "swimmer maybe swimming flaps as well".
+- **Hatching card (Q3):** "yes": a mutation in the saved species, unlocks its part, replaces the carried part.

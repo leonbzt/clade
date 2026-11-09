@@ -2,7 +2,7 @@
 
 **Milestone:** M2, step 6 ([ROADMAP](../../ROADMAP.md)): after a Life, and the climb.
 **Question:** Does a Life move my line on, so that I want the next run and can see where my animals came from?
-**Status:** spec 9 Nov. One spec for the whole step; parts A, B and C are built in order without a new spec or
+**Status:** spec 9 Nov, questions answered the same day. One spec for the whole step; parts A, B and C are built in order without a new spec or
 review round each (*decided 9 Nov*). Each part ends with a short play.
 **Builds on:** [decisions](../decisions.md), 6 Nov (after a Life, the trees, new parts, recipes, hatching at the end);
 8 Nov (a custom species with its whole build plus mutations); 9 Nov: a run carries both line XP and saved species
@@ -23,15 +23,20 @@ is text, and the story of founding and continuation got "a little more confusing
    after about six, a cap of 10 for the release.
 4. **Levels:** +1 point each. Some levels unlock things: a part joins the line's pool (launcher and moult offers),
    and level 10 gives the named end point (a title on the line).
-5. **Points buy part ranks:** rank 1 *Lean*: −1 upkeep (not below 0); rank 2 *Signature*: the part becomes one of
-   the line's built-ins (free, like the leg today). This also answers "upkeep seems really high".
+5. **Points buy upgrades** (*decided 9 Nov*, shape open to tuning): per part, rank 1 is a choice, *Lean* (−1 upkeep,
+   not below 0) or *Enhanced* (more effect, where the part has a number: eye sight, gut food, gill oxygen, flap
+   speed …); rank 2 *Signature*: the part becomes one of the line's built-ins (free, like the leg today). Upgrades are
+   data records (id, cost, needs, effect), so the later skill tree's moves and stat nodes are more records of the same
+   kind, not a second system. "Needs to feel cool": judge it in 21B's close-up and revise there.
 6. **Saved species:** a Life with eggs saves its laid build plus the hatching card you keep (a mutation) as a
    species in its lineage. The launcher's presets are the line's species (about six; the oldest drops).
    The kept card also unlocks its part for the line. The single carried part (20A bridge) goes.
-7. **Recipes:** a laid build that holds a recipe's parts at tier B or better opens that lineage; the recipe's parts
-   become its built-ins. Only the worm is open at the start. Drafts to tune: arthropod ← worm + sclerites + proboscis
-   (stand-in for the lobopod until step 7); trilobite ← arthropod + head shield + digging limbs;
-   swimmer ← arthropod + claw + compound eye.
+7. **Recipes** (*decided 9 Nov*, following the ladder in `design/full-version.md` §5): a laid build that holds a
+   recipe's parts at tier B or better opens that lineage; the recipe's parts become its built-ins. Only the worm is
+   open at the start. Drafts to tune: arthropod ← worm + sclerites + proboscis (stand-in for the lobopod until step
+   7); trilobite ← arthropod + head shield + digging limbs; swimmer ← arthropod + compound eye + swimming flaps (the
+   ladder's Opabinia step folded in). Arthropods gain flaps on Sides for this (Opabinia's lateral flaps), a
+   `HOMES` change.
 8. **Plain wiring to play it:** the return line says "+N XP · Worm line level 3 · unlocked Gill"; a plain list to
    spend points; the dev panel grants XP and opens all lineages.
 
@@ -67,7 +72,5 @@ is text, and the story of founding and continuation got "a little more confusing
 - About one session per part.
 
 ## Open questions
-1. Points buy Lean, then Signature, per part. *AI lean:* yes; stat bonuses per lineage could come later.
-2. Only the worm at the start, other bodies earned by recipes (the drafts in 7). *AI lean:* yes, it is the climb.
-3. The kept hatching card becomes a mutation in the saved species, unlocks its part, and replaces the carried part.
-   *AI lean:* yes.
+None blocking. Answered 9 Nov: upgrades as above (shape revisited in 21B); bodies from recipes, the swimmer's with
+flaps; the kept hatching card becomes a species mutation, unlocks its part and replaces the carried part.
