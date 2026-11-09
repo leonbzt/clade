@@ -31,7 +31,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - **Geology** (ground units, slope, island recipes; you: leaning yes) → the land layer. M1 needs a small part
   (substrate, wetness, height) to make habitats; the rest later.
 - More landmarks (waterfalls, rivers); fixed flows of water and nutrients downhill → cheap along the patch graph.
-- Reefs and more structure on the sea map “instead of just going sideways” (you, Part C desktop play, 8 Nov); landmarks versus different routes still to clarify, not added to release scope.
+- Reefs and more structure on the sea map “instead of just going sideways” (you, Part C desktop play, 8 Nov); landmarks versus different routes still to clarify, not added to release scope. Asked again 9 Nov: patches side by side, a reef area, a larger area instead of only a ring.
 - More run islands (salt, ash, caves), the archipelago map, outposts.
 - Sun and cold as pressures (you, 3 Nov), once a niche has them (alpine, open dunes, other islands).
 - Two zoom levels: the garden and a close view of one habitat (possibly in side view) (you + AI).
@@ -155,3 +155,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Animals on the sea map: the same recipe baked at about 12 px, a capped few roaming each patch, small portraits instead of numbers on the patch card (AI, 7 Nov). For step 4.
 - A full dex and numeric stat sheets per animal, TierZoo-like (you, 8 Nov: "would be cool in the future"). The rest of the TierZoo concepts are P47; [research](research/tier-zoo.md).
 - Equipment view polish (you, 9 Nov: "works for now, will need a little more work later"). Also: a result portrait from the lay snapshot (AI, 9 Nov).
+- More icons and symbols instead of text, across screens (you, 9 Nov). For step 9.
+- Draw only some grown parts (e.g. the front) to keep creatures simple (you, 9 Nov: "not sure").
+- Creature art direction: drop the thick black outline on the large view; the new looks are "a little weird still" (you, 9 Nov). For step 9.
+- Cut the parts you never use; you mainly use Deep Burrow, Gut, Brood Pouch, Compound Eyes, Bristles, and grazing (you, 9 Nov: "wait for 7"). For step 7.
+- Clutch size and parts received: fewer, or scale more with brood size (you, 9 Nov). For step 6 or 10's balance.

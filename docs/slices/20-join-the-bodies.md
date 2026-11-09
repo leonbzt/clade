@@ -2,7 +2,7 @@
 
 **Milestone:** M2, step 5 ([ROADMAP](../../ROADMAP.md)).
 **Question:** Is the creature I equip the one I play, with readable choices that keep habitats different?
-**Status:** 20A model built 8 Nov (`game/src/data/body.ts`, `sim/body.ts`, `sim/body-hurt.ts`, `tests/body.test.ts`); 20B equipment view built 9 Nov (`ui/Equip.svelte`); 20C cutover built 9 Nov (the runtime runs on `Build`; v4 save reset; `ui/LifeBody.svelte`), your play pending. [20A contract](../design/20a-body-part-contract.md) approved 8 Nov. Trimmed 8 Nov
+**Status:** 20A model built 8 Nov (`game/src/data/body.ts`, `sim/body.ts`, `sim/body-hurt.ts`, `tests/body.test.ts`); 20B equipment view built 9 Nov (`ui/Equip.svelte`); 20C cutover built 9 Nov (the runtime runs on `Build`; v4 save reset; `ui/LifeBody.svelte`), played 9 Nov ("mainly fine", [notes](../playtests/20-join-the-bodies.md)); five fixes done 9 Nov; 20D slots next. [20A contract](../design/20a-body-part-contract.md) approved 8 Nov. Trimmed 8 Nov
 after the [review](../design/m2-review-8-nov.md); the long version is at `git show fa6baee:docs/slices/20-join-the-bodies.md`.
 **Builds on:** [release vision](../design/full-version.md), [body approach](../design/body-approach.md),
 [20A calls](../decisions.md#8-nov-slice-20a-contract-review), [8 Nov calls](../decisions.md#8-nov-review-of-the-codex-stretch-and-tierzoo)
@@ -84,6 +84,7 @@ build already laid. On paper only: which places an arthropod-to-trilobite recipe
 | 20A model | Pure definitions, check helpers, 20A fixtures; runtime untouched | new `data/`/`sim/` body files; read `data/life.ts`, `sim/life.ts`, `sim/verbs.ts`, `sim/hunt.ts`, `sim/threat.ts`, `toys/creature-data.ts`, `toys/creature-model.ts` |
 | 20B equipment | Painter port, head fix, equipment preview in the launch flow, not yet launching | `main.ts`, `scene.ts`, `playback.ts`, `ui/Meta.svelte`, `ui/hud.ts`, new body view; read `toys/creature-*.ts`, `spikes/body-render/polyplus.ts`, `toys/life2-*.ts` |
 | 20C cutover | Switch runtime parts, feeding, offers, drawing and saves together; reset; snapshots, continuation, codes, residents; play | `sim/sea-life.ts`, `sim/sea-save.ts`, `sim/save-validation.ts`, `sim/share.ts`, `sim/feeding.ts`, `sim/door.ts`, `ui/Clutch.svelte`, resident views |
+| 20D slots | *Decided 9 Nov ("20d is fine"):* compact, clear slots like the lifev2 toy or OSRS, an icon on each part in its slot, in the launcher and the moult view. Spec before code | `ui/Equip.svelte`, `ui/LifeBody.svelte`; read `toys/life2-ui.ts`, `toys/life2.css` |
 
 The game stays playable at every commit; the runtime switches in one verified change (20C).
 
