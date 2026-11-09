@@ -1,24 +1,43 @@
 <!-- Slice 20C: the body during a Life. Inspection, or a moult's offers: each legal change previewed on the creature
-     before you commit, plus growing without a part. Reuses the 20B stage. -->
+     before you commit, plus growing without a part. Reuses the 20B stage; since 20D the 20D icon slots, where the
+     changed slot shows old → new. Tapping a slot names its part (and picks the offer that changes it). -->
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { PLACES, PLACE_NAMES } from '../data/body';
+  import { PLACE_NAMES, type PlaceId } from '../data/body';
   import { PARTS, PLANS, VERBS } from '../data/life';
   import * as B from '../sim/body';
   import { makeEquipStage, type EquipStage } from '../view/equip-stage';
-  import { numbers } from './equip';
+  import { numbers, places, rowUpkeep } from './equip';
   import { feel } from './feel';
   import { ctx, ui } from './meta.svelte';
+  import PartIcon from './PartIcon.svelte';
+  import Slots from './Slots.svelte';
 
   const v = $derived(ui.body);
-  let sel = $state(-1);
+  let sel = $state(-1), look: PlaceId | null = $state(null);
   let host: HTMLDivElement | undefined = $state();
   let stage = $state.raw<EquipStage | null>(null);
-  $effect(() => { if (v) untrack(() => (sel = v.options.length ? 0 : -1)); });
+  $effect(() => { if (v) untrack(() => { sel = v.options.length ? 0 : -1; look = null; }); });
 
   const offer = $derived(v && sel >= 0 ? v.options[sel] : null);
   const shown = $derived(v ? $state.snapshot(offer?.change?.build ?? v.build) as B.Build : null);
   const nums = $derived(shown ? numbers(shown) : null);
+  const views = $derived(v ? places(v.build.body, v.build) : []);
+  const change = $derived(offer?.change ? { place: offer.change.place, row: offer.change.row } : null);
+  /** The info line: a tapped slot's part, else the chosen offer's. */
+  const info = $derived.by(() => {
+    if (!v) return '';
+    if (look) {
+      const row = v.build.rows[look];
+      return row?.length ? `${PLACE_NAMES[look]}: ${B.describeRow(row)}. ${[...new Set(row.map((p) => PARTS[p].does))].join(' ')} Upkeep ${rowUpkeep(row)}.` : `${PLACE_NAMES[look]}: ${views.find((x) => x.place === look)?.holds}.`;
+    }
+    return offer?.part ? `${PARTS[offer.part].name}: ${PARTS[offer.part].does}` : offer ? 'Grow a size without a new part.' : '';
+  });
+  function tap(p: PlaceId) {
+    look = p;
+    const k = v?.options.findIndex((o) => o.change?.place === p) ?? -1;
+    if (k >= 0 && v!.options[sel]?.change?.place !== p) sel = k;
+  }
 
   $effect(() => {
     if (!host) return;
@@ -34,7 +53,7 @@
   const trade = (o: NonNullable<typeof offer>) => {
     if (!o.change) return `upkeep stays ${v!.upkeep}`;
     const c = o.change;
-    return [c.was ? `replaces ${B.describeRow(c.was)}` : '', c.gained.length ? `gains ${vn(c.gained)}` : '', c.lost.length ? `loses ${vn(c.lost)}` : '', `upkeep ${v!.upkeep} → ${c.upkeep}`].filter(Boolean).join(' · ');
+    return [c.gained.length ? `gains ${vn(c.gained)}` : '', c.lost.length ? `loses ${vn(c.lost)}` : '', `upkeep ${v!.upkeep} → ${c.upkeep}`].filter(Boolean).join(' · ');
   };
 </script>
 
@@ -46,23 +65,20 @@
   </div>
   <div class="grid">
     <div class="left">
-      <div class="stageBox" bind:this={host}></div>
-      <div class="slots">
-        {#each PLACES as p}
-          {@const now = v.build.rows[p]?.length ? B.describeRow(v.build.rows[p]!) : '—'}
-          {@const hit = offer?.change?.place === p}
-          <p class="slot" class:hit><b>{PLACE_NAMES[p]}</b> {#if hit}<s>{now === '—' ? 'empty' : now}</s> → {B.describeRow(offer!.change!.row)}{:else}{now}{/if}</p>
-        {/each}
+      <div class="stageWrap">
+        <div class="stageBox" bind:this={host}></div>
+        <Slots rows={v.build.rows} {views} sel={look} {change} onpick={tap} />
       </div>
     </div>
     <div class="side">
+      {#if info}<p class="info">{info}</p>{/if}
       {#if v.options.length}
-        <p class="note">Pick one change. The creature shows it before you commit.</p>
+        <p class="note">Pick one change. The creature and its slots show it before you commit.</p>
         <div class="pickList">
           {#each v.options as o, k}
-            <button class="verbCard" class:on={sel === k} aria-pressed={sel === k} onclick={() => (sel = k)}>
+            <button class="verbCard partCard" class:on={sel === k} aria-pressed={sel === k} onclick={() => { sel = k; look = null; }}>
+              <span class="ic"><PartIcon id={o.part ?? undefined} size={24} /></span>
               <b>{label(o)}</b>
-              {#if o.part}<small>{PARTS[o.part].does}</small>{/if}
               <em>{trade(o)}</em>
             </button>
           {/each}
@@ -90,11 +106,8 @@
   .side { display: grid; gap: 8px; min-width: 0; }
   .sum p { margin: 2px 0; }
   .left { display: grid; gap: 6px; min-width: 0; }
-  .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-  .slot { margin: 0; padding: 3px 6px; border: 2px solid var(--ink); background: rgba(255, 255, 255, 0.06); font-size: 0.9em; min-width: 0; }
-  .slot b { display: block; font-size: 0.8em; opacity: 0.8; }
-  .slot.hit { outline: 3px solid var(--gold); }
-  .slot s { opacity: 0.7; }
+  .stageWrap { position: relative; min-width: 0; }
+  .info { margin: 0; min-height: 40px; }
   .side .go { position: sticky; bottom: 4px; z-index: 2; }
-  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .stageBox { height: 40vh; min-height: 240px; } }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .stageBox { height: 36vh; min-height: 220px; } }
 </style>

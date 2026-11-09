@@ -2,7 +2,7 @@
 // and the same build at board size on a tile beside it. Rings mark the chosen place or a part's legal places. The
 // screen owns it; `destroy` releases the GPU resources when the view closes.
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
-import { PLACES, type PlaceId } from '../data/body';
+import type { PlaceId } from '../data/body';
 import type { Build } from '../sim/body';
 import { Body } from './body';
 import { C, PAL } from './shade';
@@ -10,8 +10,6 @@ import { C, PAL } from './shade';
 export interface EquipStage {
   setBuild(b: Build): void;
   mark(on: PlaceId | null, legal: PlaceId[]): void;
-  /** Each place's point on the large creature, in CSS pixels from the canvas' top left. */
-  points(): Record<PlaceId, [number, number]>;
   destroy(): void;
 }
 
@@ -57,11 +55,6 @@ export async function makeEquipStage(host: HTMLElement, build: Build, pixel: num
   return {
     setBuild(b) { big.setBuild(b); small.setBuild(b); big.place(0, 0, -Math.PI / 2); small.place(small.head.x, small.head.y, small.heading); layout(); },
     mark(p, l) { on = p; legal = l; },
-    points() {
-      const out = {} as Record<PlaceId, [number, number]>;
-      for (const p of PLACES) { const [x, y] = big.placeAt(p); out[p] = [bigC.position.x + x * k, bigC.position.y + y * k]; }
-      return out;
-    },
     destroy() { app.renderer.off('resize', layout); app.destroy({ removeView: true }, { children: true }); },
   };
 }

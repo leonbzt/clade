@@ -14,8 +14,8 @@ Design: [docs/design/full-version.md](docs/design/full-version.md). **Staying on
 1. [x] [16 Quick wins](docs/slices/16-quick-wins.md): the toy's resource bars and "next board" line, a new font, clipped labels
 2. [x] [17 The sea toy](docs/slices/17-sea-toy.md): patches with real populations and crashes, seen on a map ("does the map feel alive?")
 3. [ ] [18 The body toy](docs/slices/18-body-toy.md): one general body, parts on slots, recipes ("is the one I built the one I see?")
-4. [ ] Join the sea: it replaces the garden; the map is home, with run hooks; boards come from patches; the few named rules and "what changed"
-5. [ ] Join the bodies: the general body in the game, lineages as data; the body screen, verbs from parts, a role guess settled by body and diet
+4. [x] Join the sea: it replaces the garden; the map is home, with run hooks; boards come from patches; the few named rules and "what changed"
+5. [x] [20 Join the bodies](docs/slices/20-join-the-bodies.md), last part [20D slots](docs/slices/20d-slots.md): the general body in the game, lineages as data; the body screen, verbs from parts, a role guess settled by body and diet
 6. [ ] After a Life, and the climb: hatching, family tree, watch it spread; lineage XP; one tree screen and a close-up; recipes; systems arriving one at a time
 7. [ ] More lineages, the algae layer and the food chain: 6–10 lineages, about 15 if the toy makes it easy
 8. [ ] The shore: the special Life on the tide line, "to be continued" (*proposal:* placed here by AI)

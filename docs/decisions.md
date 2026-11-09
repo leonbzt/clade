@@ -568,3 +568,19 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Slice 20's close:** five fixes (hit costs health, upkeep shown off mud with Deep Burrow's 0 named, no size
   picker, proboscis from the head's tip, slots in the moult view): "the fixes sound good". Compact slots with
   icons become **20D** ("20d is fine"). Cutting unused parts waits for step 7 ("wait for 7").
+
+## 9 Nov, 20D spec
+- **20D slots, the AI leans taken** ("go with your leans, build it"): slots around the creature (one row under it on a
+  phone), no leader lines, icons at the toy's 6×6 for now (8×8 in step 9). Spec: [20D](slices/20d-slots.md).
+
+## 9 Nov, 20D play and step 6 planning
+- **20D:** slots fine, icons okay for now; the slot jump on tap fixed. Upkeep "seems really high" (balance, later).
+- **Step 4 checks** (steps 4 and 5 ticked; map polish to step 9): map "clunky still and rough" on desktop and phone, smooth on desktop; the story of founding and
+  continuation "was okay", now "a little more confusing". Notes: [playtest 19](playtests/19-join-the-sea.md).
+- **Step 6 in three parts:** "splitting in 3 is fine, but i don't want to start a plan spec, check, and review step
+  each time." So one spec for all of step 6, built part by part without a new spec and review round per part.
+- **What a run carries forward:** (c), both: the lineage keeps XP and unlocks, and saved species (a whole build plus
+  mutations) live inside it as presets.
+- **XP:** "spend points gotten by leveling, some levels could unlock things and the currency could be used for
+  further upgrades."
+- **Order:** model first.

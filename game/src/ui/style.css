@@ -118,6 +118,9 @@ button.small { min-height: 34px; font-size: 16px; padding: 2px 10px; color: var(
 .verbCard b { color: var(--gold); font-size: 16px; }
 .verbCard small { font-weight: 400; font-size: 16px; text-shadow: none; }
 .verbCard em { font-style: normal; font-weight: 400; font-size: 16px; color: var(--dim); text-shadow: none; }
+.partCard { grid-template-columns: 24px minmax(0, 1fr); column-gap: 8px; }
+.partCard > * { grid-column: 2; }
+.partCard > .ic { grid-column: 1; grid-row: 1 / span 3; margin-top: 2px; }
 .verbCard.on { outline: 3px solid var(--gold); outline-offset: -8px; background-color: #5a4a35; }
 .note { min-height: 20px; font-size: 16px; color: var(--dim); }
 .verbs { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; margin-bottom: 8px; }

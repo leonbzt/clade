@@ -37,3 +37,8 @@ User report from chat after playing 20C; device, seed and run count not supplied
   slightly longer, without the pale dots that read as eyes. The moult view shows six slots under the creature,
   the replaced one outlined as "old → new".
 - Open: 20D (compact slots with icons). The rest is parked in `ideas.md`.
+
+## 20D (9 Nov)
+- Slots "look fine", icons "okay for now". Tapping a slot moved it (the global button press replaced its centring);
+  fixed the same day.
+- After the upkeep rebalance, upkeep "seems really high". For step 6's model or step 10's balance.

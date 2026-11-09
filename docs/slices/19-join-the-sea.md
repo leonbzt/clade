@@ -102,8 +102,8 @@ needed without rewriting movement, parts or event playback. No new framework, de
 - [x] `npm run check` and `npm run build:game` pass. The packaged page is smoke-tested through founding, continuation and reload.
 - [x] The home is the living patch map; selection, launch range and named populations are readable.
 - [x] Return from a Life shows its actual release, current line distribution and next eligible patches without replaying settlement.
-- [ ] A phone playtest checks map readability, taps and performance; limitations are reported if no device is available.
-- [ ] The user can explain where the first animals came from and why the next run can start where it does;
+- [x] A phone playtest checks map readability, taps and performance; limitations are reported if no device is available.
+- [x] The user can explain where the first animals came from and why the next run can start where it does;
   notes are saved in `docs/playtests/19-join-the-sea.md` after actual play.
 
 ## Size check and session boundaries

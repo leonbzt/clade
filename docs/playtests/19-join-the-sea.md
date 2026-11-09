@@ -105,3 +105,9 @@ Packaged page 756 KB; installed headless Chrome in a disposable profile, fixed s
 No player or real phone was available. Ask the player to find and open a next patch unaided; navigation
 comprehension, the remaining ordinary-Life protocol and phone hardware checks remain open. Body work
 was not started. This verification does not establish balance or frame-rate performance.
+
+## Your checks (9 Nov)
+- **Map:** on desktop and phone it "looks very clunky still and rough, needs more improvement". Runs smoothly on desktop.
+- **Where the animals came from, and the next start:** "was okay, with the current changes it got a little more
+  confusing". (AI reading: the body changes of slice 20 blurred the founding and continuation story.)
+- Map polish goes to step 9 (the UI and art pass); the continuation story to step 6's after-a-Life screens.

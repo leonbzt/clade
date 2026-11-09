@@ -1,14 +1,17 @@
 <!-- Slice 20B: the equipment view. The creature large with its six places, the choices at the chosen place as
-     trade-off cards, the same build at board size. Since 20C it is the Life's launcher. -->
+     trade-off cards, the same build at board size. Since 20C it is the Life's launcher; since 20D the places are icon
+     slots (`Slots.svelte`) and the cards carry icons. -->
 <script lang="ts">
   import { untrack } from 'svelte';
-  import { BODY_RULE, PLACES, PLACE_NAMES, type PlaceId, type PresetId, type Rows } from '../data/body';
+  import { BODY_RULE, PLACE_NAMES, type PlaceId, type PresetId, type Rows } from '../data/body';
   import { PARTS, PLANS, STYLES, type PartId, type PlanId } from '../data/life';
   import type { Placement } from '../sim/body';
   import * as B from '../sim/body';
   import { makeEquipStage, type EquipStage } from '../view/equip-stage';
   import { homes, numbers, optionsAt, places, presetsOf, startDesign, verbName, type Option } from './equip';
   import { feel } from './feel';
+  import PartIcon from './PartIcon.svelte';
+  import Slots from './Slots.svelte';
 
   let { plan, carriedPart, origin, context, preset, design: given, size = 1, onstart, onclose }: {
     plan: PlanId; carriedPart?: PartId; origin: string; context: string; preset?: PresetId; design?: Rows; size?: number;
@@ -20,7 +23,7 @@
   let sel: PlaceId = $state('front'), hover: PartId | null = $state(null), presetOn: PresetId | null = $state(untrack(() => (given ? null : preset ?? null)));
   let host: HTMLDivElement | undefined = $state();
   let stage = $state.raw<EquipStage | null>(null);
-  let pts = $state<Record<PlaceId, [number, number]> | null>(null);
+  let peek: Option | null = $state(null);
 
   const carried = $derived(carriedPart && carriedAt ? { part: carriedPart, place: carriedAt } : undefined);
   const res = $derived(B.startBuild(plan, design, carried));
@@ -36,11 +39,9 @@
     let alive = true, made: EquipStage | null = null;
     const el = host;
     makeEquipStage(el, untrack(() => shown), feel.pixel).then((s) => { if (alive) { made = s; stage = s; } else s.destroy(); });
-    const ro = new ResizeObserver(() => { if (made) pts = made.points(); });
-    ro.observe(el);
-    return () => { alive = false; ro.disconnect(); made?.destroy(); stage = null; };
+    return () => { alive = false; made?.destroy(); stage = null; };
   });
-  $effect(() => { if (stage) { stage.setBuild(shown); pts = stage.points(); } });
+  $effect(() => { stage?.setBuild(shown); });
   $effect(() => { stage?.mark(sel, legal); });
 
   function choose(o: Option) {
@@ -49,28 +50,26 @@
     design = next; presetOn = null;
   }
   function usePreset(p: PresetId) { design = startDesign(plan, p); presetOn = p; }
-  /** Label spots in % of the stage; left-column labels hang from the left edge, right-column ones from the right. */
-  const LABEL: Record<PlaceId, [number, number]> = { front: [50, 5], eyes: [2, 17], back: [98, 24], limbs: [2, 58], sides: [98, 58], tail: [42, 93] };
-  const tagStyle = (p: PlaceId) => (LABEL[p][0] < 10 ? `left:${LABEL[p][0]}%;top:${LABEL[p][1]}%;transform:translateY(-50%)` : LABEL[p][0] > 90 ? `right:${100 - LABEL[p][0]}%;top:${LABEL[p][1]}%;transform:translateY(-50%)` : `left:${LABEL[p][0]}%;top:${LABEL[p][1]}%`);
   const presetName = (p: PresetId) => (p === 'hunter' ? 'Hunter' : STYLES[p].name);
   const trade = (o: Option) => [
     o.gained.length ? `gains ${o.gained.map(verbName).join(', ')}` : '', o.lost.length ? `loses ${o.lost.map(verbName).join(', ')}` : '',
     `upkeep ${nums.upkeep} → ${o.upkeepAfter}`,
   ].filter(Boolean).join(' · ');
   const was = $derived(build.rows[sel]?.length ? B.describeRow(build.rows[sel]!) : null);
+  /** The info line: the hovered card, else the current one. */
+  const info = $derived(peek ?? opts.find((o) => o.current) ?? null);
+  const pick = (p: PlaceId) => { sel = p; peek = null; };
+  const enter = (o: Option) => { peek = o; hover = o.row?.[o.row.length - 1] ?? null; };
+  const leave = () => { peek = null; hover = null; };
 </script>
 
 <div class="metaWrap equipWrap"><div class="panel habCard equip">
   <div class="metaTop"><h2>{PLANS[plan].name} · starting body</h2><button class="small" onclick={onclose}>Back</button></div>
   <p class="note">{context}</p>
   <div class="equipGrid">
-    <div class="stageBox" bind:this={host}>
-      {#if pts}<svg class="leaders" aria-hidden="true">{#each PLACES as p}<line x1={`${LABEL[p][0] < 10 ? 12 : LABEL[p][0] > 90 ? 88 : LABEL[p][0]}%`} y1={`${LABEL[p][1]}%`} x2={pts[p][0]} y2={pts[p][1]} class:on={p === sel} />{/each}</svg>{/if}
-      {#each view as v}
-        <button class="placeTag {v.state}" class:on={v.place === sel} class:legal={legal.includes(v.place)} style={tagStyle(v.place)}
-          aria-pressed={v.place === sel} onclick={() => (sel = v.place)}><b>{v.name}</b><small>{v.state === 'carried' ? `${v.holds} (carried)` : v.holds}</small></button>
-      {/each}
-      <span class="boardTag">board size</span>
+    <div class="stageWrap">
+      <div class="stageBox" bind:this={host}><span class="boardTag">board size</span></div>
+      <Slots rows={build.rows} views={view} {sel} {legal} onpick={pick} />
     </div>
     <div class="equipSide">
       <div class="chips">{#each presetsOf(plan) as p}<button class="chip" class:on={presetOn === p} onclick={() => usePreset(p)}>{presetName(p)}</button>{/each}</div>
@@ -84,14 +83,14 @@
       {#if view.find((v) => v.place === sel)?.state === 'unsupported'}
         <p class="note">This body has no part for this place yet.</p>
       {:else}
+        {#if info}<p class="info"><b>{info.name}:</b> {info.does}{info.verb ? ` Verb: ${info.verb}.` : ''}</p>{/if}
         <div class="pickList">
           {#each opts as o}
-            <button class="verbCard" class:on={o.current} aria-current={o.current} onclick={() => { if (!o.current) choose(o); }}
-              onpointerenter={() => (hover = o.row?.[o.row.length - 1] ?? null)} onpointerleave={() => (hover = null)} onfocus={() => (hover = o.row?.[o.row.length - 1] ?? null)} onblur={() => (hover = null)}>
+            <button class="verbCard partCard" class:on={o.current} aria-current={o.current} onclick={() => { if (!o.current) choose(o); }}
+              onpointerenter={() => enter(o)} onpointerleave={leave} onfocus={() => enter(o)} onblur={leave}>
+              <span class="ic"><PartIcon row={o.row} size={24} /></span>
               <b>{o.name}{o.current ? ' · now' : ''}</b>
-              <small>{o.does}</small>
-              {#if o.verb || (was && !o.current)}<em>{[o.verb, was && !o.current ? `replaces ${was}` : ''].filter(Boolean).join(' · ')}</em>{/if}
-              {#if !o.current}<em>{trade(o)}</em>{/if}
+              <em>{o.current ? `upkeep ${o.upkeep}` : trade(o)}</em>
               {#each o.problems as p}<em class="bad">{p}</em>{/each}
             </button>
           {/each}
@@ -113,19 +112,10 @@
   .equipWrap { position: fixed; inset: 0; z-index: 30; overflow: auto; place-items: start center; }
   .equip { max-width: 980px; width: min(980px, 96vw); box-sizing: border-box; }
   .equipGrid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); grid-template-areas: 'stage side'; gap: 8px 12px; align-items: start; }
-  .stageBox { grid-area: stage; } .equipSide { grid-area: side; }
+  .stageWrap { grid-area: stage; position: relative; min-width: 0; } .equipSide { grid-area: side; }
   .stageBox { position: relative; height: min(70vh, 560px); min-height: 360px; background: #0b2730; border: 3px solid var(--ink); overflow: hidden; }
   .stageBox :global(canvas) { position: absolute; inset: 0; }
-  .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  .leaders line { stroke: var(--brass); stroke-width: 1; opacity: 0.55; }
-  .leaders line.on { stroke: var(--gold); opacity: 1; stroke-width: 2; }
-  .placeTag { position: absolute; transform: translate(-50%, -50%); margin: 0; min-height: 34px; padding: 2px 8px; display: grid; text-align: center; line-height: 1.1; max-width: 40%; z-index: 1; }
-  .placeTag small { color: var(--text); font-weight: 400; text-shadow: none; overflow-wrap: anywhere; }
-  .placeTag.empty small, .placeTag.locked small, .placeTag.unsupported small { color: var(--dim); font-style: italic; }
-  .placeTag.unsupported { opacity: 0.6; }
-  .placeTag.on { outline: 3px solid var(--gold); }
-  .placeTag.legal { outline: 3px solid var(--good); }
-  .placeTag.carried small { color: var(--good); }
+  .info { margin: 0; min-height: 40px; }
   .boardTag { position: absolute; right: 6px; bottom: 4px; color: var(--dim); text-shadow: var(--outline); pointer-events: none; }
   .equipSide { display: grid; gap: 8px; min-width: 0; }
   .equipSide h3 { margin: 4px 0 0; }
@@ -134,6 +124,6 @@
   .equip .go { position: sticky; bottom: 4px; z-index: 2; }
   @media (max-width: 720px) {
     .equipGrid { grid-template-columns: 1fr; grid-template-areas: 'stage' 'side'; }
-    .stageBox { height: 58vh; min-height: 320px; }
+    .stageBox { height: 46vh; min-height: 260px; }
   }
 </style>
