@@ -4,11 +4,16 @@ import { PLACES, type PlaceId, type Rows } from '../data/body';
 import { ENHANCED, ENHANCED_WHAT, LINEAGES, LINEAGE_IDS, LINE_RULE, type Ranks } from '../data/lineages';
 import { PARTS, type PartId, type PlanId } from '../data/life';
 import * as B from '../sim/body';
+import { larva } from '../sim/plan';
 import { levelOf, type Gain, type Line } from '../sim/lineage';
 
 /** A build to draw from saved rows. */
 export const asBuild = (body: PlanId, rows: Rows, ranks?: Ranks): B.Build =>
   ({ body, size: 1, rows, order: PLACES.filter((p) => rows[p]?.length), ...(ranks ? { ranks } : {}) });
+
+/** The same birth rules for launcher, hatching and species portraits. */
+export const asLarva = (body: PlanId, rows: Rows, ranks?: Ranks) => larva(asBuild(body, rows, ranks)).build;
+export const placeCount = (body: PlanId, rows: Rows) => `${PLACES.filter((p) => rows[p]?.length).length} of ${PLACES.filter((p) => B.rowsAt(body, p).length).length} places`;
 
 /** The XP bar at `xp`: the level, how far into it, and the size of the step (0 at the cap). */
 export function bar(xp: number) {
@@ -56,7 +61,7 @@ export function afterLines(g: Gain): string[] {
   const byLevel: PartId[] = [];
   for (let n = g.from + 1; n <= g.level; n++) { const p = LINEAGES[g.plan].levels[n]; if (p && g.unlocked.includes(p)) byLevel.push(p); }
   const out = g.unlocked.filter((p) => !byLevel.includes(p)).map((p) => `Kept card: ${PARTS[p].name} joins your line's parts`);
-  if (g.species) out.push(`New species: ${g.species}`);
+  if (g.species) out.push(g.grew ? `${g.species} grows` : `New species: ${g.species}`);
   if (!g.xp) out.push('No eggs, no XP: the line waits for the next Life.');
   return out;
 }

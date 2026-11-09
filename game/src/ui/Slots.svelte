@@ -6,9 +6,9 @@
   import type { PlaceView } from './equip';
   import PartIcon from './PartIcon.svelte';
 
-  let { rows, views, sel = null, legal = [], change = null, upkeep = {}, onpick }: {
-    rows: Rows; views: PlaceView[]; sel?: PlaceId | null; legal?: PlaceId[];
-    change?: { place: PlaceId; row: Row } | null; upkeep?: Partial<Record<PlaceId, number>>; onpick?: (p: PlaceId) => void;
+  let { rows, buds = {}, views, sel = null, legal = [], change = null, upkeep = {}, onpick }: {
+    rows: Rows; buds?: Rows; views: PlaceView[]; sel?: PlaceId | null; legal?: PlaceId[];
+    change?: { place: PlaceId; row: Row; bud?: boolean } | null; upkeep?: Partial<Record<PlaceId, number>>; onpick?: (p: PlaceId) => void;
   } = $props();
 
   /** Slot centres in % of the stage: ahead, above, below and behind the creature. */
@@ -23,15 +23,16 @@
     <button class="slot {v.state}" class:on={p === sel} class:legal={legal.includes(p)} class:hit style="left:{AT[p][0]}%;top:{AT[p][1]}%"
       aria-pressed={p === sel} title="{v.name}: {v.holds}" onclick={() => onpick?.(p)}>
       <span class="boxes">
-        {#if hit}<span class="box old"><PartIcon row={rows[p]} size={18} /></span><span class="arrow">→</span>{/if}
-        <span class="box">
+        {#if hit}<span class="box old"><PartIcon row={buds[p] ?? rows[p]} size={18} /></span><span class="arrow">→</span>{/if}
+        <span class="box" class:bud={hit ? change?.bud : !!buds[p]?.length}>
           {#if hit}<PartIcon row={change!.row} />
+          {:else if buds[p]?.length}<PartIcon row={buds[p]} />
           {:else if v.state === 'locked'}<PartIcon id="lock" size={18} />
           {:else if rows[p]?.length}<PartIcon row={rows[p]} />{/if}
-          {#if upkeep[p] !== undefined && !hit}<i class="up" class:free={upkeep[p] === 0} title="upkeep">{upkeep[p]}</i>{/if}
+          {#if upkeep[p] !== undefined && !hit && !buds[p]?.length}<i class="up" class:free={upkeep[p] === 0} title="upkeep">{upkeep[p]}</i>{/if}
         </span>
       </span>
-      <small>{v.name}</small>
+      <small>{v.name}{(hit ? change?.bud : buds[p]?.length) ? " · bud" : ""}</small>
     </button>
   {/each}
 </div>
@@ -49,6 +50,8 @@
   .up { position: absolute; right: -6px; bottom: -6px; min-width: 16px; padding: 0 2px; font: 700 16px/16px var(--font); font-style: normal;
     color: var(--food); background: var(--ink); text-align: center; }
   .up.free { color: var(--good); }
+  .box.bud :global(svg) { opacity: 0.4; }
+  .slot.bud small { color: var(--dim); }
   .box.old { width: 30px; height: 30px; opacity: 0.6; }
   .arrow { color: var(--gold); }
   .slot small { font-size: 16px; text-shadow: var(--outline); }
@@ -62,6 +65,7 @@
     .slotRing { position: static; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; margin-top: 6px; }
     .slot, .slot:active:not(:disabled) { position: static; transform: none; }
     .boxes { position: relative; }
-    .box.old { position: absolute; left: -4px; top: -4px; width: 24px; height: 24px; z-index: 1; opacity: 0.85; }    .arrow { display: none; }
+    .box.old { position: absolute; left: -4px; top: -4px; width: 24px; height: 24px; z-index: 1; opacity: 0.85; }
+    .arrow { position: absolute; left: 18px; top: -7px; z-index: 2; font-size: 16px; }
   }
 </style>

@@ -25,8 +25,26 @@ const PINK = 0xf59be0, SULFUR = [0x6a5a10, 0x9a8418, 0xc8b02a, 0xe8d44a, 0xfff08
 
 export function paintPlace(b: Body, g: Graphics, place: PlaceId, ramp: Ramp, over: boolean) {
   const row = b.row(place);
-  if (!row.length && b.lost(place)) { if (!over && place === 'limbs') stumps(b, g); return; }
+  if (!row.length && b.lost(place)) {
+    if (!over && place === 'limbs') stumps(b, g);
+    if (b.build.buds?.[place]?.length && (over || place === 'limbs')) paintBud(b, g, place);
+    return;
+  }
   PAINT[place](b, g, row, ramp, over);
+  if (b.build.buds?.[place]?.length && (over || place === 'limbs')) paintBud(b, g, place);
+}
+
+/** Small pale nubs at the planned place; grown defaults still draw underneath. */
+function paintBud(b: Body, g: Graphics, place: PlaceId) {
+  const f = place === 'front' ? -0.06 : place === 'eyes' ? 0.12 : place === 'tail' ? 1.04 : 0.48;
+  const paired = place === 'limbs' || place === 'sides' || place === 'eyes';
+  const r = Math.max(1.1, b.u() * 0.24);
+  for (const side of paired ? [-1, 1] : [0]) {
+    const [x, y] = b.P(f * b.L, side * (b.w(Math.max(0, Math.min(1, f))) + r * 0.7), 4);
+    g.circle(x, y, r + 0.6).fill({ color: PAL.ink, alpha: 0.55 });
+    g.circle(x, y, r).fill({ color: PAL.pale[3], alpha: 0.55 });
+    g.circle(x - r * 0.25, y - r * 0.25, r * 0.4).fill({ color: PAL.pale[4], alpha: 0.75 });
+  }
 }
 
 // ---- Front: one tool ahead of the head ----

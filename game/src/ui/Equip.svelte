@@ -14,7 +14,7 @@
   import { feel } from './feel';
   import PartIcon from './PartIcon.svelte';
   import Slots from './Slots.svelte';
-  import { rankText, slotUpkeep } from './line';
+  import { asLarva, rankText, slotUpkeep } from './line';
 
   let { plan, line, species = [], context, preset, design: given, size = 1, onstart, onclose }: {
     plan: PlanId; line?: B.LinePool; species?: Species[]; context: string; preset?: PresetId; design?: Rows; size?: number;
@@ -38,8 +38,9 @@
 
   const res = $derived(B.startBuild(plan, design, line));
   const build = $derived(res.build);
-  const shown = $derived({ ...build, size });
-  const view = $derived(places(plan, build));
+  const newborn = $derived(asLarva(plan, build.rows, build.ranks));
+  const shown = $derived({ ...newborn, size });
+  const view = $derived(places(plan, newborn));
   const opts = $derived(optionsAt(plan, design, sel, line));
   const nums = $derived(numbers(build));
   const legal = $derived(hover ? homes(plan, hover) : []);
@@ -73,16 +74,16 @@
 </script>
 
 <div class="metaWrap equipWrap"><div class="panel habCard equip">
-  <div class="metaTop"><h2>{PLANS[plan].name} · starting body</h2><button class="small" onclick={onclose}>Back</button></div>
+  <div class="metaTop"><h2>{PLANS[plan].name} · body plan</h2><button class="small" onclick={onclose}>Back</button></div>
   <p class="note">{context}</p>
   <div class="equipGrid">
     <div class="stageWrap">
       <div class="stageBox" bind:this={host}><span class="boardTag">board size</span></div>
-      <Slots rows={build.rows} views={view} {sel} {legal} upkeep={slotUpkeep(build)} onpick={pick} />
+      <Slots rows={newborn.rows} buds={newborn.buds} views={view} {sel} {legal} upkeep={slotUpkeep(build)} onpick={pick} />
     </div>
     <div class="equipSide">
       <div class="chips">
-        {#each chips.filter((c, k) => more || k < SHOWN || !c.id.startsWith('sp') || presetOn === c.id) as c}<button class="chip" class:on={presetOn === c.id} onclick={() => useChip(c)}>{c.name}</button>{/each}
+        {#each chips.filter((c, k) => more || k < SHOWN || !c.id.startsWith('sp') || presetOn === c.id) as c}<button class="chip" class:on={presetOn === c.id} onclick={() => useChip(c)}>{c.name}{#if c.id.startsWith("sp")}<span class="chipBuds" aria-hidden="true">{#each Object.values(asLarva(plan, c.rows, line?.ranks).buds ?? {}) as row}<PartIcon {row} size={12} />{/each}</span>{/if}</button>{/each}
         {#if species.length > SHOWN}<button class="chip" onclick={() => (more = !more)}>{more ? 'Fewer' : `+${species.length - SHOWN} species`}</button>{/if}
       </div>
       <h3>{PLACE_NAMES[sel]} <span class="hint">{view.find((v) => v.place === sel)?.lock ? `locked: ${view.find((v) => v.place === sel)?.lock}` : was ? `now: ${was}` : 'empty'}</span></h3>
@@ -108,13 +109,14 @@
         <p><small>{nums.move} · sense {nums.sense} · oxygen {nums.oxygen} · clutch {nums.clutch} at size 3</small></p>
         {#each res.problems as p}<p class="bad">{p}</p>{/each}
       </div>
-      <p class="note">At most {BODY_RULE.maxVerbs} verbs; Dash from walking legs is free. Moults add the rest.</p>
+      <p class="note">The plan above has at most {BODY_RULE.maxVerbs} verbs; Dash from walking legs is free. Hatch as a larva: upkeep {B.upkeep(newborn)}, with the pale buds to grow at each moult.</p>
       {#if onstart}<button class="go" disabled={res.problems.length > 0} onclick={() => onstart($state.snapshot(design))}>Start the Life</button>{/if}
     </div>
   </div>
 </div></div>
 
 <style>
+  .chipBuds { display: inline-flex; gap: 3px; margin-left: 5px; opacity: 0.45; vertical-align: middle; }
   .equipWrap { position: fixed; inset: 0; z-index: 30; overflow: auto; place-items: start center; }
   .equip { max-width: 980px; width: min(980px, 96vw); box-sizing: border-box; }
   .equipGrid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); grid-template-areas: 'stage side'; gap: 8px 12px; align-items: start; }

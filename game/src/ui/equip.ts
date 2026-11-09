@@ -4,7 +4,7 @@ import { BODIES, BODY_RULE, PLACES, PLACE_NAMES, PRESETS, type PlaceId, type Pre
 import { PARTS, VERBS, type PartId, type PlanId, type VerbId } from '../data/life';
 import * as B from '../sim/body';
 
-export type PlaceState = 'held' | 'empty' | 'locked' | 'unsupported';
+export type PlaceState = 'held' | 'bud' | 'empty' | 'locked' | 'unsupported';
 export interface PlaceView { place: PlaceId; name: string; state: PlaceState; holds: string; lock?: string }
 export interface Option {
   row: Row | null; name: string; does: string; upkeep: number; verb?: string;
@@ -27,6 +27,7 @@ export function places(body: PlanId, b: B.Build): PlaceView[] {
   return PLACES.map((place) => {
     const row = b.rows[place], lock = D.locks[place]?.family, name = PLACE_NAMES[place];
     if (D.unsupported.includes(place)) return { place, name, state: 'unsupported', holds: `no ${body} part yet` };
+    if (b.buds?.[place]?.length) return { place, name, state: 'bud', holds: `${rowName(b.buds[place]!)} bud`, lock };
     if (row?.length) return { place, name, state: 'held', holds: rowName(row), lock };
     return { place, name, state: lock ? 'locked' : 'empty', holds: lock ? `needs ${lock} parts` : 'empty', lock };
   });

@@ -1,0 +1,101 @@
+[
+  {
+    "init": "Math.random = () => 1 / 2 ** 31;"
+  },
+  {
+    "eval": "(async () => { const { serializeSeaSave } = await import('/game/src/sim/sea-save.ts'); const { SAVE_KEY } = await import('/game/src/sim/save.ts'); const s = __game.save; s.lines.worm.parts.push('gill','proboscis'); s.lines.worm.species = [{name:'Worm 2',rows:{front:['tentacles'],eyes:['eye'],sides:['gill'],back:['gut'],tail:['bulb']},mutation:null,life:1,tier:'B'}]; s.lives = 1; localStorage.setItem(SAVE_KEY, serializeSeaSave(s)); })()"
+  },
+  {
+    "reload": true
+  },
+  {
+    "click": ".playNext button"
+  },
+  {
+    "click": ".patchList .habBtn"
+  },
+  {
+    "click": ".patchWrap .liveBtn"
+  },
+  {
+    "assert": "document.querySelectorAll('.equip .slot.bud').length === 4 && !!document.querySelector('.chipBuds')"
+  },
+  {
+    "until": "!!document.querySelector('.equip .stageBox canvas')"
+  },
+  {
+    "wait": 250
+  },
+  {
+    "shot": "22-launcher"
+  },
+  {
+    "click": ".equip .go"
+  },
+  {
+    "click": "#cardButtons button"
+  },
+  {
+    "assert": "__game.life.growth.origin === 'Worm 2' && Object.keys(__game.life.build.buds).length === 4 && document.querySelector('#body').textContent.includes('Larva')"
+  },
+  {
+    "shot": "22-larva-board"
+  },
+  {
+    "click": "#bodyBtn"
+  },
+  {
+    "shot": "22-larva"
+  },
+  {
+    "click": ".lifeBody .metaTop button"
+  },
+  {
+    "eval": "__game.life.food = 2;"
+  },
+  {
+    "click": "#moult"
+  },
+  {
+    "assert": "document.querySelector('.lifeBody .pickList button').textContent.includes('Grow Tentacles \u00b7 2 food') && [...document.querySelectorAll('.lifeBody .pickList button')].some(b => b.disabled && b.textContent.includes('3 food'))"
+  },
+  {
+    "shot": "22-offer-low-food"
+  },
+  {
+    "click": ".lifeBody .go"
+  },
+  {
+    "assert": "__game.life.build.rows.front[0] === 'tentacles' && __game.life.food === 0 && __game.life.growth.branched === false"
+  },
+  {
+    "eval": "__game.life.food = 40;"
+  },
+  {
+    "click": "#wait"
+  },
+  {
+    "until": "!__game.busy"
+  },
+  {
+    "click": "#moult"
+  },
+  {
+    "assert": "[...document.querySelectorAll('.lifeBody .pickList button')].some(b => !b.disabled && b.textContent.includes('4 food'))"
+  },
+  {
+    "click": ".lifeBody .pickList button:has-text(\"Proboscis\")"
+  },
+  {
+    "shot": "22-offer-swap"
+  },
+  {
+    "click": ".lifeBody .go"
+  },
+  {
+    "assert": "__game.life.growth.branched && __game.life.build.rows.front[0] === 'proboscis'"
+  },
+  {
+    "eval": "performance.getEntriesByType('resource').filter(e => e.responseStatus >= 400).map(e => ({url:e.name,status:e.responseStatus}))"
+  }
+]

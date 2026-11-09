@@ -7,6 +7,7 @@ export interface Plan { rows: Rows; origin?: string; branched: boolean }
 export interface PlanChange extends B.Change { bud: boolean; planned: Rows; branches: boolean }
 export const sameRow = (a?: B.Change['row'], b?: B.Change['row']) =>
   (a?.length ?? 0) === (b?.length ?? 0) && (a ?? []).every((p, k) => p === b?.[k]);
+export const copyRows = (rows: Rows): Rows => Object.fromEntries(PLACES.flatMap((p) => rows[p] ? [[p, [...rows[p]!]]] : []));
 export const samePlan = (a: Rows, b: Rows) => PLACES.every((p) => sameRow(a[p], b[p]));
 export const planBuild = (b: B.Build, rows: Rows): B.Build =>
   ({ ...b, rows, order: PLACES.filter((p) => rows[p]?.length), buds: undefined, lost: undefined });
@@ -20,7 +21,7 @@ export function withBuds(b: B.Build, rows: Rows): B.Build {
 
 /** Defaults remain working under a variant bud. Signature parts are already grown. */
 export function larva(full: B.Build): { build: B.Build; growth: Plan } {
-  let planned = structuredClone(full);
+  let planned: B.Build = { ...full, rows: copyRows(full.rows), order: [...full.order] };
   for (const part of Object.keys(full.ranks ?? {}) as PartId[]) {
     if (!B.ranked(full, part, 'signature') || B.has(planned, part)) continue;
     const choices = B.changesFor(planned, part);
@@ -32,7 +33,7 @@ export function larva(full: B.Build): { build: B.Build; growth: Plan } {
     const row = planned.rows[place];
     if (row?.every((p) => B.defaultBuild(full.body).rows[place]?.includes(p) || B.ranked(full, p, 'signature'))) grown = B.setRow(grown, place, [...row]);
   }
-  return { build: withBuds(grown, planned.rows), growth: { rows: structuredClone(planned.rows), branched: false } };
+  return { build: withBuds(grown, planned.rows), growth: { rows: copyRows(planned.rows), branched: false } };
 }
 
 /** Validate changes against the whole plan, including all waiting verbs. */

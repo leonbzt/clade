@@ -4,7 +4,8 @@ import type { Role } from '../data/garden';
 import type { HabitatId } from '../data/habitats';
 import type { PartId, PlanId } from '../data/life';
 import type { PlaceId, Rows } from '../data/body';
-import type { Build, Change } from '../sim/body';
+import type { Build } from '../sim/body';
+import type { PlanChange } from '../sim/plan';
 import type { Design } from '../sim/body-hurt';
 import type { Headline } from '../sim/sea-news';
 import type { Island, Spot, SpotId } from '../sim/island';
@@ -25,7 +26,7 @@ export const ui = $state({
   line: null as null | PlanId, // 21B: a line's close-up
   tree: false,
   /** The body view during a Life: no options = inspection; else the moult's changes (`part` null = grow without one). */
-  body: null as null | { build: Build; upkeep: number; moultSize: number; options: { part: PartId | null; change: Change | null }[] },
+  body: null as null | { build: Build; upkeep: number; food: number; paid: number; moultSize: number; options: { part: PartId | null; change: PlanChange | null; cost: number; extra: number; affordable: boolean }[] },
 });
 export const ctx = {
   save: null as unknown as SeaSave, isl: null as unknown as Island, spots: null as unknown as Record<SpotId, Spot>,

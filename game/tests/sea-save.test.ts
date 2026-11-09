@@ -95,7 +95,7 @@ describe('sea saves', () => {
 });
 
 describe('the 20C cutover', () => {
-  it('older versions start a fresh sea without a message; the lines and a laid build round-trip in v5', () => {
+  it('older versions start a fresh sea without a message; the lines and a laid build round-trip in v6', () => {
     for (const v of [1, 2, 3, 4]) expect(parseSeaSave(JSON.stringify({ ...legacy(), v }))).toEqual({ save: null, problem: 'none' });
     const s = freshSeaSave(2, 0);
     Object.assign(s.lines.worm!, { xp: 80, points: 1, ranks: { eye: ['lean'] } });

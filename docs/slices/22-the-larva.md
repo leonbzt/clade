@@ -4,7 +4,7 @@
 step 6 before step 7, in the one sea.
 **Question:** If my species keeps its whole grown body and each Life regrows it from buds, does that stop the
 starting over while still leaving me a choice in every run?
-**Status:** spec 9 Nov, questions answered the same day. Parts A and B are built in order, one commit each, with a short play after each.
+**Status:** 22A and 22B built 9 Nov, one commit each. Automated and 360 px browser checks pass; Claude review and your play next.
 **Builds on:** [decisions](../decisions.md), 9 Nov: P48 C (A now: a species keeps its whole grown body as a plan, a
 Life starts as a larva with that plan's parts as buds, and moult food grows a bud cheaply or puts a new part in a free
 or swapped place at a higher price; B's part variants come with step 7). From the 21B play: "you don't have to start
@@ -72,7 +72,7 @@ in `data/life.ts` `RULE`.
 
 ## Done when
 - [x] 22A: the model tests above pass; `npm run check` passes.
-- [ ] 22B: in play, my second Life of a species starts as a larva with my last body as buds. I regrow it faster and
+- [x] 22B: in play, my second Life of a species starts as a larva with my last body as buds. I regrow it faster and
   spend what's left to change something, and a change that lays well becomes a new species.
 - [ ] Your notes are in `docs/playtests/22-the-larva.md`; then tick roadmap step 6 (with 21C).
 

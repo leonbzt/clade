@@ -9,7 +9,7 @@
   import * as B from '../sim/body';
   import { upgradesFor } from '../sim/lineage';
   import { places } from './equip';
-  import { asBuild, childrenOf, partsAt, rankText, recipeText, slotUpkeep, track } from './line';
+  import { asLarva, childrenOf, partsAt, placeCount, rankText, recipeText, slotUpkeep, track } from './line';
   import { ctx, ui } from './meta.svelte';
   import Creature from './Creature.svelte';
   import PartIcon from './PartIcon.svelte';
@@ -20,7 +20,7 @@
   const line = $derived((ui.tick, { ...ctx.save.lines[plan]! })); // a fresh object per tick: the rules mutate the saved one
   let pick = $state(0), sel: PlaceId = $state('front');
   const shownRows = $derived<Rows>(line.species[pick]?.rows ?? B.defaultBuild(plan).rows);
-  const build = $derived(asBuild(plan, shownRows, line.ranks));
+  const build = $derived(asLarva(plan, shownRows, line.ranks));
   const views = $derived(places(plan, build));
   const here = $derived(partsAt(plan, line, sel));
   const offers = $derived((ui.tick, upgradesFor(plan, line)));
@@ -50,7 +50,7 @@
   <p class="note">Level 10 makes this line {LINEAGES[plan].endPoint}. Each level gives a point. <b class="pts">{line.points} point{line.points === 1 ? '' : 's'} to spend.</b></p>
   <div class="grid">
     <Creature {build} mark={sel} height={300}>
-      <Slots rows={shownRows} {views} {sel} upkeep={slotUpkeep(build)} onpick={(p) => (sel = p)} />
+      <Slots rows={build.rows} buds={build.buds} {views} {sel} upkeep={slotUpkeep(build)} onpick={(p) => (sel = p)} />
     </Creature>
     <div class="side">
       <h3>{PLACE_NAMES[sel]} <span class="hint">· {here.length ? `${here.length} part${here.length > 1 ? 's' : ''} your line can grow here` : 'nothing your line can grow here yet'}</span></h3>
@@ -75,8 +75,8 @@
   </div>
   <h3>Species</h3>
   <div class="chips">
-    {#each line.species as sp, k}<button class="chip" class:on={pick === k} onclick={() => (pick = k)}>{sp.name} <small>· tier {sp.tier}</small></button>
-    {:else}<p class="note">None yet: a Life that lays eggs saves the body it started as, plus the gene you keep.</p>{/each}
+    {#each line.species as sp, k}<button class="chip" class:on={pick === k} onclick={() => (pick = k)}>{sp.name} <small>· {placeCount(plan, sp.rows)} · tier {sp.tier}</small></button>
+    {:else}<p class="note">None yet: a Life that lays eggs saves its plan, plus the gene you keep. Its next larva regrows that plan from buds.</p>{/each}
   </div>
   {#each childrenOf(plan) as id}
     <p class="note">{ctx.save.lines[id] ? `Opened: ${LINEAGES[id].name}.` : `Locked: ${LINEAGES[id].name}. ${recipeText(id)}`}{!ctx.save.lines[id] && LINEAGES[id].recipe!.parts.some((x) => !line.parts.includes(x)) ? ` Still to unlock: ${LINEAGES[id].recipe!.parts.filter((x) => !line.parts.includes(x)).map((x) => `${PARTS[x].name}${later(x) ? ` (level ${later(x)})` : ''}`).join(', ')}.` : ''}</p>

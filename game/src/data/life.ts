@@ -12,7 +12,7 @@ export const RULE = {
   predatorSteps: 2, restAfterStrike: 1, restAfterSpine: 3,
   regrow: 4, // turns until an eaten mat (or sulfur mat) grows back
 };
-export const STAGES = ['Hatchling', 'Juvenile', 'Adult', 'Adult', 'Full grown'];
+export const STAGES = ['Larva', 'Juvenile', 'Adult', 'Adult', 'Full grown'];
 
 export type PlanId = 'worm' | 'arthropod' | 'swimmer' | 'trilobite';
 export type GrazerId = 'worm' | 'arthropod' | 'trilobite';

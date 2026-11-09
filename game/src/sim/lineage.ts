@@ -1,12 +1,12 @@
 // Slice 21A: a line's progression across runs. XP from a Life's eggs and tier, levels that give points and unlock
-// parts, points that buy ranks, saved species (a laid build plus the kept hatching card), and recipes that open a new
+// parts, points that buy ranks, saved species (a frozen plan plus the kept hatching card), and recipes that open a new
 // lineage. Pure; the save holds one Line per open lineage. Numbers in data/lineages.ts.
 import { PLACES, type PlaceId, type Rows } from '../data/body';
 import { LINEAGES, LINEAGE_IDS, LINE_RULE, UPGRADES, type Ranks, type RankId, type Upgrade } from '../data/lineages';
 import { PARTS, PART_IDS, type PartId, type PlanId } from '../data/life';
 import { anatomyProblems, changesFor, homesOf, partsOf, type Build } from './body';
 import { integer, oneOf, record, text, tiers } from './save-validation';
-import { planBuild, sameRow, type Plan } from './plan';
+import { copyRows, planBuild, sameRow, type Plan } from './plan';
 
 export interface Species { name: string; rows: Rows; mutation: PartId | null; life: number; tier: string }
 export interface Line { xp: number; points: number; parts: PartId[]; ranks: Ranks; species: Species[] }
@@ -85,7 +85,7 @@ export function speciesOf(_line: Line, laid: Build, mutation: PartId | null, gro
   const base = planBuild(laid, growth?.rows ?? laid.rows);
   const choices = mutation ? changesFor(base, mutation) : [];
   const change = choices.find((c) => !c.was) ?? choices[0];
-  return { rows: structuredClone(change?.build.rows ?? base.rows), place: change?.place ?? null };
+  return { rows: copyRows(change?.build.rows ?? base.rows), place: change?.place ?? null };
 }
 /** Shared by hatching and settlement, so a preview names the same fill or branch that is saved. */
 export function speciesPreview(line: Line, laid: Build, mutation: PartId | null, growth?: Plan) {

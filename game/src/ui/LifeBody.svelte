@@ -33,6 +33,8 @@
   const info = $derived.by(() => {
     if (!v) return '';
     if (look) {
+      const bud = v.build.buds?.[look];
+      if (bud) return `${PLACE_NAMES[look]}: ${B.describeRow(bud)} bud. No effect or upkeep until grown.${v.build.rows[look]?.length ? ` ${B.describeRow(v.build.rows[look]!)} is working underneath.` : ''}`;
       const row = v.build.rows[look];
       return row?.length ? `${PLACE_NAMES[look]}: ${B.describeRow(row)}. ${[...new Set(row.map((p) => partText(p, v.build.ranks)))].join(' ')} Upkeep ${slotUpkeep(v.build)[look] ?? rowUpkeep(row)}.` : `${PLACE_NAMES[look]}: ${views.find((x) => x.place === look)?.holds}.`;
     }
@@ -58,12 +60,12 @@
   $effect(() => { stage?.mark(offer?.change?.place ?? null, legal.length > 1 ? legal : []); });
 
   const vn = (l: string[]) => l.map((x) => VERBS[x as keyof typeof VERBS].name).join(', ');
-  const label = (o: NonNullable<typeof offer>) => (o.part ? PARTS[o.part].name : 'Grow without a part');
+  const label = (o: NonNullable<typeof offer>) => (o.part ? `${o.change?.bud ? 'Grow ' : ''}${PARTS[o.part].name} · ${o.cost} food` : `Size only · ${o.cost} food`);
   const where = (o: NonNullable<typeof offer>) => { const ps = placesOf(o.part); return ps.length > 1 ? `${ps.map((p) => PLACE_NAMES[p]).join(' or ')}: tap a lit slot` : ps.length ? `on ${PLACE_NAMES[ps[0]]}` : ''; };
   const trade = (o: NonNullable<typeof offer>) => {
     if (!o.change) return `upkeep stays ${v!.upkeep}`;
-    const c = o.change;
-    return [c.gained.length ? `gains ${vn(c.gained)}` : '', c.lost.length ? `loses ${vn(c.lost)}` : '', `upkeep ${v!.upkeep} → ${c.upkeep}`].filter(Boolean).join(' · ');
+    const c = o.change, old = v!.build.buds?.[c.place] ?? c.was;
+    return [!c.bud && old ? `over ${B.describeRow(old)}${v!.build.buds?.[c.place] ? ' bud' : ''}` : '', c.branches ? 'a new species' : '', c.gained.length ? `gains ${vn(c.gained)}` : '', c.lost.length ? `loses ${vn(c.lost)}` : '', `upkeep ${v!.upkeep} → ${c.upkeep}`].filter(Boolean).join(' · ');
   };
 </script>
 
@@ -77,18 +79,18 @@
     <div class="left">
       <div class="stageWrap">
         <div class="stageBox" bind:this={host}></div>
-        <Slots rows={v.build.rows} {views} sel={look} {change} legal={legal.length > 1 ? legal : []} upkeep={slotUpkeep(v.build)} onpick={tap} />
+        <Slots rows={v.build.rows} buds={v.build.buds} {views} sel={look} {change} legal={legal.length > 1 ? legal : []} upkeep={slotUpkeep(v.build)} onpick={tap} />
       </div>
     </div>
     <div class="side">
       {#if info}<p class="info">{info}</p>{/if}
       {#if v.options.length}
-        <p class="note">Pick one change. The creature and its slots show it before you commit.</p>
+        <p class="note">{v.paid} food paid to moult · {v.food} left. Bud prices include that payment; new parts cost the rest.</p>
         <div class="pickList">
           {#each cards as k}
             {@const o = v.options[k]}
             {@const on = offer?.part === o.part}
-            <button class="verbCard partCard" class:on aria-pressed={on} onclick={() => { if (!on) sel = k; look = null; }}>
+            <button class="verbCard partCard" class:on disabled={!o.affordable} aria-pressed={on} onclick={() => { if (!on) sel = k; look = null; }}>
               <span class="ic"><PartIcon id={o.part ?? undefined} size={24} /></span>
               <b>{label(o)}</b>
               {#if where(o)}<em>{on && offer?.change && placesOf(o.part).length > 1 ? `on ${PLACE_NAMES[offer.change.place]} · ` : ''}{where(o)}</em>{/if}
@@ -96,7 +98,7 @@
             </button>
           {/each}
         </div>
-        <button class="go" disabled={!offer} onclick={() => offer && ctx.pick(offer.part, offer.change?.place)}>{offer ? (offer.part ? `Grow ${PARTS[offer.part].name}${offer.change ? ` on ${PLACE_NAMES[offer.change.place]}` : ''}` : 'Grow without a part') : 'Pick one'}</button>
+        <button class="go" disabled={!offer?.affordable} onclick={() => offer && ctx.pick(offer.part, offer.change?.place)}>{offer ? (offer.part ? `${offer.change?.bud ? 'Grow' : 'Take'} ${PARTS[offer.part].name}${offer.extra ? ` · pay ${offer.extra} more food` : ' · already paid'}` : 'Grow a size · already paid') : 'Pick one'}</button>
       {/if}
       {#if nums}
         <div class="sum">
@@ -121,6 +123,7 @@
   .left { display: grid; gap: 6px; min-width: 0; }
   .stageWrap { position: relative; min-width: 0; }
   .info { margin: 0; min-height: 40px; }
+  .partCard:disabled { opacity: 0.45; }
   .side .go { position: sticky; bottom: 4px; z-index: 2; }
   @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .stageBox { height: 36vh; min-height: 220px; } }
 </style>

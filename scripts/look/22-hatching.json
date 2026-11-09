@@ -1,0 +1,89 @@
+[
+  {
+    "init": "Math.random = () => 1 / 2 ** 31;"
+  },
+  {
+    "eval": "(async () => { const L = await import('/game/src/sim/life.ts'); const { startSeaLife, completeLife } = await import('/game/src/sim/sea-life.ts'); const { serializeSeaSave } = await import('/game/src/sim/sea-save.ts'); const { SAVE_KEY } = await import('/game/src/sim/save.ts'); const s = __game.save; const rows = {eyes:['eye'],tail:['bulb']}; s.lines.worm.species = [{name:'Worm 2',rows,mutation:null,life:1,tier:'B'}]; const l = startSeaLife(s, 7, 0, 'worm', rows); l.turn = 20; l.build.size = 3; l.food = 100; L.lay(l); const p = completeLife(s, l, 3); p.cards = [{part:'gill',rarity:'common',passed:false}]; localStorage.setItem(SAVE_KEY, serializeSeaSave(s)); })()"
+  },
+  {
+    "reload": true
+  },
+  {
+    "click": ".placement .go"
+  },
+  {
+    "click": ".after button:has-text(\"Hatch them all\")"
+  },
+  {
+    "assert": "document.querySelector('.species').textContent.includes('Worm 2 grows') && !!document.querySelector('.slot.hit .old')"
+  },
+  {
+    "shot": "22-hatch-fill"
+  },
+  {
+    "click": ".after .go"
+  },
+  {
+    "assert": "__game.save.lines.worm.species.length === 1 && __game.save.lines.worm.species[0].rows.sides[0] === 'gill' && document.querySelector('.gain').textContent.includes('Worm')"
+  },
+  {
+    "eval": "(async () => { const L = await import('/game/src/sim/life.ts'); const { startSeaLife, completeLife } = await import('/game/src/sim/sea-life.ts'); const { serializeSeaSave } = await import('/game/src/sim/sea-save.ts'); const { SAVE_KEY } = await import('/game/src/sim/save.ts'); const s = __game.save; const rows = {front:['tentacles'],eyes:['eye'],sides:['gill'],back:['gut'],tail:['bulb']}; s.lines.worm.species[0].rows = rows; const l = startSeaLife(s, 8, 0, 'worm', rows); l.turn = 20; l.build.size = 3; l.food = 100; L.lay(l); const p = completeLife(s, l, 3); p.cards = [{part:'symbiont',rarity:'rare',passed:false}]; localStorage.setItem(SAVE_KEY, serializeSeaSave(s)); })()"
+  },
+  {
+    "reload": true
+  },
+  {
+    "click": ".placement .go"
+  },
+  {
+    "click": ".after button:has-text(\"Hatch them all\")"
+  },
+  {
+    "assert": "document.querySelector('.species').textContent.includes('New species: Worm 3 (sulfur symbionts)') && !!document.querySelector('.slot.hit .old')"
+  },
+  {
+    "shot": "22-hatch-branch"
+  },
+  {
+    "click": ".after .go"
+  },
+  {
+    "assert": "__game.save.lines.worm.species.length === 2 && __game.save.lines.worm.species[0].rows.sides[0] === 'symbiont'"
+  },
+  {
+    "click": ".gain .go"
+  },
+  {
+    "eval": "(async () => { const { ui } = await import('/game/src/ui/meta.svelte.ts'); ui.replay = null; ui.line = 'worm'; ui.tick++; })()"
+  },
+  {
+    "until": "!!document.querySelector('.lineView')"
+  },
+  {
+    "assert": "document.querySelector('.lineView .chips').textContent.includes('5 of 5 places')"
+  },
+  {
+    "shot": "22-species"
+  },
+  {
+    "click": ".lineView .metaTop button"
+  },
+  {
+    "click": ".playNext button"
+  },
+  {
+    "click": ".patchWrap .liveBtn"
+  },
+  {
+    "assert": "document.querySelectorAll('.equip .slot.bud').length === 4"
+  },
+  {
+    "click": ".equip .go"
+  },
+  {
+    "click": "#cardButtons button"
+  },
+  {
+    "assert": "__game.life.growth.origin === 'Worm 3 (sulfur symbionts)' && __game.life.growth.rows.sides[0] === 'symbiont' && __game.life.build.buds.sides[0] === 'symbiont' && __game.life.build.rows.tail[0] === 'bulb'"
+  }
+]

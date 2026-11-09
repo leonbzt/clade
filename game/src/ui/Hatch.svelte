@@ -7,9 +7,9 @@
   import { PARTS, PLANS, VERBS } from '../data/life';
   import { PLACE_NAMES } from '../data/body';
   import { defaultBuild, homesOf } from '../sim/body';
-  import { nextSpeciesName, speciesOf } from '../sim/lineage';
+  import { speciesPreview, speciesOf } from '../sim/lineage';
   import { places } from './equip';
-  import { aAn, afterLines, asBuild, levelLines, slotUpkeep } from './line';
+  import { aAn, afterLines, asLarva, levelLines, slotUpkeep } from './line';
   import { ctx, ui } from './meta.svelte';
   import Creature from './Creature.svelte';
   import Slots from './Slots.svelte';
@@ -23,10 +23,10 @@
   const known = $derived(line?.parts ?? []);
   const kept = $derived(c && chosen >= 0 && open[chosen] ? c.cards[chosen].part : null);
   const before = $derived(c?.build && line ? speciesOf(line, c.build, null, c.growth) : null);
-  const after = $derived(c?.build && line && kept ? speciesOf(line, c.build, kept, c.growth) : null);
-  const shown = $derived(c && before ? asBuild(c.plan, before.rows, line?.ranks) : null);
-  const change = $derived(after?.place ? { place: after.place, row: after.rows[after.place]! } : null);
-  const name = $derived(c && line ? nextSpeciesName(c.plan, line, kept) : '');
+  const after = $derived(c?.build && line ? speciesPreview(line, c.build, kept, c.growth) : null);
+  const shown = $derived(c && before ? asLarva(c.plan, before.rows, line?.ranks) : null);
+  const change = $derived(after?.place ? { place: after.place, row: after.rows[after.place]!, bud: true } : null);
+  const name = $derived(after ? (after.grows ? `${after.name} grows` : `New species: ${after.name}`) : '');
 
   function tap(k: number) {
     if (hatching >= 0) return;
@@ -45,15 +45,15 @@
 {#if c}
 <div class="metaWrap afterWrap"><div class="panel habCard after">
   <h2>Hatching</h2>
-  <p class="pitch">{c.eggs} eggs settle in the {HABITATS[ctx.save.sea.patches[c.place ?? c.patch].ground].name.toLowerCase()}, patch {(c.place ?? c.patch) + 1}. Your Life reached tier {c.tier}. {c.cards.length} hatch where you can see them. Keep one gene: it joins your line's parts and makes a new species of the body you started as.</p>
+  <p class="pitch">{c.eggs} eggs settle in the {HABITATS[ctx.save.sea.patches[c.place ?? c.patch].ground].name.toLowerCase()}, patch {(c.place ?? c.patch) + 1}. Your Life reached tier {c.tier}. {c.cards.length} hatch where you can see them. Keep one gene: it joins your plan as a bud. Filling a free place grows your species; replacing a planned part makes a new species.</p>
   <div class="grid">
     {#if shown && before}
-      <Creature build={after ? asBuild(c.plan, after.rows, line?.ranks) : shown} mark={after?.place ?? null} height={300}>
-        <Slots rows={before.rows} views={places(c.plan, shown)} {change} upkeep={slotUpkeep(shown)} />
+      <Creature build={after ? asLarva(c.plan, after.rows, line?.ranks) : shown} mark={after?.place ?? null} height={300}>
+        <Slots rows={shown.rows} buds={shown.buds} views={places(c.plan, shown)} {change} upkeep={slotUpkeep(shown)} />
       </Creature>
     {/if}
     <div class="side">
-      <p class="species"><b>{name}</b>{#if kept && after && !after.place}<small> · {PARTS[kept].name} has no free place on the starting body: it joins the parts, not the species</small>{/if}</p>
+      <p class="species"><b>{name}</b>{#if kept && after && !after.place}<small> · {PARTS[kept].name} is already planned or has no legal change: it joins your line’s parts</small>{/if}</p>
       <div class="eggRow">
         {#each c.cards as card, k}
           {@const isNew = !known.includes(card.part)}

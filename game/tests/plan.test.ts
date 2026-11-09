@@ -131,4 +131,15 @@ describe('22A: the inherited plan', () => {
     expect(result.save!.lines).toEqual(s.lines);
     expect(result.save!.pending!.growth).toEqual({ rows: BASE, branched: false });
   });
+
+  it('hatching previews reactive row objects without trying to structuredClone a proxy', () => {
+    const rows = new Proxy<Rows>({ ...BASE, eyes: ['eye'] }, {}), line = newLine('worm');
+    const growth = { rows, branched: false };
+    const result = speciesPreview(line, B.defaultBuild('worm'), 'gill', growth);
+    expect(result.rows).toEqual({ ...rows, sides: ['gill'] });
+    const full = P.planBuild(B.defaultBuild('worm'), new Proxy(result.rows, {}));
+    expect(P.larva(full).build.buds).toEqual({ eyes: ['eye'], sides: ['gill'] });
+    result.rows.eyes!.push('gut');
+    expect(rows.eyes).toEqual(['eye']);
+  });
 });

@@ -250,9 +250,19 @@ function doMoult() {
 /** The body view during a Life: inspection, or the moult's offers, one row per legal place, and growing without a part. */
 function openBody() {
   const life = S.life;
-  const options = life.phase !== 'offer' ? [] : [...life.offers.flatMap((id) => L.offerChanges(life, id).map((c) => ({ part: id as PartId | null, change: c }))), { part: null, change: null }];
-  ui.body = { build: structuredClone(life.build), options, upkeep: buildUpkeep(life.build), moultSize: life.phase === 'offer' ? L.size(life) : 0 };
-  ctx.pick = (part, place) => { ui.body = null; if (life.phase === 'offer') pickPart(part, place); };
+  const paid = L.pickCost(life, true);
+  const options = life.phase !== 'offer' ? [] : [
+    ...life.offers.flatMap((id) => L.offerChanges(life, id).map((c) => {
+      const cost = L.pickCost(life, c.bud), extra = cost - paid;
+      return { part: id as PartId | null, change: c, cost, extra, affordable: life.food >= extra };
+    })),
+    { part: null, change: null, cost: paid, extra: 0, affordable: true },
+  ];
+  ui.body = { build: structuredClone(life.build), options, food: life.food, paid, upkeep: buildUpkeep(life.build), moultSize: life.phase === 'offer' ? L.size(life) : 0 };
+  ctx.pick = (part, place) => {
+    if (!options.some((o) => o.part === part && (!place || o.change?.place === place) && o.affordable)) return;
+    ui.body = null; if (life.phase === 'offer') pickPart(part, place);
+  };
 }
 
 function pickPart(id: PartId | null, place?: PlaceId) {
