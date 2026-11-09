@@ -78,7 +78,7 @@ export const PARTS: Record<PartId, { name: string; upkeep: number; plans: PlanId
   arms: { name: 'Grasping arms', upkeep: 0, plans: SWIM, does: 'Catch prey you swim onto.' },
   spikes: { name: 'Arm spines', upkeep: 1, plans: SWIM, does: 'Catch armoured prey without being cut.' },
   lenses: { name: 'Compound eyes', upkeep: 1, plans: SWIM, does: 'See where prey will flee: tap once to aim, again to go.' },
-  flap: { name: 'Swimming flaps', upkeep: 1, plans: SWIM, does: '+1 speed.' },
+  flap: { name: 'Swimming flaps', upkeep: 1, plans: ['swimmer', 'arthropod'], does: '+1 speed.' },
   fan: { name: 'Tail fan', upkeep: 0, plans: SWIM, rare: true, does: 'An ambush triples your move instead of doubling it.' },
   proboscis: { name: 'Proboscis', upkeep: 1, plans: WORM, verb: 'crush', does: 'Grabs food ahead without moving.' },
   chaetae: { name: 'Bristles', upkeep: 0, plans: WORM, verb: 'dash', does: 'Tunnel 1 tile further through mud.' },

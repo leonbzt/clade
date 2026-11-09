@@ -2,7 +2,8 @@
 // Sea save version and the part following to a neighbour patch are 20C (the runtime save and sea).
 import { describe, expect, it } from 'vitest';
 import { BODIES, HOMES, PLACES, PRESETS, type PlaceId, type Rows } from '../src/data/body';
-import { PARTS, PART_IDS, PLAN_IDS, type PartId, type PlanId } from '../src/data/life';
+import { LINEAGES } from '../src/data/lineages';
+import { PARTS, PART_IDS, PLAN_IDS, type PlanId } from '../src/data/life';
 import { PREY } from '../src/data/prey';
 import * as B from '../src/sim/body';
 import * as H from '../src/sim/body-hurt';
@@ -42,28 +43,38 @@ describe('20A starters and variants', () => {
     const s = preset('swimmer', 'hunter').build;
     expect([B.upkeep(s), B.swimSpeed(s)]).toEqual([1, 3]);
   });
-  it('carried part × body × preset: never an illegal build, never a free passive, conflicts listed', () => {
-    for (const body of PLAN_IDS) for (const id of Object.keys(PRESETS[body])) for (const part of PART_IDS) for (const place of B.homesOf(body, part)) {
-      const { build, problems } = B.startBuild(body, PRESETS[body][id as never]!, { part, place });
+  it('line pool × body × preset: never an illegal build, never a part outside the pool, conflicts listed', () => {
+    for (const body of PLAN_IDS) for (const id of Object.keys(PRESETS[body])) {
+      const line = { parts: LINEAGES[body].start }, { build, problems } = B.startBuild(body, PRESETS[body][id as never]!, line);
       expect(B.anatomyProblems(body, build.rows)).toEqual([]);
-      const defaults = BODIES[body].defaults.flatMap(([, r]) => r);
-      for (const p of B.partsOf(build.rows)) expect(B.isStarterPart(p) || defaults.includes(p) || p === part, `${p} free`).toBe(true);
+      const defaults = BODIES[body].defaults.flatMap(([, r]) => r), outside = B.partsOf(build.rows).filter((p) => !defaults.includes(p) && !line.parts.includes(p));
+      expect(problems.filter((p) => /not unlocked/.test(p)).length).toBe(outside.length);
       if (!problems.length) expect(B.countedVerbs(build).length).toBeLessThanOrEqual(3);
     }
   });
-  it('merges once, keeps Dash outside the ceiling, rejects a fourth verb and passives', () => {
-    const leg = B.startBuild('arthropod', PRESETS.arthropod.sweeper!, { part: 'leg', place: 'limbs' }).build;
-    expect([B.range(leg), B.upkeep(leg), leg.rows.limbs]).toEqual([3, 2, ['leg', 'rake']]);
+  it('keeps Dash outside the ceiling, rejects a fourth verb, passives without a line and parts outside the pool', () => {
     const three = B.startBuild('arthropod', { front: ['claw'], eyes: ['eye'], limbs: ['leg', 'digger'] });
     expect([three.problems, B.verbs(three.build).length]).toEqual([[], 4]);
-    expect(B.startBuild('trilobite', PRESETS.trilobite.tank!, { part: 'compound', place: 'eyes' }).problems).toEqual([]);
-    expect(B.startBuild('worm', PRESETS.worm.tank!, { part: 'eye', place: 'eyes' }).problems.join()).toMatch(/4 verbs/);
+    expect(B.startBuild('worm', { ...PRESETS.worm.tank!, eyes: ['eye'] }).problems.join()).toMatch(/4 verbs/);
     expect(B.startBuild('arthropod', { limbs: ['leg'], sides: ['gill'] }).problems.join()).toMatch(/passive/);
+    expect(B.startBuild('arthropod', { limbs: ['leg'], sides: ['gill'] }, { parts: ['gill'] }).problems).toEqual([]); // a line may start passives
+    expect(B.startBuild('worm', PRESETS.worm.tank!, { parts: LINEAGES.worm.start }).problems.join()).toMatch(/Proboscis is not unlocked/);
     expect(B.startBuild('arthropod', {}).problems.join()).toMatch(/Limbs must hold walking/);
     expect(B.startBuild('worm', { eyes: ['eye'] }).build.rows.tail).toBeUndefined(); // dropping the bulb is a choice
-    const hook = B.startBuild('worm', PRESETS.worm.tank!, { part: 'hook', place: 'front' }); // the upgrade keeps Crush
+    const hook = B.startBuild('worm', { ...PRESETS.worm.tank!, front: ['hook'] }, { parts: ['hook', 'sclerite'] }); // the upgrade keeps Crush
     expect([hook.problems, hook.build.rows.front, B.opensShells(hook.build)]).toEqual([[], ['hook'], true]);
-    expect(B.startBuild('worm', PRESETS.worm.digger!, { part: 'pouch', place: 'tail' }).problems.join()).toMatch(/can't go in Tail/);
+  });
+  it('ranks: Lean takes 1 off, Enhanced adds the effect, Signature is free and outside the ceiling', () => {
+    const eye = { ...build('worm', { eyes: ['eye'], tail: ['bulb'] }) };
+    expect([B.upkeep(eye), B.sense(eye)]).toEqual([2, 4]);
+    expect(B.upkeep({ ...eye, ranks: { eye: ['lean'] } })).toBe(1);
+    expect(B.sense({ ...eye, ranks: { eye: ['enhanced'] } })).toBe(6);
+    const four = build('worm', { front: ['proboscis'], eyes: ['eye'], sides: ['sclerite'], tail: ['bulb'] });
+    expect(B.verbProblems(four).join()).toMatch(/4 verbs/);
+    expect(B.verbProblems({ ...four, ranks: { eye: ['lean', 'signature'] } })).toEqual([]);
+    const leg = B.defaultBuild('arthropod');
+    expect(B.upkeep({ ...leg, ranks: { leg: ['lean'] } })).toBe(1); // the allowance pays only what the leg costs
+    expect(B.range({ ...leg, ranks: { leg: ['enhanced'] } })).toBe(4);
   });
 });
 
@@ -119,11 +130,11 @@ describe('20A injury', () => {
     expect([B.partsOf(b.rows), b.lost?.length]).toEqual([[], 6]);
   });
   it('starvation sheds the newest row; nothing comes back; oxygen max drops with the gill', () => {
-    let b = B.startBuild('arthropod', PRESETS.arthropod.digger!, { part: 'gill', place: 'sides' }).build;
-    expect(b.order).toEqual(['limbs', 'sides', 'eyes']);
+    let b = B.startBuild('arthropod', { ...PRESETS.arthropod.digger!, sides: ['gill'] }, { parts: ['eye', 'leg', 'digger', 'gill'] }).build;
+    expect(b.order).toEqual(['limbs', 'eyes', 'sides']);
     const shed: PlaceId[] = [];
     for (let r = H.shed(b); r; r = H.shed(b)) { shed.push(r.place); b = r.build; if (r.place === 'sides') expect(B.oxygenMax(b)).toBe(3); }
-    expect(shed).toEqual(['eyes', 'sides', 'limbs']);
+    expect(shed).toEqual(['sides', 'eyes', 'limbs']);
     expect(B.partsOf(b.rows)).toEqual([]);
   });
 });
@@ -180,16 +191,5 @@ describe('20A saves and codes', () => {
     const code = H.encodeDesign({ body: 'worm', rows: PRESETS.worm.digger! });
     expect(H.decodeDesign(code.slice(0, -1) + (code.endsWith('a') ? 'b' : 'a'))).toBeNull();
     expect(H.decodeDesign('CLADE-abc-0000')).toBeNull();
-  });
-});
-
-describe('20A continuation', () => {
-  const t: H.Trait = { part: 'claw', patch: 3, line: 'arthropod/grazer', life: 1 };
-  it('a positive result records the card or none; zero eggs keep it; a body change keeps it stored', () => {
-    expect(H.nextTrait(t, 0, null)).toBe(t);
-    expect(H.nextTrait(t, 5, null)).toBeNull();
-    const gill: H.Trait = { ...t, part: 'gill' as PartId, life: 2 };
-    expect(H.nextTrait(t, 5, gill)).toBe(gill);
-    expect([H.traitFits(t, 'worm'), H.traitFits(t, 'trilobite')]).toEqual([false, true]);
   });
 });

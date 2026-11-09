@@ -3,9 +3,21 @@
 import { DEFAULTS, FEEL_SPEC, LOOK_SPEC, feel, setFeel, type FeelKey } from './feel';
 
 const $ = (id: string) => document.getElementById(id)!;
+let toggle = () => {};
+/** Open or close the dev panel (the map has its own Dev button: it covers the top bar's). */
+export const toggleDev = () => toggle();
 
-export function devPanel() {
+/** `actions`: buttons for the game's dev moves (21A: line XP, open all lineages), above Copy values. */
+export function devPanel(actions: Record<string, () => void> = {}) {
   const panel = $('dev'), out = $('devOut');
+  const row = document.createElement('div');
+  row.className = 'devRow';
+  for (const [label, act] of Object.entries(actions)) {
+    const b = document.createElement('button');
+    b.className = 'small'; b.textContent = label; b.onclick = act;
+    row.appendChild(b);
+  }
+  $('devCopy').parentElement!.before(row);
   const build = (box: HTMLElement, spec: readonly { key: FeelKey; label: string; min: number; max: number; step: number; unit: string; hint: string }[]) => {
     for (const s of spec) {
       const row = document.createElement('div');
@@ -29,7 +41,7 @@ export function devPanel() {
     navigator.clipboard?.writeText(text()).then(() => { out.textContent = `${text()}\ncopied`; }, () => {});
   };
   $('devReset').onclick = () => { for (const k of Object.keys(DEFAULTS) as FeelKey[]) setFeel(k, DEFAULTS[k]); shows.forEach((f) => f()); };
-  const toggle = () => { panel.hidden = !panel.hidden; };
+  toggle = () => { panel.hidden = !panel.hidden; };
   $('devBtn').onclick = toggle;
   if (!import.meta.env.DEV) $('devBtn').style.display = 'none'; // players don't see it; ` still opens the panel
   $('devClose').onclick = toggle;

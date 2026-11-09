@@ -1,8 +1,9 @@
 // Slice 20A: what happens to a build: strikes by direction, whole-row tears, starvation shedding, the frozen lay
-// snapshot, CLADE2- design codes and the one-part continuation trait. Pure; the runtime switches over in 20C.
+// snapshot and CLADE2- design codes. Pure. (The one-part continuation trait went in 21A: lines carry parts now.)
 import { BODY_RULE, GUARDS, PLACES, STRUCK, type PlaceId, type Rows } from '../data/body';
 import { PARTS, PLANS, RULE, type PartId, type PlanId } from '../data/life';
-import { buildProblems, homesOf, startBuild, type Build } from './body';
+import { buildProblems, startBuild, type Build } from './body';
+import type { Ranks } from '../data/lineages';
 import { b64, sum, unb64 } from './share';
 
 export type Side = 'front' | 'right' | 'back' | 'left';
@@ -52,13 +53,17 @@ export function parseBuild(x: unknown): Build | null {
   const o = x as Record<string, unknown>;
   if (typeof o.body !== 'string' || !Object.hasOwn(PLANS, o.body) || typeof o.size !== 'number' || !o.rows || typeof o.rows !== 'object'
     || !Array.isArray(o.order) || (o.lost !== undefined && !Array.isArray(o.lost))) return null;
+  const ranks = o.ranks as Record<string, unknown> | undefined;
+  if (ranks !== undefined && (!ranks || typeof ranks !== 'object' || !Object.entries(ranks).every(([p, r]) => Object.hasOwn(PARTS, p)
+    && Array.isArray(r) && r.every((x) => (['lean', 'enhanced', 'signature'] as unknown[]).includes(x))))) return null;
   const rows: Rows = {};
   for (const [k, v] of Object.entries(o.rows)) {
     if (!(PLACES as string[]).includes(k) || !Array.isArray(v) || !v.every((p) => typeof p === 'string')) return null;
     rows[k as PlaceId] = v as PartId[];
   }
   if (![...o.order, ...((o.lost as unknown[]) ?? [])].every((p) => (PLACES as unknown[]).includes(p))) return null;
-  const b: Build = { body: o.body as PlanId, size: o.size, rows, order: o.order as PlaceId[], ...(o.lost ? { lost: o.lost as PlaceId[] } : {}) };
+  const b: Build = { body: o.body as PlanId, size: o.size, rows, order: o.order as PlaceId[], ...(o.lost ? { lost: o.lost as PlaceId[] } : {}),
+    ...(ranks ? { ranks: ranks as Ranks } : {}) };
   return buildProblems(b).length ? null : b;
 }
 
@@ -84,10 +89,3 @@ export function decodeDesign(code: string): Design | null {
     return startBuild(f[0], rows).problems.length ? null : { body: f[0], rows };
   } catch { return null; }
 }
-
-// ---- the one-part continuation ----
-export interface Trait { part: PartId; patch: number; line: string; life: number }
-/** After a Life: a positive result records the chosen card, or none; zero eggs (or extinction) keep the old trait. */
-export const nextTrait = (prev: Trait | null, eggs: number, chosen: Trait | null): Trait | null => (eggs > 0 ? chosen : prev);
-/** Whether a stored trait can come along on this body. A body change keeps it stored either way. */
-export const traitFits = (t: Trait | null, body: PlanId) => !!t && homesOf(body, t.part).length > 0;

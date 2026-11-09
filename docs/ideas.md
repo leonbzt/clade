@@ -100,6 +100,11 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   - Respec in the close-up tree; XP per lineage or for the whole line (AI; open for step 6).
   - Overarching rules that make parts combine, "skeleton + flabby skin/feathers = wing" (you, 6 Nov; authored recipes come first).
   - Slots that grow with size, so big recipes fit in a Life (AI, 6 Nov; for step 5, full-version.md §6).
+  - Grown parts carried over runs: keep some of a Life's grown parts in the species, or upgrade them, as a longer process over several Lives (you, 9 Nov, after "species = launch bodies").
+  - One wild moult offer: a part outside the pool, unlocked if the Life lays eggs (AI lean; you, 9 Nov: "maybe", later). Also: make new hatching genes stand out more.
+  - When the slots are full, a moult could rank up a held part, or a run could spend food to strengthen one ("make the body then just grow", you, 9 Nov).
+  - Recipes from real traits: the worm → arthropod step should use legs (lobopod limbs), not sclerites and a proboscis; a recipe's key trait could be a rare unlock, or need a combination plus a good score (you, 9 Nov). For step 7.
+  - A stronger "pick a build" identity, later (you, 9 Nov; P47).
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
@@ -160,3 +165,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Creature art direction: drop the thick black outline on the large view; the new looks are "a little weird still" (you, 9 Nov). For step 9.
 - Cut the parts you never use; you mainly use Deep Burrow, Gut, Brood Pouch, Compound Eyes, Bristles, and grazing (you, 9 Nov: "wait for 7"). For step 7.
 - Clutch size and parts received: fewer, or scale more with brood size (you, 9 Nov). For step 6 or 10's balance.
+- Signature could do more than "no upkeep, verb outside the ceiling" (e.g. never torn, or always in the starting body): today it adds nothing to parts that are already free (the swimmer's flap, the trilobite's shield). AI, 9 Nov. For 21B's close-up.

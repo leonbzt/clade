@@ -1,13 +1,15 @@
 <!-- Slice 20C: the body during a Life. Inspection, or a moult's offers: each legal change previewed on the creature
      before you commit, plus growing without a part. Reuses the 20B stage; since 20D the 20D icon slots, where the
-     changed slot shows old → new. Tapping a slot names its part (and picks the offer that changes it). -->
+     changed slot shows old → new. Tapping a slot names its part (and picks the offer that changes it). Since 21B each
+     part shows once: if it fits more than one place, its places light up and a tap picks one; slots show upkeep. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { PLACE_NAMES, type PlaceId } from '../data/body';
-  import { PARTS, PLANS, VERBS } from '../data/life';
+  import { PARTS, PLANS, VERBS, type PartId } from '../data/life';
   import * as B from '../sim/body';
   import { makeEquipStage, type EquipStage } from '../view/equip-stage';
   import { numbers, places, rowUpkeep } from './equip';
+  import { partText, slotUpkeep } from './line';
   import { feel } from './feel';
   import { ctx, ui } from './meta.svelte';
   import PartIcon from './PartIcon.svelte';
@@ -15,6 +17,9 @@
 
   const v = $derived(ui.body);
   let sel = $state(-1), look: PlaceId | null = $state(null);
+  /** One card per offered part (the first option of each); `sel` is the option, so a part's other places are a tap away. */
+  const cards = $derived(v ? v.options.flatMap((o, k) => (v.options.findIndex((x) => x.part === o.part) === k ? [k] : [])) : []);
+  const placesOf = (part: PartId | null) => (v ? v.options.filter((o) => o.part === part && o.change).map((o) => o.change!.place) : []);
   let host: HTMLDivElement | undefined = $state();
   let stage = $state.raw<EquipStage | null>(null);
   $effect(() => { if (v) untrack(() => { sel = v.options.length ? 0 : -1; look = null; }); });
@@ -29,14 +34,17 @@
     if (!v) return '';
     if (look) {
       const row = v.build.rows[look];
-      return row?.length ? `${PLACE_NAMES[look]}: ${B.describeRow(row)}. ${[...new Set(row.map((p) => PARTS[p].does))].join(' ')} Upkeep ${rowUpkeep(row)}.` : `${PLACE_NAMES[look]}: ${views.find((x) => x.place === look)?.holds}.`;
+      return row?.length ? `${PLACE_NAMES[look]}: ${B.describeRow(row)}. ${[...new Set(row.map((p) => partText(p, v.build.ranks)))].join(' ')} Upkeep ${slotUpkeep(v.build)[look] ?? rowUpkeep(row)}.` : `${PLACE_NAMES[look]}: ${views.find((x) => x.place === look)?.holds}.`;
     }
-    return offer?.part ? `${PARTS[offer.part].name}: ${PARTS[offer.part].does}` : offer ? 'Grow a size without a new part.' : '';
+    return offer?.part ? `${PARTS[offer.part].name}: ${partText(offer.part, v.build.ranks)}` : offer ? 'Grow a size without a new part.' : '';
   });
   function tap(p: PlaceId) {
     look = p;
-    const k = v?.options.findIndex((o) => o.change?.place === p) ?? -1;
-    if (k >= 0 && v!.options[sel]?.change?.place !== p) sel = k;
+    const part = v?.options[sel]?.part, k = v?.options.findIndex((o) => o.part === part && o.change?.place === p) ?? -1;
+    if (k >= 0 && placesOf(part ?? null).length > 1) { sel = k; look = null; return; }
+    if (!v) return;
+    const any = v.options.findIndex((o) => o.change?.place === p);
+    if (any >= 0 && v.options[sel]?.change?.place !== p) sel = any;
   }
 
   $effect(() => {
@@ -46,10 +54,12 @@
     return () => { alive = false; made?.destroy(); stage = null; };
   });
   $effect(() => { if (stage && shown) stage.setBuild(shown); });
-  $effect(() => { stage?.mark(offer?.change?.place ?? null, []); });
+  const legal = $derived(offer ? placesOf(offer.part) : []);
+  $effect(() => { stage?.mark(offer?.change?.place ?? null, legal.length > 1 ? legal : []); });
 
   const vn = (l: string[]) => l.map((x) => VERBS[x as keyof typeof VERBS].name).join(', ');
-  const label = (o: NonNullable<typeof offer>) => (o.part && o.change ? `${PARTS[o.part].name} → ${PLACE_NAMES[o.change.place]}` : 'Grow without a part');
+  const label = (o: NonNullable<typeof offer>) => (o.part ? PARTS[o.part].name : 'Grow without a part');
+  const where = (o: NonNullable<typeof offer>) => { const ps = placesOf(o.part); return ps.length > 1 ? `${ps.map((p) => PLACE_NAMES[p]).join(' or ')}: tap a lit slot` : ps.length ? `on ${PLACE_NAMES[ps[0]]}` : ''; };
   const trade = (o: NonNullable<typeof offer>) => {
     if (!o.change) return `upkeep stays ${v!.upkeep}`;
     const c = o.change;
@@ -67,7 +77,7 @@
     <div class="left">
       <div class="stageWrap">
         <div class="stageBox" bind:this={host}></div>
-        <Slots rows={v.build.rows} {views} sel={look} {change} onpick={tap} />
+        <Slots rows={v.build.rows} {views} sel={look} {change} legal={legal.length > 1 ? legal : []} upkeep={slotUpkeep(v.build)} onpick={tap} />
       </div>
     </div>
     <div class="side">
@@ -75,15 +85,18 @@
       {#if v.options.length}
         <p class="note">Pick one change. The creature and its slots show it before you commit.</p>
         <div class="pickList">
-          {#each v.options as o, k}
-            <button class="verbCard partCard" class:on={sel === k} aria-pressed={sel === k} onclick={() => { sel = k; look = null; }}>
+          {#each cards as k}
+            {@const o = v.options[k]}
+            {@const on = offer?.part === o.part}
+            <button class="verbCard partCard" class:on aria-pressed={on} onclick={() => { if (!on) sel = k; look = null; }}>
               <span class="ic"><PartIcon id={o.part ?? undefined} size={24} /></span>
               <b>{label(o)}</b>
-              <em>{trade(o)}</em>
+              {#if where(o)}<em>{on && offer?.change && placesOf(o.part).length > 1 ? `on ${PLACE_NAMES[offer.change.place]} · ` : ''}{where(o)}</em>{/if}
+              <em>{trade(on ? offer! : o)}</em>
             </button>
           {/each}
         </div>
-        <button class="go" disabled={!offer} onclick={() => offer && ctx.pick(offer.part, offer.change?.place)}>{offer ? (offer.part ? `Grow ${PARTS[offer.part].name}` : 'Grow without a part') : 'Pick one'}</button>
+        <button class="go" disabled={!offer} onclick={() => offer && ctx.pick(offer.part, offer.change?.place)}>{offer ? (offer.part ? `Grow ${PARTS[offer.part].name}${offer.change ? ` on ${PLACE_NAMES[offer.change.place]}` : ''}` : 'Grow without a part') : 'Pick one'}</button>
       {/if}
       {#if nums}
         <div class="sum">

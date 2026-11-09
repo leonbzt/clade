@@ -1,13 +1,16 @@
 // Slice 20A: the equipped body as a pure model. A build is one choice per place; every number a Life needs comes from
 // it, and the four checks (anatomy, starter, moult change, lay snapshot) use the same definitions. No DOM, no RNG.
-// The runtime (sim/life.ts) still runs on slots until the 20C cutover.
+// Since 21A a build carries its line's ranks, and the starter check reads the line's pool.
 import {
   ALLOWANCE, BODIES, BODY_RULE, HOMES, PLACES, PLACE_NAMES, UPGRADE_OF, VARIANTS, type PlaceId, type Row, type Rows,
 } from '../data/body';
 import { NODES, PARTS, PLANS, RULE, type NodeId, type PartId, type PlanId, type VerbId } from '../data/life';
+import { ENHANCED, type RankId, type Ranks } from '../data/lineages';
 
-export interface Build { body: PlanId; size: number; rows: Rows; order: PlaceId[]; lost?: PlaceId[] }
-export interface Placement { part: PartId; place: PlaceId }
+/** `ranks`: the line's upgrades at launch (21A), carried through moults and into the lay snapshot. */
+export interface Build { body: PlanId; size: number; rows: Rows; order: PlaceId[]; lost?: PlaceId[]; ranks?: Ranks }
+/** What a line lets a starting build use: its pool of parts and its ranks. */
+export interface LinePool { parts: readonly PartId[]; ranks?: Ranks }
 
 const same = (a?: Row, b?: Row) => !!a && !!b && a.length === b.length && a.every((p, k) => p === b[k]);
 const name = (p: PartId) => PARTS[p].name;
@@ -48,6 +51,11 @@ export function buildProblems(b: Build): string[] {
 }
 
 // ---- what the build does ----
+export const ranked = (b: { ranks?: Ranks }, p: PartId, r: RankId) => !!b.ranks?.[p]?.includes(r);
+/** A part's upkeep on this build: Signature makes it free, Lean takes 1 off (not below 0). */
+export const partUpkeep = (b: Build, p: PartId) => (ranked(b, p, 'signature') ? 0 : Math.max(0, PARTS[p].upkeep - (ranked(b, p, 'lean') ? 1 : 0)));
+/** The extra an Enhanced part gives, if the build holds it. */
+const boost = (b: Build, p: PartId) => (ranked(b, p, 'enhanced') && has(b, p) ? ENHANCED[p] ?? 0 : 0);
 /** A part's verb; an upgrade keeps its predecessor's. */
 export const verbOf = (p: PartId): VerbId | undefined => PARTS[p].verb ?? (UPGRADE_OF[p] && PARTS[UPGRADE_OF[p]!].verb);
 const freeDash = (b: Build) => ALLOWANCE[b.body] === 'leg' && !!b.rows.limbs?.includes('leg');
@@ -57,17 +65,19 @@ export function verbs(b: Build): VerbId[] {
   for (const place of b.order) for (const p of b.rows[place] ?? []) { const v = verbOf(p); if (v && !out.includes(v)) out.push(v); }
   return out;
 }
-/** The verbs that count toward the ceiling: Dash from the walking row is outside it. */
-export const countedVerbs = (b: Build) => verbs(b).filter((v) => !(v === 'dash' && freeDash(b)));
-export const allowance = (b: Build) => (ALLOWANCE[b.body] && partsOf(b.rows).includes(ALLOWANCE[b.body]!) ? 1 : 0);
-export const nominal = (b: Build) => partsOf(b.rows).reduce((n, p) => n + PARTS[p].upkeep, 0);
+/** Verbs outside the ceiling: Dash from the walking row, and a Signature part's verb. */
+const freeVerb = (b: Build, v: VerbId) => (v === 'dash' && freeDash(b)) || partsOf(b.rows).some((p) => verbOf(p) === v && ranked(b, p, 'signature'));
+export const countedVerbs = (b: Build) => verbs(b).filter((v) => !freeVerb(b, v));
+/** The allowance row pays up to 1 of its own upkeep: a leaner leg leaves less to pay. */
+export const allowance = (b: Build) => (ALLOWANCE[b.body] && has(b, ALLOWANCE[b.body]!) ? Math.min(1, partUpkeep(b, ALLOWANCE[b.body]!)) : 0);
+export const nominal = (b: Build) => partsOf(b.rows).reduce((n, p) => n + partUpkeep(b, p), 0);
 export const upkeep = (b: Build, onMud = false) => (has(b, 'deep') && onMud ? 0 : RULE.baseUpkeep + nominal(b) - allowance(b));
-export const range = (b: Build) => Math.min(RULE.maxRange, PLANS[b.body].range + (b.rows.limbs?.includes('leg') ? 1 : 0));
-export const swimSpeed = (b: Build) => PLANS[b.body].range + (has(b, 'flap') ? 1 : 0); // before frenzy and ambush
-export const tunnel = (b: Build) => RULE.tunnel + (has(b, 'chaetae') ? RULE.bristleTunnel : 0);
-export const sense = (b: Build) => PLANS[b.body].sense + (has(b, 'eye') ? RULE.eyeSense : 0) + (has(b, 'compound') ? RULE.compoundSense : 0);
-export const oxygenMax = (b: Build) => RULE.oxygen + (has(b, 'gill') ? RULE.gillOxygen : 0);
-export const mealBonus = (b: Build) => (has(b, 'gut') ? RULE.gutFood : 0);
+export const range = (b: Build) => Math.min(RULE.maxRange, PLANS[b.body].range + (b.rows.limbs?.includes('leg') ? 1 + boost(b, 'leg') : 0));
+export const swimSpeed = (b: Build) => PLANS[b.body].range + (has(b, 'flap') ? 1 + boost(b, 'flap') : 0); // before frenzy and ambush
+export const tunnel = (b: Build) => RULE.tunnel + (has(b, 'chaetae') ? RULE.bristleTunnel + boost(b, 'chaetae') : 0);
+export const sense = (b: Build) => PLANS[b.body].sense + (has(b, 'eye') ? RULE.eyeSense + boost(b, 'eye') : 0) + (has(b, 'compound') ? RULE.compoundSense : 0);
+export const oxygenMax = (b: Build) => RULE.oxygen + (has(b, 'gill') ? RULE.gillOxygen + boost(b, 'gill') : 0);
+export const mealBonus = (b: Build) => (has(b, 'gut') ? RULE.gutFood + boost(b, 'gut') : 0);
 export const foodOf = (b: Build, node: NodeId) => NODES[node].food * (node === 'bloom' && has(b, 'symbiont') ? 2 : 1) + mealBonus(b);
 export const clutch = (b: Build, onMud = false) => (has(b, 'pouch') ? 2 : 1) * b.size + (has(b, 'deep') && onMud ? 1 : 0);
 export const reach = (b: Build) => has(b, 'claw') || has(b, 'proboscis') || has(b, 'hook');
@@ -106,31 +116,21 @@ export function defaultBuild(body: PlanId): Build {
   return { body, size: 1, rows, order: BODIES[body].defaults.map(([p]) => p) };
 }
 /**
- * A starting build from a design (the starting rows, defaults included) and at most one carried clutch part.
- * Defaults go in first, the carried part claims its place next, then the design's rows. Conflicts are listed, never
- * resolved: the build that comes back is still the best legal one, for preview.
+ * A starting build from a design (the starting rows, defaults included). Defaults go in first, then the design's rows.
+ * With a line, its pool says which parts may start and its ranks ride along; without one (codes, previews), only
+ * starter parts. Conflicts are listed, never resolved: the build that comes back is still the best legal one.
  */
-export function startBuild(body: PlanId, design: Rows, carried?: Placement): { build: Build; problems: string[] } {
+export function startBuild(body: PlanId, design: Rows, line?: LinePool): { build: Build; problems: string[] } {
   const problems: string[] = [], D = BODIES[body];
   let b = defaultBuild(body);
-  if (carried) {
-    const row = rowWith(body, b.rows[carried.place], carried.part, carried.place, false);
-    if (row) b = same(row, b.rows[carried.place]) ? b : setRow(b, carried.place, row);
-    else problems.push(`${name(carried.part)} can't go in ${PLACE_NAMES[carried.place]}`);
-  }
-  const carriedAt = carried && b.rows[carried.place]?.includes(carried.part) ? carried.place : null;
+  if (line?.ranks && Object.keys(line.ranks).length) b.ranks = structuredClone(line.ranks);
   for (const place of PLACES) {
     const want = design[place], cur = b.rows[place], def = D.defaults.find(([p]) => p === place)?.[1];
-    if (want) for (const p of want) if (!isStarterPart(p) && !def?.includes(p) && p !== carried?.part) problems.push(`${name(p)} is passive: it comes only as a carried part or a moult`);
+    if (want) for (const p of want) if (!def?.includes(p) && !(line ? line.parts.includes(p) : isStarterPart(p)))
+      problems.push(line ? `${name(p)} is not unlocked for this line yet` : `${name(p)} is passive: it comes only as a moult`);
     if (same(want, cur)) continue;
     if (!want) {
-      if (cur && place !== carriedAt) { if (D.locks[place]) problems.push(`${PLACE_NAMES[place]} must hold ${D.locks[place]!.family} parts`); else b = setRow(b, place, null); }
-      continue;
-    }
-    if (place === carriedAt) { // the carried part already sits here: the design may only merge into it
-      const merged = want.reduce<Row | null>((r, p) => (r ? rowWith(body, r, p, place, false) : null), cur!);
-      if (merged?.includes(carried!.part)) { if (!same(merged, cur)) b = setRow(b, place, merged, true); }
-      else problems.push(`${PLACE_NAMES[place]} is taken by your carried ${name(carried!.part)}`);
+      if (cur) { if (D.locks[place]) problems.push(`${PLACE_NAMES[place]} must hold ${D.locks[place]!.family} parts`); else b = setRow(b, place, null); }
       continue;
     }
     if (!legalRow(body, place, want)) { problems.push(`${PLACE_NAMES[place]} can't hold ${want.map(name).join(' + ')}`); continue; }

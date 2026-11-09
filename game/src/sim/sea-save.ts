@@ -1,26 +1,28 @@
-// The sea save (v4 since the 20C cutover; older saves start a fresh sea, decided 8 Nov). Builds are 20A lay
-// snapshots; the one-part continuation trait replaces the old forms. JSON columns follow the saved species registry,
-// never the current content order.
+// The sea save (v5 since 21A: the lines; older saves start a fresh sea, decided 8 Nov). Builds are 20A lay
+// snapshots. JSON columns follow the saved species registry, never the current content order.
 import { ROLE_IDS } from '../data/garden';
 import { HAB_ORDER } from '../data/habitats';
 import { SEA as WATER } from '../data/island';
-import { NODES, PART_IDS, PLAN_IDS } from '../data/life';
+import { NODES, PART_IDS, PLAN_IDS, type PlanId } from '../data/life';
+import { PLACES, type Rows } from '../data/body';
 import { PLAYER_SPECIES, SEA, lineId, type Diet, type Species } from '../data/sea';
-import { parseBuild, type Trait } from './body-hurt';
-import type { Build } from './body';
+import { parseBuild } from './body-hurt';
+import { anatomyProblems, type Build } from './body';
 import { makeIsland } from './island';
+import { freshLines, validLines, type Lines } from './lineage';
 import type { Pending, Save } from './save';
 import { finite, integer, oneOf, record, rngState, text, validPending, validProgress } from './save-validation';
 import { newSea, step, type Sea, type SeaPatch } from './sea';
 import { tell, type Headline } from './sea-news';
 
-export const SEA_SAVE_VERSION = 4;
+export const SEA_SAVE_VERSION = 5;
 export interface Continuation { patch: number; species: string; plan: Pending['plan']; role: Pending['role']; eggs: number }
 /** A finished Life waiting to settle: `build` is the latest lay's snapshot (none without eggs). */
-export interface SeaPending extends Pending { patch: number; species: string; build?: Build; diet?: Diet }
+/** `launch`: the body the Life started as (21B); with the kept card it becomes the new species. */
+export interface SeaPending extends Pending { patch: number; species: string; build?: Build; diet?: Diet; launch?: Rows }
 export interface SeaSave extends Omit<Save, 'v' | 'garden' | 'pending' | 'forms'> {
   v: typeof SEA_SAVE_VERSION; sea: Sea; news: Headline[]; pending?: SeaPending; continuation?: Continuation;
-  trait?: Trait; // the one part the next Life may carry (20A)
+  lines: Lines; // one per open lineage (21A)
 }
 
 const floats = ['pop', 'fit', 'peak', 'low'] as const;
@@ -29,7 +31,7 @@ type WirePatch = Omit<SeaPatch, typeof floats[number] | typeof ints[number] | 'l
   & Record<typeof floats[number] | typeof ints[number] | 'lost' | 'hist', number[]>;
 
 export function freshSeaSave(seed: number, now: number): SeaSave {
-  return { v: SEA_SAVE_VERSION, seed, at: now, sea: newSea(seed), news: [], best: {}, lives: 0, unlocks: {} };
+  return { v: SEA_SAVE_VERSION, seed, at: now, sea: newSea(seed), news: [], best: {}, lives: 0, unlocks: {}, lines: freshLines() };
 }
 
 export function serializeSeaSave(s: SeaSave): string {
@@ -54,6 +56,8 @@ function validSpecies(v: unknown): v is Species {
 /** An optional lay snapshot: legal anatomy of the record's own body. */
 function validBuild(v: Record<string, unknown>): boolean {
   return (v.build === undefined || (parseBuild(v.build) !== null && (v.plan === undefined || (v.build as Build).body === v.plan)))
+    && (v.launch === undefined || (record(v.launch) && v.plan !== undefined && Object.entries(v.launch).every(([k, r]) => oneOf(k, PLACES) && Array.isArray(r) && r.every((x) => oneOf(x, PART_IDS)))
+      && !anatomyProblems(v.plan as PlanId, v.launch as Rows).length))
     && (v.diet === undefined || (record(v.diet) && Object.entries(v.diet).every(([key, n]) => (key === 'prey' || Object.hasOwn(NODES, key)) && finite(n))));
 }
 
@@ -97,8 +101,6 @@ function readSea(value: unknown, seed: number): Sea | null {
     patchCrashes: value.patchCrashes as number[], moved: new Float64Array(N * S) };
 }
 
-const validTrait = (v: unknown): boolean => record(v) && oneOf(v.part, PART_IDS) && integer(v.patch) && text(v.line) && integer(v.life);
-
 function validReference(v: unknown, sea: Sea): v is Continuation {
   if (!record(v) || !patchRef(v.patch, sea.patches.length) || !text(v.species) || !integer(v.eggs)) return false;
   const sp = sea.species.find((sp) => sp.id === v.species);
@@ -113,11 +115,10 @@ export function parseSeaSave(json: string | null): Parsed {
     if (!record(s) || !integer(s.v, 1)) return { save: null, problem: 'broken' };
     if (s.v > SEA_SAVE_VERSION) return { save: null, problem: 'newer' };
     if (s.v < SEA_SAVE_VERSION) return { save: null, problem: 'none' }; // the cutover reset: a fresh sea, no message
-    if (!validProgress(s) || (s.trait !== undefined && !validTrait(s.trait))) return { save: null, problem: 'broken' };
+    if (!validProgress(s) || !validLines(s.lines)) return { save: null, problem: 'broken' };
     const sea = readSea(s.sea, s.seed as number);
     if (!sea || (s.pending !== undefined && (!validPending(s.pending) || !validReference(s.pending, sea) || !validBuild(s.pending as unknown as Record<string, unknown>)))
-      || (s.continuation !== undefined && (!validReference(s.continuation, sea) || s.continuation.eggs <= 0))
-      || (s.trait !== undefined && !patchRef((s.trait as Trait).patch, sea.patches.length))) return { save: null, problem: 'broken' };
+      || (s.continuation !== undefined && (!validReference(s.continuation, sea) || s.continuation.eggs <= 0))) return { save: null, problem: 'broken' };
     if (!Array.isArray(s.news) || s.news.length > SEA.keepLines) return { save: null, problem: 'broken' };
     const news: Headline[] = [];
     for (const n of s.news) {
@@ -132,7 +133,7 @@ export function parseSeaSave(json: string | null): Parsed {
     return { save: { v: SEA_SAVE_VERSION, seed: s.seed as number, at: s.at as number, lives: s.lives as number,
       best: s.best as SeaSave['best'], unlocks: s.unlocks as SeaSave['unlocks'],
       sea, news, pending: s.pending as SeaPending | undefined, continuation: s.continuation as Continuation | undefined,
-      ...(s.trait ? { trait: s.trait as Trait } : {}) }, problem: null };
+      lines: s.lines as Lines }, problem: null };
   } catch { return { save: null, problem: 'broken' }; }
 }
 

@@ -31,7 +31,7 @@ export const HOMES: Record<PartId, [PlanId[], PlaceId[]][]> = {
   arms: [[['swimmer'], ['front']]],
   spikes: [[['swimmer'], ['front']]],
   lenses: [[['swimmer'], ['eyes']]],
-  flap: [[['swimmer'], ['limbs']]],
+  flap: [[['swimmer'], ['limbs']], [['arthropod'], ['sides']]], // 21A: Opabinia's lateral flaps, the swimmer recipe
   fan: [[['swimmer'], ['tail']]],
   chaetae: [[['worm'], ['sides']]],
   sclerite: [[['worm'], ['sides', 'tail']]],

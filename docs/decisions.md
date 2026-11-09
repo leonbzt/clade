@@ -590,3 +590,10 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   rank 1 Lean or Enhanced, rank 2 Signature, as data records the skill tree can extend; revisited in 21B.
 - **Bodies from recipes (Q2):** yes, as planned in the ladder; "swimmer maybe swimming flaps as well".
 - **Hatching card (Q3):** "yes": a mutation in the saved species, unlocks its part, replaces the carried part.
+
+## 9 Nov, 21A play (your notes in playtests/21-the-climb.md)
+- **Saved species are launch bodies:** "species = launch bodies": a species keeps the body the Life started as plus the
+  kept gene, not the parts it grew, so every Life grows again. Built in 21B. Your follow-up, "maybe the build in parts
+  could be kept? or upgraded? could be a longer process that plays over multiple runs", is in ideas.md.
+- **The pool stays strict for now:** "leave it for now, lean wild moult offer maybe and show cards better but for now
+  its ok". Both are in ideas.md; the hatching screen marks new genes anyway.

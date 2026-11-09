@@ -68,10 +68,11 @@ describe('sea saves', () => {
 
   it('rejects malformed/newer data without changing the active state', () => {
     const active = freshSeaSave(1, 0), original = serializeSeaSave(active);
-    const invalid = [null, [], {}, { v: 4 }, { v: 2.5 }];
+    const invalid = [null, [], {}, { v: 5 }, { v: 2.5 }];
     for (const value of invalid) expect(parseSeaSave(JSON.stringify(value)).problem).toBe('broken');
     const changes: ((s: ReturnType<typeof wire>) => void)[] = [
-      (s) => { s.at = -1; }, (s) => { s.best.x = 'Z'; }, (s) => { s.trait = { part: 'nope', patch: 0, line: 'x', life: 1 }; }, (s) => { s.trait = { part: 'claw', patch: 9999, line: 'x', life: 1 }; },
+      (s) => { s.at = -1; }, (s) => { s.best.x = 'Z'; }, (s) => { s.lines = {}; }, (s) => { s.lines.worm.parts = ['nope']; }, (s) => { s.lines.fish = s.lines.worm; },
+      (s) => { s.lines.worm.species = [{ name: 'x', rows: { limbs: ['leg'] }, mutation: null, life: 1, tier: 'B' }]; },
       (s) => { s.sea.r = 0.5; }, (s) => { s.sea.species[1].id = s.sea.species[0].id; },
       (s) => { s.sea.patches[0].pop[0] = null; }, (s) => { s.sea.patches[0].pop.pop(); },
       (s) => { s.sea.patches[0].pop = { 0: 4 }; }, (s) => { s.sea.patches[0].oxygen = 101; },
@@ -88,22 +89,23 @@ describe('sea saves', () => {
     ];
     for (const change of changes) { const raw = JSON.parse(original); change(raw); expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken'); }
     expect(parseSeaSave('{oops').problem).toBe('broken'); expect(parseSeaSave(null).problem).toBe('none');
-    expect(parseSeaSave('{"v":5}').problem).toBe('newer');
+    expect(parseSeaSave('{"v":6}').problem).toBe('newer');
     expect(serializeSeaSave(active)).toBe(original);
   });
 });
 
 describe('the 20C cutover', () => {
-  it('older versions start a fresh sea without a message; the trait and a laid build round-trip in v4', () => {
-    for (const v of [1, 2, 3]) expect(parseSeaSave(JSON.stringify({ ...legacy(), v }))).toEqual({ save: null, problem: 'none' });
+  it('older versions start a fresh sea without a message; the lines and a laid build round-trip in v5', () => {
+    for (const v of [1, 2, 3, 4]) expect(parseSeaSave(JSON.stringify({ ...legacy(), v }))).toEqual({ save: null, problem: 'none' });
     const s = freshSeaSave(2, 0);
-    s.trait = { part: 'claw', patch: 3, line: lineId('arthropod', 'grazer'), life: 2 };
+    Object.assign(s.lines.worm!, { xp: 80, points: 1, ranks: { eye: ['lean'] } });
+    s.lines.worm!.species.push({ name: 'Worm 1 (gill)', rows: { eyes: ['eye'], sides: ['gill'], tail: ['bulb'] }, mutation: 'gill', life: 1, tier: 'B' });
     s.pending = { hab: s.sea.patches[0].ground, patch: 0, plan: 'worm', role: 'burrower', species: lineId('worm', 'burrower'), eggs: 9, tier: 'D', cards: [],
-      build: { body: 'worm', size: 3, rows: { front: ['hook'], tail: ['bulb'] }, order: ['tail', 'front'] } };
+      build: { body: 'worm', size: 3, rows: { front: ['hook'], tail: ['bulb'] }, order: ['tail', 'front'], ranks: { hook: ['lean'] } } };
     const r = parseSeaSave(serializeSeaSave(s));
     expect(r.problem).toBeNull();
     expect(wire(r.save!)).toEqual(wire(s));
-    expect(r.save!.v).toBe(4);
+    expect(r.save!.v).toBe(5);
   });
 });
 

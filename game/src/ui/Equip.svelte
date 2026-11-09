@@ -1,36 +1,46 @@
 <!-- Slice 20B: the equipment view. The creature large with its six places, the choices at the chosen place as
      trade-off cards, the same build at board size. Since 20C it is the Life's launcher; since 20D the places are icon
-     slots (`Slots.svelte`) and the cards carry icons. -->
+     slots (`Slots.svelte`) and the cards carry icons; since 21A it offers only the line's parts, and its presets are
+     the line's saved species (plus the style presets the pool allows); since 21B the newest three show unless you ask
+     for more, slots show their upkeep and the info line the part's ranks. -->
 <script lang="ts">
   import { untrack } from 'svelte';
   import { BODY_RULE, PLACE_NAMES, type PlaceId, type PresetId, type Rows } from '../data/body';
-  import { PARTS, PLANS, STYLES, type PartId, type PlanId } from '../data/life';
-  import type { Placement } from '../sim/body';
+  import { PLANS, STYLES, type PartId, type PlanId } from '../data/life';
   import * as B from '../sim/body';
+  import type { Species } from '../sim/lineage';
   import { makeEquipStage, type EquipStage } from '../view/equip-stage';
-  import { homes, numbers, optionsAt, places, presetsOf, startDesign, verbName, type Option } from './equip';
+  import { homes, legalFor, numbers, optionsAt, places, presetsOf, startDesign, verbName, type Option } from './equip';
   import { feel } from './feel';
   import PartIcon from './PartIcon.svelte';
   import Slots from './Slots.svelte';
+  import { rankText, slotUpkeep } from './line';
 
-  let { plan, carriedPart, origin, context, preset, design: given, size = 1, onstart, onclose }: {
-    plan: PlanId; carriedPart?: PartId; origin: string; context: string; preset?: PresetId; design?: Rows; size?: number;
-    onstart?: (design: Rows, carried?: Placement) => void; onclose: () => void;
+  let { plan, line, species = [], context, preset, design: given, size = 1, onstart, onclose }: {
+    plan: PlanId; line?: B.LinePool; species?: Species[]; context: string; preset?: PresetId; design?: Rows; size?: number;
+    onstart?: (design: Rows) => void; onclose: () => void;
   } = $props();
 
-  let design: Rows = $state(untrack(() => (given ? ($state.snapshot(given) as Rows) : startDesign(plan, preset))));
-  let carriedAt: PlaceId | null = $state(untrack(() => (carriedPart ? homes(plan, carriedPart)[0] ?? null : null)));
-  let sel: PlaceId = $state('front'), hover: PartId | null = $state(null), presetOn: PresetId | null = $state(untrack(() => (given ? null : preset ?? null)));
+  /** The chips: saved species first, then the style presets this line's pool allows. */
+  const SHOWN = 3;
+  let more = $state(false);
+  const chips = $derived([
+    ...species.map((sp, k) => ({ id: `sp${k}`, name: sp.name, rows: sp.rows })),
+    ...presetsOf(plan).filter((p) => legalFor(plan, startDesign(plan, p), line)).map((p) => ({ id: p as string, name: p === 'hunter' ? 'Hunter' : STYLES[p].name, rows: startDesign(plan, p) })),
+  ]);
+  const first = untrack(() => given ? { id: null, rows: $state.snapshot(given) as Rows }
+    : (species.length ? chips[0] : chips.find((c) => c.id === preset)) ?? chips[0] ?? { id: null, rows: startDesign(plan) }); // the newest species first
+  let design: Rows = $state(structuredClone(first.rows));
+  let sel: PlaceId = $state('front'), hover: PartId | null = $state(null), presetOn: string | null = $state(first.id);
   let host: HTMLDivElement | undefined = $state();
   let stage = $state.raw<EquipStage | null>(null);
   let peek: Option | null = $state(null);
 
-  const carried = $derived(carriedPart && carriedAt ? { part: carriedPart, place: carriedAt } : undefined);
-  const res = $derived(B.startBuild(plan, design, carried));
+  const res = $derived(B.startBuild(plan, design, line));
   const build = $derived(res.build);
   const shown = $derived({ ...build, size });
-  const view = $derived(places(plan, build, carried));
-  const opts = $derived(optionsAt(plan, design, sel, carried));
+  const view = $derived(places(plan, build));
+  const opts = $derived(optionsAt(plan, design, sel, line));
   const nums = $derived(numbers(build));
   const legal = $derived(hover ? homes(plan, hover) : []);
 
@@ -49,8 +59,7 @@
     if (o.row) next[sel] = [...o.row]; else delete next[sel];
     design = next; presetOn = null;
   }
-  function usePreset(p: PresetId) { design = startDesign(plan, p); presetOn = p; }
-  const presetName = (p: PresetId) => (p === 'hunter' ? 'Hunter' : STYLES[p].name);
+  function useChip(c: { id: string; rows: Rows }) { design = structuredClone(c.rows); presetOn = c.id; }
   const trade = (o: Option) => [
     o.gained.length ? `gains ${o.gained.map(verbName).join(', ')}` : '', o.lost.length ? `loses ${o.lost.map(verbName).join(', ')}` : '',
     `upkeep ${nums.upkeep} → ${o.upkeepAfter}`,
@@ -69,21 +78,18 @@
   <div class="equipGrid">
     <div class="stageWrap">
       <div class="stageBox" bind:this={host}><span class="boardTag">board size</span></div>
-      <Slots rows={build.rows} views={view} {sel} {legal} onpick={pick} />
+      <Slots rows={build.rows} views={view} {sel} {legal} upkeep={slotUpkeep(build)} onpick={pick} />
     </div>
     <div class="equipSide">
-      <div class="chips">{#each presetsOf(plan) as p}<button class="chip" class:on={presetOn === p} onclick={() => usePreset(p)}>{presetName(p)}</button>{/each}</div>
-      {#if carriedPart}
-        <p class="note"><b>Carried: {PARTS[carriedPart].name}.</b> {origin} {PARTS[carriedPart].does}</p>
-        {#if homes(plan, carriedPart).length > 1}
-          <div class="chips">{#each homes(plan, carriedPart) as h}<button class="chip" class:on={carriedAt === h} onclick={() => (carriedAt = h)}>Put it in {PLACE_NAMES[h]}</button>{/each}</div>
-        {/if}
-      {/if}
+      <div class="chips">
+        {#each chips.filter((c, k) => more || k < SHOWN || !c.id.startsWith('sp') || presetOn === c.id) as c}<button class="chip" class:on={presetOn === c.id} onclick={() => useChip(c)}>{c.name}</button>{/each}
+        {#if species.length > SHOWN}<button class="chip" onclick={() => (more = !more)}>{more ? 'Fewer' : `+${species.length - SHOWN} species`}</button>{/if}
+      </div>
       <h3>{PLACE_NAMES[sel]} <span class="hint">{view.find((v) => v.place === sel)?.lock ? `locked: ${view.find((v) => v.place === sel)?.lock}` : was ? `now: ${was}` : 'empty'}</span></h3>
       {#if view.find((v) => v.place === sel)?.state === 'unsupported'}
         <p class="note">This body has no part for this place yet.</p>
       {:else}
-        {#if info}<p class="info"><b>{info.name}:</b> {info.does}{info.verb ? ` Verb: ${info.verb}.` : ''}</p>{/if}
+        {#if info}<p class="info"><b>{info.name}:</b> {info.does}{info.verb ? ` Verb: ${info.verb}.` : ''}{#each (info.row ?? []).flatMap((p) => rankText(p, line?.ranks)) as r}<span class="rank"> {r}.</span>{/each}</p>{/if}
         <div class="pickList">
           {#each opts as o}
             <button class="verbCard partCard" class:on={o.current} aria-current={o.current} onclick={() => { if (!o.current) choose(o); }}
@@ -103,7 +109,7 @@
         {#each res.problems as p}<p class="bad">{p}</p>{/each}
       </div>
       <p class="note">At most {BODY_RULE.maxVerbs} verbs; Dash from walking legs is free. Moults add the rest.</p>
-      {#if onstart}<button class="go" disabled={res.problems.length > 0} onclick={() => onstart($state.snapshot(design), carried && $state.snapshot(carried))}>Start the Life</button>{/if}
+      {#if onstart}<button class="go" disabled={res.problems.length > 0} onclick={() => onstart($state.snapshot(design))}>Start the Life</button>{/if}
     </div>
   </div>
 </div></div>
@@ -121,6 +127,7 @@
   .equipSide h3 { margin: 4px 0 0; }
   .sum p { margin: 2px 0; }
   .bad { color: var(--red); }
+  .rank { color: var(--good); }
   .equip .go { position: sticky; bottom: 4px; z-index: 2; }
   @media (max-width: 720px) {
     .equipGrid { grid-template-columns: 1fr; grid-template-areas: 'stage' 'side'; }

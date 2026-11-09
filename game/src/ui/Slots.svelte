@@ -1,13 +1,14 @@
 <!-- Slice 20D: the six equipment slots around the large creature (heading up), one icon each; on a phone one row
-     under it. States are drawn: held, empty, locked, unsupported, carried, selected, legal, and a moult's old → new. -->
+     under it. States are drawn: held, empty, locked, unsupported, selected, legal, and a moult's old → new. Since 21B a
+     slot can carry a badge: its upkeep after ranks. -->
 <script lang="ts">
   import { PLACES, type PlaceId, type Row, type Rows } from '../data/body';
   import type { PlaceView } from './equip';
   import PartIcon from './PartIcon.svelte';
 
-  let { rows, views, sel = null, legal = [], change = null, onpick }: {
+  let { rows, views, sel = null, legal = [], change = null, upkeep = {}, onpick }: {
     rows: Rows; views: PlaceView[]; sel?: PlaceId | null; legal?: PlaceId[];
-    change?: { place: PlaceId; row: Row } | null; onpick?: (p: PlaceId) => void;
+    change?: { place: PlaceId; row: Row } | null; upkeep?: Partial<Record<PlaceId, number>>; onpick?: (p: PlaceId) => void;
   } = $props();
 
   /** Slot centres in % of the stage: ahead, above, below and behind the creature. */
@@ -27,6 +28,7 @@
           {#if hit}<PartIcon row={change!.row} />
           {:else if v.state === 'locked'}<PartIcon id="lock" size={18} />
           {:else if rows[p]?.length}<PartIcon row={rows[p]} />{/if}
+          {#if upkeep[p] !== undefined && !hit}<i class="up" class:free={upkeep[p] === 0} title="upkeep">{upkeep[p]}</i>{/if}
         </span>
       </span>
       <small>{v.name}</small>
@@ -43,14 +45,16 @@
   .slot:hover:not(:disabled) { background: none; }
   .boxes { display: flex; align-items: center; gap: 2px; }
   .box { width: 44px; height: 44px; display: grid; place-items: center; background: #1b2a30; border: 3px solid var(--ink); outline: 1px solid var(--edge); }
+  .box { position: relative; }
+  .up { position: absolute; right: -6px; bottom: -6px; min-width: 16px; padding: 0 2px; font: 700 16px/16px var(--font); font-style: normal;
+    color: var(--food); background: var(--ink); text-align: center; }
+  .up.free { color: var(--good); }
   .box.old { width: 30px; height: 30px; opacity: 0.6; }
   .arrow { color: var(--gold); }
   .slot small { font-size: 16px; text-shadow: var(--outline); }
   .slot.empty .box, .slot.locked .box { background: #12201f; }
   .slot.unsupported { opacity: 0.45; }
   .slot.unsupported .box { background: repeating-linear-gradient(45deg, #12201f 0 4px, #1b2a30 4px 8px); }
-  .slot.carried .box { position: relative; }
-  .slot.carried .box::after { content: ''; position: absolute; top: 0; right: 0; border: 6px solid var(--good); border-left-color: transparent; border-bottom-color: transparent; }
   .slot.legal .box { outline: 3px solid var(--good); }
   .slot.on .box, .slot.hit .box:not(.old) { outline: 3px solid var(--gold); }
   .slot.on small, .slot.hit small { color: var(--gold); }

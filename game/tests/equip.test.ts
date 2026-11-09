@@ -19,11 +19,12 @@ function fakeGraphics(bad: string[]) {
 }
 
 describe('20B equipment choices', () => {
-  it('starter rows hold only starter parts, defaults and the carried part', () => {
+  it('starter rows hold only starter parts (or the line pool) and defaults', () => {
     for (const body of PLAN_IDS) for (const place of PLACES) for (const row of starterRows(body, place))
       for (const p of row) expect(B.isStarterPart(p) || BODIES[body].defaults.some(([q, r]) => q === place && r.includes(p)), `${p} at ${place} on ${body}`).toBe(true);
     expect(starterRows('worm', 'sides').flat()).not.toContain('gill');
-    expect(starterRows('worm', 'sides', { part: 'gill', place: 'sides' }).flat()).toContain('gill');
+    expect(starterRows('worm', 'sides', { parts: ['gill'] }).flat()).toContain('gill');
+    expect(starterRows('worm', 'front', { parts: ['tentacles'] }).flat()).toEqual(['tentacles']);
   });
   it('locked places offer no Empty; unsupported places offer nothing', () => {
     const opts = optionsAt('arthropod', PRESETS.arthropod.sweeper!, 'limbs');
@@ -37,10 +38,11 @@ describe('20B equipment choices', () => {
     expect(dig.lost).toEqual(['graze']);
     expect(dig.gained).toEqual(['dig']);
   });
-  it('the carried part shows as carried, and the numbers match the model', () => {
-    const carried = { part: 'gill' as const, place: 'sides' as const }, res = B.startBuild('worm', PRESETS.worm.digger!, carried);
-    expect(places('worm', res.build, carried).find((v) => v.place === 'sides')?.state).toBe('carried');
+  it('ranks reach the cards, and the numbers match the model', () => {
+    const line = { parts: ['eye', 'bulb'] as const, ranks: { eye: ['lean' as const] } }, res = B.startBuild('worm', PRESETS.worm.digger!, { ...line, parts: [...line.parts] });
     expect(numbers(res.build).upkeep).toBe(B.upkeep(res.build));
+    expect(numbers(res.build).upkeep).toBe(1);
+    expect(optionsAt('worm', PRESETS.worm.digger!, 'eyes', { ...line, parts: [...line.parts] }).find((o) => o.current)?.upkeep).toBe(0);
     expect(numbers(B.startBuild('arthropod', PRESETS.arthropod.sweeper!).build).verbs).toEqual(['Dash (free)', 'Graze']);
   });
 });

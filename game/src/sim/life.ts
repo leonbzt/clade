@@ -5,7 +5,7 @@ import {
   HUNT, NODES, PARTS, PART_IDS, PLANS, RULE, STAGES, STARTER_PLAN, TURNS,
   type NodeId, type PartId, type PlanId, type Terrain, type VerbId,
 } from '../data/life';
-import { PRESETS, type PlaceId, type Row } from '../data/body';
+import { PRESETS, type PlaceId, type Row, type Rows } from '../data/body';
 import * as B from './body';
 import { loseRow, shed, snapshot, type Side } from './body-hurt';
 import { CELL, MUD_FLATS, type Habitat, type Rival } from '../data/habitats';
@@ -65,6 +65,8 @@ export interface Life {
   prey: Prey[]; frenzy: number; still: boolean; caught: boolean; catches: number; // the predator Life
   ate: Partial<Record<NodeId | 'prey', number>>; // food by source: the garden reads your role from it
   laid?: Readonly<B.Build>; // the latest clutch's build, frozen at the lay
+  pool?: PartId[]; // the line's parts (21A): the only commons a moult offers; none = every part of the body
+  launch?: Rows; // the body it started as (21B): with the kept card, the new species
 }
 
 export function rnd(l: { r: number }) { // the toy's mulberry32
@@ -165,7 +167,7 @@ export function moult(l: Life) {
   l.build = { ...l.build, size: size(l) + 1 }; l.moults++; l.moulted = true; l.soft = PLANS[l.plan].soft;
   if (size(l) === RULE.adultSize) say(l, 'You are an adult: you can lay eggs now.');
   if (size(l) === RULE.maxSize) { l.health = RULE.health; say(l, 'Full grown: your body is finished and your wounds close.'); }
-  const pool = PART_IDS.filter((id) => !PARTS[id].rare && PARTS[id].plans.includes(l.plan));
+  const pool = PART_IDS.filter((id) => !PARTS[id].rare && PARTS[id].plans.includes(l.plan) && (!l.pool || l.pool.includes(id)));
   for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(rnd(l) * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
   l.offers = B.legalOffers(l.build, pool);
   if (l.moults >= l.rareAt && !l.rareGot) { const rare = B.rareOffer(l.build, l.hab.rares[l.plan]); if (rare) l.offers.push(rare); }

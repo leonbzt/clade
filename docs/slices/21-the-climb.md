@@ -60,9 +60,10 @@ is text, and the story of founding and continuation got "a little more confusing
 - Upkeep balance beyond Lean ranks, clutch size: step 10. Map polish: step 9.
 
 ## Done when
-- [ ] 21A: a model test plays Lives into XP, levels, points, ranks, species and a recipe; the launcher only offers
+- [x] 21A (9 Nov, `tests/lineage.test.ts`; not played yet): a model test plays Lives into XP, levels, points, ranks, species and a recipe; the launcher only offers
   unlocked parts; a recipe opens a lineage. `npm run check` passes.
-- [ ] 21B: in play, the end of a Life shows hatching, the XP and any new lineage; the close-up spends points.
+- [ ] 21B (built 9 Nov, `tests/line-view.test.ts`; not played yet): in play, the end of a Life shows hatching, the XP and any new lineage; the close-up spends points.
+  Also from the 21A play: species are launch bodies (decided 9 Nov), the moult view shows each part once, upkeep per slot.
 - [ ] 21C: in play, the tree shows how my lineages came from the worm; the map shows my line spreading.
 - [ ] Your notes in `docs/playtests/21-the-climb.md` after each part; then tick roadmap step 6.
 

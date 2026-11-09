@@ -172,12 +172,13 @@ const sides: Paint = (b, g, row, ramp, over) => {
   if (!p) return;
   const fs = spread(spanAt(b.look.sides.n, b.size), b.look.sides.f);
   if (over) { if (p === 'sclerite') fs.forEach((f) => scales(b, g, f)); else inside(b, g, p, 0.55); return; }
-  for (const f of fs) for (const s of [-1, 1]) {
+  fs.forEach((f, i) => { for (const s of [-1, 1]) {
     if (p === 'spine') sideSpine(b, g, f, s);
     else if (p === 'gill') gill(b, g, f, s);
     else if (p === 'chaetae') bristles(b, g, f, s);
     else if (p === 'pouch') sac(b, g, b.P(f * b.L, s * (b.w(f) + 1.4)));
-  }
+    else if (p === 'flap') flap(b, g, f, s, i, ramp);
+  } });
   if (p === 'chaetae') for (const f of fs.map((f) => f + 0.12).filter((f) => f < 0.95)) for (const s of [-1, 1]) bristles(b, g, f, s);
   void ramp;
 };

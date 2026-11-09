@@ -3,7 +3,7 @@
   import { HABITATS } from '../data/habitats';
   import { HUNT, PLANS, type PlanId } from '../data/life';
   import { boardForPatch, nextBoard } from '../sim/door';
-  import { carriable, launchBodies, launchPatches } from '../sim/sea-life';
+  import { launchBodies, launchPatches } from '../sim/sea-life';
   import { headlineText } from '../sim/sea-news';
   import { makeMap, type View } from '../view/sea-map';
   import { historyPaths, linePatches, speciesColour, speciesKey } from '../view/sea-map-data';
@@ -11,8 +11,10 @@
   import { PLAN_IDS } from '../data/life';
   import { bump, ctx, ui } from './meta.svelte';
   import Equip from './Equip.svelte';
+  import Lines from './Lines.svelte';
+  import LineView from './LineView.svelte';
+  import { toggleDev } from './dev';
   import type { PresetId, Rows } from '../data/body';
-  import type { Placement } from '../sim/body';
 
   let cv: HTMLCanvasElement | undefined = $state();
   let patchList: HTMLDetailsElement | undefined = $state();
@@ -33,7 +35,7 @@
   const activeLine = $derived(g.species.find((sp) => sp.id === activeSpecies));
   const distribution = $derived((ui.tick, linePatches(g, activeSpecies)));
   const history = $derived((ui.tick, patch ? historyPaths(g, patch) : []));
-  const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.away && !ui.notice);
+  const mapVisible = $derived(ui.open && !ui.niche && !ui.menu && !ui.clutch && !ui.gain && !ui.line && !ui.away && !ui.notice);
   $effect(() => {
     if (!cv) return;
     const renderer = makeMap(cv); renderer.setSea(g); map = renderer;
@@ -71,12 +73,11 @@
     ui.niche = continuation?.plan === as ? continuation.role : as === 'worm' ? 'burrower' : as === 'swimmer' ? 'predator' : 'grazer';
   }
   const plan = $derived<PlanId>(body);
-  const carried = $derived((ui.tick, carriable(ctx.save, plan)));
+  const line = $derived((ui.tick, ctx.save.lines[plan]));
   const design0 = $derived<Rows | undefined>(usingDesign && ui.design?.body === plan ? ui.design.rows : undefined);
   const equipPreset = $derived<PresetId | undefined>(plan === 'swimmer' ? 'hunter' : ui.niche === 'grazer' ? 'sweeper' : ui.niche === 'burrower' ? 'digger' : undefined);
   const equipContext = $derived(patch && board ? `Patch ${patch.id + 1} · ${HABITATS[patch.ground].name}. ${nextBoard(board)}${plan === 'swimmer' ? ` Lurk a turn: prey don't notice you, and your next swim goes ${HUNT.ambush}× as far. Frenzy: +1 speed for each catch in a row.` : ''}` : '');
-  const equipOrigin = $derived(ctx.save.trait ? `Kept from your clutch in patch ${ctx.save.trait.patch + 1}.` : 'From your line.');
-  function start(d: Rows, c?: Placement) { if (ui.patch !== null) ctx.start(ui.patch, plan, d, c); }
+  function start(d: Rows) { if (ui.patch !== null) ctx.start(ui.patch, plan, d); }
 </script>
 
 {#if ui.saveError}
@@ -84,9 +85,10 @@
 {/if}
 {#if ui.open}
 <div id="meta" class="panel">
-  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button></div>
+  <div class="metaTop"><h2>Clade</h2><span class="gen">Gen {(ui.tick, g.gen)}</span><button class="small" disabled={!!pending} onclick={() => { ctx.skip(); bump(); }}>Skip +10</button><button class="small" onclick={() => (ui.menu = true)}>Menu</button>{#if import.meta.env.DEV}<button class="small" onclick={toggleDev}>Dev</button>{/if}</div>
   {#if ui.feedback}
     <aside class="returnFeedback" role="status">
+      {#if ui.feedback.gain}<p><b>{ui.feedback.gain}</b></p>{/if}
       <p>{ui.feedback.eggs > 0 ? `${ui.feedback.eggs} eggs released · ${feedbackName} · patch ${ui.feedback.patch + 1}.` : 'No new eggs released. Your previous continuation remains available; before founding, retry any patch.'}</p>
       <p>Current population of this line in that patch: {Math.round(feedbackPop)} after two sea generations. • marks its current occupied patches, including earlier populations.</p>
       <button class="small" onclick={() => { selectedLine = ui.feedback!.species; ui.feedback = null; }}>Dismiss</button>
@@ -123,6 +125,7 @@
       <button class="habBtn" onclick={() => openPatch(p.id)}><b>Patch {p.id + 1} · {HABITATS[p.ground].name}</b><small>{eligible.includes(p.id) ? 'eligible' : 'outside clutch range'}</small></button>
     {/each}
   </div></details>
+  <Lines />
   <h3>News</h3>
   <ul class="news">{#each (ui.tick, ctx.save.news.slice(0, 8)) as n}<li class:yours={g.species[n.sp].line} class:lineEvent={g.species[n.sp].id === activeSpecies}>{headlineText(g, n)}</li>{:else}<li><small>No ecological headlines yet.</small></li>{/each}</ul>
 </div>
@@ -147,7 +150,7 @@
     {#each bodies as as}<button class="liveBtn" disabled={!eligible.includes(patch.id) || !!pending} onclick={() => live(as)}>Live as {PLANS[as].name.toLowerCase()}</button>{/each}
     {#if ui.design}
       <button class="liveBtn" disabled={!eligible.includes(patch.id) || !bodies.includes(ui.design.body) || !!pending} onclick={() => live(ui.design!.body, true)}>Use the pasted {PLANS[ui.design.body].name.toLowerCase()} design</button>
-      {#if !bodies.includes(ui.design.body)}<p class="note">Found the sea with a worm before using this body.</p>{/if}
+      {#if !bodies.includes(ui.design.body)}<p class="note">{continuation ? 'This lineage is locked: its recipe is under Your lines.' : 'Found the sea with a worm before using this body.'}</p>{/if}
     {/if}
     <h3>News here</h3><ul class="news">{#each (ui.tick, ctx.save.news.filter((n) => n.patches.includes(patch.id)).slice(0, 6)) as n}<li>{headlineText(g, n)}</li>{:else}<li><small>Quiet so far.</small></li>{/each}</ul>
   {/if}
@@ -155,7 +158,11 @@
 {/if}
 
 {#if ui.open && patch && board && ui.niche}
-  {#key `${plan}${usingDesign}`}<Equip {plan} carriedPart={carried} origin={equipOrigin} context={equipContext} preset={equipPreset} design={design0} onstart={start} onclose={() => (ui.niche = null)} />{/key}
+  {#key `${plan}${usingDesign}`}<Equip {plan} line={line} species={line?.species} context={equipContext} preset={equipPreset} design={design0} onstart={start} onclose={() => (ui.niche = null)} />{/key}
+{/if}
+
+{#if ui.open && ui.line && ctx.save.lines[ui.line]}
+  {#key ui.line}<LineView plan={ui.line} />{/key}
 {/if}
 
 {#if ui.notice}
