@@ -18,7 +18,7 @@ const reachFrom = (side: Side) => (side === 'front' ? 'front' : side === 'back' 
 export const struckRows = (b: Build, side: Side) => PLACES.filter((p) => b.rows[p]?.length
   && (p === 'back' && b.rows.back!.includes('shield') ? 'front' : STRUCK[p]) === reachFrom(side));
 
-/** Resolution order: mud, Dig, staying put rolled up, Brace, a passive guard, then a tear or damage. */
+/** Resolution order: mud, Dig, staying put rolled up, Brace, a passive guard, then a tear and damage: a hit always costs health (9 Nov). */
 export function strikeOn(b: Build, side: Side, c: StrikeCtx = {}): Hit {
   const none = { guard: null, tear: null, damage: 0 };
   if (c.buried || c.dug) return { kind: 'buried', ...none, rest: RULE.restAfterStrike };
@@ -28,7 +28,7 @@ export function strikeOn(b: Build, side: Side, c: StrikeCtx = {}): Hit {
   const guard = guardAt ? b.rows[guardAt]!.find((x) => GUARDS.includes(x))! : null;
   if (guardAt && !c.bypass) return { kind: 'blocked', guard, tear: null, damage: 0, rest: b.rows[guardAt]!.includes('spine') ? RULE.restAfterSpine : RULE.restAfterStrike };
   const tear = guardAt ?? rows[rows.length - 1] ?? null;
-  return { kind: 'hit', guard: null, tear, damage: (tear ? 0 : 1) + (c.soft ? 1 : 0), rest: RULE.restAfterStrike };
+  return { kind: 'hit', guard: null, tear, damage: 1 + (c.soft ? 1 : 0), rest: RULE.restAfterStrike };
 }
 
 /** A tear or a shed removes the whole row: its effects, verbs, upkeep and any allowance. Nothing comes back free. */

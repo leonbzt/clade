@@ -104,7 +104,7 @@ describe('the mud flats Life', () => {
     L.stay(l);
     const st = l.events.filter((e) => e.k === 'strike');
     expect(st.length === 1 && st[0].k === 'strike' && st[0].kind === 'hit' && [st[0].kind, st[0].tear]).toEqual(['hit', 'sides']);
-    expect([l.health, parts(l)]).toEqual([3, ['sclerite']]); // the tear takes the gut row and absorbs the damage
+    expect([l.health, parts(l)]).toEqual([2, ['sclerite']]); // the tear takes the gut row and still costs health
     expect(l.pred!.state).toBe('rest');
     L.stay(l);
     expect(l.pred!.state).toBe('hunt');

@@ -36,8 +36,11 @@ function strike(l: Life) {
   else if (h.kind === 'enrolled') say(l, 'You roll up: the strike glances off.');
   else if (h.kind === 'blocked') say(l, h.part ? `Your ${PARTS[h.part].name.toLowerCase()} blocks a strike on your ${h.side}.` : `You are braced: the strike on your ${h.side} glances off.`);
   else {
-    if (h.tear) { const n = describeRow(l.build.rows[h.tear]!).toLowerCase(); say(l, `Hit on your ${h.side}: your ${n} ${n.endsWith('s') ? 'are' : 'is'} torn off.`); loseAt(l, h.tear); }
-    if (h.damage) { say(l, `Hit on your ${h.side}: −${h.damage} health${l.soft ? ' (soft from moulting)' : ''}.`); l.health -= h.damage; }
+    const n = h.tear ? describeRow(l.build.rows[h.tear]!).toLowerCase() : '';
+    const torn = h.tear ? `your ${n} ${n.endsWith('s') ? 'are' : 'is'} torn off, ` : '';
+    say(l, `Hit on your ${h.side}: ${torn}−${h.damage} health${l.soft ? ' (soft from moulting)' : ''}.`);
+    if (h.tear) loseAt(l, h.tear);
+    l.health -= h.damage;
     if (yours(l)) { p.bonus = Math.min(2, p.bonus + 1); say(l, 'Your own hunter grows bolder: +1 step.'); }
   }
   emit(l, { k: 'strike', ...h, at: here, dir: p.dir, marks, health: l.health });

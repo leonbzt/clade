@@ -14,7 +14,7 @@ import { useVerb } from './sim/verbs';
 import { nextBoard, resultOf } from './sim/door';
 import { step } from './sim/sea';
 import { tell } from './sim/sea-news';
-import { defaultBuild, type Placement } from './sim/body';
+import { defaultBuild, upkeep as buildUpkeep, type Placement } from './sim/body';
 import { decodeDesign, encodeDesign } from './sim/body-hurt';
 import { canLaunch, completeLife, settlePending, startSeaLife } from './sim/sea-life';
 import { advanceSeaSave, freshSeaSave, parseSeaSave, serializeSeaSave, type SeaPending, type SeaSave } from './sim/sea-save';
@@ -257,7 +257,7 @@ function doMoult() {
 function openBody() {
   const life = S.life;
   const options = life.phase !== 'offer' ? [] : [...life.offers.flatMap((id) => L.offerChanges(life, id).map((c) => ({ part: id as PartId | null, change: c }))), { part: null, change: null }];
-  ui.body = { build: structuredClone(life.build), options, upkeep: L.upkeep(life), moultSize: life.phase === 'offer' ? L.size(life) : 0 };
+  ui.body = { build: structuredClone(life.build), options, upkeep: buildUpkeep(life.build), moultSize: life.phase === 'offer' ? L.size(life) : 0 };
   ctx.pick = (part, place) => { ui.body = null; if (life.phase === 'offer') pickPart(part, place); };
 }
 

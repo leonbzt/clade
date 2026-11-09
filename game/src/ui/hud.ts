@@ -3,6 +3,7 @@
 import { PLANS, RULE, TURNS, VERBS, type VerbId } from '../data/life';
 import * as L from '../sim/life';
 import { verbNote } from '../sim/verbs';
+import { has } from '../sim/body';
 import { speed } from '../sim/hunt';
 
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -77,7 +78,7 @@ export class Hud {
     this.hp.set(l.health, RULE.health, instant);
     const nt = L.nextTier(l.hab, l.eggs);
     const hunt = l.plan === 'swimmer' ? ` · speed ${speed(l)}${l.still ? ' (ambush)' : ''}${l.frenzy ? ` · frenzy ${l.frenzy}` : ''}` : '';
-    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${L.size(l)} (${L.stage(l)}) · upkeep ${L.upkeep(l)}${hunt}` +
+    $('body').textContent = `${l.hab.name} · ${PLANS[l.plan].name}, size ${L.size(l)} (${L.stage(l)}) · upkeep ${L.upkeep(l)}${has(l.build, 'deep') && !L.upkeep(l) ? ' (on mud)' : ''}${hunt}` +
       (L.mature(l) && nt ? ` · ${nt[0]} at ${nt[1]} eggs` : '');
     const play = l.phase === 'play' && !busy, w = $<HTMLButtonElement>('wait');
     w.disabled = !play; w.textContent = l.plan === 'swimmer' ? 'Lurk' : 'Wait';

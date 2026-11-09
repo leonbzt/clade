@@ -93,13 +93,13 @@ describe('20A injury', () => {
   it('a strike lands on the side relative to facing, for four directions and four facings', () => {
     for (let f = 0; f < 4; f++) for (let d = 0; d < 4; d++) expect(H.sideOf(d, f)).toBe(['front', 'right', 'back', 'left'][(d - f + 4) % 4]);
   });
-  it('guards cover their directions; bypass tears the guard; no row costs health', () => {
+  it('guards cover their directions; bypass tears the guard; every hit costs health', () => {
     const tank = preset('arthropod', 'tank').build; // claw, walking, spines on the sides
     for (const s of ['left', 'right'] as const) expect(H.strikeOn(tank, s)).toMatchObject({ kind: 'blocked', guard: 'spine', rest: 3 });
-    expect(H.strikeOn(tank, 'front')).toMatchObject({ kind: 'hit', tear: 'front', damage: 0 });
+    expect(H.strikeOn(tank, 'front')).toMatchObject({ kind: 'hit', tear: 'front', damage: 1 });
     expect(H.strikeOn(tank, 'back')).toMatchObject({ kind: 'hit', tear: null, damage: 1 });
     expect(H.strikeOn(tank, 'back', { soft: true }).damage).toBe(2);
-    expect(H.strikeOn(tank, 'left', { bypass: true })).toMatchObject({ kind: 'hit', tear: 'sides', damage: 0 });
+    expect(H.strikeOn(tank, 'left', { bypass: true })).toMatchObject({ kind: 'hit', tear: 'sides', damage: 1 });
     expect(H.strikeOn(B.defaultBuild('trilobite'), 'front')).toMatchObject({ kind: 'blocked', guard: 'shield', rest: 1 });
     expect(H.strikeOn(preset('trilobite', 'tank').build, 'front')).toMatchObject({ kind: 'blocked', rest: 3 });
     expect(H.strikeOn(build('worm', { tail: ['sclerite'] }), 'back')).toMatchObject({ kind: 'blocked', guard: 'sclerite' });

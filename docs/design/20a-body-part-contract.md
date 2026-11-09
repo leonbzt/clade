@@ -157,7 +157,7 @@ guards only.
 
 - A bypassed guard tears first. Otherwise tear the last occupied eligible row in the order Front, Eyes, Limbs,
   Sides, Back, Tail; the strike preview shows it. A normal guard isn't consumed. No eligible row: 1 health damage.
-  A tear absorbs the base damage; softness adds 1 to any unblocked hit. Empty locked places absorb nothing.
+  A tear does not absorb damage (changed 9 Nov: every unblocked hit costs 1 health); softness adds 1. Empty locked places absorb nothing.
 - A tear removes the **whole choice**: its effects, verbs, upkeep and any allowance (walking/raking loses Dash,
   Graze and range together). Physiology rows can be torn like any other.
 - Starvation sheds the newest installed surviving choice, then costs health. Install order: defaults (table order),

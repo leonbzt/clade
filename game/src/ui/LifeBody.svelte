@@ -45,7 +45,16 @@
     {#if !v.options.length}<button class="small" onclick={() => (ui.body = null)}>Close</button>{/if}
   </div>
   <div class="grid">
-    <div class="stageBox" bind:this={host}></div>
+    <div class="left">
+      <div class="stageBox" bind:this={host}></div>
+      <div class="slots">
+        {#each PLACES as p}
+          {@const now = v.build.rows[p]?.length ? B.describeRow(v.build.rows[p]!) : '—'}
+          {@const hit = offer?.change?.place === p}
+          <p class="slot" class:hit><b>{PLACE_NAMES[p]}</b> {#if hit}<s>{now === '—' ? 'empty' : now}</s> → {B.describeRow(offer!.change!.row)}{:else}{now}{/if}</p>
+        {/each}
+      </div>
+    </div>
     <div class="side">
       {#if v.options.length}
         <p class="note">Pick one change. The creature shows it before you commit.</p>
@@ -59,8 +68,6 @@
           {/each}
         </div>
         <button class="go" disabled={!offer} onclick={() => offer && ctx.pick(offer.part, offer.change?.place)}>{offer ? (offer.part ? `Grow ${PARTS[offer.part].name}` : 'Grow without a part') : 'Pick one'}</button>
-      {:else}
-        <div class="rows">{#each PLACES as p}{#if v.build.rows[p]?.length}<p><b>{PLACE_NAMES[p]}</b> {B.describeRow(v.build.rows[p]!)}</p>{/if}{/each}</div>
       {/if}
       {#if nums}
         <div class="sum">
@@ -81,7 +88,13 @@
   .stageBox { position: relative; height: min(60vh, 460px); min-height: 300px; background: #0b2730; border: 3px solid var(--ink); overflow: hidden; }
   .stageBox :global(canvas) { position: absolute; inset: 0; }
   .side { display: grid; gap: 8px; min-width: 0; }
-  .rows p, .sum p { margin: 2px 0; }
+  .sum p { margin: 2px 0; }
+  .left { display: grid; gap: 6px; min-width: 0; }
+  .slots { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .slot { margin: 0; padding: 3px 6px; border: 2px solid var(--ink); background: rgba(255, 255, 255, 0.06); font-size: 0.9em; min-width: 0; }
+  .slot b { display: block; font-size: 0.8em; opacity: 0.8; }
+  .slot.hit { outline: 3px solid var(--gold); }
+  .slot s { opacity: 0.7; }
   .side .go { position: sticky; bottom: 4px; z-index: 2; }
   @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .stageBox { height: 40vh; min-height: 240px; } }
 </style>

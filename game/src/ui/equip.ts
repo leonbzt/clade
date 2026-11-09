@@ -66,7 +66,7 @@ export function numbers(b: B.Build) {
     verbs: all.map((v) => (counted.includes(v) ? verbName(v) : `${verbName(v)} (free)`)),
     ceiling: `${counted.length} of ${BODY_RULE.maxVerbs} verbs`,
     upkeep: B.upkeep(b),
-    upkeepSum: `1 base + ${parts} parts${off ? ` − ${off} ${b.body === 'swimmer' ? 'swimming' : 'walking'} allowance` : ''}`,
+    upkeepSum: `1 base + ${parts} parts${off ? ` − ${off} ${b.body === 'swimmer' ? 'swimming' : 'walking'} allowance` : ''}${b.rows.tail?.includes('deep') ? ' · 0 while on mud (Deep Burrow)' : ''}`,
     move: b.body === 'swimmer' ? `swim ${B.swimSpeed(b)}` : b.body === 'worm' ? `crawl 1, tunnel ${B.tunnel(b)}` : `range ${B.range(b)}`,
     sense: B.sense(b), oxygen: B.oxygenMax(b), clutch: B.clutch({ ...b, size: 3 }),
   };

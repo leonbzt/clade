@@ -19,14 +19,13 @@
   let carriedAt: PlaceId | null = $state(untrack(() => (carriedPart ? homes(plan, carriedPart)[0] ?? null : null)));
   let sel: PlaceId = $state('front'), hover: PartId | null = $state(null), presetOn: PresetId | null = $state(untrack(() => (given ? null : preset ?? null)));
   let host: HTMLDivElement | undefined = $state();
-  let grown = $state(untrack(() => size));
   let stage = $state.raw<EquipStage | null>(null);
   let pts = $state<Record<PlaceId, [number, number]> | null>(null);
 
   const carried = $derived(carriedPart && carriedAt ? { part: carriedPart, place: carriedAt } : undefined);
   const res = $derived(B.startBuild(plan, design, carried));
   const build = $derived(res.build);
-  const shown = $derived({ ...build, size: grown });
+  const shown = $derived({ ...build, size });
   const view = $derived(places(plan, build, carried));
   const opts = $derived(optionsAt(plan, design, sel, carried));
   const nums = $derived(numbers(build));
@@ -73,7 +72,6 @@
       {/each}
       <span class="boardTag">board size</span>
     </div>
-    <div class="sizes" role="group" aria-label="Preview size"><span class="hint">Size (a Life starts at 1)</span>{#each [1, 2, 3, 4, 5] as n}<button class="small" class:on={grown === n} aria-pressed={grown === n} onclick={() => (grown = n)}>{n}</button>{/each}</div>
     <div class="equipSide">
       <div class="chips">{#each presetsOf(plan) as p}<button class="chip" class:on={presetOn === p} onclick={() => usePreset(p)}>{presetName(p)}</button>{/each}</div>
       {#if carriedPart}
@@ -92,7 +90,7 @@
               onpointerenter={() => (hover = o.row?.[o.row.length - 1] ?? null)} onpointerleave={() => (hover = null)} onfocus={() => (hover = o.row?.[o.row.length - 1] ?? null)} onblur={() => (hover = null)}>
               <b>{o.name}{o.current ? ' · now' : ''}</b>
               <small>{o.does}</small>
-              <em>{o.verb ? `${o.verb} · ` : ''}upkeep {o.upkeep}{was && !o.current ? ` · replaces ${was}` : ''}</em>
+              {#if o.verb || (was && !o.current)}<em>{[o.verb, was && !o.current ? `replaces ${was}` : ''].filter(Boolean).join(' · ')}</em>{/if}
               {#if !o.current}<em>{trade(o)}</em>{/if}
               {#each o.problems as p}<em class="bad">{p}</em>{/each}
             </button>
@@ -114,10 +112,8 @@
 <style>
   .equipWrap { position: fixed; inset: 0; z-index: 30; overflow: auto; place-items: start center; }
   .equip { max-width: 980px; width: min(980px, 96vw); box-sizing: border-box; }
-  .equipGrid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); grid-template-areas: 'stage side' 'sizes side'; gap: 8px 12px; align-items: start; }
+  .equipGrid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); grid-template-areas: 'stage side'; gap: 8px 12px; align-items: start; }
   .stageBox { grid-area: stage; } .equipSide { grid-area: side; }
-  .sizes { grid-area: sizes; display: flex; gap: 4px; align-items: center; flex-wrap: wrap; }
-  .sizes .on { outline: 3px solid var(--gold); }
   .stageBox { position: relative; height: min(70vh, 560px); min-height: 360px; background: #0b2730; border: 3px solid var(--ink); overflow: hidden; }
   .stageBox :global(canvas) { position: absolute; inset: 0; }
   .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
@@ -137,7 +133,7 @@
   .bad { color: var(--red); }
   .equip .go { position: sticky; bottom: 4px; z-index: 2; }
   @media (max-width: 720px) {
-    .equipGrid { grid-template-columns: 1fr; grid-template-areas: 'stage' 'sizes' 'side'; }
+    .equipGrid { grid-template-columns: 1fr; grid-template-areas: 'stage' 'side'; }
     .stageBox { height: 58vh; min-height: 320px; }
   }
 </style>

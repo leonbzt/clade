@@ -561,3 +561,10 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Old share codes after the reset:** "no message needed, there is no saves or codes outside mine". Old saves and
   `CLADE-` codes are simply dropped/invalid; no rejection message, no conversion. Slice 20 and 20A were trimmed by
   deletion to match (no legacy layer); starter checks for codes and size-keeping lay snapshots are specified in 20A.
+
+## 9 Nov, 20C play
+- **A hit always costs health:** "taking a hit should take a life even if a part is lost". Replaces the 20A
+  contract's "a tear absorbs the damage". Notes: [playtest 20](playtests/20-join-the-bodies.md).
+- **Slice 20's close:** five fixes (hit costs health, upkeep shown off mud with Deep Burrow's 0 named, no size
+  picker, proboscis from the head's tip, slots in the moult view): "the fixes sound good". Compact slots with
+  icons become **20D** ("20d is fine"). Cutting unused parts waits for step 7 ("wait for 7").

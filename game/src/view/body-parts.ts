@@ -75,11 +75,10 @@ function tentacles(b: Body, g: Graphics) {
 }
 
 function proboscis(b: Body, g: Graphics, hook: boolean) {
-  const r = b.w(0), len = b.u() * 0.6 + b.reach.v * 9, base0 = b.P(r * 0.2, -r * 0.45, 1), base1 = b.P(r * 0.2, r * 0.45, 1), tip = b.P(-r - len, 0, 2);
+  const r = b.w(0), len = b.u() * 0.9 + b.reach.v * 9, base0 = b.P(-r * 0.75, -r * 0.3, 1), base1 = b.P(-r * 0.75, r * 0.3, 1), tip = b.P(-r - len, 0, 2); // from the head's tip, not its middle
   ink(g, [base0, tip, base1], 1);
   tri(g, base0, tip, base1, PAL.flesh, 0.3);
   if (hook) for (const s of [-1, 1]) { const h0 = b.P(-r - len + 1, s * 0.8, 2), h1 = b.P(-r - len + 2.6, s * 2.6, 2); line(g, [h0, h1], 1.3, PAL.pale[4]); }
-  else for (const s of [-1, 1]) { const q = b.P(-r - len + 1.5, s * 1.1); g.rect(q[0] - 0.5, q[1] - 0.5, 1, 1).fill(PAL.pale[4]); }
 }
 
 function arms(b: Body, g: Graphics, ramp: Ramp, spiny: boolean) { // segments that curl inward as it grabs
