@@ -1,23 +1,29 @@
 # Status
 
-Updated 9 Nov 2026 (Codex, slice 22 build). Branch `slice-22-build`, local, not pushed.
-**Milestone:** M2, step 6. [Slice 22](slices/22-the-larva.md) **22A and 22B built; Claude review and your play next.**
-**Checkpoint:** `e273e4b` (22A), followed by `feat(22B): show larval buds and priced growth choices`.
+Updated 10 Nov 2026 (Claude, the first session of the rebuild: clerical, no code). Branch `slice-22-build`, local;
+all doc edits from the Fable pass and this session are uncommitted.
+**Milestone:** M2. Step 6 (`game/`, slices 21–22) is built but not ticked: your play is pending. **Now: step 7, N0.**
 
-**Built:** species keep the frozen body plan at laying; each Life starts with defaults and Signature parts grown,
-other planned rows as buds. Regrowth/size-only costs half rounded up; new parts pay the balance. Fills update the
-source species and its best tier/last Life; swaps branch. Kept cards prefer free places. Laid plan parts join the
-pool. Save v6 retains v5 lines/species and migrates pending launch rows. Buds are pale on the body and faded in
-slots, offers show prices/replacements/affordability, hatching previews fill or branch, species show occupied places.
+**Read first:** the core is rebuilt in `clade/` from [design/whole-game-build.md](design/whole-game-build.md) (how;
+[whole-game.md](design/whole-game.md) is the why). A build session reads that brief and its step spec, nothing else
+by default. `game/` is frozen: playable, and the port source until the play test after N4.
 
-**Verified:** `npm run check` passes (148 tests, Svelte/TypeScript); final isolated timing **9.33 s** (earlier 9.41 s; 12.78 s alongside browser checks). `npm run build:game`
-passes. `npm run look` at 360 px passes [larva/offers](../scripts/look/22-larva.json) and
-[hatching/relaunch](../scripts/look/22-hatching.json), with screenshots inspected. Four inherited picks regrow for
-10 food versus 18 for four new picks. [Play notes](playtests/22-the-larva.md). Browser output has only the missing
-favicon 404; no page errors. Build keeps its existing bundler/config/size warnings.
+**Done:**
+- `ROADMAP.md` re-cut from step 7 with the brief's §8: steps 7–17 are N0 … R10, R11; the closed test is step 12, the
+  public alpha is in step 15.
+- `CLAUDE.md`: the new folder, the doc precedence (the brief wins over full-version.md), `check` vs `check:game`.
+- [slices/23-the-food-web.md](slices/23-the-food-web.md) is marked re-cut (its parts go to N4, R5, R7, R8).
+- The N0 spec: [slices/n0-the-ground.md](slices/n0-the-ground.md). `docs/README.md` points at it and the brief.
 
-**Claude next:** review `82fddd6..HEAD` against the slice 22 build brief, especially frozen plan vs damage,
-Signature/default starts, full-plan verb legality, fill/swap and kept-card placement, split payment/disabled offers,
-and v5 migration. Then your 21C and 22 play; leave roadmap step 6 unticked until your notes are in.
-**Limits:** pacing and the subjective repeat-Life experience await your play. No dependencies or release scope added.
-Concurrent design/research document edits were left untouched and out of the build commits.
+**Decided (10 Nov, see decisions.md):** apply the roadmap re-cut; the folder is `clade/`, with the proposed
+`CLAUDE.md` wording; the brief's §2 (worm with a trunk), §3 (the sea's ground), §5 (look contract) and §9 (itch
+timing) are decided.
+
+**Next:**
+1. Commit the docs (your call), then a task branch for N0 (`git switch -c n0-the-ground`).
+2. Build N0: `/kickoff N0`, then the spec's parts 0, A–E in order; end with the screenshot sheet and three lines here.
+3. Your play of 21C and 22 on `game/` can still happen any time; tick step 6 and merge when you say so.
+
+**Open:**
+- Playwright isn't in the repo, so `npm run look` fails; N0 part 0 makes it work for `/clade/`.
+- `docs/planning/m1-run.md` is no longer named in `CLAUDE.md`; the brief's §0 replaces it for build sessions.

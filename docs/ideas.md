@@ -109,6 +109,22 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   - Several seas to choose from, "pick server": the server select picks the era and a rough region (you, 9 Nov: "future work"); M2 keeps the one sea.
   - The tree screen: smaller portraits or one shared canvas, so 6–15 lineages fit a phone and stay under the browser's ~16 WebGL contexts (you, 9 Nov: "cool for now"). For step 7.
   - The map: labels hide the small coastal patches; pinch zoom (AI, 9 Nov, after the quick zoom). For step 9.
+  - Genes after Size and Gut (slice 23): Pace (metabolism), Colour (camouflage on its ground; Wiwaxia and Marrella had structural colour), Brain (costly; hunts and escapes better), Dispersal (how readily it leaves), Brood (many small eggs or few big ones), Hardness (makes armour parts stronger) (AI, 9 Nov).
+  - Cnidarians and jellies (e.g. Burgessomedusa), and coral reefs in the next era; Cambrian reefs are sponges and microbes (you, 9 Nov: "lateron").
+  - Playable sessile Lives: place, grow and watch (sponge, brachiopod, eocrinoid) (you, 9 Nov).
+  - Growers vs moulters: the non-moulting branch (bristle worm, molluscs) grows by adding rings, scales or shell instead of shedding (AI, 9 Nov).
+  - A less linear map: the ring of shallows reads as a line, "a little boring" (you, 9 Nov, playtest 21); P50 B's layouts may answer it.
+- **From Carapace (AI, 9 Nov, [research](research/carapace.md)):** P49 and P50 hold the larger parts. The rest, one line each, with your reactions (9 Nov):
+  - A generation card after hatching: the line's binomial, "+N years" of deep time, the Life's length, trait icons; "New species!" over the new form. For step 9 (you liked it).
+  - Landmarks that steer a trait: a vent grows heat parts, a cave grows eyes (you want landmarks and rare features: P50).
+  - Seasons that change the rules over a sea year (bloom, dry, flood, cold; dig in and sleep), as a pressure the map shows (you: "lateron").
+  - Real-biology map events as hooks: algal mats choke still water, a swarm night, a lure that bursts into larvae (you want it, "best if it came from the actual system": P50).
+  - Named forms with one trick each ("Rollstone locks up and rolls downhill") as the way lineages and recipes are shown (you: only if carefully integrated; species generation stays dynamic).
+  - Tracking use per Life or per line (tallies, a use-weighted moult offer showing "Paddle · from swimming 14×"): P49, you 9 Nov: "fun but no priority".
+  - Rare sea layouts from the seed (a vent field, a lagoon, a reef arm): P50 B, you 9 Nov: "b later", with the server select.
+  - Type a name and get a creature, the same one every time: a share hook built on the species code. For step 10.
+  - Shorts that end in a question, and community votes on the next lineage: for the release (step 10).
+  - From the tree research (AI, 10 Nov): one unnamed worm-like root whose first pick (cuticle, bristles, notochord) picks the branch; new forms by function with a "convergent" badge; debated nodes shown as "rank uncertain" until clues firm them up. For the Fable pass.
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the

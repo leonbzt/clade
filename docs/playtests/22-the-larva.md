@@ -17,3 +17,12 @@
 
 Your play is still needed to judge whether regrowth stops the sense of starting over and leaves enough food to make
 interesting changes. 21C also still needs your full play before roadmap step 6 is ticked.
+
+
+a, the buds are a cool concept and its interesting but it might be too much
+b, the icons and screens look okay for now. and is pretty clear. whats exactly a species when is still unclear, or why.  
+one more thing i noted: the tier depends now just on the amount of eggs. if an s tier spreads to another patch does the s grade stay? the grade should be mostly refer to how good it currently fits the meta and that patch not just the number of eggs you got in one run. 
+
+everything fels okay now, current gaps, species and lineage system, map, lifeforms, stats vs parts. graphics, ui and looks, species and minigames.
+still needs to match the feeling of r/outside/tierzoo, that you choose a build and play as that, or develop a lineage with changing meta, and that you evolve the tree of life along the way, and balance the ecosystem, see what you placed, can discover new things and want to fill new niches and slots and have the feeling of ongoing progression like a good incremental game.  
+

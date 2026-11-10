@@ -627,3 +627,99 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   "in the future the server select should pick the era, and rough region, but thats future work" (ideas.md).
 - **Slice 22's three questions: the defaults** ("defaults are fine, commit everything"): presets and fresh designs
   start as buds; the kept hatching card goes into the plan as a bud; a bud costs about half a moult.
+
+## 9 Nov, P49 and the Carapace notes ([research](research/carapace.md))
+- **P49, Q1** ("i do like the concept a lot of what you do is steering the body, but it could go over generations and
+  by picks. but it would alo be cool if there was a higher chance of parts that relate to the current actions"): what
+  you do steers the body. It builds up over generations through your picks, and a Life's actions raise the chance of
+  related parts in the moult offer (a chance, not a fixed rank).
+- **P49, Q3** ("maybe. lean yes"): the offer shows its reason. **Q2** ("lean park but maybe we can think about in what
+  scale of the game this concept would fit in"): unlocking by count is parked; which scale it fits stays open in P49.
+- **From Carapace:** you like the generation cards and its character graphics. Landmarks, things to discover, a more
+  varied map, rarer special maps, layouts or features ("clam colony, whale skeleton, sea grass meadows, volcanic vent
+  ect."): "some surprise and change and actually feeling like you have to adapt is great" (P50). Seasons "lateron"
+  (ideas.md). The food web and real-biology events: "i want something like this, best if it came from the actual
+  system" (P50). Named forms "have to be carefully integrated. i want species generation to keep a life dynamic."
+
+## 9 Nov, P49 and P50 closed
+- **P49 closed** ("for open, populations should drift towards what their patch demands anyways. tracking behaviour in
+  lines or lives sounds fun but no priority"): populations drift toward what their patch demands. Today a patch's fit
+  changes only with releases, so this is new sea work. Tracking behaviour per Life or per line is parked (ideas.md).
+  *AI reading:* the use-weighted moult offer from the first answer needs that tracking, so it waits with it.
+- **P50: A in step 7, B later** ("discoveries like the ones proposed including sponge gardens and the reefs sounds great.
+  a in step 7 and b later. cambrian are fine."): sea features from the food web in step 7: vents, algal meadows,
+  brachiopod beds, carcass falls, sponge gardens, reefs. Rare sea layouts (B) come later, with the server select.
+- **Rare features come from sim events** ("maybe simplified version of whats there and assign a small chance of a event
+  or landmark if the required population is there"): each feature or event has a small chance when the population
+  it needs is in the patch.
+- "handoff and get everything ready to playtest 22 and plan the next steps."
+
+## 9 Nov, slice 23 round 1: drift, the food web, lineages (leans and reactions; the spec converges next round)
+- **Drift: gene variants, lean yes** ("b' sounds cool"; "the idea of a small genome is great to me. maybe it will be too
+  complex in the beginning though"; a and c less). Rethink the stat names (classic RPG or biological terms) and find "a
+  good split" between parts and genes, "maybe ... internal vs external". "breath sounds a little bit weak, diet sounds
+  good." Many species are fine with "a clear distinction between variant/species/clade/family/guild/clan".
+- **Algae:** microbial mats, plankton bloom, crust and seaweed "all sounds good". Sulfur mats belong to the vent. Filter
+  feeders might get "a shorter, place and grow and watch style".
+- **Layers maybe from rules:** "diet focused (eats plants or meat) and/or size focused (you can eat bigger prey)". Food
+  chains "should be important"; show who eats whom and which chains are running.
+- **Lineages, yes:** worm → bristle worm as "an easy first recipe unlock to teach"; Wiwaxia; hyoliths; Marrella; the lobopod
+  as the link from worms to arthropods; Opabinia as a swimmer; Anomalocaris; Pikaia as the cliffhanger or a hint at
+  vertebrates; the arrow worm "fun as carnivore worm"; Hurdia or Cambroraster maybe, as a sifting radiodont. Leanchoilia
+  and Waptia no: "only take arthropods that are significant for now to start a new direction (insects, crabs, isopods,
+  spiders ...) or ones that could be unique". Authored species should be "important stepping stones, or characteristic
+  feature combinations".
+- **Sessile life as features first,** unlocked with its lineage or clade ("in the beginning there were only sponges but
+  later on when you get better worms tube worms could appear, or sea lilys"); maybe playable later in a simpler game.
+- **Open:** an empty or a full sea ("I'm still not sure").
+
+## 9 Nov, slice 23 round 2 (the spec is rewritten from these)
+- **Parts are tools, genes are body settings** ("good"). **Genes: Size and Gut first** ("1) yes, size and gut first ok");
+  Pace "make[s] sense"; gut as "plant vs meat makes sense" (parts also shape diet). You asked about more: intelligence,
+  speed or mobility.
+- **Words:** variant < species < clade, and clade vs guild, "makes sense"; a lineage "doesn't quite fit in there and could be
+  more player related".
+- **Who eats whom from rules, not layers:** "2) yes". The real tree and its lines "make sense ... needs research"; the
+  roster "sounds good"; sessile life as features and eocrinoids "work"; cnidarians and jellies "lateron".
+- **Sea: lean b, wild branches** ("still lean a, but especially with drift the wild branches also make a lot of sense";
+  "3) lean b").
+- **The lineage run is unclear:** "it would be cool if you had ie a arthropod lineage that you level along the whole game,
+  and when for examples spiders branch off you start a new parallel one. or some kind of character slots or something.
+  right now it feels a little confusing whats mine and whats the benefit is."
+- **A whole-game pass with Fable:** "bring the whole game into shape, and find a suitable fit for my original vision of
+  playing lineages and evolving them and caring for a full ecosystem"; "save as much fable uage as possible".
+
+## 10 Nov, the Fable brief ([part 1](design/fable-brief.md), [part 2](design/fable-brief-2.md))
+- **Biology goes in** ("you can include the biology"): the researcher checked the real tree
+  ([research](research/tree-for-the-game.md)).
+- **What the Fable pass is for:** "my original vision of playing as a "build" and developing your lineages, advancing and
+  discovering the tree of life, discovering things in the ecosystem, placing your species in the ecosystem to see how they
+  do and interact, and try to fill new slots with a high tier, well adapted lifeform"; all branches of the tree; real
+  biology; the current state against the vision; "a fresh view ... from a fresh start, or how the current approach would
+  make most sense"; what makes a good-feeling game; where accuracy matters; how to set up all systems; "what the gameplay
+  should actually be like (decisions/menus only, a minigame like currently, something skill/knowledge based...?)".
+- **Fable designs from the tastes first:** "it should also give fable a strong reason to think up a game concept from
+  only my tastes before seeing whats already there." The brief is split in two; Part A is written before part 2 is read.
+- **Opus's reading stays in** ("keep §9 in, most points seem to match my taste"), trimmed where it steered.
+- **The activity matters:** "the minigame or activity aspect is also important to me"; "what kinds of minigames could
+  there be?" (in the ask).
+- **The Fable pass, three calls (10 Nov):** written up in [whole-game.md](design/whole-game.md) §12 and the
+  [build brief](design/whole-game-build.md) §1.
+  - **Rebuild the core in a fresh folder:** "yes sounds good"; "i agree to restart in a fresh folder". New records,
+    sea and screens; the Life engine and what play tuned are ported. Step 7 is re-cut (roadmap edit pending).
+  - **Only opened lineages live in the sea** (wild branches of your own species fill open slots): "call sounds good,
+    thin early is okay if there are fast unlocks, earlygame needs good onboarding and early experience anyways".
+  - **The body just grows; Enforce replaces part picks at each moult:** "sounds good"; "your proposal with the
+    enforcement sounds great"; keep "boosting food early in life and egg production later" as decisions.
+  - **Open, the user's to call:** start at the worm with a trunk below it (build brief §2), the sea's new structure
+    (§3), the look contract (§5), itch timing (§9: closed test after N4, public alpha about 15 sessions in).
+
+## 10 Nov, the first build session (build brief §0; picks from three questions)
+- **The roadmap is re-cut** ("Apply as shown"): steps 7–10 make way for the build brief's §8 route, numbered 7–17
+  (N0 … R10, R11). Slice 23 is re-cut: its parts land in N4, R5, R7 and R8.
+- **The fresh folder is `clade/`** ("clade/"), with the proposed `CLAUDE.md` wording: the build brief and
+  whole-game.md win over full-version.md; `game/` is frozen until the play test after N4, then archived;
+  `npm run check` covers `clade/` only from N0 (`npm run check:game` for the old game).
+- **The four open sections are decided** ("All four decided"): build brief §2 (start at the worm, with a faded trunk to
+  the first cell), §3 (the sea's ground: depth × substrate × exposure, 10–16 flood-filled habitats, area sets
+  ceilings), §5 (the look contract) and §9 (a closed test after N4, the public alpha after step A).

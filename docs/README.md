@@ -3,11 +3,13 @@
 Open only what the task needs. Top to bottom is the order of authority: when two docs disagree, the higher one
 wins (and the code is the truth for what's built).
 
-**Current task:** [slice 21: The climb](slices/21-the-climb.md), M2 step 6; then [slice 22: The larva](slices/22-the-larva.md) (P48 A). Start with [status.md](status.md)
+**Current task:** M2 step 7, [N0 The ground](slices/n0-the-ground.md): the first step of the rebuild in `clade/`. Start with [status.md](status.md)
 and that spec; open the documents below only as the task needs them.
 
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |
+| [design/whole-game-build.md](design/whole-game-build.md) | **The build brief (10 Nov): how the rebuild goes, step by step (§8), with the contracts and the look** | You (AI drafts) | Every build session, with its step spec |
+| [design/whole-game.md](design/whole-game.md) | **The whole-game pass (10 Nov): the why behind the brief** | You (AI drafts) | For a design question the brief does not settle |
 | [design/full-version.md](design/full-version.md) | **The full version (6 Nov, updated 7 Nov): the game, rigs, recipes, lineage ladder and staying on the road** | You (AI drafts) | Relevant sections for design or scope questions |
 | [design/body-approach.md](design/body-approach.md) | **Bodies, slots, species and what animation costs (6 Nov):** six places, measured render costs, styles | AI, after your slice 18 notes | For the slot model and the style |
 | [planning/plan.md](planning/plan.md) | The plan for the real build (5 Nov): your calls, M1's slices, what's ported, cuts | You (AI drafts) | When a call's history matters |
@@ -33,9 +35,12 @@ and that spec; open the documents below only as the task needs them.
   (M1 build: defaults, review, options, 3 Nov) ·
   [diverse-evolution.md](design/diverse-evolution.md) (how to make evolution feel diverse, 3 Nov) ·
   [builds.md](design/builds.md) (the axes of plant life, a build system, 3 Nov) ·
-  [after-playtest-02.md](design/after-playtest-02.md) (why it reads as a toy, steering, the new course, 3 Nov).
+  [after-playtest-02.md](design/after-playtest-02.md) (why it reads as a toy, steering, the new course, 3 Nov) ·
+  [fable-brief.md](design/fable-brief.md) + [fable-brief-2.md](design/fable-brief-2.md) (the whole-game brief: your
+  vision, then the game as built, 10 Nov).
 - `research/`: sourced facts from the `researcher` agent (Mycelarium, Hatched, real evolution, mosses, the tree of
-  life, layer sims, progression games, the virtual plant lab, diverse evolution in games).
+  life, layer sims, progression games, the virtual plant lab, diverse evolution in games,
+  [the tree for the game](research/tree-for-the-game.md): the roster and three facts checked, 10 Nov).
 - `playtests/`: your notes after playing each slice (v2 starts empty).
 
 Outside `docs/`: `toys/` holds throwaway prototypes. `_v1/` is v1 (code, tests and docs, 25 Oct – 2 Nov);

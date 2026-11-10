@@ -24,6 +24,7 @@ details before quoting them anywhere.
 | **Dorfromantik**        | Quests to complete landscape features; cozy procedural art                                              | Niche quests; calm presentation                                         | —                                                             |
 | **Rusty's Retirement**  | An idle farm that lives on your screen                                                                  | "The garden is always there" presence                                   | —                                                             |
 | **Pokémon / Animal Crossing museum** | Collecting, with facts                                                                     | Codex, tree of life as a collection                                     | —                                                             |
+| **Carapace** (pre-release, seen only in shorts, [research](../research/carapace.md)) | Our loop in one line: die, play your hatchling, use shapes the body ("swim a lot, you grow flippers"); a generation card with a binomial and "+22 years"; landmarks that steer a trait; named forms with one trick each | Use-driven moult offers (P49); the generation card; landmark bias; "X does Y" names; shorts that end in a question | Its scope (seasons, courtship rhythm, fights, social life, 9 wonders) for one dev; building on someone else's world |
 
 ## The look (from playtest 01)
 

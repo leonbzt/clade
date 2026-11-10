@@ -12,4 +12,5 @@ open parts needed for M1 are kept here; the rest is parked in ideas.md.
 P44 (the run's core play) and P45 (next step, apex slot, world) were decided 4 Nov: see decisions.md.
 P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea replaces that model (see decisions.md).
 
-P46, P47 and P48 were decided 9 Nov at the 21C review (P48: C; P46 and P47 closed): see decisions.md. None open.
+P46, P47 and P48 were decided 9 Nov at the 21C review (P48: C; P46 and P47 closed): see decisions.md.
+P49 (use steers the body) and P50 (sea features) were decided 9 Nov: see decisions.md. None open.
