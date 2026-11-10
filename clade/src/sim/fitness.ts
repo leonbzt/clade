@@ -77,11 +77,15 @@ export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat):
 export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, _world: World): Fitness {
   const fit = score(build, ranks, slot, habitat);
   const grazes = reach(build, ranks, 'mats', habitat) > 0, digs = reach(build, ranks, 'detritus', habitat) > 0;
+  const foodLeft = slot.foods.map((food) => {
+    const max = ceiling(habitat, food);
+    return `${slot.foods.length > 1 ? `${food} ` : ''}food at ${Math.round(max > 0 ? 100 * habitat.stocks[food] / max : 0)}%`;
+  }).join(', ');
   const costs = partsOf(build).filter((p) => PARTS[p].upkeep > Math.max(0, ranks[p] ?? 0)).map((p) => PARTS[p].name.toLowerCase());
   return {
     ...fit,
     reasons: [
-      `Intake ${letterFor(fit.intake, TERM_THRESHOLDS)}: ${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}.`,
+      `Intake ${letterFor(fit.intake, TERM_THRESHOLDS)}: ${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}; ${foodLeft}.`,
       `Upkeep ${letterFor(1 / fit.upkeep, TERM_THRESHOLDS)}: ${costs.length ? costs.join(', ') : 'no costly parts'}; ${build.parts.eyes ? 'eyes' : 'no eyes'}, ${build.parts.limbs ? 'limbs' : 'no legs'}.`,
       `Survival ${letterFor(fit.survival, TERM_THRESHOLDS)}: nothing hunts it here.`,
     ],

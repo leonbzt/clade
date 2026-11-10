@@ -8,7 +8,8 @@ const tsconfig = game ? './tsconfig.game.json' : './tsconfig.json';
 const env = { ...process.env, CHECK: game ? 'game' : 'clade' };
 const steps = [
   ['typecheck', 'npx', ['svelte-check', '--tsconfig', tsconfig, '--threshold', 'warning', '--output', 'human']],
-  ['tests', 'npx', ['vitest', 'run', '--reporter=dot']],
+  // Keep timed laws from competing with other test workers (typecheck still runs in parallel).
+  ['tests', 'npx', ['vitest', 'run', '--maxWorkers=1', '--reporter=dot']],
 ];
 
 const run = ([name, cmd, args]) =>
