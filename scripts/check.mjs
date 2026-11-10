@@ -8,8 +8,8 @@ const tsconfig = game ? './tsconfig.game.json' : './tsconfig.json';
 const env = { ...process.env, CHECK: game ? 'game' : 'clade' };
 const steps = [
   ['typecheck', 'npx', ['svelte-check', '--tsconfig', tsconfig, '--threshold', 'warning', '--output', 'human']],
-  // Keep timed laws from competing with other test workers (typecheck still runs in parallel).
-  ['tests', 'npx', ['vitest', 'run', '--maxWorkers=1', '--reporter=dot']],
+  // One reused worker avoids competing timed laws and repeated process/module startup.
+  ['tests', 'npx', ['vitest', 'run', '--maxWorkers=1', '--no-isolate', '--reporter=dot']],
 ];
 
 const run = ([name, cmd, args]) =>
@@ -18,7 +18,7 @@ const run = ([name, cmd, args]) =>
     let out = '';
     p.stdout.on('data', (d) => (out += d));
     p.stderr.on('data', (d) => (out += d));
-    p.on('close', (code) => resolve(code === 0 ? null : `✗ ${name}\n${out}`));
+    p.on('close', (code, signal) => resolve(code === 0 ? null : `✗ ${name} (${signal ?? `exit ${code}`})\n${out}`));
   });
 
 const t0 = Date.now();

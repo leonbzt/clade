@@ -6,12 +6,14 @@
   import { makeWorld } from '../sim/sea';
   import { css } from '../data/palette';
   import { DEV_SPECIES } from '../data/builds';
+  import { PRESETS } from '../data/presets';
   import { bestFit, heldSlots, ranksOf } from '../view/tiers';
   import { MapView, type Camera } from '../view/map';
   import { VIEWS, type MapMode } from '../view/paint';
   import HabitatCard from './HabitatCard.svelte';
   import { remember } from './history';
   import { place } from './placement';
+  import { applyPreset, skip } from './scenarios';
 
   const asked = Number(new URLSearchParams(location.search).get('seed'));
   const initialSeed = Number.isInteger(asked) && asked > 0 ? asked : 1;
@@ -20,6 +22,7 @@
   let mode = $state<MapMode>('habitats');
   let selected = $state(-1);
   let pickedId = $state('');
+  let presetId = $state('empty');
   let cam = $state<Camera>({ x: 0, y: 0, z: 4 });
   let ready = $state(false);
   let host: HTMLDivElement;
@@ -35,7 +38,7 @@
   function setSeed(s: number) {
     seed = Math.max(1, Math.floor(s));
     world = makeWorld(seed);
-    past = remember([], world);
+    past = applyPreset(world, presetId);
     selected = -1;
     window.history.replaceState(null, '', `?seed=${seed}`);
   }
@@ -46,15 +49,27 @@
     world = { ...world };
     past = remember(past, world);
   }
+  function setPreset(id: string) {
+    presetId = id;
+    world = makeWorld(seed);
+    past = applyPreset(world, id);
+    world = { ...world };
+    selected = -1;
+    pickedId = '';
+  }
+  function advance(generations: number) {
+    past = skip(world, past, generations);
+    world = { ...world };
+  }
 
   onMount(() => {
     view.onCamera = (c) => (cam = c);
     view.onTap = (t) => (selected = t >= 0 ? ground.hab.of[t] : -1);
     view.init(host).then(() => (ready = true));
     // For the look script: drive the map without taps.
-    Object.assign(window, { __clade: { setSeed, select, pick, place: placePicked,
+    Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked,
       setMode: (m: MapMode) => (mode = m), fit: () => view.fit(), look: (x: number, y: number, z: number) => view.look(x, y, z),
-      get world() { return world; }, get ground() { return ground; } } });
+      get world() { return world; }, get ground() { return ground; }, get history() { return past; } } });
   });
 
   $effect(() => {
@@ -82,6 +97,13 @@
         {#each DEV_SPECIES as s (s.id)}<option value={s.id}>{s.name}</option>{/each}
       </select>
     </label>
+    <label class="build">Preset
+      <select aria-label="Preset" value={presetId} onchange={(e) => setPreset(e.currentTarget.value)}>
+        {#each PRESETS as p (p.id)}<option value={p.id}>{p.name}</option>{/each}
+      </select>
+    </label>
+    <span>gen {world.generation}</span>
+    {#each [1, 10, 100] as n}<button onclick={() => advance(n)}>skip {n}</button>{/each}
   </header>
   <div class="map" bind:this={host}>
     <div class="labels">
@@ -102,7 +124,9 @@
       {/each}
     </div>
     {#if selected >= 0 && world.habitats[selected]}
-      <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} {picked} {ranks} place={placePicked} />
+      {#key `${selected}:${pickedId}`}
+        <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} {picked} {ranks} place={placePicked} />
+      {/key}
     {/if}
   </div>
 </div>

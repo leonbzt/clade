@@ -1,9 +1,12 @@
 import { expect, it } from 'vitest';
+import { DEV_SPECIES } from '../src/data/builds';
+import { PRESETS } from '../src/data/presets';
 import { ceiling, fitness, slots } from '../src/sim/fitness';
 import type { Build, World } from '../src/sim/records';
 import { step } from '../src/sim/sea';
 import { remember } from '../src/ui/history';
 import { place } from '../src/ui/placement';
+import { applyPreset, skip } from '../src/ui/scenarios';
 import { bestFit, heldSlots } from '../src/view/tiers';
 
 const worm: Build = { clade: 'worm', parts: {}, genes: { size: 1, gut: 1 } };
@@ -70,4 +73,46 @@ it('placement founds twenty heads in grams, preserves an existing population and
   expect(world.habitats[0].pops['large-worm']).toBe(80);
   expect(species).toEqual(before);
   expect(place(world, 99, species)).toBe(false);
+});
+
+it('presets found apart or together as specified, preserve their data, and midgame holds several habitats', () => {
+  const before = structuredClone({ PRESETS, DEV_SPECIES });
+  for (const preset of PRESETS) {
+    const world = makeFixture(), base = world.habitats[0];
+    world.habitats = Array.from({ length: 6 }, (_, id) => ({ ...structuredClone(base), id }));
+    const history = applyPreset(world, preset.id);
+    const inhabited = world.habitats.filter((h) => Object.values(h.pops).some((p) => p > 0));
+    expect(history.at(-1)?.generation).toBe(world.generation);
+    if (preset.id === 'empty') expect(world.species).toHaveLength(0);
+    if (preset.id === 'first-worm') {
+      expect(inhabited).toHaveLength(1);
+      expect(inhabited[0].kind.depth).toBe('shallows');
+      expect(inhabited[0].pops['root-worm']).toBe(20);
+    }
+    if (preset.id === 'three-worms') {
+      expect(inhabited).toHaveLength(3);
+      expect(inhabited.map((h) => Object.keys(h.pops).length)).toEqual([1, 1, 1]);
+    }
+    if (preset.id === 'rivals') {
+      expect(inhabited).toHaveLength(1);
+      expect(heldSlots(inhabited[0], world).find((s) => s.slot.id === 'mats')?.holders).toHaveLength(2);
+    }
+    if (preset.id === 'midgame') {
+      expect(inhabited.length).toBeGreaterThan(1);
+      expect(world.generation).toBe(100);
+      expect(world.lineages.find((l) => l.id === 'worm-line')?.ranks.tentacles).toBe(1);
+      expect(history).toHaveLength(101);
+    }
+  }
+  expect({ PRESETS, DEV_SPECIES }).toEqual(before);
+});
+
+it('skip 100 records each generation and gives the same sea as ten skips of ten', () => {
+  const a = makeFixture(), b = structuredClone(a);
+  const ah = skip(a, applyPreset(a, 'three-worms'), 100);
+  let bh = applyPreset(b, 'three-worms');
+  for (let i = 0; i < 10; i++) bh = skip(b, bh, 10);
+  expect(a).toEqual(b);
+  expect(ah).toEqual(bh);
+  expect(ah).toHaveLength(101);
 });
