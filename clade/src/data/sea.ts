@@ -17,9 +17,9 @@ export const YIELDS: Record<Food, Record<Depth, Record<Substrate, number>>> = {
     deep: { sand: 2, mud: 5, rock: 1.5 }, // detritus yield: the deepest settling ground
   },
 };
-export const REGROW: Record<Food, number> = { mats: 0.3, detritus: 0.2 }; // regrow: share of missing stock / generation
+export const REGROW: Record<Food, number> = { mats: 0.15, detritus: 0.1 }; // regrow: share of missing stock / generation (slow food, so eaters overshoot and swing)
 export const SEA = {
-  appetite: 1.4, // eat: grams wanted per gram of population × reach
+  appetite: 1.4, // eat: grams wanted per gram of population × intake (reach × food per tile)
   deaths: 0.4, // breed and die: base fraction lost per generation
   damping: 0.8, // breed and die: share of the move toward the target
   spread: 0.06, // spread: population fraction × shared border / whole perimeter
@@ -37,10 +37,12 @@ export const PART_EFFECT = {
   legSpeed: 1, flapSpeed: 1, bristleSpeed: 1, // stats speed: copied movement bonuses
   pouchBrood: 1, // stats brood: one extra clutch multiplier per pouch
 };
-// Letter thresholds: value = intake / upkeep × survival × brood. Same starting curve for the two slots.
+// Letter thresholds: value = intake / upkeep × survival × brood. Same starting curve for the two slots. A population
+// grows while appetite × value > deaths, so C's floor sits just under deaths ÷ appetite (≈ 0.286): C holds its own,
+// D and F shrink, and a settled holder reads C at home. Move it with deaths or appetite.
 export const LETTER_THRESHOLDS: Record<Food, readonly (readonly [Letter, number])[]> = {
-  mats: [['S', 1.5], ['A', 1], ['B', 0.65], ['C', 0.35], ['D', 0.15], ['F', 0]], // mats value thresholds
-  detritus: [['S', 1.5], ['A', 1], ['B', 0.65], ['C', 0.35], ['D', 0.15], ['F', 0]], // detritus value thresholds
+  mats: [['S', 1.5], ['A', 1], ['B', 0.65], ['C', 0.28], ['D', 0.15], ['F', 0]], // mats value thresholds
+  detritus: [['S', 1.5], ['A', 1], ['B', 0.65], ['C', 0.28], ['D', 0.15], ['F', 0]], // detritus value thresholds
 };
 export const TERM_THRESHOLDS: readonly (readonly [Letter, number])[] = [
   ['S', 1], ['A', 0.8], ['B', 0.6], ['C', 0.4], ['D', 0.2], ['F', 0], // term letters: intake, inverse upkeep, survival

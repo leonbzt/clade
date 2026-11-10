@@ -30,15 +30,21 @@ card's three sentences; mat, plankton and detritus as foods).
   recomputed each generation, never stored. **Everything is in grams** (*decided 10 Nov*): stocks and populations are
   both biomass, so 100 big animals outweigh 1000 small ones, and one graph axis holds food and eaters. Heads = grams ÷
   the body's mass (a mass per `size`, in data); they are shown, never stored.
-  1. *Regrow:* `stock += regrow × (ceiling − stock)`, one rate per food.
-  2. *Eat:* each species wants `pop × appetite × reach(food)`. If the wants exceed the stock, the stock is split in
-     proportion to them (population × reach, so nothing circular).
+  2. *Eat:* each species wants `pop × appetite × intake`, where intake is `fitness`'s term (reach × food per tile), so
+     a grazed-down stock feeds less. If the wants exceed the stock, the stock is split in proportion to population ×
+     reach.
   3. *Breed and die:* `target = pop × (1 − deaths) + eaten × brood ÷ upkeep × survival`, with the terms taken from
      `fitness`; then `pop += damping × (target − pop)`. A population under two heads' mass dies out.
+  1. *Regrow:* `stock += regrow × (ceiling − stock)`, one rate per food. It runs after breeding, so the stored stock
+     is the standing food: what the next eaters find and what every letter reads.
   5. *Spread:* where the predicted letter is C or better, `pop × spread × border ÷ perimeter` grams move to each
-     neighbour (that neighbour's border length over the habitat's whole border).
+     neighbour (that neighbour's border length over the habitat's whole border). A move under two heads' mass stays
+     home.
   `fitness`'s intake reads food per tile (`stock ÷ area`, against a reference density in data). So a habitat's size
   changes how much lives there, not its letter, and a grazed-down habitat scores lower for newcomers and residents.
+  **The letter is the growth rate** (*Claude's review, 10 Nov*): a population grows while appetite × value > deaths,
+  so C's floor sits at that break-even. A fresh habitat reads its full letter; a settled holder reads C at home (it
+  just replaces itself); a stronger newcomer reads above it and takes the slot, a weaker one reads below and dies.
 
 **Session 2: the screens, on N0's map.**
 - **E. The tier card** (`ui/TierCard.svelte`): one build in one slot: the letter and three term lines. N0's habitat

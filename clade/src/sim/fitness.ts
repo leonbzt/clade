@@ -10,6 +10,8 @@ const partsOf = (b: Build): PartId[] => Object.values(b.parts).filter((p): p is 
 const sizeOf = (b: Build) => Math.max(1, Math.min(MASS_BY_SIZE.length - 1, Math.round(b.genes.size)));
 export const bodyMass = (b: Build): number => MASS_BY_SIZE[sizeOf(b)];
 export const ceiling = (h: Habitat, food: Food) => YIELDS[food][h.kind.depth][h.kind.substrate] * h.area;
+/** Food per tile against the reference density: the one food term of intake, read by `fitness` and the sea's eating. */
+export const density = (h: Habitat, food: Food) => Math.max(0, h.stocks[food]) / Math.max(1, h.area) / SEA.referenceDensity;
 
 export function stats(build: Build, ranks: Ranks): Stats {
   return deriveStats(build, ranks, partsOf(build));
@@ -61,24 +63,27 @@ function letterFor(value: number, thresholds: readonly (readonly [Letter, number
   return thresholds[thresholds.length - 1][0];
 }
 
-export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, _world: World): Fitness {
+/** The curve's numbers and letter without the reasons: the sea's hot loop. `fitness` adds the three sentences. */
+export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat): Omit<Fitness, 'reasons'> {
   const ids = partsOf(build), traits = deriveStats(build, ranks, ids);
-  const reaches = { mats: foodReach(build, ids, traits, 'mats', habitat), detritus: foodReach(build, ids, traits, 'detritus', habitat) };
   let intake = 0, upkeep = BASE_UPKEEP[sizeOf(build)] - traits.thrift;
-  const costs: string[] = [];
-  for (const food of slot.foods) intake += reaches[food] * Math.max(0, habitat.stocks[food]) / Math.max(1, habitat.area) / SEA.referenceDensity;
-  for (const p of ids) {
-    upkeep += PARTS[p].upkeep;
-    if (PARTS[p].upkeep > Math.max(0, ranks[p] ?? 0)) costs.push(PARTS[p].name.toLowerCase());
-  }
+  for (const food of slot.foods) intake += foodReach(build, ids, traits, food, habitat) * density(habitat, food);
+  for (const p of ids) upkeep += PARTS[p].upkeep;
   const survival = SEA.survival;
   const value = intake / upkeep * survival * traits.brood;
+  return { intake, upkeep, survival, value, letter: letterFor(value, LETTER_THRESHOLDS[slot.id]) };
+}
+
+export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, _world: World): Fitness {
+  const fit = score(build, ranks, slot, habitat);
+  const grazes = reach(build, ranks, 'mats', habitat) > 0, digs = reach(build, ranks, 'detritus', habitat) > 0;
+  const costs = partsOf(build).filter((p) => PARTS[p].upkeep > Math.max(0, ranks[p] ?? 0)).map((p) => PARTS[p].name.toLowerCase());
   return {
-    intake, upkeep, survival, value, letter: letterFor(value, LETTER_THRESHOLDS[slot.id]),
+    ...fit,
     reasons: [
-      `Intake ${letterFor(intake, TERM_THRESHOLDS)}: ${reaches.mats > 0 ? 'grazes mats' : "can't graze"}, ${reaches.detritus > 0 ? 'digs detritus' : "can't dig"}.`,
-      `Upkeep ${letterFor(1 / upkeep, TERM_THRESHOLDS)}: ${costs.length ? costs.join(', ') : 'no costly parts'}; ${build.parts.eyes ? 'eyes' : 'no eyes'}, ${build.parts.limbs ? 'limbs' : 'no legs'}.`,
-      `Survival ${letterFor(survival, TERM_THRESHOLDS)}: nothing hunts it here.`,
+      `Intake ${letterFor(fit.intake, TERM_THRESHOLDS)}: ${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}.`,
+      `Upkeep ${letterFor(1 / fit.upkeep, TERM_THRESHOLDS)}: ${costs.length ? costs.join(', ') : 'no costly parts'}; ${build.parts.eyes ? 'eyes' : 'no eyes'}, ${build.parts.limbs ? 'limbs' : 'no legs'}.`,
+      `Survival ${letterFor(fit.survival, TERM_THRESHOLDS)}: nothing hunts it here.`,
     ],
   };
 }

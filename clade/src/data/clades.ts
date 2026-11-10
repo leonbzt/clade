@@ -15,7 +15,7 @@ export const CLADES: Record<CladeId, Clade & {
   worm: {
     id: 'worm', name: 'Worm', parent: 'cell', chapter: 1, gate: [], plan: 'worm', mechanic: 'tunnel',
     debated: false, playable: true, endpointName: 'Ottoia', speed: 1, senses: 2,
-    mouth: { mats: 0.5 }, substrate: { sand: 1, mud: 3, rock: 1 },
+    mouth: { mats: 0.3 }, substrate: { sand: 1, mud: 3, rock: 1 }, // weak mouth: under tentacles' 1 ÷ their doubled upkeep
   },
   arthropod: {
     id: 'arthropod', name: 'Arthropod', parent: 'worm', chapter: 2, gate: ['sclerite', 'proboscis'],
