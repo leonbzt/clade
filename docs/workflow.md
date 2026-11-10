@@ -6,14 +6,15 @@ Every idea takes the same path, and each step has one home:
 
 ```
 idea ──► ideas.md (one line) ──► proposals.md (when a milestone needs it: options, AI lean, ≤3 questions)
-     ──► your call ──► decisions.md (dated) + full-version.md ──► a slice spec ──► build ──► playtests/
+     ──► your call ──► decisions.md (dated) + whole-game-build.md ──► a slice spec ──► build ──► playtests/
 ```
 
 - **Ideas don't skip steps.** A new idea mid-session gets one line in `ideas.md`, and the work goes on.
 - **A proposal must name the milestone it serves.** If the current milestone doesn't need it, it stays an idea.
 - **At most three open proposals.** When you decide, the call is logged and the proposal is deleted; when one goes
   stale, it moves back to `ideas.md` as one line.
-- **design/full-version.md is the release vision.** `spec.md` describes the archived plant game. `tastes.md` keeps
+- **design/whole-game-build.md (how) and whole-game.md (why) lead the rebuild;** they win over
+  `full-version.md`. `spec.md` describes the archived plant game. `tastes.md` keeps
   your tastes and lessons; `decisions.md` keeps the history; the active slice defines the current task.
 
 ## Milestones and the scope gate

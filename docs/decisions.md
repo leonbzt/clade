@@ -733,3 +733,9 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   shapes tide flats; no rule reads it in N1. The AI's proposal (sheltered → mats, open → plankton and waves) is parked.
 - **Session tools point at the rebuild:** `/spec` reads the build brief, not the archived `docs/spec.md`; `/handoff`
   and `CLAUDE.md` likewise ("fix /spec and commit").
+
+## 10 Nov, the N1 spec (step 8)
+- **Populations in grams, not heads:** "grams would be a lot more realistic, 100 large animals are way more biomass
+  than 1000 small ones". Stocks and populations are both biomass; heads are shown as grams ÷ body mass (N1 part D).
+- **ChatGPT builds N1:** "I maybe want to do the implementation using chatgpt again, so set it up". The build brief
+  sits at the end of the N1 spec; Claude reviews each session's diff.

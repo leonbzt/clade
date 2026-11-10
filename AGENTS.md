@@ -42,7 +42,8 @@ adding features or rewriting architecture.
 Start with docs/status.md and the active slice spec.
 Read only relevant scripts, dependencies and docs/ sections.
 Do not load the entire documentation tree or repeat a completed audit.
-The release vision is docs/design/full-version.md; workflow details
+The rebuild in clade/ follows docs/design/whole-game-build.md (how) and
+whole-game.md (why); they win over full-version.md. Workflow details
 are in docs/workflow.md.
 
 ## Sessions and traceability

@@ -183,7 +183,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - More icons and symbols instead of text, across screens (you, 9 Nov). For step 9.
 - Draw only some grown parts (e.g. the front) to keep creatures simple (you, 9 Nov: "not sure").
 - Creature art direction: drop the thick black outline on the large view; the new looks are "a little weird still" (you, 9 Nov). For step 9.
-- Cut the parts you never use; you mainly use Deep Burrow, Gut, Brood Pouch, Compound Eyes, Bristles, and grazing (you, 9 Nov: "wait for 7"). For step 7.
+- Cut the parts you never use; you mainly use Deep Burrow, Gut, Brood Pouch, Compound Eyes, Bristles, and grazing (you, 9 Nov: "wait for 7"). N1 ports the table whole; the cut waits for the N4 play test.
 - Clutch size and parts received: fewer, or scale more with brood size (you, 9 Nov). For step 6 or 10's balance.
 - Signature could do more than "no upkeep, verb outside the ceiling" (e.g. never torn, or always in the starting body): today it adds nothing to parts that are already free (the swimmer's flap, the trilobite's shield). AI, 9 Nov. For 21B's close-up.
 - Map labels: place them so they never overlap (hide the smaller habitat's label, or show it only when zoomed in); N0's labels collide on phones. AI, 10 Nov. For N3's home map.
