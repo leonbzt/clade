@@ -3,6 +3,7 @@ import { ceiling, fitness, slots } from '../src/sim/fitness';
 import type { Build, World } from '../src/sim/records';
 import { step } from '../src/sim/sea';
 import { remember } from '../src/ui/history';
+import { place } from '../src/ui/placement';
 import { bestFit, heldSlots } from '../src/view/tiers';
 
 const worm: Build = { clade: 'worm', parts: {}, genes: { size: 1, gut: 1 } };
@@ -53,4 +54,20 @@ it('UI history captures every generation, bounds the window to 160, and owns cop
   expect(history).toHaveLength(161);
   expect(history.map((f) => f.generation)).toEqual(Array.from({ length: 161 }, (_, i) => i + 40));
   expect(Object.keys(world).sort()).toEqual(['generation', 'habitats', 'lineages', 'seed', 'species']);
+});
+
+it('placement founds twenty heads in grams, preserves an existing population and does not mutate its template', () => {
+  const world = makeFixture();
+  const species = { id: 'large-worm', lineage: 'worm-line', parent: 'root-worm', build: { ...worm, genes: { size: 3, gut: 1 } }, name: 'Large worm', born: 0 };
+  const before = structuredClone(species);
+  world.generation = 12;
+  expect(place(world, 0, species)).toBe(true);
+  expect(world.habitats[0].pops['large-worm']).toBe(80); // 20 heads × 4 grams at size 3
+  expect(world.species.find((s) => s.id === 'large-worm')?.born).toBe(12);
+  expect(world.species.some((s) => s.id === 'root-worm')).toBe(true);
+  expect(world.lineages[0].ranks).toEqual({});
+  expect(place(world, 0, species)).toBe(false);
+  expect(world.habitats[0].pops['large-worm']).toBe(80);
+  expect(species).toEqual(before);
+  expect(place(world, 99, species)).toBe(false);
 });
