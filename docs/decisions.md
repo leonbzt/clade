@@ -723,3 +723,13 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **The four open sections are decided** ("All four decided"): build brief §2 (start at the worm, with a faded trunk to
   the first cell), §3 (the sea's ground: depth × substrate × exposure, 10–16 flood-filled habitats, area sets
   ceilings), §5 (the look contract) and §9 (a closed test after N4, the public alpha after step A).
+
+## 10 Nov, after the N0 play (step 7)
+- **N0 passes the play question** ("looks good, i can tell them apart"); a sea that partly reads as a ring is fine.
+- **The build's departures are accepted for now:** ~30 ms ground + finder ("not important"), the finder's cuts and
+  merges, mixed habitats, deep scraps that belong to no habitat. Re-splitting large or mixed habitats, a habitat for
+  the leftover water and the phone fix are parked in `docs/ideas.md`.
+- **Exposure stays as the plan has it** ("i would prefer sticking to the plan"): it classes and names habitats and
+  shapes tide flats; no rule reads it in N1. The AI's proposal (sheltered → mats, open → plankton and waves) is parked.
+- **Session tools point at the rebuild:** `/spec` reads the build brief, not the archived `docs/spec.md`; `/handoff`
+  and `CLAUDE.md` likewise ("fix /spec and commit").

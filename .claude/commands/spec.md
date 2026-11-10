@@ -4,9 +4,10 @@ description: Write a slice spec for the current milestone, from the template, af
 
 Write a slice spec. Slice and topic from the user: $ARGUMENTS
 
-1. Read `ROADMAP.md` (the "Now" section and the budgets), `docs/slices/_template.md`, `docs/spec.md` (until it
-   exists, `docs/design/rebuild.md`), `docs/tastes.md`, and only the proposals, decisions or design docs the slice
-   names. Never read `_old/`, `_archive/` or `_v1/` (except the carry-over files CLAUDE.md names).
+1. Read `ROADMAP.md` (the "Now" section and the budgets), `docs/slices/_template.md`, `docs/tastes.md`, and from
+   `docs/design/whole-game-build.md` §0, §10, the step's row in §8 and only the sections that step needs. Open
+   `whole-game.md` only for a question the brief does not settle, and other docs only if the step names them.
+   `docs/spec.md` is the archived plant game: don't read it. Never read `_old/`, `_archive/` or `_v1/` (except the carry-over files CLAUDE.md names).
 2. **Scope check.** Which milestone step does this serve? If none, stop and say so. If the slice needs a call the
    user hasn't made, ask for it first (options with an AI lean, at most three questions) and don't write the spec yet.
 3. Write `docs/slices/NN-name.md` from the template, one page at most:

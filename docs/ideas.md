@@ -186,3 +186,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Cut the parts you never use; you mainly use Deep Burrow, Gut, Brood Pouch, Compound Eyes, Bristles, and grazing (you, 9 Nov: "wait for 7"). For step 7.
 - Clutch size and parts received: fewer, or scale more with brood size (you, 9 Nov). For step 6 or 10's balance.
 - Signature could do more than "no upkeep, verb outside the ceiling" (e.g. never torn, or always in the starting body): today it adds nothing to parts that are already free (the swimmer's flap, the trilobite's shield). AI, 9 Nov. For 21B's close-up.
+- Map labels: place them so they never overlap (hide the smaller habitat's label, or show it only when zoomed in); N0's labels collide on phones. AI, 10 Nov. For N3's home map.
+- The leftover deep water (scraps cut off by open sea) as a habitat of its own, maybe only for swimmers (you, 10 Nov, N0 play). For R7–R8 (the open sea).
+- Re-cut the largest outer habitats, or split the mixed ones again (you, 10 Nov: "fine for now"). Only if play asks.
+- The island: one or two main peaks instead of always a ridge (you, 10 Nov: "no priority"). For L1 or R10.
+- Exposure as flow: open water feeds filterers more (whole-game.md's "filter: intake rises with height and flow"); sheltered water favours mats and mud. Today exposure only classes, names and shapes flats. AI, 10 Nov. For the filterers (after release) or R7.

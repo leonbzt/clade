@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["game/**/*.ts", "game/**/*.svelte", "scripts/**/*.d.ts", "vite.config.ts"]
+}

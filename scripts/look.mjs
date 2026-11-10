@@ -1,26 +1,28 @@
 // The AI's eyes (cloud sessions; uses the pre-installed Playwright): starts the dev server, opens a page in headless
 // Chromium at phone size, runs steps, saves screenshots to .shots/ and prints page errors and eval results.
-//   npm run look -- [page] [steps-json-or-file.json]          page defaults to /game/
+//   npm run look -- [page] [steps-json-or-file.json]          page defaults to /clade/
 // Steps: {"click":"#sel"} {"tap":tile} {"key":"w"} {"wait":ms} {"shot":"name"} {"eval":"expr"} {"play":turns}
 // "tap" taps a board tile by index; "play" plays turns with real taps (greedy for food, using ready verbs), via window.__game.
 // Also: {"until":"boolean expression"} {"assert":"boolean expression"} {"reload":true}; first step can set "init".
-// Env: W/H (390 x 844), DSF (1); CHROME_BIN uses an installed Chrome, NODE_PATH can locate existing Playwright.
+// Env: W/H (390 x 844), DSF (1); CHROME_BIN picks the browser (default: the system Chrome, for playwright-core).
 import { createRequire } from 'node:module';
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
-const page = process.argv[2] || '/game/';
+const { chromium } = (() => { try { return require('playwright'); } catch { return require('playwright-core'); } })();
+const chrome = process.env.CHROME_BIN || ['/usr/bin/google-chrome', '/usr/bin/chromium'].find((f) => existsSync(f));
+const page = process.argv[2] || '/clade/';
 const input = process.argv[3];
-const steps = JSON.parse(input?.endsWith('.json') ? readFileSync(input, 'utf8') : input || '[{"click":"#cardButtons button"},{"wait":400},{"shot":"game"}]');
+const fallback = page.startsWith('/game') ? '[{"click":"#cardButtons button"},{"wait":400},{"shot":"game"}]' : '[{"wait":400},{"shot":"clade"}]';
+const steps = JSON.parse(input?.endsWith('.json') ? readFileSync(input, 'utf8') : input || fallback);
 mkdirSync('.shots', { recursive: true });
 
 const server = await createServer({ server: { port: 5199, strictPort: false }, logLevel: 'error' });
 await server.listen();
 const url = server.resolvedUrls.local[0].replace(/\/$/, '') + page;
-const browser = await chromium.launch({ executablePath: process.env.CHROME_BIN, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
+const browser = await chromium.launch({ executablePath: chrome, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const p = await browser.newPage({ viewport: { width: +(process.env.W || 390), height: +(process.env.H || 844) }, deviceScaleFactor: +(process.env.DSF || 1) });
 const out = [];
 p.on('pageerror', (e) => out.push(`page error: ${e.message}`));

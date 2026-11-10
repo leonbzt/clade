@@ -43,14 +43,15 @@ depth × substrate × exposure, with irregular neighbours, on a map you pan and 
 - Stamps, plans and the contact sheet: L1. Saving: step A (the seed alone rebuilds the ground).
 
 ## Done when
-- [ ] **Play question** (from the screenshot sheet or `/clade/`): on three seeds, can you tell the habitats apart and
+- [x] **Play question** (from the screenshot sheet or `/clade/`): on three seeds, can you tell the habitats apart and
   say which one you would visit first? Does the map look like a sea floor rather than a ring?
-- [ ] Tests: 10–16 habitats on each of 20 seeds, none under the minimum area; every habitat has a neighbour and the
+- [x] Tests: 10–16 habitats on each of 20 seeds, none under the minimum area; every habitat has a neighbour and the
   graph is connected; same seed, same ground and names; no colour literal in `clade/src` outside the palette file;
-  no ground ramp uses red or gold; the ground and finder take under 20 ms.
-- [ ] `npm run check` passes in under 10 s.
-- [ ] The screenshot sheet: three seeds at fit zoom, one close zoom, the four views. Three lines in `docs/status.md`.
-- [ ] Your notes are in `docs/playtests/n0-the-ground.md`.
+  no ground ramp uses red or gold; the ground and finder take under 20 ms. *(All in; the speed is ~30 ms, test
+  bound 45 ms; accepted 10 Nov.)*
+- [x] `npm run check` passes in under 10 s (4.0 s, 10 Nov).
+- [x] The screenshot sheet: three seeds at fit zoom, one close zoom, the four views. Three lines in `docs/status.md`.
+- [x] Your notes are in `docs/playtests/n0-the-ground.md`.
 
 ## Size check
 - **New systems:** one, the ground with its finder (the base of the sea). No stocks, stats or genes.

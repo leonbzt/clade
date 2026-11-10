@@ -22,7 +22,7 @@ Design: [docs/design/full-version.md](docs/design/full-version.md). **Staying on
 [whole-game-build.md](docs/design/whole-game-build.md) §8; why: [whole-game.md](docs/design/whole-game.md). `game/`
 stays playable until the new game passes the play test after N4. Slice 23 is re-cut: its parts land in N4, R5, R7, R8.
 
-7. [ ] **N0** [The ground](docs/slices/n0-the-ground.md): terrain kinds, the habitat finder, names, a bare zoomable map, the palette file · 1 session
+7. [x] **N0** [The ground](docs/slices/n0-the-ground.md): terrain kinds, the habitat finder, names, a bare zoomable map, the palette file · 1 session
 8. [ ] **N1** The core: the records, `fitness`, slots, the sea step, tier cards, the placement preview, dev presets · 2
 9. [ ] **N2** The Life, ported, with Grow, Enforce and Lay; a purpose per Life; eggs found a population · 2
 10. [ ] **N3** The screens: home map, hatching, the line view, the tree with its trunk · 2

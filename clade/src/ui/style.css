@@ -1,0 +1,10 @@
+/* The shell. Colours only as palette variables (--ink, --paper, …), set from data/palette.ts in main.ts.
+   The Clade font is crisp at 16 and 32 px: use no other sizes. */
+@font-face { font-family: 'Clade Text'; src: url('./fonts/CladeText-Plain.woff2') format('woff2'); font-weight: 400; font-display: block; }
+@font-face { font-family: 'Clade Text'; src: url('./fonts/CladeText-Bold.woff2') format('woff2'); font-weight: 700; font-display: block; }
+
+html, body { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; background: var(--open); color: var(--paper); }
+body { font: 400 16px/1.25 'Clade Text', system-ui, sans-serif; font-synthesis: none; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
+#app { position: fixed; inset: 0; }
+button { font: inherit; color: var(--paper); background: var(--panel); border: 2px solid var(--line); padding: 4px 10px; cursor: pointer; }
+button.on { background: var(--paper); color: var(--ink); }

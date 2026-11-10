@@ -16,7 +16,7 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 ## Where things are
 - `ROADMAP.md`: milestones, the current steps, the budgets. **The current milestone is the only thing we build for.**
 - `docs/status.md`: the last handoff. `docs/README.md`: the docs index (open only what the task needs).
-- `docs/design/big-picture.md`: the current plan, decided and proposed items labelled. `docs/spec.md`: the plant version, out of date; the user is drafting a new one.
+- `docs/design/whole-game-build.md`: the rebuild's plan (how); `whole-game.md`: why. `big-picture.md`: background (4 Nov). `docs/spec.md`: the archived plant game.
 - `docs/tastes.md`: the user's tastes, wishes and lessons. `docs/decisions.md`: the dated log of their calls.
 - `docs/proposals.md`: open AI proposals (three at most). `docs/ideas.md`: the parking lot.
 - `docs/slices/`: one spec per slice (`_template.md`); `docs/playtests/`: the user's notes after playing.

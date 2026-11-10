@@ -11,5 +11,5 @@
     "skipLibCheck": true,
     "types": ["vite/client", "vitest/config", "node"]
   },
-  "include": ["game/**/*.ts", "game/**/*.svelte", "scripts/**/*.d.ts", "vite.config.ts"]
+  "include": ["clade/**/*.ts", "clade/**/*.svelte", "scripts/**/*.d.ts", "vite.config.ts"]
 }
