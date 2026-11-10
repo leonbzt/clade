@@ -90,6 +90,7 @@ describe('food and habitat rules', () => {
     expect(PARTS.rake.opens).toEqual(['mats']);
     expect(PARTS.bulb.opens).toEqual(['detritus']);
     expect(PARTS.digger.opens).toEqual(['detritus']);
+    expect(PARTS.digger.plans).toEqual(['arthropod', 'trilobite']); // no standalone home; retain its variant pool
     expect(CLADES.arthropod.gate).toEqual(['sclerite', 'proboscis']);
     expect(CLADES.trilobite.gate).toEqual(['shield', 'digger']);
     expect(CLADES.swimmer.gate).toEqual(['compound', 'flap']);

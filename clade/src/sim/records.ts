@@ -25,7 +25,7 @@ export interface Part {
   upkeep: number; opens?: Food[]; defence?: DefenceKind; beats?: DefenceKind[]; verb?: VerbId; stamp: Id;
   name: string; does: string; rare?: boolean;
   // Keep all old places/pools in the one table, including parts with several homes and variant-only diggers.
-  homes: [PlanId[], Place[]][];
+  plans: PlanId[]; homes: [PlanId[], Place[]][];
 }
 export interface Build {
   clade: CladeId; parts: Partial<Record<Place, PartId>>; genes: { size: number; gut: number };
