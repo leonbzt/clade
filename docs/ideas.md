@@ -191,3 +191,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Re-cut the largest outer habitats, or split the mixed ones again (you, 10 Nov: "fine for now"). Only if play asks.
 - The island: one or two main peaks instead of always a ridge (you, 10 Nov: "no priority"). For L1 or R10.
 - Exposure as flow: open water feeds filterers more (whole-game.md's "filter: intake rises with height and flow"); sheltered water favours mats and mud. Today exposure only classes, names and shapes flats. AI, 10 Nov. For the filterers (after release) or R7.
+- Saving (step A): store only seed, stocks, pops, species and lineages; today's `World` also holds the habitat geometry the seed rebuilds (law 2). AI, 10 Nov. For step A.

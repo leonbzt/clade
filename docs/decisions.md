@@ -739,3 +739,8 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   than 1000 small ones". Stocks and populations are both biomass; heads are shown as grams ÷ body mass (N1 part D).
 - **ChatGPT builds N1:** "I maybe want to do the implementation using chatgpt again, so set it up". The build brief
   sits at the end of the N1 spec; Claude reviews each session's diff.
+- **Claude fixes review findings itself:** "go ahead, fix them yourself" (the N1 session-1 review). The fixes are in
+  `5af0601`; the spec's part D now matches them.
+- **Letters read the current food:** "current food makes most sense, i agree, tier should always reflect the current
+  fit of a species" (N1 open call). A settled holder reads C at home; the card's intake line shows the food left.
+- **Codex builds N1 session 2 (E–G):** "i want to do implementation in codex". Claude reviews the diff after.

@@ -49,7 +49,9 @@ card's three sentences; mat, plankton and detritus as foods).
 **Session 2: the screens, on N0's map.**
 - **E. The tier card** (`ui/TierCard.svelte`): one build in one slot: the letter and three term lines. N0's habitat
   card lists its slots with their holders' cards, and a small graph of stocks and populations over 160 generations.
-  Map labels show each slot's holder as a letter in the slot's accent.
+  Map labels show each slot's holder as a letter in the slot's accent. Letters read the current food (*decided 10
+  Nov*), so `fitness`'s intake sentence names the food left ("grazes mats, food at 38%"): a C holder makes sense.
+  The graph's history is kept by the UI as generations pass, never in the world record (law 2).
 - **F. The placement preview:** a build picker in the dev bar. The map shows the picked build's best letter per
   habitat; a tap shows its cards there; **Place** founds a population of 20 heads (20 × the body's mass in grams; N2's eggs do this later).
 - **G. Dev presets and time** (`data/presets.ts`): *empty sea*, *first worm* (the root worm in one shallow habitat),
