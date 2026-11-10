@@ -3,6 +3,7 @@
 import { DEPTHS, EXPOSURES, GROUND, SUBSTRATES, type Depth, type Exposure, type Substrate } from '../data/ground';
 import { isHabitatTile, type Ground } from './ground';
 import { nameHabitats } from './names';
+import type { Food, Id } from './records';
 
 export interface HabitatKind { depth: Depth; substrate: Substrate; exposure: Exposure }
 export interface Habitat {
@@ -10,6 +11,8 @@ export interface Habitat {
   tiles: number[]; area: number; // area in tiles
   centre: { x: number; y: number }; // the tile deepest inside it (labels go here)
   neighbours: number[]; borders: number[]; // the tile edges shared with each neighbour
+  perimeter: number; // every outer tile edge, including coast and map edges (spread's denominator)
+  stocks: Record<Food, number>; pops: Record<Id, number>; // food and populations, both in grams
 }
 export interface Habitats { list: Habitat[]; of: Int32Array } // `of`: the habitat id per tile, -1 outside
 
@@ -64,7 +67,8 @@ export function findHabitats(g: Ground): Habitats {
     if (p < 0) continue;
     if (idOf[p] < 0) {
       idOf[p] = list.length; count.push(new Array(24).fill(0));
-      list.push({ id: list.length, kind: kindOf(0), name: '', tiles: [], area: 0, centre: { x: 0, y: 0 }, neighbours: [], borders: [] });
+      list.push({ id: list.length, kind: kindOf(0), name: '', tiles: [], area: 0, centre: { x: 0, y: 0 }, neighbours: [], borders: [],
+        perimeter: 0, stocks: { mats: 0, detritus: 0 }, pops: {} });
     }
     const id = (of[i] = idOf[p]);
     list[id].tiles.push(i); count[id][kind[i]]++;
@@ -77,7 +81,14 @@ export function findHabitats(g: Ground): Habitats {
   const mark = new Int32Array(n);
   for (const hab of list) {
     const border = new Map<number, number>();
-    for (const t of hab.tiles) near4(t, (j) => { const q = of[j]; if (q >= 0 && q !== hab.id) border.set(q, (border.get(q) ?? 0) + 1); });
+    for (const t of hab.tiles) {
+      hab.perimeter += 4;
+      near4(t, (j) => {
+        const q = of[j];
+        if (q === hab.id) hab.perimeter--;
+        else if (q >= 0) border.set(q, (border.get(q) ?? 0) + 1);
+      });
+    }
     hab.neighbours = [...border.keys()].sort((a, b) => a - b);
     hab.borders = hab.neighbours.map((q) => border.get(q)!);
     hab.centre = inside(hab.tiles, of, hab.id, w, h, near4, mark);

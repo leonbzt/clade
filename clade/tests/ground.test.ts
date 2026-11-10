@@ -88,6 +88,26 @@ describe('habitats', () => {
     }
   });
 
+  it('starts with independent biomass records and counts the whole perimeter', () => {
+    const { g, hab } = seas[0];
+    for (const h of hab.list) {
+      const tiles = new Set(h.tiles);
+      let perimeter = 0;
+      for (const t of tiles) {
+        const x = t % g.w;
+        for (const j of [x > 0 ? t - 1 : -1, x < g.w - 1 ? t + 1 : -1, t - g.w, t + g.w]) {
+          if (!tiles.has(j)) perimeter++;
+        }
+      }
+      expect(h.perimeter).toBe(perimeter);
+      expect(h.perimeter).toBeGreaterThanOrEqual(h.borders.reduce((a, b) => a + b, 0));
+      expect(h.stocks).toEqual({ mats: 0, detritus: 0 });
+      expect(h.pops).toEqual({});
+    }
+    expect(hab.list[0].stocks).not.toBe(hab.list[1].stocks);
+    expect(hab.list[0].pops).not.toBe(hab.list[1].pops);
+  });
+
   it('builds the ground and finds its habitats in about 30 ms', () => {
     // The spec asks for 20 ms; measured 10 Nov: ~30 ms warm, a third of it the ported island. The bound leaves room
     // for a loaded machine; the best of five runs is taken.
