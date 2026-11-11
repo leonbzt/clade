@@ -1,10 +1,11 @@
 // The predator Life (slice 11): the swimmer's moves, catching, and the prey, each fleeing by one rule. Prey sense
 // you only on a turn you moved, which is what makes an ambush work. No DOM.
 import type { Habitat } from '../data/habitats';
-import { COLS, HUNT, PLANS, RULE, ROWS } from '../data/life';
+import { COLS, HUNT, ROWS } from '../data/life';
 import { PREY, PREY_BACK, PREY_HIDE, type PreyKind } from '../data/prey';
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
-import { cleared, count, eat, emit, eventArea, eventOn, has, rnd, say, type Dest, type Life } from './life';
+import { swimSpeed, mealBonus } from './body';
+import { cleared, eat, emit, eventArea, eventOn, has, rnd, say, type Dest, type Life } from './life';
 
 export interface Prey { kind: PreyKind; species?: string; name?: string; eats?: Habitat['prey'][number]['eats']; x: number; y: number; hidden: number; alive: boolean; back: number; alarmed: boolean }
 
@@ -14,7 +15,7 @@ export function preyInit(l: Life) {
 
 /** How far you swim this turn: flaps and frenzy add, an ambush multiplies. */
 export const speed = (l: Life) => Math.min(HUNT.maxSpeed,
-  (PLANS.swimmer.range + count(l, 'flap') + l.frenzy) * (l.still ? (has(l, 'fan') ? HUNT.fanAmbush : HUNT.ambush) : 1));
+  (swimSpeed(l.build) + l.frenzy) * (l.still ? (has(l, 'fan') ? HUNT.fanAmbush : HUNT.ambush) : 1));
 /** The visible prey on tile i, or -1. */
 export const preyAt = (l: Life, i: number) => l.prey.findIndex((p) => p.alive && !p.hidden && at(p.x, p.y) === i);
 
@@ -47,7 +48,7 @@ export function swimMove(l: Life, d: Dest) {
 }
 
 function catchPrey(l: Life, k: number) {
-  const p = l.prey[k], P = PREY[p.kind], gain = P.food + count(l, 'gut') * RULE.gutFood;
+  const p = l.prey[k], P = PREY[p.kind], gain = P.food + mealBonus(l.build);
   p.alive = false; p.back = l.turn + PREY_BACK;
   l.food += gain; l.xp += gain; l.eaten += gain; l.caught = true; l.catches++; l.ate.prey = (l.ate.prey ?? 0) + gain;
   say(l, `${p.name ?? P.name} caught: +${gain} food.`);

@@ -42,7 +42,7 @@ whole choices, and legacy builds retain their semantics across the eventual vers
 for now: listed defaults/locks, basic built-ins included in base upkeep 1 through one leg/flap allowance,
 extra tools charged normally, and a provisional ceiling of three verbs with fewer allowed. Costs,
 defaults/locks and a possible lower ceiling remain open to revision after equipment playtesting. The
-[contract](20a-body-part-contract.md#review-first) is ready for pure definitions/fixtures before runtime integration.
+[contract](20a-body-part-contract.md) is ready for pure definitions/fixtures before runtime integration.
 
 ## 2. Who does what
 | System | Its one job | Where |
@@ -172,6 +172,14 @@ Build these simply now, in a way that can grow. *Proposal.*
 map and boards, with grazers specialising; and the three animal layers in the table above. The sea toy's generation costs 0.3–0.6 ms against a budget of about 30 ms,
 so there is room. **Budget note:** this passes CLAUDE.md's 4 stocks; your pick of the algae layer counts as your call, and the roadmap's budget line now says so.
 **Known toy weakness to fix then:** Anomalocaris does nearly all the hunting. More hunters on the ladder should help.
+*Decided (9 Nov, P50 A):* sea features from the food web in step 7: vents, algal meadows, brachiopod beds, carcass falls,
+sponge gardens, reefs. Each has a small chance to appear when the population it needs is in the patch. Rare sea
+layouts come later (P50 B). *Decided (9 Nov):* populations drift toward what their patch demands. *Proposal:* a board
+on a feature gets its tiles and a rare part, so you have to adapt.
+*Decided (9 Nov, slice 23):* parts are tools, genes are body settings; Size and Gut (plant ↔ meat) first, selected by the sea
+as emerging variants. Who eats whom comes from rules (tools, gut, size), not authored layers. Algae: microbial mats, plankton
+bloom, crust and seaweed. *Lean (9 Nov):* wild branches appear as you open lineages; sessile life arrives as features with
+its clade. Details: [slice 23](../slices/23-the-food-web.md).
 
 ## 8. Staying on the road
 - **Every slice names a step of the milestone.** Anything else, however good, gets one line in `ideas.md`.

@@ -10,12 +10,12 @@ import type { Fx } from './view/fx';
 import type { Hunter } from './view/hunter';
 import type { Marks } from './view/marks';
 import { C, PAL, type Ramp } from './view/shade';
-import type { Creature } from './view/worm';
+import type { Body, Creature } from './view/body';
 
 export interface PreyView { kind: PreyKind; body: Creature; visible: boolean }
 export const S = {} as {
   app: Application; floor: Floor; fx: Fx; marks: Marks; cam: Camera; hud: Hud; hunter: Hunter;
-  you: Creature; rival: Creature; prey: PreyView[]; life: Life; busy: boolean;
+  you: Body; rival: Creature; prey: PreyView[]; life: Life; busy: boolean;
 };
 
 export const NODE_RAMP: Record<NodeId, Ramp> = { mat: PAL.leaf, buried: PAL.amber, shell: PAL.shell, carcass: PAL.flesh, bloom: PAL.bloom };
@@ -24,3 +24,5 @@ export const centre = (i: number) => ({ x: (i % COLS) * C + C / 2, y: Math.floor
 export const dirAngle = (d: number) => ((d - 1) * Math.PI) / 2; // east is 0
 export const turnTo = (from: number, to: number) => from + ((((to - from + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
 export const screen = (w: { x: number; y: number }) => S.cam.toScreen(w.x, w.y);
+/** Show the Life's current build on your body: a moult, a new part, a tear or a shed, and moult softness. */
+export const dress = (b: Body, l: Life) => { if (b.build !== l.build) b.setBuild(l.build); b.soft = l.soft; };

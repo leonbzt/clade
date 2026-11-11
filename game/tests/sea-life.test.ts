@@ -1,23 +1,31 @@
 import { describe, expect, it } from 'vitest';
 import { HABITATS, NO_PREDATOR } from '../src/data/habitats';
-import { PARTS, PLAN_IDS, TURNS } from '../src/data/life';
-import { lineId } from '../src/data/sea';
+import { PLACES, type Rows } from '../src/data/body';
+import { PARTS, TURNS, type PlanId } from '../src/data/life';
+import { type Build } from '../src/sim/body';
+import { decodeDesign, encodeDesign } from '../src/sim/body-hurt';
+import { SEA, lineId } from '../src/data/sea';
+import { MODEL } from '../src/data/garden';
 import { boardFacts, boardForPatch } from '../src/sim/door';
 import { feeding } from '../src/sim/feeding';
 import { preyStep, swimMove } from '../src/sim/hunt';
 import * as L from '../src/sim/life';
 import { release, step } from '../src/sim/sea';
-import { canLaunch, completeLife, launchBodies, launchPatches, settlePending, startSeaLife } from '../src/sim/sea-life';
+import { newLine } from '../src/sim/lineage';
+import { canLaunch, completeLife, launchBodies, launchPatches, placePending, releaseStrength, settlePending, startSeaLife } from '../src/sim/sea-life';
 import { freshSeaSave, parseSeaSave, serializeSeaSave, type SeaSave } from '../src/sim/sea-save';
 import { importSeaSave, writeSeaSave } from '../src/sim/sea-storage';
-import { decode, designProblem, designVerbs, encode } from '../src/sim/share';
+import { designOf } from '../src/sim/share';
 import { useVerb } from '../src/sim/verbs';
+import { tell, type Headline } from '../src/sim/sea-news';
 
 const reload = (s: SeaSave) => parseSeaSave(serializeSeaSave(s)).save!;
+const bld = (body: PlanId, rows: Rows): Build => ({ body, size: 1, rows, order: PLACES.filter((p) => rows[p]) });
+const DIG: Rows = { eyes: ['eye'], tail: ['bulb'] }; // the worm digger preset
 const population = (s: SeaSave) => s.sea.patches.reduce((n, p) => n + p.pop.reduce((a, b) => a + b, 0), 0);
 function finish(s: SeaSave, patch: number, eggs = true) {
-  const l = startSeaLife(s, 4, patch, 'worm', ['dig', 'sense']);
-  l.turn = TURNS; l.food = 100; l.size = 3;
+  const l = startSeaLife(s, 4, patch, 'worm', DIG);
+  l.turn = TURNS; l.food = 100; l.build.size = 3;
   if (eggs) L.lay(l); else L.stay(l);
   expect(l.phase).toBe('over');
   return { life: l, pending: completeLife(s, l, 9) };
@@ -28,12 +36,12 @@ describe('patch snapshots', () => {
     const eggs: number[] = [];
     for (const seed of [1, 2, 3]) {
       const s = freshSeaSave(seed, 0), patch = s.sea.patches.find((p) => p.ground === 'mud')!.id;
-      const l = startSeaLife(s, seed, patch, 'worm', ['dig', 'sense']);
+      const l = startSeaLife(s, seed, patch, 'worm', DIG);
       for (let turn = 0; turn < TURNS && l.phase !== 'over'; turn++) {
-        if (l.size < 3 && L.canMoult(l)) {
+        if (L.size(l) < 3 && L.canMoult(l)) {
           L.moult(l);
-          const pick = [...l.offers].sort((a, b) => PARTS[a].upkeep - PARTS[b].upkeep || a.localeCompare(b))[0];
-          L.pick(l, pick);
+          const pick = l.offers.filter((p) => L.offerChanges(l, p).some((c) => l.food >= L.pickCost(l, c.bud) - L.pickCost(l, true))).sort((a, b) => PARTS[a].upkeep - PARTS[b].upkeep || a.localeCompare(b))[0];
+          L.pick(l, pick ?? null);
         }
         if (L.canLay(l) && l.food >= 4 + L.upkeep(l) + 2) { L.lay(l); continue; }
         const nearby = l.tiles.reduce((n, t, i) => n + (t.node === 'buried' && L.dist(l.x, l.y, ...L.xy(i)) <= 1 ? 1 : 0), 0);
@@ -73,8 +81,8 @@ describe('patch snapshots', () => {
 
   it('keeps body/species names distinct through prey, rivals, respawns and world changes', () => {
     const s = freshSeaSave(2, 0), p = s.sea.patches[0];
-    release(s.sea, p.id, 'arthropod', 'grazer', 18, ['rake']);
-    release(s.sea, p.id, 'trilobite', 'grazer', 12, ['rake']);
+    release(s.sea, p.id, 'arthropod', 'grazer', 18, bld('arthropod', { limbs: ['leg', 'rake'] }));
+    release(s.sea, p.id, 'trilobite', 'grazer', 12, bld('trilobite', { limbs: ['leg', 'rake'], back: ['shield'] }));
     const board = boardForPatch(s.sea, p.id), snapshot = JSON.stringify(board);
     expect(new Set(board.prey.map((p) => p.kind))).toEqual(new Set(['arthropod', 'trilobite']));
     expect(board.rivals[0]).toMatchObject({ kind: 'arthropod', species: lineId('arthropod', 'grazer'), name: 'Your arthropods' });
@@ -92,26 +100,27 @@ describe('patch snapshots', () => {
 
   it('uses inherited tools rather than diet labels for feeding and threats', () => {
     const s = freshSeaSave(3, 0), p = s.sea.patches[0];
-    release(s.sea, p.id, 'worm', 'predator', 30, ['proboscis'], { carcass: 42 });
+    release(s.sea, p.id, 'worm', 'predator', 30, bld('worm', { front: ['proboscis'] }), { carcass: 42 });
     expect(boardForPatch(s.sea, p.id)).toMatchObject({ predatorAt: NO_PREDATOR, rivals: [{ kind: 'worm', eats: 'carcass' }] });
     const k = s.sea.species.findIndex((sp) => sp.id === lineId('worm', 'predator'));
     expect(s.sea.species[k].diet).toEqual({ carcass: 42 });
     expect(feeding(['proboscis'])).toMatchObject({ rot: 1, hunt: 0, dig: false });
     expect(feeding(['tentacles', 'bulb'])).toMatchObject({ mats: 0.5, rot: 0.5, hunt: 0, dig: true });
-    release(s.sea, p.id, 'swimmer', 'grazer', 12, ['arms']);
+    release(s.sea, p.id, 'swimmer', 'grazer', 12, bld('swimmer', { front: ['arms'], limbs: ['flap'] }));
     expect(boardForPatch(s.sea, p.id).hunter?.species).toBe(lineId('swimmer', 'grazer'));
-    expect(boardForPatch(s.sea, p.id).hunter?.parts).toEqual(['arms']);
+    expect(boardForPatch(s.sea, p.id).hunter?.parts).toContain('arms');
     const empty = freshSeaSave(3, 0);
     step(empty.sea); step(s.sea);
     expect(p.rot).toBeLessThan(empty.sea.patches[p.id].rot);
-    release(s.sea, p.id, 'worm', 'predator', 1, ['tentacles']);
-    expect(s.sea.species[k].parts).toEqual(['proboscis']);
+    release(s.sea, p.id, 'worm', 'predator', 1, bld('worm', { front: ['tentacles'] }));
+    expect(s.sea.species[k].build?.rows).toEqual({ front: ['proboscis'] }); // the strongest release keeps the look
     expect(reload(s).sea.species[k]).toEqual(s.sea.species[k]);
   });
 
   it('requires a capture part to catch live prey', () => {
     for (const parts of [[], ['arms'], ['spikes']] as const) {
-      const l = L.newLife(1, 'swimmer', HABITATS.mud, [...parts]);
+      const l = L.newLife(1, 'swimmer', HABITATS.mud);
+      l.build = { ...l.build, rows: parts.length ? { front: [...parts] } : {}, order: parts.length ? ['front'] : [] };
       const p = l.prey[0], i = L.at(p.x, p.y);
       swimMove(l, { i, dir: 1, grab: false, path: [i] });
       expect(p.alive).toBe(parts.length === 0);
@@ -120,6 +129,92 @@ describe('patch snapshots', () => {
 });
 
 describe('completed results and continuation', () => {
+  it('returns the release and each generation\'s populations and headlines without leaving a partial settlement', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0), expected = reload(s);
+    const k = expected.sea.species.findIndex((sp) => sp.id === p.species);
+    const snapshot = () => expected.sea.patches.map((q) => q.pop[k]);
+    const before = snapshot();
+    release(expected.sea, p.patch, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    const frames = [{ gen: expected.sea.gen, pop: snapshot(), news: [] as Headline[] }];
+    for (let n = 0; n < MODEL.afterLife; n++) {
+      const news: Headline[] = [];
+      tell(expected.sea, news, step(expected.sea));
+      frames.push({ gen: expected.sea.gen, pop: snapshot(), news });
+    }
+    const result = settlePending(s, p)!, spread = result.spread!;
+    expect(spread).toEqual({ species: p.species, patch: p.patch, eggs: p.eggs, before, frames });
+    expect(spread.frames[0].pop[p.patch] - before[p.patch]).toBe(p.eggs);
+    expect(s.pending).toBeUndefined(); expect(reload(s).lives).toBe(1);
+    const once = serializeSeaSave(s);
+    spread.frames[0].pop.fill(999); spread.before.fill(888);
+    spread.frames[1].news.push({ kind: 'boom', sp: k, patches: [0], gen: 1, cause: 'test', from: 0, to: 999 });
+    expect(serializeSeaSave(s)).toBe(once);
+    expect(settlePending(s, p)).toBeNull();
+  });
+
+  it('a Life without eggs has nothing to replay, but the sea still moves on', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0, false), gen = s.sea.gen;
+    expect(p.eggs).toBe(0);
+    expect(settlePending(s, p)!.spread).toBeNull();
+    expect(s.sea.gen).toBe(gen + MODEL.afterLife);
+  });
+
+  it('the release strength: full on the Life\'s ground, half on new ground, full where the line already holds it', () => {
+    const s = freshSeaSave(1, 0), origin = s.sea.patches.find((q) => q.nb.some((n) => s.sea.patches[n].ground !== q.ground))!;
+    const next = origin.nb.find((n) => s.sea.patches[n].ground !== origin.ground)!;
+    const { pending: p } = finish(s, origin.id), k = s.sea.species.findIndex((sp) => sp.id === p.species);
+    expect(releaseStrength(s, p, origin.id)).toBe(1);
+    expect(releaseStrength(s, p, next)).toBe(SEA.unproven);
+    s.sea.patches[next].fit[k] = p.eggs * 0.75;
+    expect(releaseStrength(s, p, next)).toBe(0.75);
+    s.sea.patches[next].fit[k] = p.eggs * 2;
+    expect(releaseStrength(s, p, next)).toBe(1);
+  });
+
+  it('places eggs in a neighbour after reload and retains the Life\'s proven ground', () => {
+    const s = freshSeaSave(1, 0), origin = s.sea.patches.find((p) => p.nb.some((n) => s.sea.patches[n].ground !== p.ground))!;
+    const next = origin.nb.find((n) => s.sea.patches[n].ground !== origin.ground)!;
+    const { pending: p } = finish(s, origin.id);
+    expect(placePending(s, p, next)).toBe(true);
+    expect(population(s)).toBe(0);
+    const restored = reload(s), expected = reload(s), q = restored.pending!;
+    expect(q.place).toBe(next);
+    release(expected.sea, next, p.plan, p.role, p.eggs, p.build, p.diet, p.hab);
+    for (let k = 0; k < MODEL.afterLife; k++) step(expected.sea);
+    settlePending(restored, q);
+    expect(restored.sea).toEqual(expected.sea);
+    expect(restored.continuation?.patch).toBe(next);
+    const k = restored.sea.species.findIndex((sp) => sp.id === p.species);
+    expect(restored.sea.patches[next].fit[k]).toBe(p.eggs * SEA.unproven);
+    expect(restored.sea.patches[origin.id].fit[k]).toBe(p.eggs);
+  });
+
+  it('rejects illegal, malformed and stale placement without changing the save', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0);
+    const far = s.sea.patches.find((q) => q.id !== p.patch && !s.sea.patches[p.patch].nb.includes(q.id))!.id;
+    const before = serializeSeaSave(s);
+    for (const patch of [far, -1, 0.5, NaN, s.sea.patches.length]) {
+      expect(placePending(s, p, patch)).toBe(false);
+      expect(serializeSeaSave(s)).toBe(before);
+    }
+    for (const place of [far, -1, 0.5, null, '0']) {
+      const raw = JSON.parse(before); raw.pending.place = place;
+      expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken');
+    }
+    expect(placePending(s, { ...p }, p.patch)).toBe(false);
+    settlePending(s, p);
+    const settled = serializeSeaSave(s);
+    expect(placePending(s, p, p.patch)).toBe(false);
+    expect(serializeSeaSave(s)).toBe(settled);
+  });
+
+  it('defaults to the Life\'s patch exactly as an explicit choice of that patch', () => {
+    const s = freshSeaSave(1, 0), { pending: p } = finish(s, 0), chosen = reload(s);
+    expect(placePending(chosen, chosen.pending!, p.patch)).toBe(true);
+    settlePending(s, p); settlePending(chosen, chosen.pending!);
+    expect(JSON.parse(serializeSeaSave(s))).toEqual(JSON.parse(serializeSeaSave(chosen)));
+  });
+
   it('round-trips a real terminal lay before playback and settles once after reload', () => {
     const s = freshSeaSave(1, 0), { life, pending } = finish(s, 0);
     expect(pending.eggs).toBe(life.eggs); expect(pending.eggs).toBeGreaterThan(0);
@@ -128,26 +223,26 @@ describe('completed results and continuation', () => {
     expect(completeLife(s, life, 999)).toBe(pending); // don't reroll recovered cards
     const recovered = reload(s), oldPending = recovered.pending!;
     expect(oldPending).toEqual(pending);
-    expect(settlePending(recovered, oldPending, 0)).toBe(true);
+    expect(settlePending(recovered, oldPending, 0)).not.toBeNull();
     expect(population(recovered)).toBeGreaterThan(0);
     expect(recovered.lives).toBe(1);
     const once = serializeSeaSave(recovered);
-    expect(settlePending(recovered, oldPending, 0)).toBe(false);
+    expect(settlePending(recovered, oldPending, 0)).toBeNull();
     expect(serializeSeaSave(recovered)).toBe(once);
     expect(reload(recovered).pending).toBeUndefined();
     const next = reload(recovered), before = serializeSeaSave(next);
-    startSeaLife(next, 5, 0, 'worm', ['dig']);
+    startSeaLife(next, 5, 0, 'worm', { tail: ['bulb'] });
     expect(serializeSeaSave(next)).toBe(before); // starting never spends or releases eggs
   });
 
   it('keeps the last successful clutch through failure, extinction and reload; adjacent success moves it', () => {
     const s = freshSeaSave(2, 0);
     expect(launchBodies(s)).toEqual(['worm']);
-    expect(() => startSeaLife(s, 1, 0, 'swimmer', [])).toThrow();
+    expect(() => startSeaLife(s, 1, 0, 'swimmer', {})).toThrow();
     settlePending(s, finish(s, 0, false).pending);
     expect(s.continuation).toBeUndefined(); expect(canLaunch(s, 0, 'worm')).toBe(true);
     settlePending(s, finish(s, 0).pending);
-    expect(launchBodies(s)).toEqual(PLAN_IDS);
+    expect(launchBodies(s)).toEqual(['worm']); // other bodies come from recipes (21A)
     const previous = { ...s.continuation! }, adjacent = s.sea.patches[0].nb[0];
     expect(launchPatches(s)).toEqual([0, ...s.sea.patches[0].nb]);
     const distant = s.sea.patches.find((p) => !launchPatches(s).includes(p.id))!.id;
@@ -157,6 +252,8 @@ describe('completed results and continuation', () => {
     expect(s.continuation).toEqual(previous);
     for (const p of s.sea.patches) p.pop.fill(0);
     const loaded = reload(s);
+    expect(canLaunch(loaded, 0, 'swimmer')).toBe(false);
+    loaded.lines.swimmer = newLine('swimmer');
     expect(canLaunch(loaded, 0, 'swimmer')).toBe(true);
     settlePending(loaded, finish(loaded, adjacent).pending);
     expect(loaded.continuation?.patch).toBe(adjacent);
@@ -164,14 +261,14 @@ describe('completed results and continuation', () => {
   });
 
   it('inherits the laid build even after the parent loses parts', () => {
-    const s = freshSeaSave(1, 0), l = startSeaLife(s, 3, 0, 'worm', ['dig', 'crush']);
-    l.food = 100; l.size = 3; L.lay(l);
-    const parts = [...l.eggParts!];
-    l.slots.forEach((slot) => { slot.part = null; }); l.order = []; l.phase = 'over'; l.cause = 'died';
+    const s = freshSeaSave(1, 0), l = startSeaLife(s, 3, 0, 'worm', { front: ['tentacles'], tail: ['bulb'] });
+    l.food = 100; l.build.size = 3; L.lay(l);
+    const laid = structuredClone(l.laid);
+    l.build = { ...l.build, rows: {}, order: [] }; l.phase = 'over'; l.cause = 'died';
     const p = completeLife(s, l, 1);
-    expect(p.parts).toEqual(parts); expect(p.eggs).toBeGreaterThan(0);
+    expect(p.build).toEqual(laid); expect(p.eggs).toBeGreaterThan(0);
     settlePending(s, p);
-    expect(s.sea.species.find((sp) => sp.id === p.species)?.parts).toEqual(parts);
+    expect(s.sea.species.find((sp) => sp.id === p.species)?.build).toEqual(laid);
   });
 });
 
@@ -194,24 +291,25 @@ describe('storage and design sharing', () => {
     for (const text of ['bad', '{"v":4}', '{"v":3}', '{"v":2}']) expect(importSeaSave(text, write).save).toBeNull();
     expect(writes).toBe(0); expect(stored).toBe(serializeSeaSave(s));
     expect(importSeaSave(serializeSeaSave(freshSeaSave(2, 0)), () => { throw new Error('quota'); }).save).toBeNull();
-    expect(importSeaSave(stored, write).save?.v).toBe(3);
-    const raw = JSON.parse(stored); raw.sea.species[0].parts = ['arms']; raw.sea.species[0].plan = 'worm';
+    expect(importSeaSave(stored, write).save?.v).toBe(6);
+    const raw = JSON.parse(stored); raw.sea.species[0].build = bld('swimmer', { front: ['arms'], limbs: ['flap'] }); raw.sea.species[0].plan = 'worm';
     expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken');
   });
 
-  it('uses old codes as fitting creature designs without granting their score or location', () => {
+  it('uses CLADE2- designs as starting bodies without granting score or location', () => {
     const s = freshSeaSave(1, 0), before = serializeSeaSave(s);
-    const design = decode(encode({ plan: 'swimmer', role: 'predator', hab: 'sand', eggs: 200, verbs: [], name: 'Kim' }))!;
-    expect(designProblem(design)).toBeNull();
-    expect(canLaunch(s, 0, design.plan)).toBe(false);
+    const design = decodeDesign(encodeDesign({ body: 'swimmer', rows: { front: ['arms'], limbs: ['flap'] } }))!;
+    expect(design.body).toBe('swimmer');
+    expect(canLaunch(s, 0, design.body)).toBe(false);
     expect(serializeSeaSave(s)).toBe(before);
     settlePending(s, finish(s, 0).pending);
+    s.lines.swimmer = newLine('swimmer');
     const after = serializeSeaSave(s);
-    const l = startSeaLife(s, 1, 0, design.plan, design.verbs, design.form);
+    const l = startSeaLife(s, 1, 0, design.body, design.rows);
     expect(l.eggs).toBe(0); expect(l.prey.every((p) => p.kind === 'worm')).toBe(true);
     expect(serializeSeaSave(s)).toBe(after);
-    expect(designProblem({ ...design, form: 'deep' })).not.toBeNull();
-    const verbs = designVerbs('worm', ['bulb', 'eye', 'proboscis'], 'tentacles');
-    expect(designProblem({ ...design, plan: 'worm', form: 'tentacles', verbs })).toBeNull();
+    expect(() => startSeaLife(s, 1, 0, 'worm', { tail: ['deep'] })).toThrow(); // a rare isn't a starter part
+    const adult = bld('worm', { front: ['hook'], eyes: ['eye'], sides: ['gut'], tail: ['bulb'] });
+    expect(designOf(adult).rows).toEqual({ eyes: ['eye'], tail: ['bulb'] }); // a code shares a starting body, not the adult
   });
 });

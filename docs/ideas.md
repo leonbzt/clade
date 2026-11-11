@@ -31,7 +31,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - **Geology** (ground units, slope, island recipes; you: leaning yes) → the land layer. M1 needs a small part
   (substrate, wetness, height) to make habitats; the rest later.
 - More landmarks (waterfalls, rivers); fixed flows of water and nutrients downhill → cheap along the patch graph.
-- Reefs and more structure on the sea map “instead of just going sideways” (you, Part C desktop play, 8 Nov); landmarks versus different routes still to clarify, not added to release scope.
+- Reefs and more structure on the sea map “instead of just going sideways” (you, Part C desktop play, 8 Nov); landmarks versus different routes still to clarify, not added to release scope. Asked again 9 Nov: patches side by side, a reef area, a larger area instead of only a ring.
 - More run islands (salt, ash, caves), the archipelago map, outposts.
 - Sun and cold as pressures (you, 3 Nov), once a niche has them (alpine, open dunes, other islands).
 - Two zoom levels: the garden and a close view of one habitat (possibly in side view) (you + AI).
@@ -100,6 +100,31 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
   - Respec in the close-up tree; XP per lineage or for the whole line (AI; open for step 6).
   - Overarching rules that make parts combine, "skeleton + flabby skin/feathers = wing" (you, 6 Nov; authored recipes come first).
   - Slots that grow with size, so big recipes fit in a Life (AI, 6 Nov; for step 5, full-version.md §6).
+  - Grown parts carried over runs: keep some of a Life's grown parts in the species, or upgrade them, as a longer process over several Lives (you, 9 Nov, after "species = launch bodies").
+  - One wild moult offer: a part outside the pool, unlocked if the Life lays eggs (AI lean; you, 9 Nov: "maybe", later). Also: make new hatching genes stand out more.
+  - When the slots are full, a moult could rank up a held part, or a run could spend food to strengthen one ("make the body then just grow", you, 9 Nov).
+  - Recipes from real traits: the worm → arthropod step should use legs (lobopod limbs), not sclerites and a proboscis; a recipe's key trait could be a rare unlock, or need a combination plus a good score (you, 9 Nov). For step 7.
+  - A stronger "pick a build" identity, later (you, 9 Nov; P47).
+  - P47's leftovers (closed 9 Nov): a tier letter per niche, patch notes with a cause, six stat bars with trade-off tooltips, a strong vs / weak vs triangle (you liked them 8 Nov). For step 9.
+  - Several seas to choose from, "pick server": the server select picks the era and a rough region (you, 9 Nov: "future work"); M2 keeps the one sea.
+  - The tree screen: smaller portraits or one shared canvas, so 6–15 lineages fit a phone and stay under the browser's ~16 WebGL contexts (you, 9 Nov: "cool for now"). For step 7.
+  - The map: labels hide the small coastal patches; pinch zoom (AI, 9 Nov, after the quick zoom). For step 9.
+  - Genes after Size and Gut (slice 23): Pace (metabolism), Colour (camouflage on its ground; Wiwaxia and Marrella had structural colour), Brain (costly; hunts and escapes better), Dispersal (how readily it leaves), Brood (many small eggs or few big ones), Hardness (makes armour parts stronger) (AI, 9 Nov).
+  - Cnidarians and jellies (e.g. Burgessomedusa), and coral reefs in the next era; Cambrian reefs are sponges and microbes (you, 9 Nov: "lateron").
+  - Playable sessile Lives: place, grow and watch (sponge, brachiopod, eocrinoid) (you, 9 Nov).
+  - Growers vs moulters: the non-moulting branch (bristle worm, molluscs) grows by adding rings, scales or shell instead of shedding (AI, 9 Nov).
+  - A less linear map: the ring of shallows reads as a line, "a little boring" (you, 9 Nov, playtest 21); P50 B's layouts may answer it.
+- **From Carapace (AI, 9 Nov, [research](research/carapace.md)):** P49 and P50 hold the larger parts. The rest, one line each, with your reactions (9 Nov):
+  - A generation card after hatching: the line's binomial, "+N years" of deep time, the Life's length, trait icons; "New species!" over the new form. For step 9 (you liked it).
+  - Landmarks that steer a trait: a vent grows heat parts, a cave grows eyes (you want landmarks and rare features: P50).
+  - Seasons that change the rules over a sea year (bloom, dry, flood, cold; dig in and sleep), as a pressure the map shows (you: "lateron").
+  - Real-biology map events as hooks: algal mats choke still water, a swarm night, a lure that bursts into larvae (you want it, "best if it came from the actual system": P50).
+  - Named forms with one trick each ("Rollstone locks up and rolls downhill") as the way lineages and recipes are shown (you: only if carefully integrated; species generation stays dynamic).
+  - Tracking use per Life or per line (tallies, a use-weighted moult offer showing "Paddle · from swimming 14×"): P49, you 9 Nov: "fun but no priority".
+  - Rare sea layouts from the seed (a vent field, a lagoon, a reef arm): P50 B, you 9 Nov: "b later", with the server select.
+  - Type a name and get a creature, the same one every time: a share hook built on the species code. For step 10.
+  - Shorts that end in a question, and community votes on the next lineage: for the release (step 10).
+  - From the tree research (AI, 10 Nov): one unnamed worm-like root whose first pick (cuticle, bristles, notochord) picks the branch; new forms by function with a "convergent" badge; debated nodes shown as "rank uncertain" until clues firm them up. For the Fable pass.
 
 ## Fits if reshaped
 - The food-web expansion plan (P31: structure pieces, a catalogue in rings) → keep only the list of roles; the
@@ -153,4 +178,20 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Today's floor rendered on the 16 px grid, so 16 px animals share its pixels; untried (AI, 7 Nov).
 - AI art test for concept and card art only: Retro Diffusion, your key, under $4 (AI, 6 Nov; not answered).
 - Animals on the sea map: the same recipe baked at about 12 px, a capped few roaming each patch, small portraits instead of numbers on the patch card (AI, 7 Nov). For step 4.
-- A full dex and numeric stat sheets per animal, TierZoo-like (you, 8 Nov: "would be cool in the future"). The rest of the TierZoo concepts are P47; [research](research/tier-zoo.md).
+- A full dex and numeric stat sheets per animal, TierZoo-like (you, 8 Nov: "would be cool in the future"). The rest of the TierZoo concepts were P47 (closed 9 Nov; leftovers above); [research](research/tier-zoo.md).
+- Equipment view polish (you, 9 Nov: "works for now, will need a little more work later"). Also: a result portrait from the lay snapshot (AI, 9 Nov).
+- More icons and symbols instead of text, across screens (you, 9 Nov). For step 9.
+- Draw only some grown parts (e.g. the front) to keep creatures simple (you, 9 Nov: "not sure").
+- Creature art direction: drop the thick black outline on the large view; the new looks are "a little weird still" (you, 9 Nov). For step 9.
+- Cut the parts you never use; you mainly use Deep Burrow, Gut, Brood Pouch, Compound Eyes, Bristles, and grazing (you, 9 Nov: "wait for 7"). N1 ports the table whole; the cut waits for the N4 play test.
+- Clutch size and parts received: fewer, or scale more with brood size (you, 9 Nov). For step 6 or 10's balance.
+- Signature could do more than "no upkeep, verb outside the ceiling" (e.g. never torn, or always in the starting body): today it adds nothing to parts that are already free (the swimmer's flap, the trilobite's shield). AI, 9 Nov. For 21B's close-up.
+- Map labels: place them so they never overlap (hide the smaller habitat's label, or show it only when zoomed in); N0's labels collide on phones. AI, 10 Nov. For N3's home map.
+- The leftover deep water (scraps cut off by open sea) as a habitat of its own, maybe only for swimmers (you, 10 Nov, N0 play). For R7–R8 (the open sea).
+- Re-cut the largest outer habitats, or split the mixed ones again (you, 10 Nov: "fine for now"). Only if play asks.
+- The island: one or two main peaks instead of always a ridge (you, 10 Nov: "no priority"). For L1 or R10.
+- Exposure as flow: open water feeds filterers more (whole-game.md's "filter: intake rises with height and flow"); sheltered water favours mats and mud. Today exposure only classes, names and shapes flats. AI, 10 Nov. For the filterers (after release) or R7.
+- Saving (step A): store only seed, stocks, pops, species and lineages; today's `World` also holds the habitat geometry the seed rebuilds (law 2). AI, 10 Nov. For step A.
+- r vs K: small bodies lay more eggs, big ones fewer but heavier (you, 10 Nov, N1 review). With grams, founders = eggs × heads per egg × body mass, so one egg cost by size would make the trade. For R5 (size as a gene).
+- The sea keeps swinging: hunters whose appetite levels off (type II) cycle with their prey; or seasons (mats yield on a slow sine). You, 10 Nov: wait for the dynamics N4 brings first. For N4.
+- Life history in the sea: populations as a mix of growth stages; fast or slow growth, long or short life, longer or shorter larval stages as traits (you, 11 Nov: "sounds too complicated for now"). The sea uses the adult size until then. After release, or R5 if genes ask for it.

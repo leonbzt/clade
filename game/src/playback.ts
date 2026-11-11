@@ -3,11 +3,12 @@
 import { PARTS, VERBS, type VerbId } from './data/life';
 import { PREY } from './data/prey';
 import * as L from './sim/life';
-import { CYAN, GOLD, NODE_RAMP, RED, S, centre, dirAngle, screen, turnTo } from './scene';
+import { describeRow } from './sim/body';
+import { CYAN, GOLD, NODE_RAMP, RED, S, centre, dirAngle, dress, screen, turnTo } from './scene';
 import { feel } from './ui/feel';
 import { C, PAL } from './view/shade';
 import { ease, tween, wait } from './view/tween';
-import type { Wiwaxia } from './view/swimmer';
+import type { Wiwaxia } from './view/wiwaxia';
 
 export async function bounce(time = 0.3) {
   await tween(S.you.stretch, { v: -1 }, time * 0.35, ease.quadOut);
@@ -69,8 +70,8 @@ export async function play(evs: L.Ev[]) {
       case 'stay': await bounce(g * 1.5); break;
       case 'upkeep': hud.food.set(e.food); break;
       case 'shed': {
-        you.setBody(life.size, life.slots, life.soft);
-        const s = screen(you.head); hud.floater(s.x, s.y, `−${PARTS[e.part].name.toLowerCase()}`, RED);
+        dress(you, life);
+        const s = screen(you.head); hud.floater(s.x, s.y, `−${describeRow(e.row).toLowerCase()}`, RED);
         break;
       }
       case 'hurt': hud.hp.set(e.health); you.flash.v = 1; tween(you.flash, { v: 0 }, 0.35); hud.flash(0.25); break;
@@ -170,8 +171,8 @@ async function strike(e: Extract<L.Ev, { k: 'strike' }>) {
     cam.shake(1); you.flash.v = 1; tween(you.flash, { v: 0 }, 0.4); hud.flash(0.35);
     fx.burst(h.x, h.y, PAL.hunter, feel.particles, 1.3);
     hud.hp.set(e.health);
-    you.setBody(life.size, life.slots, life.soft);
-    hud.floater(s.x, s.y, e.part ? `−${PARTS[e.part].name.toLowerCase()}` : `−${e.damage} health`, RED);
+    dress(you, life);
+    hud.floater(s.x, s.y, e.tear && e.part ? `−${PARTS[e.part].name.toLowerCase()}${e.damage ? `, −${e.damage} health` : ''}` : `−${e.damage} health`, RED);
   } else if (e.kind === 'blocked') {
     cam.shake(0.55); fx.burst(h.x, h.y, PAL.pale, feel.particles, 1.1); hud.floater(s.x, s.y, 'blocked', '#d2dccf');
   } else if (e.kind === 'enrolled') {

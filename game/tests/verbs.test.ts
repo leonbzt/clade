@@ -1,19 +1,20 @@
+import { grownLife } from './build';
 // Slice 10: verbs come from parts; 1–3 picked; each does its one thing and recharges.
 import { describe, expect, it } from 'vitest';
 import { HABITATS, MUD_FLATS } from '../src/data/habitats';
-import { STYLE_VERBS, VERBS } from '../src/data/life';
+import { PRESETS } from '../src/data/body';
+import { VERBS, type StyleId } from '../src/data/life';
+import { startBuild } from '../src/sim/body';
 import * as L from '../src/sim/life';
 import { useVerb } from '../src/sim/verbs';
 
-const life = (style: keyof typeof STYLE_VERBS, plan: 'worm' | 'arthropod' = 'worm', hab = MUD_FLATS) =>
-  L.newLife(9, plan, hab, L.partsFor(plan, STYLE_VERBS[style]));
+const life = (style: StyleId, plan: 'worm' | 'arthropod' = 'worm', hab = MUD_FLATS) =>
+  grownLife(9, plan, hab, startBuild(plan, PRESETS[plan][style]!).build);
 
 describe('verbs', () => {
-  it('a loadout is a starting body; head clashes do not fit', () => {
-    expect(L.verbs(life('sweeper'))).toEqual(['graze', 'dash']);
-    expect(L.verbs(life('tank', 'arthropod'))).toEqual(['brace', 'crush']);
-    const clash = L.newLife(1, 'worm', MUD_FLATS, L.partsFor('worm', ['graze', 'crush']));
-    expect(clash.order.length).toBe(1);
+  it('a preset is a starting body; its parts give the verbs', () => {
+    expect(L.verbs(life('sweeper')).sort()).toEqual(['dash', 'dig', 'graze']);
+    expect(L.verbs(life('tank', 'arthropod')).sort()).toEqual(['brace', 'crush', 'dash']);
   });
 
   it('graze eats every mat around you, then recharges', () => {

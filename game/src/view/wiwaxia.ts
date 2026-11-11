@@ -1,46 +1,7 @@
-// The swimmer you play (slice 11): the Anomalocaris drawing in your colours, smaller, growing with size; it turns toward
-// where it swims. Wiwaxia, the armoured prey: a scaled dome with two rows of spines.
+// Wiwaxia, the scaled grazer: a native prey with its own drawing (no lineage body). It raises its spines when alarmed.
 import type { Graphics } from 'pixi.js';
-import { Hunter } from './hunter';
-import { C, PAL, SHADOW, dome, flat, mixRamp, ring, tri, type Ramp } from './shade';
-import type { BodySlot, Creature, Seg } from './worm';
-
-export class Swimmer implements Creature {
-  h: Hunter;
-  head: { x: number; y: number };
-  stretch = { v: 0 };
-  reach: { v: number };
-  flash: { v: number };
-  moving: { v: number };
-  squash = 0.3;
-  private last = { x: 0, y: 0 };
-
-  constructor(ramp: Ramp) {
-    this.h = new Hunter(ramp, 0.6);
-    this.h.show.v = 1; this.h.lift.v = 7;
-    this.head = this.h.pos; this.reach = this.h.grab; this.flash = this.h.flash; this.moving = this.h.swim;
-  }
-
-  place(x: number, y: number, heading: number) { this.head.x = this.last.x = x; this.head.y = this.last.y = y; this.h.look.a = heading; }
-  setBody(size: number, slots: BodySlot[]) { this.h.scale = 0.66 + 0.07 * size; this.h.big = slots.some((s) => s.part === 'lenses'); }
-
-  update(dt: number) {
-    const dx = this.head.x - this.last.x, dy = this.head.y - this.last.y;
-    if (Math.hypot(dx, dy) > 0.05) {
-      const want = Math.atan2(dy, dx), diff = Math.atan2(Math.sin(want - this.h.look.a), Math.cos(want - this.h.look.a));
-      this.h.look.a += diff * Math.min(1, dt * 12);
-    }
-    this.last.x = this.head.x; this.last.y = this.head.y;
-    this.h.update(dt);
-  }
-
-  segs(): Seg[] {
-    const c = Math.cos(this.h.look.a), s = Math.sin(this.h.look.a), r = C * 0.22 * this.h.scale / 0.6;
-    return [0, 1, 2, 3].map((k) => ({ x: this.head.x - c * k * r * 1.4, y: this.head.y - s * k * r * 1.4, r: r * (1 - k * 0.15), a: this.h.look.a }));
-  }
-
-  draw(g: Graphics, sh: Graphics) { this.h.draw(g, sh); }
-}
+import type { Creature, Seg } from './body';
+import { C, PAL, SHADOW, dome, flat, mixRamp, ring, tri } from './shade';
 
 export class Wiwaxia implements Creature {
   head = { x: 0, y: 0 };
@@ -52,7 +13,6 @@ export class Wiwaxia implements Creature {
   private t = Math.random() * 10;
 
   place(x: number, y: number, heading: number) { this.head.x = this.last.x = x; this.head.y = this.last.y = y; this.a = heading; }
-  setBody() {}
   update(dt: number) {
     this.t += dt;
     const dx = this.head.x - this.last.x, dy = this.head.y - this.last.y;

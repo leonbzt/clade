@@ -1,7 +1,7 @@
 // Read-only living sea map, ported from the sea toy. Decorative motion never uses the sea RNG.
 import { feedsAs } from '../sim/feeding';
 import { drawIsland } from './islandmap';
-import { speciesColour, markerCounts, patchAtPoint } from './sea-map-data';
+import { speciesColour, markerCounts, patchAtPoint, type PopulationFrame } from './sea-map-data';
 import { holder, huntersOf, preyOf, type Sea, type SeaPatch } from '../sim/sea';
 
 export type View = 'holder' | 'mats' | 'oxygen' | 'hunters';
@@ -28,6 +28,8 @@ export function makeMap(cv: HTMLCanvasElement) {
   let sea: Sea, shown: Shown[] = [], herds = new Map<string, Sprite[]>(), edges: [number, number, number, number, number][] = [];
   let view: View = 'holder';
   let selected: number | null = null, clutch: number | null = null;
+  let placing = false;
+  let replay: PopulationFrame | null = null;
   const marked = new Set<number>(), occupied = new Set<number>();
 
   function setSea(next: Sea) {
@@ -54,7 +56,7 @@ export function makeMap(cv: HTMLCanvasElement) {
   /** Keep the sprites in line with the populations. */
   function updateHerds() {
     const live = new Set<string>();
-    for (const entry of markerCounts(sea)) {
+    for (const entry of markerCounts(sea, replay)) {
       const { patch, species: k, count: want } = entry, p = sea.patches[patch];
       const key = `${p.id}:${k}`, herd = herds.get(key) ?? [];
       live.add(key);
@@ -84,7 +86,8 @@ export function makeMap(cv: HTMLCanvasElement) {
   }
 
   function drawCreatures() {
-    for (const p of sea.patches) p.pop.forEach((n, k) => {
+    for (const p of sea.patches) p.pop.forEach((current, k) => {
+      const n = replay ? (k === replay.species ? replay.pop[p.id] : 0) : current;
       if (n < 1) return;
       const herd = herds.get(`${p.id}:${k}`), sp = sea.species[k];
       if (!herd) return;
@@ -108,7 +111,8 @@ export function makeMap(cv: HTMLCanvasElement) {
     if (!sea) return;
     g.drawImage(back, 0, 0);
     sea.patches.forEach((p, i) => {
-      const t = target(sea, p, view), s = shown[i];
+      const t = replay ? (replay.pop[p.id] < 1 ? { c: [20, 34, 44] as RGB, fill: 0.1 }
+        : { c: speciesColour(sea.species[replay.species]), fill: Math.min(1, replay.pop[p.id] / 30) }) : target(sea, p, view), s = shown[i];
       for (let c = 0; c < 3; c++) s.c[c] = mix(s.c[c], t.c[c], FADE);
       s.fill = mix(s.fill, t.fill, FADE); s.pulse *= 0.96;
       drawPatch(p, s);
@@ -116,6 +120,12 @@ export function makeMap(cv: HTMLCanvasElement) {
     g.fillStyle = 'rgba(6,14,20,0.45)';
     for (const [x, y, w, h] of edges) g.fillRect(x, y, w, h);
     drawCreatures();
+    if (placing) {
+      g.fillStyle = 'rgba(6,14,20,0.8)';
+      for (const p of sea.patches) if (!marked.has(p.id)) {
+        for (const t of p.tiles) g.fillRect((t % sea.isl.w) * SCALE, ((t / sea.isl.w) | 0) * SCALE, SCALE, SCALE);
+      }
+    }
     for (const [x, y, w, h, id] of edges) {
       g.fillStyle = selected === id ? '#ffffff' : clutch === id ? '#ffe033' : marked.has(id) ? '#68e8bd' : 'transparent';
       g.fillRect(x - 1, y - 1, w + 1, h + 1);
@@ -131,8 +141,10 @@ export function makeMap(cv: HTMLCanvasElement) {
 
   return {
     setSea, draw, updateHerds,
+    setReplay: (frame: PopulationFrame | null) => { replay = frame; },
     setView: (v: View) => { view = v; },
-    mark: (ids: number[], chosen: number | null, last: number | null, line: number[]) => {
+    mark: (ids: number[], chosen: number | null, last: number | null, line: number[], dim = false) => {
+      placing = dim;
       marked.clear(); ids.forEach((id) => marked.add(id)); selected = chosen; clutch = last;
       occupied.clear(); line.forEach((id) => occupied.add(id));
     },

@@ -4,9 +4,11 @@ An idle / incremental evolution game. Web: TypeScript, PixiJS (the board), Svelt
 lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
 garden becomes is the next board you walk on.
 
-**Start here: `docs/status.md` and its active slice spec. Read only the relevant sections of `docs/design/full-version.md` (the release vision; it wins over `docs/planning/plan.md` and `big-picture.md`) and `ROADMAP.md` when needed.**
-The game is in `game/` (PixiJS won the stack test, 5 Nov); a long build session follows `docs/planning/m1-run.md`. The plant game in
-`docs/spec.md`, `src/` and `tests/` is the archive; its island, habitat and garden code may be ported.
+**Start here: `docs/status.md` and its active slice spec. Read only the relevant sections of `docs/design/whole-game-build.md` (how) and `whole-game.md` (why); they win over `full-version.md`, `docs/planning/plan.md` and `big-picture.md`. `ROADMAP.md` when needed.**
+The game is being rebuilt in `clade/` (*decided 10 Nov*): a new core with organs ported from `game/`. A build session
+reads `docs/design/whole-game-build.md` and its step spec, nothing else by default; where `game/` and that file
+disagree, the file wins. `game/` (PixiJS, 5 Nov) is frozen: playable and the port source until the new game passes the
+play test after N4, then archived. The plant game in `docs/spec.md`, `src/` and `tests/` is the archive.
 
 **The guardrails against tangling (big-picture §12) are defaults, not laws (the user's words, 5 Nov: don't take them too seriously or stop thinking outside them).**
 They were written for one toy. If one blocks a better idea, say so and propose changing it; the tests that check them can change too.
@@ -14,14 +16,17 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 ## Where things are
 - `ROADMAP.md`: milestones, the current steps, the budgets. **The current milestone is the only thing we build for.**
 - `docs/status.md`: the last handoff. `docs/README.md`: the docs index (open only what the task needs).
-- `docs/design/big-picture.md`: the current plan, decided and proposed items labelled. `docs/spec.md`: the plant version, out of date; the user is drafting a new one.
+- `docs/design/whole-game-build.md`: the rebuild's plan (how); `whole-game.md`: why. `big-picture.md`: background (4 Nov). `docs/spec.md`: the archived plant game.
 - `docs/tastes.md`: the user's tastes, wishes and lessons. `docs/decisions.md`: the dated log of their calls.
 - `docs/proposals.md`: open AI proposals (three at most). `docs/ideas.md`: the parking lot.
 - `docs/slices/`: one spec per slice (`_template.md`); `docs/playtests/`: the user's notes after playing.
-- Code: `game/src/sim` (rules, no DOM; never imports view or ui), `game/src/data` (numbers and content), `game/src/view`
-  (Pixi), `game/src/ui` (DOM and Svelte), `game/tests/`. `toys/` and `spikes/` hold throwaway prototypes.
-- `npm run dev` (then `/game/`) · `npm run check` (the game's types and tests, prints only failures) · `npm run look`
-  (headless browser: screenshots and real taps, see `scripts/look.mjs`) · `npm run build:game` (one HTML file for itch).
+- Code: `clade/src/sim` (rules, no DOM; never imports view or ui), `clade/src/data` (numbers and content),
+  `clade/src/view` (Pixi), `clade/src/ui` (DOM and Svelte), `clade/tests/`. `game/` has the same layout. `toys/` and
+  `spikes/` hold throwaway prototypes.
+- `npm run dev` (then `/clade/`; the old game at `/game/`) · `npm run check` (types and tests, prints only failures;
+  `clade/` only from N0, `npm run check:game` for the frozen game) · `npm run look -- /clade/` (headless browser:
+  screenshots and real taps, see `scripts/look.mjs`) · `npm run build:game` (one HTML file for itch; moves to `clade/`
+  at step A).
 
 ## Rules
 1. **The user owns the design.** `spec.md`, `tastes.md` and `ROADMAP.md` change only on the user's explicit call,

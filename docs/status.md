@@ -1,29 +1,34 @@
 # Status
 
-Updated 8 Nov 2026 (Claude). Everything is on `main`; work starts on a task branch. Gameplay is at `13b1ccb`. The long Codex-era status is at `git show 8b5b202:docs/status.md`.
+11 Nov 2026 · **M2, step 8 N1 done; step 9 N2 (the Life) is next.** Branch `n1-the-core`, local, fixes uncommitted.
 
-**Milestone:** M2. Step 4, [slice 19](slices/19-join-the-sea.md): built, human checks open. Step 5,
-[slice 20](slices/20-join-the-bodies.md) with the [20A contract](design/20a-body-part-contract.md): specified, no code yet.
+**Done (Claude, N1 review):**
+- The user's play notes: `docs/playtests/n1-the-core.md`. Review measured on seeds 1–2 over 200 generations.
+- Letters rank the build at full food: a ladder from break-even (D), ×1.5 per letter, F can't live there
+  (`clade/src/data/sea.ts`, `sim/fitness.ts`, `Fitness.full` in `sim/records.ts`). Growth and spread read today's
+  food; a newcomer spreads only where it would grow (`sim/sea.ts`).
+- Grams ×10 (yields, reference density, slot floor). Rivals is now tentacle worm (B) against bare worm (C)
+  (`data/presets.ts`). The test fixtures were rescaled and the home-letter test rewritten; no new tests.
+- Result: holder letters S–D all appear (seed 2: S 2, A 3, B 6, C 5, D 3); about 100 kg per sea; Rivals spreads to
+  6–8 habitats and the bare worm loses by about generation 60. Sheet recaptured: `docs/playtests/n1-sheet/`.
+- `npm run check` passed in 5.3 s (41 tests).
+- Updated: decisions.md, tastes.md, ideas.md (r vs K, sea swings, life history), the N1 spec, `whole-game-build.md` §3 and §6, ROADMAP (N1 ticked).
 
-**Done (8 Nov):**
-- [Review of the Codex stretch](design/m2-review-8-nov.md); TierZoo [research](research/tier-zoo.md) and
-  [concepts](design/tierzoo-concepts.md) (open as P47). Slice 20/20A carry an "8 Nov" note; old text not trimmed yet.
-- Housekeeping: `npm run check` 7.4 s (steps in parallel, `scripts/check.mjs`); `AGENTS.md` aligned (saves no priority
-  before release, short docs, 1–2 sessions per slice); `main` merged, pushed, all other branches deleted.
-- Handoff runs unasked after a large task (`CLAUDE.md`, `docs/workflow.md`).
-
-**Decided (8 Nov, [decisions](decisions.md#8-nov-review-of-the-codex-stretch-and-tierzoo)):**
-- Reset the sea save at the body cutover (drops the v4 legacy layer). Dash sits outside the three-verb ceiling.
-- TierZoo: "really keep going into that direction". Liked: patch notes with a cause, a tier letter per niche,
-  strong vs / weak vs, trade-off tooltips. Merge to `main` and prune: "go ahead". Automatic handoff after large tasks.
+**Decided (user, 11 Nov; full list in decisions.md):** letters rank the build; grams ×10; gut gland unchanged; sea
+dynamics wait for N4; each egg founds a fixed brood of heads; the sea uses adult size; Codex builds N2; no Fable
+consult before N4.
 
 **Next:**
-1. Trim [slice 20](slices/20-join-the-bodies.md)/[20A](design/20a-body-part-contract.md) by deletion: drop the v4 legacy
-   layer, legacy representatives and old-build conversion; move Dash outside the ceiling. Settle the two gaps: starter
-   eligibility for share codes, and lay snapshots that keep their size ([review](design/m2-review-8-nov.md) §2).
-2. Build the 20A pure model and fixtures, then the 20B equipment view, then the cutover with the reset. Play it.
+1. User: commit the fixes on `n1-the-core` and decide whether to merge it into `main` before N2.
+2. `/kickoff N2 spec`: write `docs/slices/n2-the-life.md` with a Codex build brief. Port by bins:
+   - *Copy as is:* grid, movement, tunnelling, verbs, hunter, threats, body-hurt, nodes; `data/life` numbers;
+     floor, camera, fx, tween and body drawing.
+   - *Write fresh:* the clade `Build`, Grow/Enforce/Lay (§4), `boardFor(habitat, world, seed)`, `found()`, Colonise.
+   - *Drop:* buds and larva (`plan.ts`), moult picks, `tierOf`, garden, `sea-*`.
+   - *The coherence points:* the board samples the sea (density, upkeep, reach); Enforce shows its payback; the
+     economy lives in its own module.
 
 **Open:**
-- P47: start era (lean: Cambrian as the open beta); build/moves/EP as the game's words; stat bars in slice 20 or step 6.
-- P46: body shape visible only, or small effects. Old share codes after the reset (lean: reject with a message).
-- Slice 19 checks: unaided next-patch discovery, 3–5 Lives, a real phone. Founding-map labels; code terms in the UI.
+- Heads per egg (the founding number) and the Enforce cost curve: set in the N2 spec.
+- The user asked whether to put the current `game/` build on itch now for early feedback (Claude's advice in chat;
+  no call yet).

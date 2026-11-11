@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { HABITATS, HAB_ORDER } from '../src/data/habitats';
 import { COLS, ROWS } from '../src/data/life';
 import * as L from '../src/sim/life';
+import { partsOf } from '../src/sim/body';
+import { addRows } from './build';
 
 const sand = () => L.newLife(3, 'arthropod', HABITATS.sand), rock = () => L.newLife(3, 'worm', HABITATS.rock);
-const parts = (l: L.Life) => l.slots.flatMap((s) => (s.part ? [s.part] : []));
+const parts = (l: L.Life) => partsOf(l.build.rows).sort();
 
 describe('the three boards', () => {
   it('are 8 × 11, start on open ground and let the hunter in', () => {
@@ -18,9 +20,10 @@ describe('the three boards', () => {
     }
   });
 
-  it('the arthropod starts with its verbs\' parts, and runs 2 tiles on sand', () => {
+  it('the arthropod starts with walking legs and its preset as buds, and runs 2 tiles on sand', () => {
     const l = sand();
-    expect(parts(l)).toEqual(['eye', 'digger']);
+    expect(parts(l)).toEqual(['leg']);
+    expect(l.build.buds).toEqual({ eyes: ['eye'], limbs: ['leg', 'digger'] }); // the digger preset: walking/digging limbs and an eye
     expect(L.dests(l).has(L.at(4, 8))).toBe(true); // two tiles south over open sand
   });
 
@@ -41,7 +44,7 @@ describe('the three boards', () => {
     expect(L.tile(l).t).toBe('dead');
     expect(l.oxygen).toBe(L.oxygenMax(l) - 1);
     const a = L.newLife(3, 'arthropod', HABITATS.rock);
-    a.slots[4].part = 'blood'; a.x = 4; a.y = 3; a.oxygen = 1;
+    addRows(a, { back: ['blood'] }); a.x = 4; a.y = 3; a.oxygen = 1;
     L.stay(a);
     expect(a.oxygen).toBe(2);
   });
@@ -49,17 +52,17 @@ describe('the three boards', () => {
   it('sulfur symbionts double a sulfur mat', () => {
     const l = rock();
     const base = L.foodOf(l, 'bloom');
-    l.slots[4].part = 'symbiont';
+    addRows(l, { back: ['symbiont'] });
     expect(L.foodOf(l, 'bloom')).toBe(base + 7);
   });
 
   it('a hooked proboscis opens shell beds; enrolment blocks if you stay put', () => {
     const w = L.newLife(3, 'worm', HABITATS.sand);
     expect(L.lockOf(w, 'shell')).not.toBeNull();
-    w.slots[0].part = 'hook';
+    addRows(w, { front: ['hook'] });
     expect(L.lockOf(w, 'shell')).toBeNull();
     const a = sand();
-    a.slots[1].part = 'enrol'; a.moved = false;
+    addRows(a, { tail: ['enrol'] }); a.moved = false;
     expect(L.hitOn(a, 1, 0, a.x, a.y).kind).toBe('enrolled');
     a.moved = true;
     expect(L.hitOn(a, 1, 0, a.x, a.y).kind).not.toBe('enrolled');

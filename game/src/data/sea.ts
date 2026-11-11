@@ -1,13 +1,14 @@
 // The living sea (slice 19), ported from the slice 17 toy. Ecological tuning is unchanged.
+import type { Build } from '../sim/body';
 import { ROLE_IDS, WORLD, type Role } from './garden';
 import type { HabitatId } from './habitats';
-import { PLAN_IDS, PLANS, type NodeId, type PartId, type PlanId } from './life';
+import { PLAN_IDS, PLANS, type NodeId, type PlanId } from './life';
 
 /** Identity includes the body and diet; legacy residents keep their own IDs. */
 export type Diet = Partial<Record<NodeId | 'prey', number>>;
 export interface Species {
   id: string; name: string; role: Role; plan?: PlanId; colour: [number, number, number]; line: boolean;
-  parts?: PartId[]; diet?: Diet; // strongest successful build; diet is a record, not a hunting permission
+  build?: Build; diet?: Diet; // the representative lay snapshot (strongest release); diet is a record, not a hunting permission
 }
 export const lineId = (plan: PlanId, role: Role) => `line:${plan}:${role}`;
 export const LINE_COLOUR: [number, number, number] = [255, 90, 220];

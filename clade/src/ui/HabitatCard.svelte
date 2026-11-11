@@ -1,0 +1,69 @@
+<!-- The tapped habitat: its slots and residents, recent ecology, ground and neighbours. -->
+<script lang="ts">
+  import { css } from '../data/palette';
+  import { bodyMass } from '../sim/fitness';
+  import type { Habitat } from '../sim/habitats';
+  import type { Ranks, Species, World } from '../sim/records';
+  import { heldSlots, predictions } from '../view/tiers';
+  import type { Frame } from './history';
+  import HistoryGraph from './HistoryGraph.svelte';
+  import TierCard from './TierCard.svelte';
+
+  let { hab, world, history, select, picked, ranks = {}, place }: {
+    hab: Habitat; world: World; history: Frame[]; select: (id: number) => void;
+    picked?: Species; ranks?: Ranks; place?: () => void;
+  } = $props();
+  const held = $derived(heldSlots(hab, world));
+  const preview = $derived(picked ? predictions(picked.build, ranks, hab, world) : []);
+</script>
+
+<aside class="card">
+  <button class="close" onclick={() => select(-1)}>×</button>
+  <h2>{hab.name}</h2>
+  <p>{hab.kind.depth} · {hab.kind.substrate} · {hab.kind.exposure}</p>
+  <p>{hab.area.toLocaleString('en')} tiles</p>
+  {#if picked}
+    <section class="placement" aria-label="Placement preview">
+      <h3>Preview · {picked.name}</h3>
+      {#each preview as { slot } (slot.id)}
+        <h3 style:color={css(slot.accent)}>{slot.name}</h3>
+        <TierCard build={picked.build} {ranks} {slot} {hab} {world} name={picked.name} />
+      {:else}<p>No food slot here</p>{/each}
+      <button class="place" onclick={place} disabled={(hab.pops[picked.id] ?? 0) > 0}>{(hab.pops[picked.id] ?? 0) > 0 ? 'Already here' : 'Place · 20 heads'}</button>
+    </section>
+    <h3>Holders</h3>
+  {/if}
+  {#each held as { slot, holders } (slot.id)}
+    <h3 style:color={css(slot.accent)}>{slot.name}</h3>
+    {#each holders as { species, ranks } (species.id)}
+      <TierCard build={species.build} {ranks} {slot} {hab} {world} name={species.name} />
+      <p class="population">{Math.round(hab.pops[species.id] / bodyMass(species.build)).toLocaleString('en')} heads · {Math.round(hab.pops[species.id]).toLocaleString('en')} g</p>
+    {:else}<p class="empty">Unheld</p>{/each}
+  {/each}
+  <HistoryGraph {hab} {world} {history} />
+  <h3>Neighbours</h3>
+  <ul>
+    {#each hab.neighbours as id, k (id)}
+      <li><button onclick={() => select(id)}>{world.habitats[id].name}</button> <span>{hab.borders[k]}</span></li>
+    {/each}
+  </ul>
+</aside>
+
+<style>
+  .card { position: absolute; left: 8px; bottom: 8px; width: 360px; max-width: calc(100% - 16px); max-height: calc(100% - 16px);
+    overflow: auto; background: var(--panel); border: 2px solid var(--line); padding: 8px 12px; box-sizing: border-box; }
+  h2, h3 { font-size: 16px; margin: 0 32px 4px 0; }
+  h2 { font-weight: 700; }
+  h3 { margin-top: 8px; color: var(--dim); font-weight: 400; }
+  p { margin: 0 0 2px; }
+  .population, .empty { color: var(--dim); }
+  .population { margin: 2px 0 6px 10px; }
+  .placement { border-bottom: 2px solid var(--line); padding-bottom: 8px; }
+  .place { margin-top: 8px; }
+  button:disabled { color: var(--dim); cursor: default; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; justify-content: space-between; gap: 12px; margin: 2px 0; }
+  li button { background: none; border: 0; padding: 0; text-align: left; text-decoration: underline; }
+  li span { color: var(--dim); }
+  .close { position: absolute; top: 4px; right: 4px; padding: 0 8px; }
+</style>

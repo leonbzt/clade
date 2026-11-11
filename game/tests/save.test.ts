@@ -1,7 +1,6 @@
-// Slice 15: versioned saves and the copy-species code.
+// Slice 15: versioned saves (the old garden model). Design codes are CLADE2- since 20C (body.test.ts).
 import { describe, expect, it } from 'vitest';
 import { SAVE_VERSION, freshSave, parseSave } from '../src/sim/save';
-import { addVisitor, decode, encode } from '../src/sim/share';
 
 describe('saves', () => {
   it('round-trips, migrates an old save, and refuses broken or newer ones', () => {
@@ -16,20 +15,7 @@ describe('saves', () => {
   });
 });
 
-describe('the copy-species code', () => {
-  it('encodes and decodes; a typo fails the checksum', () => {
-    const sp = { plan: 'worm' as const, role: 'burrower' as const, hab: 'mud' as const, eggs: 31, form: 'deep' as const, verbs: ['dig' as const, 'sense' as const], name: "Lea's worms" };
-    const code = encode(sp);
-    expect(code.startsWith('CLADE-')).toBe(true);
-    expect(decode(code)).toEqual(sp);
-    expect(decode(code.slice(0, -1) + (code.endsWith('a') ? 'b' : 'a'))).toBeNull();
-    expect(decode('hello')).toBeNull();
-  });
-  it('a visitor joins the niche in your garden', () => {
-    const s = freshSave(6, 0), sp = decode(encode({ plan: 'swimmer', role: 'predator', hab: 'sand', eggs: 25, verbs: [], name: 'Kim' }))!;
-    addVisitor(s.garden, sp);
-    expect(s.garden.habs.sand.entries.some((e) => e.name === 'Kim' && e.role === 'predator' && !e.line)).toBe(true);
-  });
+describe('the old garden save', () => {
   it('a finished Life waiting in the save survives a reload', () => {
     const s = freshSave(5, 0), cards = [{ part: 'deep' as const, rarity: 'rare' as const, passed: true }];
     s.pending = { hab: 'mud', role: 'burrower', plan: 'worm', eggs: 20, tier: 'B', cards };

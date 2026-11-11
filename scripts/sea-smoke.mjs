@@ -122,7 +122,7 @@ try {
   assert.equal(await evaluate('__game.life.hab.predatorAt'), 99);
 
   // Controlled terminal fixture, through the real Lay handler: prove persistence while playback is still busy.
-  await evaluate('__game.life.turn = 20; __game.life.size = 3; __game.life.food = 100; document.querySelector("#lay").disabled = false; document.querySelector("#lay").click();');
+  await evaluate('__game.life.turn = 20; __game.life.build.size = 3; __game.life.food = 100; document.querySelector("#lay").disabled = false; document.querySelector("#lay").click();');
   assert.equal(await evaluate('__game.busy'), true);
   const terminal = await state();
   assert.equal(terminal.pending.eggs, 3); assert.equal(terminal.total, 0);
@@ -130,7 +130,7 @@ try {
   await send('Page.reload'); await until(booted); await until('!!document.querySelector(".clutch")');
   assert.equal((await state()).pending.eggs, 3);
   await send('Page.reload'); await until(booted); await until('!!document.querySelector(".clutch")');
-  await click('Keep no form');
+  await click('Carry nothing');
   let settled = await state(); assert.equal(settled.lives, 1); assert.equal(settled.pending, undefined); assert(settled.total > 0);
   assert.match(await evaluate('document.querySelector(".returnFeedback").textContent'), /3 eggs released/);
   assert.equal(await evaluate('!!document.querySelector(".patchWrap")'), false);
@@ -156,6 +156,14 @@ try {
   await click('Live as trilobite'); await click('Start the Life'); await click('Start', '#cardButtons button');
   assert.equal(await evaluate('__game.life.plan'), 'trilobite');
   assert.equal(await evaluate('__game.life.hab.patch'), choices[1]);
+  // A moult opens the body view: the offers preview on the creature, and one commit installs a row.
+  const rows = await evaluate('JSON.stringify(__game.life.build.rows)');
+  await evaluate('__game.life.food = 40; document.querySelector("#moult").click();');
+  await until('!!document.querySelector(".lifeBody canvas")');
+  await evaluate('[...document.querySelectorAll(".lifeBody .verbCard")][0].click()');
+  await evaluate('document.querySelector(".lifeBody .go").click()');
+  await until('!document.querySelector(".lifeBody") && __game.life.phase === "play"');
+  assert.notEqual(await evaluate('JSON.stringify(__game.life.build.rows)'), rows);
   await evaluate('__game.life.health = 0; document.querySelector("#wait").click();');
   await until('!__game.busy && !document.querySelector("#cardWrap").hidden');
   await click('Back to the sea', '#cardButtons button');
@@ -200,7 +208,7 @@ try {
   const desktopPatchShot = await send('Page.captureScreenshot', { format: 'png' });
   writeFileSync(`${tmpdir()}/clade-sea-patch-desktop.png`, Buffer.from(desktopPatchShot.data, 'base64'));
   assert.deepEqual(errors, []);
-  console.log('✓ packaged smoke: canvas touch, patch card, return/dismiss/reload, empty founding, terminal/clutch reload, once-only settlement, Play next/card matching, neighbour launch, all bodies, zero-egg choices/reload, design import, storage retry and overlays (390×844 / 1200×900).');
+  console.log('✓ packaged smoke: canvas touch, patch card, return/dismiss/reload, empty founding, terminal/clutch reload, once-only settlement, Play next/card matching, neighbour launch, all bodies, moult body view, zero-egg choices/reload, design import, storage retry and overlays (390×844 / 1200×900).');
   console.log(`Screenshot: ${tmpdir()}/clade-sea-smoke.png. Controlled terminal fixtures; no balance/phone playtest claim.`);
 } finally {
   if (chrome.exitCode === null && chrome.signalCode === null) {

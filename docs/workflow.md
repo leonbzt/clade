@@ -6,14 +6,15 @@ Every idea takes the same path, and each step has one home:
 
 ```
 idea ──► ideas.md (one line) ──► proposals.md (when a milestone needs it: options, AI lean, ≤3 questions)
-     ──► your call ──► decisions.md (dated) + full-version.md ──► a slice spec ──► build ──► playtests/
+     ──► your call ──► decisions.md (dated) + whole-game-build.md ──► a slice spec ──► build ──► playtests/
 ```
 
 - **Ideas don't skip steps.** A new idea mid-session gets one line in `ideas.md`, and the work goes on.
 - **A proposal must name the milestone it serves.** If the current milestone doesn't need it, it stays an idea.
 - **At most three open proposals.** When you decide, the call is logged and the proposal is deleted; when one goes
   stale, it moves back to `ideas.md` as one line.
-- **design/full-version.md is the release vision.** `spec.md` describes the archived plant game. `tastes.md` keeps
+- **design/whole-game-build.md (how) and whole-game.md (why) lead the rebuild;** they win over
+  `full-version.md`. `spec.md` describes the archived plant game. `tastes.md` keeps
   your tastes and lessons; `decisions.md` keeps the history; the active slice defines the current task.
 
 ## Milestones and the scope gate
@@ -80,6 +81,13 @@ idea ──► ideas.md (one line) ──► proposals.md (when a milestone need
 **One agent by default (7 Nov).** Spawn subagents only when explicitly requested and the work is genuinely
 independent. Give each a bounded file scope and avoid overlapping edits. Searches, routine checks and small tasks
 do not justify delegation; parallel agents can multiply tokens and conflicting changes.
+
+### Claude plans, Codex builds (*decided 9 Nov*)
+- **Claude (Opus):** kickoff, play triage, design calls, specs, the **build brief** (a short section at the end of
+  the slice spec: files, behaviour, checks) and the review of Codex's diff.
+- **Codex (ChatGPT Pro):** builds one brief per session on the slice branch, runs `npm run check` (and
+  `npm run look` for screens), commits, updates `status.md`. It asks instead of deciding design.
+- The commands live in `.claude/commands/` (`kickoff`, `spec`, `handoff`); Codex follows the same files (`AGENTS.md`).
 
 | Agent | Defined in | What it does |
 | --- | --- | --- |

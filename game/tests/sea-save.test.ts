@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { HAB_ORDER } from '../src/data/habitats';
 import { SEA, lineId } from '../src/data/sea';
-import { advance, parseSave, type Save } from '../src/sim/save';
+import { advance, type Save } from '../src/sim/save';
 import { release } from '../src/sim/sea';
-import { legacyPatchMap } from '../src/sim/sea-migration';
 import { advanceSeaSave, freshSeaSave, parseSeaSave, serializeSeaSave } from '../src/sim/sea-save';
 
 function legacy(): Save {
@@ -69,10 +68,11 @@ describe('sea saves', () => {
 
   it('rejects malformed/newer data without changing the active state', () => {
     const active = freshSeaSave(1, 0), original = serializeSeaSave(active);
-    const invalid = [null, [], {}, { v: 3 }, { v: 2.5 }, { v: 2, garden: { habs: {} } }];
+    const invalid = [null, [], {}, { v: 5 }, { v: 2.5 }];
     for (const value of invalid) expect(parseSeaSave(JSON.stringify(value)).problem).toBe('broken');
     const changes: ((s: ReturnType<typeof wire>) => void)[] = [
-      (s) => { s.at = -1; }, (s) => { s.best.x = 'Z'; }, (s) => { s.forms.x = 'nope'; },
+      (s) => { s.at = -1; }, (s) => { s.best.x = 'Z'; }, (s) => { s.lines = {}; }, (s) => { s.lines.worm.parts = ['nope']; }, (s) => { s.lines.fish = s.lines.worm; },
+      (s) => { s.lines.worm.species = [{ name: 'x', rows: { limbs: ['leg'] }, mutation: null, life: 1, tier: 'B' }]; },
       (s) => { s.sea.r = 0.5; }, (s) => { s.sea.species[1].id = s.sea.species[0].id; },
       (s) => { s.sea.patches[0].pop[0] = null; }, (s) => { s.sea.patches[0].pop.pop(); },
       (s) => { s.sea.patches[0].pop = { 0: 4 }; }, (s) => { s.sea.patches[0].oxygen = 101; },
@@ -83,64 +83,29 @@ describe('sea saves', () => {
       (s) => { s.continuation = { patch: 9999, species: lineId('worm', 'burrower'), plan: 'worm', role: 'burrower', eggs: 2 }; },
       (s) => { s.continuation = { patch: 0, species: lineId('worm', 'burrower'), plan: 'swimmer', role: 'burrower', eggs: 2 }; },
       (s) => { s.pending = { patch: 0, species: lineId('worm', 'burrower'), plan: 'worm', role: 'burrower', hab: 'mud', eggs: 4, tier: 'D', cards: [{}] }; },
+      (s) => { s.pending = { patch: 0, species: lineId('worm', 'burrower'), plan: 'worm', role: 'burrower', hab: 'mud', eggs: 4, tier: 'D', cards: [],
+        build: { body: 'swimmer', size: 3, rows: { front: ['arms'] }, order: ['front'] } }; },
       (s) => { s.news = [{ kind: 'boom', sp: 'missing', gen: 0, from: 1, to: 5, patches: [0], cause: 'food' }]; },
     ];
     for (const change of changes) { const raw = JSON.parse(original); change(raw); expect(parseSeaSave(JSON.stringify(raw)).problem).toBe('broken'); }
     expect(parseSeaSave('{oops').problem).toBe('broken'); expect(parseSeaSave(null).problem).toBe('none');
-    expect(parseSeaSave('{"v":4}').problem).toBe('newer');
+    expect(parseSeaSave('{"v":7}').problem).toBe('newer');
     expect(serializeSeaSave(active)).toBe(original);
   });
 });
 
-describe('legacy migration', () => {
-  it.each([1, 2])('migrates v%s progress, all populations and pending eggs without releasing them', (v) => {
-    const old = legacy(); old.v = v;
-    old.pending = { hab: 'rock', plan: 'worm', role: 'predator', eggs: 7, tier: 'D', cards: [{ part: 'deep', rarity: 'rare', passed: true }] };
-    const raw = JSON.parse(JSON.stringify(old));
-    if (v === 1) { delete raw.forms; delete raw.unlocks; }
-    const input = JSON.stringify(raw), parsed = parseSeaSave(input);
-    expect(parsed.problem).toBeNull();
-    const s = parsed.save!, map = legacyPatchMap(s.sea);
-    expect(s.legacy?.json).toBe(input);
-    expect([s.v, s.seed, s.at, s.lives, s.best, s.sea.gen, s.sea.r]).toEqual([3, old.seed, old.at, old.lives, old.best, old.garden.gen, old.garden.r]);
-    expect(s.forms).toEqual(v === 1 ? {} : old.forms); expect(s.unlocks).toEqual(v === 1 ? {} : old.unlocks);
-    expect(s.pending).toEqual({ ...old.pending, patch: map.rock, species: lineId('worm', 'predator') });
-    expect(s.continuation).toEqual({ patch: map.rock, species: lineId('worm', 'predator'), plan: 'worm', role: 'predator', eggs: 7 });
-    for (const hab of HAB_ORDER) {
-      expect(s.sea.patches[map[hab]].ground).toBe(hab);
-      expect(map[hab]).toBe(s.sea.patches.find((p) => p.ground === hab)!.id);
-      for (const e of old.garden.habs[hab].entries) {
-        const id = e.line ? lineId(e.line, e.role) : `legacy:${e.sp}:${e.role}`, k = s.sea.species.findIndex((sp) => sp.id === id);
-        expect(s.sea.patches[map[hab]].pop[k]).toBe(e.pop);
-        expect(s.sea.patches[map[hab]].fit[k]).toBe(e.score);
-        expect(s.sea.patches.reduce((n, p) => n + p.pop[k], 0)).toBe(e.pop);
-      }
-    }
-    expect(s.sea.species.find((sp) => sp.name === 'Kim')?.plan).toBe('swimmer');
-    expect(wire(parseSeaSave(serializeSeaSave(s)).save!)).toEqual(wire(s));
-    expect(JSON.parse(input)).toEqual(raw);
-  });
-
-  it('uses successful entries or progress after extinction, and leaves an unplayed legacy save eligible for founding', () => {
-    const old = legacy();
-    old.pending = { hab: 'sand', plan: 'worm', role: 'grazer', eggs: 0, tier: 'F', cards: [] };
-    let s = parseSeaSave(JSON.stringify(old)).save!;
-    expect(s.continuation?.species).toBe(lineId('worm', 'burrower'));
-    for (const h of HAB_ORDER) old.garden.habs[h].entries = [];
-    s = parseSeaSave(JSON.stringify(old)).save!;
-    expect(s.continuation?.eggs).toBe(28);
-    expect(s.continuation?.species).toBe(lineId('worm', 'burrower'));
-    old.best = {};
-    expect(parseSeaSave(JSON.stringify(old)).save!.continuation).toBeUndefined();
-  });
-
-  it('rejects structurally invalid legacy saves in both readers', () => {
-    const old = legacy();
-    const raw = JSON.parse(JSON.stringify(old)); raw.garden.habs.sand.entries[0].pop = -5;
-    for (const read of [parseSave, parseSeaSave]) {
-      expect(read(JSON.stringify(raw)).problem).toBe('broken');
-      expect(read('{"v":2,"garden":{"habs":{}}}').problem).toBe('broken');
-    }
+describe('the 20C cutover', () => {
+  it('older versions start a fresh sea without a message; the lines and a laid build round-trip in v6', () => {
+    for (const v of [1, 2, 3, 4]) expect(parseSeaSave(JSON.stringify({ ...legacy(), v }))).toEqual({ save: null, problem: 'none' });
+    const s = freshSeaSave(2, 0);
+    Object.assign(s.lines.worm!, { xp: 80, points: 1, ranks: { eye: ['lean'] } });
+    s.lines.worm!.species.push({ name: 'Worm 1 (gill)', rows: { eyes: ['eye'], sides: ['gill'], tail: ['bulb'] }, mutation: 'gill', life: 1, tier: 'B' });
+    s.pending = { hab: s.sea.patches[0].ground, patch: 0, plan: 'worm', role: 'burrower', species: lineId('worm', 'burrower'), eggs: 9, tier: 'D', cards: [],
+      build: { body: 'worm', size: 3, rows: { front: ['hook'], tail: ['bulb'] }, order: ['tail', 'front'], ranks: { hook: ['lean'] } } };
+    const r = parseSeaSave(serializeSeaSave(s));
+    expect(r.problem).toBeNull();
+    expect(wire(r.save!)).toEqual(wire(s));
+    expect(r.save!.v).toBe(6);
   });
 });
 
@@ -165,8 +130,8 @@ describe('elapsed time in both save models', () => {
     });
   }
 
-  it('meets the roadmap catch-up budget with the larger migrated species registry', () => {
-    const s = parseSeaSave(JSON.stringify(legacy())).save!;
+  it('meets the roadmap catch-up budget with every species everywhere', () => {
+    const s = freshSeaSave(5, 0);
     // Populate every patch to exercise meals, hunting, migration and headlines during catch-up.
     for (const p of s.sea.patches) for (let k = 0; k < s.sea.species.length; k++) { p.pop[k] = 10; p.fit[k] = 20; }
     const start = performance.now();

@@ -34,9 +34,9 @@ describe('living map projections', () => {
   it('keeps stable species keys and classifies hunters by tools including legacy bodies', () => {
     const s = freshSeaSave(3, 0).sea;
     const worm = s.species.find((sp) => sp.id === 'line:worm:predator')!;
-    worm.parts = ['proboscis'];
+    worm.build = { body: 'worm', size: 3, rows: { front: ['proboscis'] }, order: ['front'] };
     const swimmer = s.species.find((sp) => sp.id === 'line:swimmer:grazer')!;
-    swimmer.parts = ['arms'];
+    swimmer.build = { body: 'swimmer', size: 3, rows: { front: ['arms'], limbs: ['flap'] }, order: ['front', 'limbs'] };
     const legacy = { ...worm, id: 'legacy:unknown:predator', name: 'Unknown resident', plan: undefined, line: false };
     s.species = [swimmer, legacy, worm]; s.patches[0].pop = new Float64Array([100, 100, 100]);
     expect(feedsAs(worm).hunt).toBe(0); expect(feedsAs(swimmer).hunt).toBe(1);

@@ -22,7 +22,7 @@
   <div class="panel habCard">
     <div class="metaTop"><h2>Menu</h2><button class="small" onclick={() => (ui.menu = false)}>Close</button></div>
     <h3>Species codes</h3>
-    <p class="pitch">Share a starting creature design: body, a carried form and verbs. Pasted designs still need an eligible patch and a Life; their scores add no eggs or animals.</p>
+    <p class="pitch">Share a starting body (a CLADE2- code): the starter parts of a line's laid build, never its moulted or rare parts. Pasted designs still need an eligible patch and a Life; their scores add no eggs or animals.</p>
     {#each lines as l}
       <button class="liveBtn" onclick={() => copy(ctx.code(l.patch, l.species), 'The code')}>Copy: {l.name}, {HABITATS[l.hab].name.toLowerCase()} {l.tier}</button>
     {:else}<p class="note">No lines yet: live a Life first.</p>{/each}

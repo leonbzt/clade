@@ -1,16 +1,12 @@
-// The prey's bodies on the board (slice 11): worms and trilobites reuse the grazers' drawings in their own colours.
+// The bodies of residents and prey on the board: a line's representative snapshot when the sea knows one, else the
+// body's defaults at size 2. Wiwaxia keeps its own drawing.
 import type { PreyKind } from '../data/prey';
-import { Arthropod } from './arthropod';
+import { defaultBuild, type Build } from '../sim/body';
+import { Body, type Creature } from './body';
 import { PAL } from './shade';
-import { Swimmer, Wiwaxia } from './swimmer';
-import { Worm, type BodySlot, type Creature } from './worm';
+import { Wiwaxia } from './wiwaxia';
 
-const TRILO = [0x3a3326, 0x5c4e36, 0x86734f, 0xb09a6c, 0xd8c493];
-const EYES: BodySlot[] = [{ kind: 'head', side: 'front', seg: -1, part: 'eye' }];
-
-export function preyBody(kind: PreyKind): Creature {
-  if (kind === 'worm') { const w = new Worm(PAL.rival, true, 0.85); w.setBody(2, [], false); return w; }
-  if (kind === 'swimmer') { const s = new Swimmer(PAL.rival); s.setBody(2, []); return s; }
-  if (kind === 'trilobite' || kind === 'arthropod') { const a = new Arthropod(TRILO, 0.8, kind === 'trilobite'); a.setBody(2, EYES, false); return a; }
-  return new Wiwaxia();
+export function preyBody(kind: PreyKind, build?: Build): Creature {
+  if (kind === 'wiwaxia') return new Wiwaxia();
+  return new Body(build?.body === kind ? build : { ...defaultBuild(kind), size: 2 }, PAL.rival);
 }

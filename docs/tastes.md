@@ -29,11 +29,15 @@ has to fit.
   locked out. Pressure is good: newcomers compete with the species already in a niche.
 - **Builds like game characters:** "like levelling a specific pure OSRS character, or making a Dark Souls build"
   (3 Nov). All-rounders are bad; there is always pressure ("damage") and armour, or a locked reward.
+- **A build or class you pick (10 Nov):** "you should have the feeling of beeing able to select a build or class like in an
+  rpg, and maybe evolve your lineages along the way". Parallel lines "similar to playing different classes in Idleon in
+  parellel, each has a function and speciality".
 - **"Fast climb means noticeable improvement"** (3 Nov). The speed of M1 was right.
 - **Adapting has to feel like adapting.** Buying every trait isn't it. Not every stat can be improved: some choices
   trade ("more spread while drying out more", 26 Oct).
 - **Tiers like a game tier list** (S, A, B…), not bronze/gold or stars (26 Oct). Niches × tiers with "some light
-  ladder feeling" (2 Nov).
+  ladder feeling" (2 Nov). **A letter classifies the build itself** and how it fits the meta, habitat and ecosystem, not
+  today's food; low tiers live but are easily replaced (11 Nov).
 - **Lineages are your characters;** you grow one thing the whole time (29 Oct). The first lineage is a plant (1 Nov).
   The game starts at home, at the vent.
 - Breeding yes, but scarce. Stakes: species die out and the game goes on.
@@ -51,6 +55,7 @@ has to fit.
 - **The TierZoo frame:** of the table mapping TierZoo's terms onto Clade, "i really liked the table and the proposed
   comparisons and want to really keep going into that direction" (8 Nov). Liked most: patch notes with a cause, a tier letter
   per niche, strong vs / weak vs or a triangle, trade-off tooltips. Borrow the genre, not the names or text ("mostly").
+  **"The big inspiration is the tierzoo world treating real life as an rpg"** (10 Nov).
 
 ## Evolution and life
 - **Genes appear and spread by themselves**, and that stays at the heart. Mutations can be an unexpected reward.
@@ -62,6 +67,9 @@ has to fit.
   deep-time road later. A basal ancestor (an early land plant) branching into liverworts and mosses. Lichens are an
   unlock. Groups are named base species (a slug you found is still a slug).
 - Later: partnership doors, new diets through genes.
+- **What you do steers the body (9 Nov):** over generations and through your picks, with "a higher chance of parts that
+  relate to the current actions". Species generation should "keep a life dynamic"; named forms only if "carefully integrated".
+- **Real defining traits (10 Nov):** the traits behind a new form should be autapomorphies of real species and clades.
 - **Growth forms play differently:** "moss vs herb vs tree should all play different" (3 Nov). More kingdoms
   and species.
 
@@ -79,6 +87,19 @@ has to fit.
 - **Animals:** small, cute individuals roaming the garden, something to discover; you see why things happen.
   Snails, springtails, spiders; later beetles, bees, maybe seabirds and lizards; bats yes; more cute animals.
   Earthworms out. Animals releasing nitrogen matters.
+- **Discovery and adapting (9 Nov):** landmarks, things to discover, a more varied map, "some rarer chances of you getting
+  a special map, layout or feature"; "some surprise and change and actually feeling like you have to adapt is great."
+  Food-web and real-biology events: "best if it came from the actual system"; a feature gets "a small chance" when
+  "the required population is there". Populations "should drift towards what their patch demands". Seasons later.
+- **Emergent variants, food chains, clear ownership (9 Nov):** v1's variants "emerged automatically and always ended up
+  having the best fit"; a small genome "is great to me". Food chains "should be important", with who eats whom on show.
+  Authored species are "important stepping stones, or characteristic feature combinations". What's yours is unclear
+  today: "it feels a little confusing whats mine and whats the benefit is"; a lineage you level all game, with parallel
+  lines when one branches, sounds right.
+- **The ecosystem as a board (10 Nov):** "a board that evolves and offers slots/niches/habitats that need to be filled.
+  which build is s tier in this habitat? oh i made a s tier build in the current meta. also like a garden that evolves and
+  grows, where you can discover things, new animals, and should be cool to look at." Interactions: "predator/prey,
+  symbionts parasitism, ect."
 - Later: trees and fruits; geology (leaning yes); hiding in shade and caves; the sea line and life coming ashore;
   outside inputs onto the island. A long target: the island's climax closes an era.
 
@@ -95,6 +116,7 @@ has to fit.
 - **Hatched's staged assembly** for creatures (2 Nov). **Mycelarium's side view** (2 Nov).
 - **The Godot stack test** (5 Nov): animation and board "a lot smoother", but the look "really rough and looks more like
   from a template". "More freedom for AI is also good."
+- **Carapace (9 Nov):** you like its character graphics (low-poly 3D drawn through a pixel filter) and its generation cards.
 - **The target** (7 Nov): "between osrs and stardew valley". Animals are recipes for a code painter, the same recipe paints every size,
   and 3D info stays for the map and plants. 16 px is "most my look", though some animals read "way better" at 24.
 
@@ -106,6 +128,9 @@ has to fit.
   ("has to be done very well"), auto battlers ("set up and see how good it does"), idle skilling.
 - Relationships and guilds changing the rules. A colony and a garden at two zoom levels. Many small games that
   show the diversity of life.
+- **The activity (10 Nov):** "the minigame or activity aspect is also important to me." "i really like the ressource
+  management one from currently"; an early idea had "areas with different minigames based on things like cellular
+  automata or boids".
 
 ## Lessons from playing
 - **Toys (26 Oct):** specimen: "there isn't a lot to decide, you can't shape the plant a lot, it grows random";
@@ -148,6 +173,9 @@ has to fit.
 - **Creature art (6 Nov):** code-drawn low-poly is "the most robust and fitting"; you also like code-drawn pixels and hand-drawn bases "for good recognizability".
 - **Something to arrive at (6 Nov):** a named real species as "an end point for a lineage", "pretty strong", with "a slightly different sidebuild that could be more optimal under some circumstances"; "it would be cool to discover an own thing". A new lineage should feel like "a more direct or \"branded\" result that feels like an upgrade". Beware bodies that stack "to much" or "can't be changed again".
 - **Food (6 Nov):** "a living food layer is definetley the direction i want to move, maybe multilayered animal food chain first too."
+- **v1, looking back (10 Nov):** "a plant sim where variants occur and the plants form their own habitats independently,
+  and animals are introduced as individuals roaming around. this is very cool and has a lot of detail but i was worried
+  about performance. but the way new species a founded and variants popped up was very cool."
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
 

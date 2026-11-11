@@ -1,9 +1,14 @@
 // A Life, the rules (no DOM, no Pixi). Ported from toys/life2-sim.ts: move, eat, moult, lay, the predator's hunt,
-// mark, strike and rest. Every action records `events`, which the view plays back in order.
+// mark, strike and rest. Every action records `events`, which the view plays back in order. The body is a 20A
+// `Build` (sim/body.ts): one choice per place; every number below comes from it.
 import {
-  HUNT, MAX_VERBS, NODES, PARTS, PART_IDS, PLANS, RULE, STAGES, STARTER_PLAN, STYLE_VERBS, TURNS, VERB_PART,
-  type NodeId, type PartId, type PlanId, type SlotKind, type Terrain, type VerbId,
+  HUNT, NODES, PARTS, PART_IDS, PLANS, RULE, STAGES, STARTER_PLAN, TURNS,
+  type NodeId, type PartId, type PlanId, type Terrain, type VerbId,
 } from '../data/life';
+import { PRESETS, type PlaceId, type Row } from '../data/body';
+import * as B from './body';
+import * as P from './plan';
+import { loseRow, shed, snapshot, type Side } from './body-hurt';
 import { CELL, MUD_FLATS, type Habitat, type Rival } from '../data/habitats';
 import type { PreyKind } from '../data/prey';
 import { SEA } from '../data/sea';
@@ -13,13 +18,13 @@ export { hitOn } from './threat';
 
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
 export { DX, DY, at, dist, inB, xy, type Dir } from './grid';
-export type Side = 'front' | 'right' | 'back' | 'left';
+export type { Side } from './body-hurt';
 
 export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number } }
-export interface Slot { kind: SlotKind; side: Side; seg: number; part: PartId | null }
 export interface Predator { x: number; y: number; state: 'hunt' | 'strike' | 'rest'; rest: number; marks: number[]; dir: Dir; lx: number; ly: number; lurked: boolean; bonus: number }
 export interface Dest { i: number; dir: Dir; grab: boolean; path: number[] }
-export interface Hit { side: Side; kind: 'buried' | 'enrolled' | 'blocked' | 'hit'; part: PartId | null; tear: number; damage: number }
+/** A strike's outcome: `part` names the guard that blocked it, or the torn row's first part; `tear` is the place lost. */
+export interface Hit { side: Side; kind: 'buried' | 'enrolled' | 'blocked' | 'hit'; part: PartId | null; tear: PlaceId | null; damage: number; rest: number }
 
 /** What the last action did, in order, for the view to play back. */
 export type Ev =
@@ -29,9 +34,9 @@ export type Ev =
   | { k: 'lay'; n: number; eggs: number; food: number }
   | { k: 'stay'; dir: Dir }
   | { k: 'moult'; size: number; food: number }
-  | { k: 'part'; slot: number; part: PartId; old: PartId | null }
+  | { k: 'part'; place: PlaceId; part: PartId; row: Row; was: Row | null }
   | { k: 'upkeep'; food: number }
-  | { k: 'shed'; slot: number; part: PartId }
+  | { k: 'shed'; place: PlaceId; row: Row }
   | { k: 'hurt'; why: string; health: number }
   | { k: 'oxygen'; oxygen: number }
   | { k: 'rival'; idx: number; from: number; to: number; ate: boolean }
@@ -53,14 +58,17 @@ export interface Life {
   plan: PlanId; hab: Habitat; r: number;
   tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Omit<Rival, 'at'> & { x: number; y: number })[];
   turn: number; food: number; oxygen: number; health: number; eggs: number; xp: number; eaten: number;
-  size: number; slots: Slot[]; order: number[];
-  phase: 'play' | 'offer' | 'over'; offers: PartId[];
+  build: B.Build; // size, rows and torn places
+  phase: 'play' | 'offer' | 'over'; offers: PartId[]; // each has at least one legal change (B.changesFor)
   moults: number; rareAt: number; rareGot: PartId | null; rarePassed: boolean; moulted: boolean; soft: boolean; moved: boolean;
   pred: Predator | null; cause: 'season' | 'died' | null; lines: string[]; events: Ev[];
   recharge: Partial<Record<VerbId, number>>; dash: boolean; braced: boolean; dug: boolean;
   prey: Prey[]; frenzy: number; still: boolean; caught: boolean; catches: number; // the predator Life
   ate: Partial<Record<NodeId | 'prey', number>>; // food by source: the garden reads your role from it
-  eggParts?: PartId[]; // the most recent clutch's build, before any later injuries
+  laid?: Readonly<B.Build>; // the latest clutch's build, frozen at the lay
+  pool?: PartId[]; // the line's parts (21A): the only commons a moult offers; none = every part of the body
+  growth: P.Plan; // inherited rows; tears never change them
+  laidPlan?: Readonly<P.Plan>; // frozen with the latest clutch
 }
 
 export function rnd(l: { r: number }) { // the toy's mulberry32
@@ -71,8 +79,7 @@ export function rnd(l: { r: number }) { // the toy's mulberry32
 }
 
 // ---- the body ----
-export const count = (l: Life, id: PartId) => l.slots.reduce((n, s) => n + (s.part === id ? 1 : 0), 0);
-export const has = (l: Life, id: PartId) => count(l, id) > 0;
+export const has = (l: Life, id: PartId) => B.has(l.build, id);
 export const tile = (l: Life, x = l.x, y = l.y) => l.tiles[at(x, y)];
 const onMud = (l: Life) => tile(l).t === 'mud';
 export const buriedAt = (l: Life, x: number, y: number) => l.plan === 'worm' && tile(l, x, y).t === 'mud';
@@ -85,32 +92,32 @@ export function eventArea(l: Life, x: number, y: number) {
 /** Whether standing on (x, y) costs oxygen this turn: vent water, or the event's area while it lasts. */
 export const airless = (l: Life, x = l.x, y = l.y) => !has(l, 'blood') &&
   ((l.hab.stocks !== undefined && l.hab.stocks.oxygen < SEA.chokeAt) || l.tiles[at(x, y)].t === 'dead' || (eventOn(l) && eventArea(l, x, y)));
-export const upkeep = (l: Life) => (has(l, 'deep') && onMud(l) ? 0 : RULE.baseUpkeep + l.slots.reduce((n, s) => n + (s.part ? PARTS[s.part].upkeep : 0), 0));
-export const oxygenMax = (l: Life) => RULE.oxygen + count(l, 'gill') * RULE.gillOxygen;
-export const range = (l: Life) => Math.min(RULE.maxRange, PLANS[l.plan].range + count(l, 'leg')) * (l.dash ? 2 : 1);
-export const tunnel = (l: Life) => (RULE.tunnel + count(l, 'chaetae') * RULE.bristleTunnel) * (l.dash ? 2 : 1);
-/** Your verbs: those your parts give, in the order you got them, three at most. */
-export function verbs(l: Life): VerbId[] {
-  const out: VerbId[] = [];
-  for (const k of l.order) { const v = l.slots[k].part && PARTS[l.slots[k].part!].verb; if (v && !out.includes(v) && out.length < MAX_VERBS) out.push(v); }
-  return out;
-}
-/** The parts a set of verbs gives this body plan: a verb loadout is a starting body. */
-export const partsFor = (plan: PlanId, vs: VerbId[]): PartId[] => (plan === 'swimmer' ? ['arms'] : vs.map((v) => VERB_PART[plan][v]));
-/** A Life's starting body: your kept form first, so it always gets its slot, then each verb's part while there's room. */
-export const startParts = (plan: PlanId, vs: VerbId[], form?: PartId): PartId[] => [...new Set([...(form && PARTS[form].plans.includes(plan) ? [form] : []), ...partsFor(plan, vs)])];
+export const upkeep = (l: Life) => B.upkeep(l.build, onMud(l));
+export const oxygenMax = (l: Life) => B.oxygenMax(l.build);
+export const range = (l: Life) => B.range(l.build) * (l.dash ? 2 : 1);
+export const tunnel = (l: Life) => B.tunnel(l.build) * (l.dash ? 2 : 1);
+/** Your verbs, in install order. The starter check and the moult change keep them within the ceiling. */
+export const verbs = (l: Life): VerbId[] => B.verbs(l.build);
+/** The starting build a preset gives, defaults included: the Life's fallback when nothing is chosen. */
+export const presetBuild = (plan: PlanId) => B.startBuild(plan, PRESETS[plan].digger ?? PRESETS[plan].hunter!).build;
 export const ready = (l: Life, v: VerbId) => l.phase === 'play' && verbs(l).includes(v) && !(l.recharge[v]! > 0);
-export const sense = (l: Life) => PLANS[l.plan].sense + count(l, 'eye') * RULE.eyeSense + count(l, 'compound') * RULE.compoundSense;
-export const clutch = (l: Life) => (1 + count(l, 'pouch')) * l.size + (has(l, 'deep') && onMud(l) ? 1 : 0);
-export const moultCost = (l: Life) => l.size + PLANS[l.plan].moultExtra;
-export const canMoult = (l: Life) => l.phase === 'play' && !l.moulted && l.size < RULE.maxSize && l.food >= moultCost(l);
-export const mature = (l: Life) => l.size >= RULE.adultSize || has(l, 'progenesis');
+export const sense = (l: Life) => B.sense(l.build);
+export const clutch = (l: Life) => B.clutch(l.build, onMud(l));
+export const size = (l: Life) => l.build.size;
+export const fullMoultCost = (l: Life) => size(l) + PLANS[l.plan].moultExtra;
+export const moultCost = (l: Life) => Math.ceil(fullMoultCost(l) * RULE.budShare);
+/** Prices shown during an offer include the food already paid by moult(). */
+export const pickCost = (l: Life, bud = false) => {
+  const full = size(l) - 1 + PLANS[l.plan].moultExtra;
+  return bud ? Math.ceil(full * RULE.budShare) : full;
+};
+export const canMoult = (l: Life) => l.phase === 'play' && !l.moulted && size(l) < RULE.maxSize && l.food >= moultCost(l);
+export const mature = (l: Life) => B.mature(l.build);
 export const canLay = (l: Life) => l.phase === 'play' && mature(l) && l.food >= RULE.layCost;
-export const stage = (l: Life) => STAGES[l.size - 1];
+export const stage = (l: Life) => STAGES[size(l) - 1];
 export const foraging = (xp: number) => (xp >= RULE.foragingAt ? 2 : 1);
 export const tierOf = (h: Habitat, eggs: number) => h.tiers.find(([, n]) => eggs >= n)![0];
 export const nextTier = (h: Habitat, eggs: number) => [...h.tiers].reverse().find(([, n]) => eggs < n) ?? null;
-const hasReach = (l: Life) => has(l, 'claw') || has(l, 'proboscis') || has(l, 'hook');
 export const known = (t: Tile) => t.t !== 'mud' || t.seen;
 
 /** A tile's food is gone; mats grow back after a while. */
@@ -120,13 +127,13 @@ export function cleared(l: Life, t: Tile) {
 }
 
 /** What a node feeds you, with your parts. */
-export const foodOf = (l: Life, node: NodeId) => NODES[node].food * (node === 'bloom' && has(l, 'symbiont') ? 2 : 1) + count(l, 'gut') * RULE.gutFood;
+export const foodOf = (l: Life, node: NodeId) => B.foodOf(l.build, node);
 
 /** What stops you eating this node, or null. */
 export function lockOf(l: Life, node: NodeId): string | null {
-  if (node === 'buried') return l.plan === 'worm' || has(l, 'digger') ? null : 'needs a digging limb';
-  if (node === 'shell') return has(l, 'claw') || has(l, 'hook') ? null : l.plan === 'worm' ? 'needs a hooked proboscis (rare)' : 'needs a crushing claw';
-  if (node === 'carcass') return l.size >= RULE.carcassSize ? null : `needs size ${RULE.carcassSize}, you are ${l.size}`;
+  if (node === 'buried') return B.digsBuried(l.build) ? null : 'needs a digging limb';
+  if (node === 'shell') return B.opensShells(l.build) ? null : l.plan === 'worm' ? 'needs a hooked proboscis (rare)' : 'needs a crushing claw';
+  if (node === 'carcass') return size(l) >= RULE.carcassSize ? null : `needs size ${RULE.carcassSize}, you are ${size(l)}`;
   return null;
 }
 
@@ -136,32 +143,23 @@ export function reveal(l: Life) {
 }
 export const say = (l: Life, m: string) => { l.lines.push(m); if (l.lines.length > 5) l.lines.shift(); };
 export const emit = (l: Life, e: Ev) => { l.events.push(e); };
-export const fits = (part: PartId, kind: SlotKind) => PARTS[part].slots.includes(kind);
-
-/** The first empty slot this part fits, else the first filled one (it replaces that part), else -1. */
-export function freeSlotFor(l: Life, part: PartId) {
-  const empty = l.slots.findIndex((s) => !s.part && fits(part, s.kind));
-  return empty >= 0 ? empty : l.slots.findIndex((s) => fits(part, s.kind));
-}
 
 // ---- starting a Life ----
-export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, starters: PartId[] = partsFor(plan, STYLE_VERBS.digger)): Life {
-  const P = PLANS[plan], slots: Slot[] = [];
-  for (let k = 0; k < P.head; k++) slots.push({ kind: 'head', side: 'front', seg: -1, part: null });
-  slots.push({ kind: 'tail', side: 'back', seg: 99, part: null });
-  for (let k = 0; k < P.pairs; k++) slots.push({ kind: 'side', side: 'left', seg: k, part: null }, { kind: 'side', side: 'right', seg: k, part: null });
+/** A Life on a starting build; the caller has run the starter check (sim/body.ts `startBuild`). */
+export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat = MUD_FLATS, build: B.Build = presetBuild(plan)): Life {
+  if (build.body !== plan || B.buildProblems(build).length) throw new Error('A Life needs a legal build of its body');
+  const start = P.larva(build);
   const l: Life = {
     plan, hab, r: (seed ^ 0x5bd1e995) | 0,
     tiles: hab.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
     x: hab.start[0], y: hab.start[1], facing: 1, rivals: plan === 'swimmer' ? [] : hab.rivals.map((v) => ({ ...v, x: v.at[0], y: v.at[1] })),
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, xp: 0, eaten: 0,
-    size: 1, slots, order: [], phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
+    build: start.build, growth: start.growth, phase: 'play', offers: [], moults: 0, rareAt: 2, rareGot: null, rarePassed: false,
     moulted: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
     recharge: {}, dash: false, braced: false, dug: false, prey: [], frenzy: 0, still: false, caught: false, catches: 0, ate: {},
   };
   preyInit(l);
   l.rareAt = 2 + Math.floor(rnd(l) * 2);
-  for (const part of starters) { const k = freeSlotFor(l, part); if (k >= 0 && !slots[k].part) { slots[k].part = part; l.order.push(k); } }
   l.oxygen = oxygenMax(l);
   reveal(l);
   say(l, `Grow up: you can lay from size ${RULE.adultSize}.`);
@@ -169,34 +167,43 @@ export function newLife(seed: number, plan: PlanId = STARTER_PLAN, hab: Habitat 
 }
 
 // ---- moulting ----
-/** Pay food, grow a size, get offers. The turn doesn't end; one moult a turn. Size 5 finishes the body. */
+/** Pay food, grow a size, get offers: the first three common parts with a legal change, then a rare in habitat order.
+ * The turn doesn't end; one moult a turn. Size 5 finishes the body. */
 export function moult(l: Life) {
   l.events = [];
   if (!canMoult(l)) return;
   l.food -= moultCost(l);
-  l.size++; l.moults++; l.moulted = true; l.soft = PLANS[l.plan].soft;
-  if (l.size === RULE.adultSize) say(l, 'You are an adult: you can lay eggs now.');
-  if (l.size === RULE.maxSize) { l.health = RULE.health; say(l, 'Full grown: your body is finished and your wounds close.'); }
-  const pool = PART_IDS.filter((id) => !PARTS[id].rare && PARTS[id].plans.includes(l.plan));
+  l.build = { ...l.build, size: size(l) + 1 }; l.moults++; l.moulted = true; l.soft = PLANS[l.plan].soft;
+  if (size(l) === RULE.adultSize) say(l, 'You are an adult: you can lay eggs now.');
+  if (size(l) === RULE.maxSize) { l.health = RULE.health; say(l, 'Full grown: your body is finished and your wounds close.'); }
+  const pool = PART_IDS.filter((id) => !PARTS[id].rare && PARTS[id].plans.includes(l.plan) && (!l.pool || l.pool.includes(id)));
   for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(rnd(l) * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
-  l.offers = pool.slice(0, 3);
-  if (l.moults >= l.rareAt && !l.rareGot) { const rare = l.hab.rares[l.plan].find((id) => !has(l, id)); if (rare) l.offers.push(rare); }
+  const buds = P.budParts(l.build);
+  l.offers = [...buds, ...pool.filter((p) => !buds.includes(p) && P.changesFor(l.build, l.growth, p).length).slice(0, 3)];
+  if (l.moults >= l.rareAt && !l.rareGot) { const rare = l.hab.rares[l.plan].find((p) => !l.offers.includes(p) && P.changesFor(l.build, l.growth, p).length); if (rare) l.offers.push(rare); }
   l.phase = 'offer';
-  emit(l, { k: 'moult', size: l.size, food: l.food });
+  emit(l, { k: 'moult', size: size(l), food: l.food });
 }
 
-/** Take one of the offers: it goes in the first slot it fits (replacing a part if all are full). */
-export function pick(l: Life, part: PartId) {
+/** The legal ways to take an offer: one per place it can change. */
+export const offerChanges = (l: Life, part: PartId) => (l.phase === 'offer' && l.offers.includes(part) ? P.changesFor(l.build, l.growth, part) : []);
+
+/** Take an offer at a place (its first legal place if none is given), or `null` to finish growing without a part. */
+export function pick(l: Life, part: PartId | null, place?: PlaceId) {
   l.events = [];
-  if (l.phase !== 'offer' || !l.offers.includes(part)) return;
-  const k = freeSlotFor(l, part);
-  if (k >= 0) {
-    const old = l.slots[k].part;
-    l.order = l.order.filter((o) => o !== k); l.slots[k].part = part; l.order.push(k);
-    emit(l, { k: 'part', slot: k, part, old });
+  if (l.phase !== 'offer') return;
+  const change = part ? offerChanges(l, part).find((c) => !place || c.place === place) : null;
+  if (part && !change) return;
+  if (change) {
+    const extra = pickCost(l, change.bud) - pickCost(l, true);
+    if (l.food < extra) return;
+    l.food -= extra;
+    l.growth = { ...l.growth, rows: structuredClone(change.planned), branched: l.growth.branched || change.branches };
+    l.build = { ...change.build, size: size(l) };
+    emit(l, { k: 'part', place: change.place, part: part!, row: change.row, was: change.was });
+    if (PARTS[part!].rare) { l.rareGot = part; l.rarePassed = false; say(l, `Rare: ${PARTS[part!].name}. Lay an egg to pass it on.`); }
   }
   l.phase = 'play'; l.offers = [];
-  if (PARTS[part].rare) { l.rareGot = part; l.rarePassed = false; say(l, `Rare: ${PARTS[part].name}. Lay an egg to pass it on.`); }
   l.oxygen = Math.min(l.oxygen, oxygenMax(l));
   reveal(l);
 }
@@ -242,7 +249,7 @@ export function dests(l: Life): Map<number, Dest> {
     }
   }
   if (worm && onMud(l)) tunnels(l, out, predAt);
-  if (hasReach(l)) {
+  if (B.reach(l.build)) {
     const ax = l.x + DX[l.facing], ay = l.y + DY[l.facing];
     if (inB(ax, ay) && at(ax, ay) !== predAt) {
       const t = tile(l, ax, ay);
@@ -282,7 +289,7 @@ export function lay(l: Life) {
   if (!canLay(l)) return;
   const n = clutch(l);
   l.food -= RULE.layCost; l.eggs += n; l.moved = false;
-  l.eggParts = l.order.flatMap((k) => l.slots[k].part ? [l.slots[k].part!] : []);
+  l.laid = snapshot(l.build); l.laidPlan = Object.freeze(structuredClone(l.growth));
   say(l, `Laid ${n} egg${n > 1 ? 's' : ''}.`);
   emit(l, { k: 'lay', n, eggs: l.eggs, food: l.food });
   if (l.rareGot && !l.rarePassed) { l.rarePassed = true; say(l, `${PARTS[l.rareGot].name} passed on.`); }
@@ -312,13 +319,19 @@ function rivalStep(l: Life, idx: number) {
 }
 
 // ---- the world's turn ----
+/** Lose a whole row: a tear or a shed. Its effects, verbs, upkeep and allowance go with it; oxygen clamps. */
+export function loseAt(l: Life, place: PlaceId) {
+  l.build = P.withBuds(loseRow(l.build, place), l.growth.rows);
+  l.oxygen = Math.min(l.oxygen, oxygenMax(l));
+}
+
 function hurtOrShed(l: Life, why: string) {
-  const k = l.order.pop();
-  if (k !== undefined && l.slots[k].part) {
-    const part = l.slots[k].part!;
-    say(l, `${why}: your body absorbs its ${PARTS[part].name.toLowerCase()}.`);
-    emit(l, { k: 'shed', slot: k, part });
-    l.slots[k].part = null;
+  const s = shed(l.build);
+  if (s) {
+    const row = l.build.rows[s.place]!;
+    say(l, `${why}: your body absorbs its ${B.describeRow(row).toLowerCase()}.`);
+    loseAt(l, s.place);
+    emit(l, { k: 'shed', place: s.place, row });
     return;
   }
   say(l, `${why}: −1 health.`); l.health -= 1;
