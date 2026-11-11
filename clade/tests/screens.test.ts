@@ -13,7 +13,7 @@ const worm: Build = { clade: 'worm', parts: {}, genes: { size: 1, gut: 1 } };
 const makeFixture = (): World => ({ seed: 1, generation: 0, species: [], lineages: [], habitats: [{
   id: 0, name: 'Test shallows', kind: { depth: 'shallows', substrate: 'sand', exposure: 'open' },
   tiles: [], area: 100, centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 40,
-  stocks: { mats: 300, detritus: 100 }, pops: {},
+  stocks: { mats: 3000, detritus: 1000 }, pops: {},
 }] });
 
 it('the intake sentence names the current fraction of its own slot food, including zero', () => {

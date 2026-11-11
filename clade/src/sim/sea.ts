@@ -5,7 +5,7 @@ import { FOODS, REGROW, SEA } from '../data/sea';
 import { bodyMass, ceiling, density, reach, score, slots, stats } from './fitness';
 import { makeGround } from './ground';
 import { findHabitats, type Habitat } from './habitats';
-import type { Build, Letter, Ranks, Slot, World } from './records';
+import type { Build, Ranks, Slot, World } from './records';
 
 export function makeWorld(seed: number): World {
   const habitats = findHabitats(makeGround(seed)).list;
@@ -23,7 +23,8 @@ function best(build: Build, ranks: Ranks, h: Habitat, world: World, available = 
   return chosen;
 }
 
-const spreadLetters = new Set<Letter>(['S', 'A', 'B', 'C']);
+/** A newcomer grows where appetite × value beats deaths at today's food: it moves only there. */
+const grows = (value: number) => SEA.appetite * value > SEA.deaths;
 
 /** Mutates ecological state in place; geometry and the species/lineage records stay unchanged. */
 export function step(world: World): void {
@@ -66,7 +67,7 @@ export function step(world: World): void {
   // 1. Regrow toward yield × area, once per food and habitat.
   for (const h of habitats) for (const food of FOODS) h.stocks[food] += REGROW[food] * (ceiling(h, food) - h.stocks[food]);
 
-  // 5. Predict on the same regrown stocks everywhere: the food a newcomer finds. Cache only for this generation.
+  // 5. Spread where the newcomer would grow on the regrown stocks it finds. Cache only for this generation.
   const byId = new Map(habitats.map((h, i) => [h.id, i]));
   const predictions = habitats.map(() => new Map<number, boolean>());
   const nextPops = habitats.map((h) => ({ ...h.pops }));
@@ -81,7 +82,7 @@ export function step(world: World): void {
         let allowed = predictions[to].get(i);
         if (allowed === undefined) {
           const prediction = best(s.build, ranks[i], habitats[to], world, available[to]);
-          allowed = !!prediction && spreadLetters.has(prediction.fit.letter);
+          allowed = !!prediction && grows(prediction.fit.value);
           predictions[to].set(i, allowed);
         }
         if (!allowed) return;

@@ -13,7 +13,7 @@ const worm: Build = { clade: 'worm', parts: {}, genes: { size: 1, gut: 1 } };
 const habitat = (): Habitat => ({
   id: 0, kind: { depth: 'shallows', substrate: 'sand', exposure: 'open' }, name: 'Test shallows',
   tiles: [], area: 100, centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 40,
-  stocks: { mats: 300, detritus: 100 }, pops: {},
+  stocks: { mats: 3000, detritus: 1000 }, pops: {},
 });
 const world: World = { seed: 1, generation: 0, habitats: [], species: [], lineages: [] };
 
@@ -97,7 +97,7 @@ describe('food and habitat rules', () => {
   });
 
   it('derives capacity from area, keeps letters independent of area, and ignores exposure', () => {
-    const h = habitat(), big = { ...h, area: 200, stocks: { mats: 600, detritus: 200 } };
+    const h = habitat(), big = { ...h, area: 200, stocks: { mats: 6000, detritus: 2000 } };
     const smallSlot = slots(h, world)[0], bigSlot = slots(big, world)[0];
     expect(bigSlot.capacity).toBe(smallSlot.capacity * 2);
     expect(fitness(worm, {}, smallSlot, h, world)).toEqual(fitness(worm, {}, bigSlot, big, world));

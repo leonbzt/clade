@@ -43,6 +43,7 @@ export interface Slot {
   id: Food; foods: Food[]; name: string; role: 'grazer' | 'burrower'; accent: number; capacity: number;
 }
 export interface Fitness {
-  intake: number; upkeep: number; survival: number; value: number; letter: Letter;
+  // intake and value read today's food (the sea's growth rate); full and letter rank the build at full food.
+  intake: number; full: number; upkeep: number; survival: number; value: number; letter: Letter;
   reasons: [string, string, string];
 }

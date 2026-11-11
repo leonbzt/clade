@@ -13,7 +13,7 @@ function habitat(id = 0): Habitat {
   return {
     id, name: `Shallows ${id}`, kind: { depth: 'shallows', substrate: 'sand', exposure: 'open' },
     tiles: [], area: 100, centre: { x: id, y: 0 }, neighbours: [], borders: [], perimeter: 40,
-    stocks: { mats: 300, detritus: 100 }, pops: {},
+    stocks: { mats: 3000, detritus: 1000 }, pops: {},
   };
 }
 const sea = (habitats = [habitat()], residents = [species()]): World => ({
@@ -35,27 +35,27 @@ describe('sea arithmetic', () => {
 
   it('splits a shortage by population × reach, then breeds using each build\'s upkeep', () => {
     const h = habitat(), tentacles: Build = { ...worm, parts: { front: 'tentacles' } };
-    h.stocks.mats = 90; // a grazed-down stand: both crowds want several times more than this
-    h.pops = { bare: 1000, tentacles: 1000 };
+    h.stocks.mats = 900; // a grazed-down stand: both crowds want several times more than this
+    h.pops = { bare: 10000, tentacles: 10000 };
     const world = sea([h], [species('bare'), species('tentacles', tentacles)]);
     const [rb, rt] = [reach(worm, {}, 'mats', h), reach(tentacles, {}, 'mats', h)];
-    expect(1000 * SEA.appetite * (rb + rt) * density(h, 'mats')).toBeGreaterThan(90);
+    expect(10000 * SEA.appetite * (rb + rt) * density(h, 'mats')).toBeGreaterThan(900);
     step(world);
-    const bareTarget = 1000 * (1 - SEA.deaths) + 90 * rb / (rb + rt);
-    const tentacleTarget = 1000 * (1 - SEA.deaths) + 90 * rt / (rb + rt) / 2;
+    const bareTarget = 10000 * (1 - SEA.deaths) + 900 * rb / (rb + rt);
+    const tentacleTarget = 10000 * (1 - SEA.deaths) + 900 * rt / (rb + rt) / 2;
     expect(h.stocks.mats).toBe(REGROW.mats * ceiling(h, 'mats')); // eaten to 0, then regrown
-    expect(h.stocks.detritus).toBe(100); // neither build can dig; already at its ceiling
-    expect(h.pops.bare).toBeCloseTo(1000 + SEA.damping * (bareTarget - 1000));
-    expect(h.pops.tentacles).toBeCloseTo(1000 + SEA.damping * (tentacleTarget - 1000));
+    expect(h.stocks.detritus).toBe(1000); // neither build can dig; already at its ceiling
+    expect(h.pops.bare).toBeCloseTo(10000 + SEA.damping * (bareTarget - 10000));
+    expect(h.pops.tentacles).toBeCloseTo(10000 + SEA.damping * (tentacleTarget - 10000));
   });
 
   it('recomputes the best slot when stocks change and eats only that slot', () => {
     const h = habitat(), build: Build = { ...worm, parts: { tail: 'bulb' } };
-    h.pops.worm = 10; h.stocks.detritus = 20; // thin detritus: grazing mats is better
+    h.pops.worm = 10; h.stocks.detritus = 200; // thin detritus: grazing mats is better
     const world = sea([h], [species('worm', build)]);
     step(world);
-    expect(h.stocks.mats).toBeLessThan(300);
-    expect(h.stocks.detritus).toBe(20 + REGROW.detritus * (ceiling(h, 'detritus') - 20));
+    expect(h.stocks.mats).toBeLessThan(3000);
+    expect(h.stocks.detritus).toBe(200 + REGROW.detritus * (ceiling(h, 'detritus') - 200));
     h.stocks.mats = 0;
     const untouched = h.stocks.detritus + REGROW.detritus * (ceiling(h, 'detritus') - h.stocks.detritus);
     step(world);
@@ -76,21 +76,21 @@ describe('sea arithmetic', () => {
     expect(h.pops.small).toBeUndefined();
   });
 
-  it('lets a lone shallow worm swing and settle by about 30 generations without exceeding its food ceiling', () => {
+  it('lets a lone shallow worm swing and settle by about 40 generations without exceeding its food ceiling', () => {
     const h = habitat(); h.pops.worm = 20 * bodyMass(worm);
     const world = sea([h]), populations: number[] = [], stocks: number[] = [];
     for (let i = 0; i < 160; i++) { step(world); populations.push(h.pops.worm ?? 0); stocks.push(h.stocks.mats); }
     const end = populations[159];
     expect(Math.min(...populations)).toBeGreaterThan(0);
     expect(Math.max(...populations)).toBeLessThanOrEqual(ceiling(h, 'mats'));
-    expect(Math.abs(populations[29] - end) / end).toBeLessThan(0.05);
-    expect(Math.max(...populations)).toBeGreaterThan(1.1 * end); // an overshoot, then a fall toward equilibrium
+    expect(Math.abs(populations[39] - end) / end).toBeLessThan(0.05); // 20 founders on ×10 food; N2's eggs set the real founding
+    expect(Math.max(...populations)).toBeGreaterThan(1.05 * end); // an overshoot, then a fall toward equilibrium
     expect(stocks[0]).toBeGreaterThan(stocks[29]);
     for (const food of FOODS) expect(h.stocks[food]).toBeGreaterThanOrEqual(0);
   });
 });
 
-describe('the letter is the growth rate', () => {
+describe('letters rank the build; growth reads today\'s food', () => {
   const tentacles: Build = { ...worm, parts: { front: 'tentacles' } };
   const settle = (build: Build, generations = 80) => {
     const h = habitat(), world = sea([h], [species('holder', build)]);
@@ -99,13 +99,13 @@ describe('the letter is the growth rate', () => {
     return { h, world, slot: slots(h, world)[0] };
   };
 
-  it('a settled holder reads C at home: it just replaces itself on the food it left', () => {
-    for (const build of [worm, tentacles]) {
+  it('a settled holder keeps its letter and just replaces itself on the food it left', () => {
+    for (const [build, letter] of [[worm, 'C'], [tentacles, 'B']] as const) {
       const { h, world, slot } = settle(build);
-      const fit = fitness(build, {}, slot, h, world);
-      expect(fit.letter).toBe('C');
+      const fit = fitness(build, {}, slot, h, world), fresh = fitness(build, {}, slot, habitat(), world);
+      expect([fit.letter, fresh.letter]).toEqual([letter, letter]);
       expect(SEA.appetite * fit.value).toBeCloseTo(SEA.deaths, 2);
-      expect(fitness(build, {}, slot, habitat(), world).value).toBeGreaterThan(fit.value); // fresh food reads higher
+      expect(fresh.value).toBeGreaterThan(fit.value); // fresh food grows faster
     }
   });
 
@@ -124,7 +124,7 @@ describe('the letter is the growth rate', () => {
 });
 
 describe('spread', () => {
-  it('moves only into predicted C-or-better habitats, by border / whole perimeter, conserving grams', () => {
+  it('moves only where a newcomer would grow at today\'s food, by border / whole perimeter, conserving grams', () => {
     const [source, good, dark, depleted] = [0, 1, 2, 3].map(habitat);
     source.neighbours = [1, 2, 3]; source.borders = [10, 10, 10]; source.perimeter = 100;
     source.pops.worm = 400;
@@ -142,8 +142,7 @@ describe('spread', () => {
     expect(depleted.pops.worm).toBeUndefined();
     expect(biomass(world)).toBeCloseTo(afterBreed);
     for (const h of [good, dark, depleted]) {
-      const letters = slots(h, world).map((slot) => fitness(worm, {}, slot, h, world).letter);
-      const allowed = letters.some((l) => ['S', 'A', 'B', 'C'].includes(l));
+      const allowed = slots(h, world).some((slot) => SEA.appetite * fitness(worm, {}, slot, h, world).value > SEA.deaths);
       expect((h.pops.worm ?? 0) > 0).toBe(allowed);
     }
   });

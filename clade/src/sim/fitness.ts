@@ -12,6 +12,8 @@ export const bodyMass = (b: Build): number => MASS_BY_SIZE[sizeOf(b)];
 export const ceiling = (h: Habitat, food: Food) => YIELDS[food][h.kind.depth][h.kind.substrate] * h.area;
 /** Food per tile against the reference density: the one food term of intake, read by `fitness` and the sea's eating. */
 export const density = (h: Habitat, food: Food) => Math.max(0, h.stocks[food]) / Math.max(1, h.area) / SEA.referenceDensity;
+/** The same density with the stock at its ceiling: what the letter ranks, whoever grazes there now. */
+const fullDensity = (h: Habitat, food: Food) => YIELDS[food][h.kind.depth][h.kind.substrate] / SEA.referenceDensity;
 
 export function stats(build: Build, ranks: Ranks): Stats {
   return deriveStats(build, ranks, partsOf(build));
@@ -63,15 +65,19 @@ function letterFor(value: number, thresholds: readonly (readonly [Letter, number
   return thresholds[thresholds.length - 1][0];
 }
 
-/** The curve's numbers and letter without the reasons: the sea's hot loop. `fitness` adds the three sentences. */
+/** The curve's numbers and letter without the reasons: the sea's hot loop. `fitness` adds the three sentences.
+ *  `value` reads today's food (the growth rate the sea uses); the letter ranks the build at full food. */
 export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat): Omit<Fitness, 'reasons'> {
   const ids = partsOf(build), traits = deriveStats(build, ranks, ids);
-  let intake = 0, upkeep = BASE_UPKEEP[sizeOf(build)] - traits.thrift;
-  for (const food of slot.foods) intake += foodReach(build, ids, traits, food, habitat) * density(habitat, food);
+  let intake = 0, full = 0, upkeep = BASE_UPKEEP[sizeOf(build)] - traits.thrift;
+  for (const food of slot.foods) {
+    const r = foodReach(build, ids, traits, food, habitat);
+    intake += r * density(habitat, food);
+    full += r * fullDensity(habitat, food);
+  }
   for (const p of ids) upkeep += PARTS[p].upkeep;
-  const survival = SEA.survival;
-  const value = intake / upkeep * survival * traits.brood;
-  return { intake, upkeep, survival, value, letter: letterFor(value, LETTER_THRESHOLDS[slot.id]) };
+  const survival = SEA.survival, per = survival * traits.brood / upkeep;
+  return { intake, full, upkeep, survival, value: intake * per, letter: letterFor(full * per, LETTER_THRESHOLDS[slot.id]) };
 }
 
 export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, _world: World): Fitness {
@@ -85,7 +91,7 @@ export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat
   return {
     ...fit,
     reasons: [
-      `Intake ${letterFor(fit.intake, TERM_THRESHOLDS)}: ${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}; ${foodLeft}.`,
+      `Intake ${letterFor(fit.full, TERM_THRESHOLDS)}: ${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}; ${foodLeft}.`,
       `Upkeep ${letterFor(1 / fit.upkeep, TERM_THRESHOLDS)}: ${costs.length ? costs.join(', ') : 'no costly parts'}; ${build.parts.eyes ? 'eyes' : 'no eyes'}, ${build.parts.limbs ? 'limbs' : 'no legs'}.`,
       `Survival ${letterFor(fit.survival, TERM_THRESHOLDS)}: nothing hunts it here.`,
     ],

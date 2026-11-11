@@ -15,7 +15,7 @@ export const PRESETS: {
     { species: ['sclerite-worm'], heads: 20 },
   ] },
   { id: 'rivals', name: 'Rivals', ranks: {}, generations: 0,
-    groups: [{ species: ['tentacle-worm', 'arthropod'], heads: 20, depth: 'shallows', substrate: 'sand' }] },
+    groups: [{ species: ['tentacle-worm', 'root-worm'], heads: 20, depth: 'shallows', substrate: 'sand' }] }, // B against C on sand; the arthropod returns with N4's armour
   { id: 'midgame', name: 'Midgame', ranks: { tentacles: 1 }, generations: 100, groups: [
     { species: ['tentacle-worm'], heads: 20 },
     { species: ['bulb-worm'], heads: 20 },
