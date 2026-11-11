@@ -140,7 +140,7 @@ describe('Lay and results', () => {
     l.turn = TURNS; l.food = 10; l.ate.mat = 5;
     stay(l);
     const result = resultOf(l);
-    expect(result).toEqual({ eggs: 1, cause: 'season', enforced: {}, ate: { mat: 5 }, witnessed: ['rival'] });
+    expect(result).toEqual({ eggs: 1, mutation: null, eggsAfter: 0, cause: 'season', enforced: {}, ate: { mat: 5 }, witnessed: ['rival'] });
     l.ate.mat = 10;
     expect(result?.ate.mat).toBe(5);
     const dying = life({});

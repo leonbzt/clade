@@ -3,8 +3,10 @@ import { CLADES } from '../data/clades';
 import type { Substrate } from '../data/ground';
 import { ENFORCE_EFFECT } from '../data/economy';
 import { GUARDS, NODES, PLANS, RULE, STRUCK, type NodeId } from '../data/life';
+import { MUTATION } from '../data/mutation';
 import { PARTS, PLACES } from '../data/parts';
 import { partUpkeep, reach } from './fitness';
+import type { Mutation } from './mutation';
 import type { Build, Food, Part, PartId, Place, Ranks, VerbId } from './records';
 
 export type LifePlan = keyof typeof PLANS;
@@ -16,6 +18,7 @@ export interface LifeBody {
   lost: Place[];
   enforced: Ranks;
   spentGuards: Ranks;
+  mutation: Mutation | null;
 }
 
 const FAMILIES: Part['family'][] = ['feed', 'move', 'sense', 'guard', 'brood'];
@@ -29,8 +32,11 @@ export function growthOrder(build: Build): Place[] {
 }
 
 export function activePlaces(body: LifeBody): Place[] {
-  const order = growthOrder(body.build);
-  return (body.size >= RULE.maxSize ? order : order.slice(0, body.size)).filter((place) => !body.lost.includes(place));
+  const order = growthOrder(body.build).filter((place) => place !== body.mutation?.place);
+  const active = body.size >= RULE.maxSize ? order : order.slice(0, body.size);
+  // Keep activation order for starvation: growth after the pick is newer than the mutation.
+  if (body.mutation) active.splice(Math.min(MUTATION.size, active.length), 0, body.mutation.place);
+  return active.filter((place) => !body.lost.includes(place));
 }
 
 export const activeParts = (body: LifeBody): PartId[] => activePlaces(body).map((place) => body.build.parts[place]!);

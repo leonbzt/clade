@@ -4,6 +4,7 @@ import { PLANS, RULE, TURNS } from '../data/life';
 import { PARTS } from '../data/parts';
 import { activePlaces, clutch, has, mature } from './life-body';
 import { emit, onMud, reveal, say, world, type Life } from './life';
+import { offerMutation } from './mutation';
 import type { PartId } from './records';
 
 export const growCost = (life: Life) => Math.ceil((life.size + PLANS[life.build.clade].moultExtra) * GROW_SHARE);
@@ -27,6 +28,7 @@ export function grow(life: Life): boolean {
     if (!before.includes(place)) emit(life, { k: 'part', place, part: life.build.parts[place]! });
   }
   reveal(life);
+  offerMutation(life);
   return true;
 }
 
@@ -73,6 +75,7 @@ export function lay(life: Life): boolean {
   life.food -= layCost(life);
   life.lays++;
   life.eggs += n;
+  if (life.mutation) life.eggsAfter += n;
   life.moved = false;
   say(life, `Laid ${n} egg${n === 1 ? '' : 's'}.`);
   emit(life, { k: 'lay', n, eggs: life.eggs, food: life.food });
@@ -84,6 +87,8 @@ export function resultOf(life: Life) {
   if (!life.cause) return null;
   return {
     eggs: life.eggs,
+    mutation: life.mutation ? { ...life.mutation } : null,
+    eggsAfter: life.eggsAfter,
     enforced: { ...life.enforced },
     ate: { ...life.ate },
     cause: life.cause,

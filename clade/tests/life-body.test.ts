@@ -7,7 +7,7 @@ import {
 import type { Build } from '../src/sim/records';
 
 function body(clade: LifePlan, parts: Build['parts'], size = 1): LifeBody {
-  return { build: { clade, parts, genes: { size: 5, gut: 1 } }, size, lost: [], ranks: {}, enforced: {}, spentGuards: {} };
+  return { build: { clade, parts, genes: { size: 5, gut: 1 } }, size, lost: [], ranks: {}, enforced: {}, spentGuards: {}, mutation: null };
 }
 
 describe('the Life body', () => {

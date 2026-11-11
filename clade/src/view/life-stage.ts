@@ -4,6 +4,7 @@ import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
 import { NODES, TURNS } from '../data/life';
 import * as E from '../sim/economy';
 import * as L from '../sim/life';
+import { pickMutation } from '../sim/mutation';
 import { useVerb } from '../sim/verbs';
 import type { PartId, VerbId } from '../sim/records';
 import { Hud } from '../ui/life/hud';
@@ -59,7 +60,7 @@ export class LifeStage {
     cam.shakeAmt = feel.shake; cam.zoomSpeed = feel.zoomSpeed;
     const you = new Body(this.life), hunter = new Hunter();
     const rivals = this.life.rivals.map((r) => {
-      const b = new Body({ ...this.life, build: { ...r.build, clade: r.build.clade === 'arthropod' || r.build.clade === 'trilobite' ? r.build.clade : 'worm' }, size: 5, lost: [] }, PAL.rival);
+      const b = new Body({ ...this.life, build: { ...r.build, clade: r.build.clade === 'arthropod' || r.build.clade === 'trilobite' ? r.build.clade : 'worm' }, size: 5, lost: [], mutation: null }, PAL.rival);
       const c = centre(L.at(r.x, r.y)); b.place(c.x, c.y, -Math.PI / 2); return b;
     });
     Object.assign(S, { app, floor, fx, marks, cam, hud, hunter, you, rivals, life: this.life, busy: false });
@@ -89,6 +90,7 @@ export class LifeStage {
       get life() { return S.life; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)),
       move: (i: number) => this.act(() => L.move(this.life, i)), wait: () => this.act(() => L.stay(this.life)),
       grow: () => this.act(() => E.grow(this.life)), enforce: (p: PartId) => this.enforce(p),
+      mutate: (p: PartId | null) => this.mutate(p),
       lay: () => this.act(() => E.lay(this.life)), verb: (v: VerbId) => this.verb(v),
       get destinations() { return [...L.dests(S.life).keys()]; }, fps: () => app.ticker.FPS,
     } });
@@ -111,6 +113,7 @@ export class LifeStage {
     if (!this.disposed && (this.life.phase as L.Life['phase']) === 'over' && !this.ended) { this.ended = true; this.complete(); }
   }
   addFood() { return this.act(() => { this.life.food += 10; }); }
+  mutate(part: PartId | null) { return this.act(() => pickMutation(this.life, part)); }
   endSeason() {
     return this.act(() => {
       this.life.turn = TURNS; this.life.phase = 'over'; this.life.cause = 'season';

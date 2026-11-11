@@ -54,6 +54,7 @@ export type Ev =
 
 export interface Life extends LifeBody {
   board: Board;
+  seed: number; mutationOffer: PartId[] | null; eggsAfter: number;
   tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Rival & { x: number; y: number })[];
   turn: number; food: number; oxygen: number; health: number; eggs: number; lays: number;
   phase: 'play' | 'over'; cause: 'season' | 'died' | null;
@@ -101,11 +102,12 @@ export function reveal(l: Life) {
 export const say = (l: Life, m: string) => { l.lines.push(m); if (l.lines.length > 5) l.lines.shift(); };
 export const emit = (l: Life, e: Ev) => { l.events.push(e); };
 
-/** The board has already used its seed for layout. A Life's turns follow the board and its actions. */
-export function newLife(board: Board, build: Build, ranks: Ranks, _seed: number): Life {
+/** Turns follow the board and its actions; the mutation uses the Life's seed. */
+export function newLife(board: Board, build: Build, ranks: Ranks, seed: number): Life {
   if (!isLifeBuild(build)) throw new Error('This clade has no Life on a grazer board');
   const l: Life = {
     board, build, ranks, size: 1, lost: [], enforced: {}, spentGuards: {},
+    seed, mutationOffer: null, mutation: null, eggsAfter: 0,
     tiles: board.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
     x: board.start[0], y: board.start[1], facing: 1, rivals: board.rivals.map((v) => ({ ...v, x: v.at[0], y: v.at[1] })),
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, lays: 0,
