@@ -788,3 +788,11 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Fewer tokens:** "i want to test most things, instead of using heavy simulations and tests, also fewer
   screenshots". Steps skip the separate review round unless the check fails or play feels off; one phone-size look
   run per step (full sheets only for the play test); no scripted strategy comparisons; specs about 60 lines.
+
+## 11 Nov, the N3 spec (step 10)
+- **The mutation event is pick one of three:** once per Life, at size 3, three parts for empty places or pass; eggs
+  laid after it carry it as a sure clutch card (the parked equipping moment, pulled into N3).
+- **A level gives a point to spend** on one part's rank (−1 upkeep, +1 Enforce cap); "later this should become like an
+  evolution tree, maybe with verbs, special abilities or part upgrades possible" (parked in `ideas.md`).
+- **Codex builds N3**, "but the limit is very low, set it up so there is a lot of breakpoints so you can pick up if its
+  over": one commit and one status line per part, A to I.

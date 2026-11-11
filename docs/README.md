@@ -3,7 +3,7 @@
 Open only what the task needs. Top to bottom is the order of authority: when two docs disagree, the higher one
 wins (and the code is the truth for what's built).
 
-**Current task:** M2 step 9, N2 The Life (spec ready 11 Nov; Codex builds it). Start with [status.md](status.md)
+**Current task:** M2 step 10, N3 The screens (spec ready 11 Nov; Codex builds it, with breakpoints). Start with [status.md](status.md)
 and the step's spec; open the documents below only as the task needs them.
 
 | File | What it holds | Who changes it | When to read it |

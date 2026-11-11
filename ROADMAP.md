@@ -25,7 +25,7 @@ stays playable until the new game passes the play test after N4. Slice 23 is re-
 7. [x] **N0** [The ground](docs/slices/n0-the-ground.md): terrain kinds, the habitat finder, names, a bare zoomable map, the palette file · 1 session
 8. [x] **N1** [The core](docs/slices/n1-the-core.md): the records, `fitness`, slots, the sea step, tier cards, the placement preview, dev presets · 2
 9. [ ] **N2** [The Life](docs/slices/n2-the-life.md), ported, with Grow, Enforce and Lay; a purpose per Life; eggs found a population · 2
-10. [ ] **N3** The screens: home map, hatching, the line view, the tree with its trunk · 2
+10. [ ] **N3** [The screens](docs/slices/n3-the-screens.md): home map, hatching, the line view, the tree with its trunk · 2
 11. [ ] **N4** Who eats whom; wild branches; displace and adopt; patch notes with a cause · 2
 12. [ ] **Play N0–N4 as a whole; the closed test:** an unlisted itch page for 3–5 Discord players
 13. [ ] **L1** The look contract in code: plans, stamps, channels, the contact sheet · 1–2

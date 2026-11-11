@@ -1,5 +1,8 @@
 # Status
 
-- **11 Nov 2026 · M2, N2 E–G reviewed on `n2-the-life`; no bugs found.** One change from the review: the Lay price rises 4, 6, 8, … per Life (`LAY_STEP` in `data/economy.ts`, one test); the scripted Lives fell from 86/60 eggs to 46/38. The check passes in 6.0 s. Uncommitted: that change plus the decisions, ideas and playtest notes.
-- **Your calls (decisions.md, 11 Nov):** itch waits until after N4; keep the plan for choice (N3's mutation event and clutch cards); parked in `ideas.md`: an equipping moment in the Life, bigger stock bars, rivals at mixed sizes, a part that lowers the Lay price. Token rules: you test by playing; no review round per session, one phone-size look run per step, no strategy sims, specs about 60 lines.
-- **Next:** you play N2's question (`/clade/`, pick Grazer or Digger worm in the map bar's Build list, then Colonise a mat flat, a mud shallows and a deep slope) and give the old-Life verdict; then merge N2 into `main` and `/spec` N3.
+- **11 Nov 2026 · M2, N2 done on `n2-the-life` (review change `cf8d6cc`: the Lay price rises 4, 6, 8, …); N3 specced.** [N3 spec](slices/n3-the-screens.md): hatching with gain/swap/lose cards, the mutation offer (pick one of three at size 3), line XP with points to spend, the home map with targets, the line view, the tree with its trunk.
+- **Your calls (decisions.md, 11 Nov):** pick one of three for the mutation; a level gives a point (an evolution tree later, parked); Codex builds N3 with a breakpoint per part. Token rules stand: you test by playing, one phone-size look run per step, no review round.
+- **Next:** play N2's question if you want the old-Life verdict first, then merge `n2-the-life` into `main`; Codex starts N3 part A on `n3-the-screens`. If Codex stops mid-way, Claude picks up from the progress lines below and `git status`.
+
+## N3 progress
+(One line per part, appended by the builder: "X done: what landed; next: Y".)
