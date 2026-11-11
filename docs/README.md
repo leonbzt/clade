@@ -3,8 +3,8 @@
 Open only what the task needs. Top to bottom is the order of authority: when two docs disagree, the higher one
 wins (and the code is the truth for what's built).
 
-**Current task:** M2 step 7, [N0 The ground](slices/n0-the-ground.md): the first step of the rebuild in `clade/`. Start with [status.md](status.md)
-and that spec; open the documents below only as the task needs them.
+**Current task:** M2 step 9, N2 The Life (spec next; N1 done 11 Nov). Start with [status.md](status.md)
+and the step's spec; open the documents below only as the task needs them.
 
 | File | What it holds | Who changes it | When to read it |
 | --- | --- | --- | --- |

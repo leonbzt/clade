@@ -64,9 +64,10 @@ capacity. This is not v1's tile simulation: tiles are ground and paint, never ru
   same habitat state and seed give the same board.
 - **The sea step,** per habitat and generation: (1) *regrow* stocks toward their ceiling; (2) *eat*: when food is
   short, split it by population × fitness; (3) *breed and die*: eaten × brood ÷ upkeep, less base deaths; (4) *hunt*:
-  the commonest prey most; (5) *spread* to neighbours where the predicted tier is C or better, by border length;
+  the commonest prey most; (5) *spread* to neighbours where the newcomer would grow at today's food, by border length;
   (6) *drift and bud*, rarely; (7) *engineer*; (8) *news*: for any change over about 30%, name the largest term.
-- **Swings** come from the one-generation lag between a food and its eaters, with one damping number to tune.
+- **Swings:** the lag between a food and its eaters gives one overshoot, then the sea settles (measured, N1). Lasting
+  swings wait for N4's hunters (*decided 11 Nov*); seasons are parked.
 - **Cost:** 16 habitats × 8 species × 160 generations is milliseconds. v1's island generator and habitat finder may be
   ported (`CLAUDE.md` rule 8 allows it when a spec carries them).
 
@@ -151,7 +152,7 @@ fitness(build, ranks, slot, habitat, world) → { intake, upkeep, survival, valu
 intake   = sum over the slot's foods of reach(food) × share of stock     reach is 0 when the food is locked for this build
 upkeep   = base(size) + part upkeeps − lean ranks
 survival = product over hunters and hazards here of 1 − threat × (1 − guard)
-value    = intake ÷ upkeep × survival × brood        letter = value against fixed thresholds per slot
+value    = intake ÷ upkeep × survival × brood        letter = value at full food on a ×1.5 ladder from break-even (D)
 ```
 **Laws, kept as tests:**
 1. Only `fitness` makes a tier letter. The sea, the preview, the tier card and the Life's richness all call it.

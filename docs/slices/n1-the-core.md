@@ -37,20 +37,20 @@ card's three sentences; mat, plankton and detritus as foods).
      `fitness`; then `pop += damping × (target − pop)`. A population under two heads' mass dies out.
   1. *Regrow:* `stock += regrow × (ceiling − stock)`, one rate per food. It runs after breeding, so the stored stock
      is the standing food: what the next eaters find and what every letter reads.
-  5. *Spread:* where the predicted letter is C or better, `pop × spread × border ÷ perimeter` grams move to each
+  5. *Spread:* where the newcomer would grow at today's food (*11 Nov*; was "C or better"), `pop × spread × border ÷ perimeter` grams move to each
      neighbour (that neighbour's border length over the habitat's whole border). A move under two heads' mass stays
      home.
   `fitness`'s intake reads food per tile (`stock ÷ area`, against a reference density in data). So a habitat's size
   changes how much lives there, not its letter, and a grazed-down habitat scores lower for newcomers and residents.
-  **The letter is the growth rate** (*Claude's review, 10 Nov*): a population grows while appetite × value > deaths,
-  so C's floor sits at that break-even. A fresh habitat reads its full letter; a settled holder reads C at home (it
-  just replaces itself); a stronger newcomer reads above it and takes the slot, a weaker one reads below and dies.
+  **Letters rank the build at full food** (*decided 11 Nov*, replacing 10 Nov's "the letter is the growth rate"): D
+  starts at break-even (appetite × value = deaths), ×1.5 per letter, so a higher letter always wins its slot. Growth
+  and spread read today's food: a newcomer moves only where it would grow. Grams ×10 (*11 Nov*).
 
 **Session 2: the screens, on N0's map.**
 - **E. The tier card** (`ui/TierCard.svelte`): one build in one slot: the letter and three term lines. N0's habitat
   card lists its slots with their holders' cards, and a small graph of stocks and populations over 160 generations.
-  Map labels show each slot's holder as a letter in the slot's accent. Letters read the current food (*decided 10
-  Nov*), so `fitness`'s intake sentence names the food left ("grazes mats, food at 38%"): a C holder makes sense.
+  Map labels show each slot's holder as a letter in the slot's accent. Letters rank the build (*11 Nov*); `fitness`'s
+  intake sentence names the food left ("grazes mats, food at 38%").
   The graph's history is kept by the UI as generations pass, never in the world record (law 2).
 - **F. The placement preview:** a build picker in the dev bar. The map shows the picked build's best letter per
   habitat; a tap shows its cards there; **Place** founds a population of 20 heads (20 × the body's mass in grams; N2's eggs do this later).
@@ -67,17 +67,17 @@ card's three sentences; mat, plankton and detritus as foods).
 - Cutting the parts you never use (ideas.md, 9 Nov): after the N4 play test; the table is ported whole.
 
 ## Done when
-- [ ] **Play question** (sheet or `/clade/`): on two seeds, do three worm builds get letters per habitat you agree
+- [x] **Play question** (sheet or `/clade/`): on two seeds, do three worm builds get letters per habitat you agree
   with, and does skip 100 move them where the preview said? Do the graphs swing and settle, not flatline or explode?
-- [ ] Tests: §6 laws 1–5 and 7 (only `fitness` makes a letter, and the sea, card and preview call it; the world
+- [x] Tests: §6 laws 1–5 and 7 (only `fitness` makes a letter, and the sea, card and preview call it; the world
   record holds no slot, tier or role; more upkeep never raises fitness, a food removed drives its eaters down; every
   clade but the root has a parent; ≤ 6 stats, 10 genes, 4 stocks; `sim` imports no view or ui). Law 6: 160
   generations of 16 habitats × 8 species under 100 ms. Same seed and preset, same sea after 160 generations. A
   species never spreads into a habitat where its predicted tier is below C.
-- [ ] `npm run check` passes in under 10 s.
-- [ ] The sheet: the preview for three builds on one seed; one habitat card with slots and graph; the map after skip
+- [x] `npm run check` passes in under 10 s.
+- [x] The sheet: the preview for three builds on one seed; one habitat card with slots and graph; the map after skip
   100 from *three worms*. Three lines in `docs/status.md`.
-- [ ] Your notes are in `docs/playtests/n1-the-core.md`.
+- [x] Your notes are in `docs/playtests/n1-the-core.md`.
 
 ## Size check
 - **New systems:** one, the sea's populations with `fitness` as its only rule; the card and preview are views of it.

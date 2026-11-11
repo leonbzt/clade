@@ -36,7 +36,8 @@ has to fit.
 - **Adapting has to feel like adapting.** Buying every trait isn't it. Not every stat can be improved: some choices
   trade ("more spread while drying out more", 26 Oct).
 - **Tiers like a game tier list** (S, A, B…), not bronze/gold or stars (26 Oct). Niches × tiers with "some light
-  ladder feeling" (2 Nov).
+  ladder feeling" (2 Nov). **A letter classifies the build itself** and how it fits the meta, habitat and ecosystem, not
+  today's food; low tiers live but are easily replaced (11 Nov).
 - **Lineages are your characters;** you grow one thing the whole time (29 Oct). The first lineage is a plant (1 Nov).
   The game starts at home, at the vent.
 - Breeding yes, but scarce. Stakes: species die out and the game goes on.

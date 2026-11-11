@@ -192,3 +192,6 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - The island: one or two main peaks instead of always a ridge (you, 10 Nov: "no priority"). For L1 or R10.
 - Exposure as flow: open water feeds filterers more (whole-game.md's "filter: intake rises with height and flow"); sheltered water favours mats and mud. Today exposure only classes, names and shapes flats. AI, 10 Nov. For the filterers (after release) or R7.
 - Saving (step A): store only seed, stocks, pops, species and lineages; today's `World` also holds the habitat geometry the seed rebuilds (law 2). AI, 10 Nov. For step A.
+- r vs K: small bodies lay more eggs, big ones fewer but heavier (you, 10 Nov, N1 review). With grams, founders = eggs × heads per egg × body mass, so one egg cost by size would make the trade. For R5 (size as a gene).
+- The sea keeps swinging: hunters whose appetite levels off (type II) cycle with their prey; or seasons (mats yield on a slow sine). You, 10 Nov: wait for the dynamics N4 brings first. For N4.
+- Life history in the sea: populations as a mix of growth stages; fast or slow growth, long or short life, longer or shorter larval stages as traits (you, 11 Nov: "sounds too complicated for now"). The sea uses the adult size until then. After release, or R5 if genes ask for it.

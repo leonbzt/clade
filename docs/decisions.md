@@ -744,3 +744,20 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Letters read the current food:** "current food makes most sense, i agree, tier should always reflect the current
   fit of a species" (N1 open call). A settled holder reads C at home; the card's intake line shows the food left.
 - **Codex builds N1 session 2 (E–G):** "i want to do implementation in codex". Claude reviews the diff after.
+
+## 11 Nov, the N1 review (step 8)
+- **Letters rank the build, at full food** (reverses 10 Nov's "letters read the current food"): "letters ranking the
+  build is definetley what i want … leters should always classify the build itself and how it fits in the
+  meta/habitat/ecosystem". Why: every settled holder grazes to its break-even, so a current-food letter read C for all
+  of them. The ladder starts D at break-even, ×1.5 per letter; F can't live there. D lives thinly and is easily
+  replaced; a higher letter always wins its slot. Growth and spread still read today's food: a newcomer moves only
+  where it would grow. The card names the food left. Hunters enter later as the survival term (N4).
+- **Grams ×10:** "scaling grams works, but maybe not 100x? maybe start with around 10x." Founders stay 20 heads.
+- **Rivals** becomes the tentacle worm against the bare worm; the arthropod's edge comes later (N4's armour).
+- **Gut gland unchanged** ("changes later"); **sea dynamics wait** for N4 ("wait for dynamics from future steps
+  first"); **few new tests.**
+- **Eggs to founders:** each egg stands for a fixed brood of heads ("makes sense"); r vs K parked in `ideas.md`.
+- **The sea uses the adult (full-grown) size** for now; growth stages in populations parked.
+- **N2:** the Life is ported by bins (copy the board as is, write the joints fresh from the brief, drop the rest);
+  the three coherence points (the board samples the sea, Enforce as payback, the economy in its own module);
+  purpose is Colonise only; **Codex builds N2**; no Fable consult before N4 ("i lean port for now").
