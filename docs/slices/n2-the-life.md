@@ -98,17 +98,17 @@ adult size; the N2 spec's three answers: the shadow, the numbers, family order).
 - [ ] **Play question** (`/clade/`): from *first worm*, Lives on a mat flat, a mud shallows and a deep slope. Is it as
   good as the old Life? Do the boards ask for different Enforce orders (the fail test: the same order wins on every
   board), and does each colony appear on the map where you laid it?
-- [ ] Tests: the ported engine tests from `game/tests` (life, verbs, threat) minus moult picks; parts switch on in
+- [x] Tests: the ported engine tests from `game/tests` (life, verbs, threat) minus moult picks; parts switch on in
   family order and all at size 5; a node is locked exactly when `reach` is 0 with the parts that are on; each Enforce
   costs more than the last and a part stops at 1 + its line rank; a feed Enforce adds its food to its meals only; a
   guard Enforce blocks one hit; with `BOARD.shadow` off no hunter arrives; law 8 (same habitat state and seed, same board); halving a stock never adds nodes of
   its food, and a stock at 0 gives none; `found` adds eggs × 2 × body mass; law 7 (`sim/sea.ts` and `sim/found.ts`
   import nothing from the Life files; `sim` imports no view or ui).
-- [ ] `npm run check` passes in under 10 s.
-- [ ] The sheet (`docs/playtests/n2-sheet/`, 360 px and desktop): the start of a Life on two habitats side by side;
+- [x] `npm run check` passes in under 10 s.
+- [x] The sheet (`docs/playtests/n2-sheet/`, 360 px and desktop): the start of a Life on two habitats side by side;
   the Enforce list with payback; a hit and a block; a result card; the map after three Colonise Lives. Three lines
   in `docs/status.md`.
-- [ ] Your notes are in `docs/playtests/n2-the-life.md`.
+- [x] Your notes are in `docs/playtests/n2-the-life.md`.
 
 ## Size check
 - **New systems:** one, the Life with its economy; the engine is ported, the board and founding are its two joints.

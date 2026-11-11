@@ -1,0 +1,696 @@
+{
+  "seed": 3,
+  "generation": 0,
+  "plays": [
+    {
+      "habitat": "Lee mud flats",
+      "species": "Grazer worm",
+      "eggs": 86,
+      "enforced": {
+        "tentacles": 1,
+        "pouch": 1,
+        "sclerite": 1
+      },
+      "ate": {
+        "mat": 144
+      },
+      "cause": "season",
+      "witnessed": [],
+      "health": 3,
+      "turn": 20,
+      "actions": [
+        {
+          "turn": 1,
+          "kind": "enforce",
+          "part": "tentacles"
+        },
+        {
+          "turn": 1,
+          "kind": "verb",
+          "verb": "graze"
+        },
+        {
+          "turn": 2,
+          "kind": "grow"
+        },
+        {
+          "turn": 2,
+          "kind": "move",
+          "tile": 41
+        },
+        {
+          "turn": 3,
+          "kind": "move",
+          "tile": 49
+        },
+        {
+          "turn": 4,
+          "kind": "grow"
+        },
+        {
+          "turn": 4,
+          "kind": "move",
+          "tile": 50
+        },
+        {
+          "turn": 5,
+          "kind": "verb",
+          "verb": "graze"
+        },
+        {
+          "turn": 6,
+          "kind": "enforce",
+          "part": "pouch"
+        },
+        {
+          "turn": 6,
+          "kind": "enforce",
+          "part": "sclerite"
+        },
+        {
+          "turn": 6,
+          "kind": "move",
+          "tile": 51
+        },
+        {
+          "turn": 7,
+          "kind": "move",
+          "tile": 52
+        },
+        {
+          "turn": 8,
+          "kind": "verb",
+          "verb": "brace"
+        },
+        {
+          "turn": 9,
+          "kind": "verb",
+          "verb": "graze"
+        },
+        {
+          "turn": 10,
+          "kind": "grow"
+        },
+        {
+          "turn": 10,
+          "kind": "lay"
+        },
+        {
+          "turn": 11,
+          "kind": "grow"
+        },
+        {
+          "turn": 11,
+          "kind": "lay"
+        },
+        {
+          "turn": 12,
+          "kind": "lay"
+        },
+        {
+          "turn": 13,
+          "kind": "verb",
+          "verb": "brace"
+        },
+        {
+          "turn": 14,
+          "kind": "verb",
+          "verb": "graze"
+        },
+        {
+          "turn": 15,
+          "kind": "lay"
+        },
+        {
+          "turn": 16,
+          "kind": "lay"
+        },
+        {
+          "turn": 17,
+          "kind": "lay"
+        },
+        {
+          "turn": 18,
+          "kind": "lay"
+        },
+        {
+          "turn": 19,
+          "kind": "lay"
+        },
+        {
+          "turn": 20,
+          "kind": "verb",
+          "verb": "graze"
+        }
+      ],
+      "parts": [
+        "Tentacles",
+        "Sclerites",
+        "Brood pouch"
+      ],
+      "report": {
+        "heads": 172,
+        "outcome": "grows",
+        "slot": {
+          "id": "mats",
+          "foods": [
+            "mats"
+          ],
+          "name": "Graze mats",
+          "role": "grazer",
+          "accent": 29,
+          "capacity": 21150
+        },
+        "fit": {
+          "intake": 4.5,
+          "full": 4.5,
+          "upkeep": 3,
+          "survival": 1,
+          "value": 3,
+          "letter": "S",
+          "reasons": [
+            "Intake S: grazes mats, can't dig; food at 100%.",
+            "Upkeep D: tentacles, brood pouch; no eyes, no legs.",
+            "Survival S: nothing hunts it here."
+          ]
+        },
+        "text": "172 grazer worms founded · tier S · they grow here"
+      },
+      "grams": 172
+    },
+    {
+      "habitat": "Stream mud shallows",
+      "species": "Digger worm",
+      "eggs": 60,
+      "enforced": {
+        "bulb": 1,
+        "pouch": 1,
+        "eye": 1
+      },
+      "ate": {
+        "mat": 10,
+        "buried": 77,
+        "carcass": 14
+      },
+      "cause": "season",
+      "witnessed": [
+        "root-worm"
+      ],
+      "health": 2,
+      "turn": 20,
+      "actions": [
+        {
+          "turn": 1,
+          "kind": "enforce",
+          "part": "bulb"
+        },
+        {
+          "turn": 1,
+          "kind": "move",
+          "tile": 41
+        },
+        {
+          "turn": 2,
+          "kind": "grow"
+        },
+        {
+          "turn": 2,
+          "kind": "verb",
+          "verb": "sense"
+        },
+        {
+          "turn": 2,
+          "kind": "move",
+          "tile": 33
+        },
+        {
+          "turn": 3,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 4,
+          "kind": "grow"
+        },
+        {
+          "turn": 4,
+          "kind": "move",
+          "tile": 17
+        },
+        {
+          "turn": 5,
+          "kind": "enforce",
+          "part": "pouch"
+        },
+        {
+          "turn": 5,
+          "kind": "move",
+          "tile": 19
+        },
+        {
+          "turn": 6,
+          "kind": "verb",
+          "verb": "sense"
+        },
+        {
+          "turn": 6,
+          "kind": "grow"
+        },
+        {
+          "turn": 6,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 7,
+          "kind": "enforce",
+          "part": "eye"
+        },
+        {
+          "turn": 7,
+          "kind": "grow"
+        },
+        {
+          "turn": 7,
+          "kind": "move",
+          "tile": 12
+        },
+        {
+          "turn": 8,
+          "kind": "lay"
+        },
+        {
+          "turn": 9,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 10,
+          "kind": "verb",
+          "verb": "sense"
+        },
+        {
+          "turn": 10,
+          "kind": "lay"
+        },
+        {
+          "turn": 11,
+          "kind": "move",
+          "tile": 14
+        },
+        {
+          "turn": 12,
+          "kind": "lay"
+        },
+        {
+          "turn": 13,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 14,
+          "kind": "verb",
+          "verb": "sense"
+        },
+        {
+          "turn": 14,
+          "kind": "move",
+          "tile": 6
+        },
+        {
+          "turn": 15,
+          "kind": "lay"
+        },
+        {
+          "turn": 16,
+          "kind": "lay"
+        },
+        {
+          "turn": 17,
+          "kind": "move",
+          "tile": 7
+        },
+        {
+          "turn": 18,
+          "kind": "verb",
+          "verb": "sense"
+        },
+        {
+          "turn": 18,
+          "kind": "lay"
+        },
+        {
+          "turn": 19,
+          "kind": "move",
+          "tile": 15
+        },
+        {
+          "turn": 20,
+          "kind": "verb",
+          "verb": "dig"
+        }
+      ],
+      "parts": [
+        "Burrowing bulb",
+        "Eye"
+      ],
+      "report": {
+        "heads": 120,
+        "outcome": "grows",
+        "slot": {
+          "id": "detritus",
+          "foods": [
+            "detritus"
+          ],
+          "name": "Dig detritus",
+          "role": "burrower",
+          "accent": 30,
+          "capacity": 59580
+        },
+        "fit": {
+          "intake": 4.5,
+          "full": 4.5,
+          "upkeep": 3,
+          "survival": 1,
+          "value": 3,
+          "letter": "S",
+          "reasons": [
+            "Intake S: grazes mats, digs detritus; food at 100%.",
+            "Upkeep D: eye, brood pouch; eyes, no legs.",
+            "Survival S: nothing hunts it here."
+          ]
+        },
+        "text": "120 digger worms founded · tier S · they grow here"
+      },
+      "grams": 120
+    },
+    {
+      "habitat": "Northwest sand slope",
+      "species": "Digger worm",
+      "eggs": 20,
+      "enforced": {
+        "bulb": 1
+      },
+      "ate": {
+        "buried": 49,
+        "carcass": 14
+      },
+      "cause": "season",
+      "witnessed": [],
+      "health": 3,
+      "turn": 20,
+      "actions": [
+        {
+          "turn": 1,
+          "kind": "enforce",
+          "part": "bulb"
+        },
+        {
+          "turn": 1,
+          "kind": "move",
+          "tile": 67
+        },
+        {
+          "turn": 2,
+          "kind": "move",
+          "tile": 59
+        },
+        {
+          "turn": 3,
+          "kind": "move",
+          "tile": 60
+        },
+        {
+          "turn": 4,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 5,
+          "kind": "grow"
+        },
+        {
+          "turn": 5,
+          "kind": "verb",
+          "verb": "sense"
+        },
+        {
+          "turn": 5,
+          "kind": "move",
+          "tile": 61
+        },
+        {
+          "turn": 6,
+          "kind": "move",
+          "tile": 53
+        },
+        {
+          "turn": 7,
+          "kind": "grow"
+        },
+        {
+          "turn": 7,
+          "kind": "move",
+          "tile": 45
+        },
+        {
+          "turn": 8,
+          "kind": "move",
+          "tile": 37
+        },
+        {
+          "turn": 9,
+          "kind": "move",
+          "tile": 29
+        },
+        {
+          "turn": 10,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 11,
+          "kind": "grow"
+        },
+        {
+          "turn": 11,
+          "kind": "move",
+          "tile": 28
+        },
+        {
+          "turn": 12,
+          "kind": "move",
+          "tile": 20
+        },
+        {
+          "turn": 13,
+          "kind": "grow"
+        },
+        {
+          "turn": 13,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 14,
+          "kind": "lay"
+        },
+        {
+          "turn": 15,
+          "kind": "move",
+          "tile": 27
+        },
+        {
+          "turn": 16,
+          "kind": "lay"
+        },
+        {
+          "turn": 17,
+          "kind": "verb",
+          "verb": "dig"
+        },
+        {
+          "turn": 18,
+          "kind": "lay"
+        },
+        {
+          "turn": 19,
+          "kind": "lay"
+        },
+        {
+          "turn": 20,
+          "kind": "move",
+          "tile": 35
+        }
+      ],
+      "parts": [
+        "Burrowing bulb"
+      ],
+      "report": {
+        "heads": 40,
+        "outcome": "grows",
+        "slot": {
+          "id": "detritus",
+          "foods": [
+            "detritus"
+          ],
+          "name": "Dig detritus",
+          "role": "burrower",
+          "accent": 30,
+          "capacity": 16950
+        },
+        "fit": {
+          "intake": 0.75,
+          "full": 0.75,
+          "upkeep": 3,
+          "survival": 1,
+          "value": 0.5,
+          "letter": "C",
+          "reasons": [
+            "Intake B: grazes mats, digs detritus; food at 100%.",
+            "Upkeep D: eye, brood pouch; eyes, no legs.",
+            "Survival S: nothing hunts it here."
+          ]
+        },
+        "text": "40 digger worms founded · tier C · they grow here"
+      },
+      "grams": 40
+    }
+  ],
+  "comparisons": [
+    {
+      "habitat": "Lee mud flats",
+      "order": [
+        "bulb",
+        "pouch",
+        "eye"
+      ],
+      "eggs": 26,
+      "health": 0,
+      "cause": "died",
+      "enforced": {
+        "bulb": 1,
+        "pouch": 1,
+        "eye": 1
+      }
+    },
+    {
+      "habitat": "Lee mud flats",
+      "order": [
+        "pouch",
+        "bulb",
+        "eye"
+      ],
+      "eggs": 15,
+      "health": 0,
+      "cause": "died",
+      "enforced": {
+        "pouch": 1,
+        "bulb": 1,
+        "eye": 1
+      }
+    },
+    {
+      "habitat": "Lee mud flats",
+      "order": [
+        "eye",
+        "bulb",
+        "pouch"
+      ],
+      "eggs": 32,
+      "health": 1,
+      "cause": "season",
+      "enforced": {
+        "eye": 1,
+        "bulb": 1,
+        "pouch": 1
+      }
+    },
+    {
+      "habitat": "Stream mud shallows",
+      "order": [
+        "bulb",
+        "pouch",
+        "eye"
+      ],
+      "eggs": 60,
+      "health": 2,
+      "cause": "season",
+      "enforced": {
+        "bulb": 1,
+        "pouch": 1,
+        "eye": 1
+      }
+    },
+    {
+      "habitat": "Stream mud shallows",
+      "order": [
+        "pouch",
+        "bulb",
+        "eye"
+      ],
+      "eggs": 66,
+      "health": 1,
+      "cause": "season",
+      "enforced": {
+        "pouch": 1,
+        "bulb": 1,
+        "eye": 1
+      }
+    },
+    {
+      "habitat": "Stream mud shallows",
+      "order": [
+        "eye",
+        "bulb",
+        "pouch"
+      ],
+      "eggs": 66,
+      "health": 1,
+      "cause": "season",
+      "enforced": {
+        "eye": 1,
+        "bulb": 1,
+        "pouch": 1
+      }
+    },
+    {
+      "habitat": "Northwest sand slope",
+      "order": [
+        "bulb",
+        "pouch",
+        "eye"
+      ],
+      "eggs": 20,
+      "health": 3,
+      "cause": "season",
+      "enforced": {
+        "bulb": 1
+      }
+    },
+    {
+      "habitat": "Northwest sand slope",
+      "order": [
+        "pouch",
+        "bulb",
+        "eye"
+      ],
+      "eggs": 0,
+      "health": 0,
+      "cause": "died",
+      "enforced": {}
+    },
+    {
+      "habitat": "Northwest sand slope",
+      "order": [
+        "eye",
+        "bulb",
+        "pouch"
+      ],
+      "eggs": 0,
+      "health": 0,
+      "cause": "died",
+      "enforced": {}
+    }
+  ]
+}

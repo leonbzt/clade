@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>N2 · the Life · review sheet</title>
+<style>
+body{margin:24px;background:#15110d;color:#ede4cb;font:16px/1.45 system-ui,sans-serif}a{color:#ffd34a}h1{font-size:28px}h2{font-size:22px;margin-top:32px}p{max-width:900px}label{padding:8px;display:inline-block;cursor:pointer}.grid{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}figure{margin:0;width:min(360px,100%)}figure img{display:block;width:100%;height:auto}figcaption{padding:8px 0;color:#a89c8a}#phone:checked~main .desktop,#desktop:checked~main .phone{display:none}#desktop:checked~main figure{width:min(640px,100%)}
+</style>
+<h1>N2 · the Life · Session 2 review</h1>
+<p><a href="../n2-the-life.md">Play notes</a> · <a href="play-results.json">Deterministic results</a>. Eight generated board starts, the three normal Colonise Lives, and staged hit/block feedback. Click an image for its original size.</p>
+<input id="phone" type="radio" name="size" checked><label for="phone">360 × 844</label>
+<input id="desktop" type="radio" name="size"><label for="desktop">1280 × 900</label><main>
+<h2>Generated boards · start of Life</h2><p>Each sample begins from First worm with Life count 1. The buried nodes outside sight stay hidden. Map north is up.</p><div class="grid">
+<figure>
+<a class="phone" href="phone/n2-board-01.png"><img src="phone/n2-board-01.png" alt="Seed 1 · rock deep · digger" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-01.png"><img src="desktop/n2-board-01.png" alt="Seed 1 · rock deep · digger" loading="lazy"></a>
+<figcaption><b>Seed 1 · rock deep · digger</b><br>11 buried, 6 shells</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-02.png"><img src="phone/n2-board-02.png" alt="Seed 1 · sand slope · digger" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-02.png"><img src="desktop/n2-board-02.png" alt="Seed 1 · sand slope · digger" loading="lazy"></a>
+<figcaption><b>Seed 1 · sand slope · digger</b><br>11 buried, 8 shells, 1 carcass</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-03.png"><img src="phone/n2-board-03.png" alt="Seed 1 · mud shallows · digger" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-03.png"><img src="desktop/n2-board-03.png" alt="Seed 1 · mud shallows · digger" loading="lazy"></a>
+<figcaption><b>Seed 1 · mud shallows · digger</b><br>14 mats, 21 buried, 2 shells, 1 carcass</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-04.png"><img src="phone/n2-board-04.png" alt="Seed 2 · sand flat · grazer" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-04.png"><img src="desktop/n2-board-04.png" alt="Seed 2 · sand flat · grazer" loading="lazy"></a>
+<figcaption><b>Seed 2 · sand flat · grazer</b><br>21 mats, 4 buried, 8 shells, 1 carcass</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-05.png"><img src="phone/n2-board-05.png" alt="Seed 3 · rock deep · digger" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-05.png"><img src="desktop/n2-board-05.png" alt="Seed 3 · rock deep · digger" loading="lazy"></a>
+<figcaption><b>Seed 3 · rock deep · digger</b><br>11 buried, 6 shells</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-06.png"><img src="phone/n2-board-06.png" alt="Seed 3 · sand slope · digger" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-06.png"><img src="desktop/n2-board-06.png" alt="Seed 3 · sand slope · digger" loading="lazy"></a>
+<figcaption><b>Seed 3 · sand slope · digger</b><br>11 buried, 8 shells, 1 carcass</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-07.png"><img src="phone/n2-board-07.png" alt="Seed 3 · mud shallows · grazer" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-07.png"><img src="desktop/n2-board-07.png" alt="Seed 3 · mud shallows · grazer" loading="lazy"></a>
+<figcaption><b>Seed 3 · mud shallows · grazer</b><br>14 mats, 21 buried, 2 shells, 1 carcass</figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-board-08.png"><img src="phone/n2-board-08.png" alt="Seed 3 · mud flat · grazer" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-board-08.png"><img src="desktop/n2-board-08.png" alt="Seed 3 · mud flat · grazer" loading="lazy"></a>
+<figcaption><b>Seed 3 · mud flat · grazer</b><br>21 mats, 14 buried, 2 shells, 1 carcass</figcaption></figure>
+</div><h2>Three normal Lives · one sea, generation 0</h2><p>No dev food or forced endings. The routes produce 172 grazer heads on the flat, 120 digger heads in the mud shallows, and 40 digger heads on the sand slope.</p>
+<h3>Lee mud flats · grazer worm</h3><div class="grid">
+<figure>
+<a class="phone" href="phone/n2-life-1-start.png"><img src="phone/n2-life-1-start.png" alt="Lee mud flats · grazer worm · Start" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-1-start.png"><img src="desktop/n2-life-1-start.png" alt="Lee mud flats · grazer worm · Start" loading="lazy"></a>
+<figcaption><b>Lee mud flats · grazer worm · Start</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-1-enforce.png"><img src="phone/n2-life-1-enforce.png" alt="Lee mud flats · grazer worm · Enforce after reaching size 3" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-1-enforce.png"><img src="desktop/n2-life-1-enforce.png" alt="Lee mud flats · grazer worm · Enforce after reaching size 3" loading="lazy"></a>
+<figcaption><b>Lee mud flats · grazer worm · Enforce after reaching size 3</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-1-result.png"><img src="phone/n2-life-1-result.png" alt="Lee mud flats · grazer worm · Result and fitness reasons" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-1-result.png"><img src="desktop/n2-life-1-result.png" alt="Lee mud flats · grazer worm · Result and fitness reasons" loading="lazy"></a>
+<figcaption><b>Lee mud flats · grazer worm · Result and fitness reasons</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-1-colony.png"><img src="phone/n2-life-1-colony.png" alt="Lee mud flats · grazer worm · The launch habitat after founding" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-1-colony.png"><img src="desktop/n2-life-1-colony.png" alt="Lee mud flats · grazer worm · The launch habitat after founding" loading="lazy"></a>
+<figcaption><b>Lee mud flats · grazer worm · The launch habitat after founding</b></figcaption></figure>
+</div>
+<h3>Stream mud shallows · digger worm</h3><div class="grid">
+<figure>
+<a class="phone" href="phone/n2-life-2-start.png"><img src="phone/n2-life-2-start.png" alt="Stream mud shallows · digger worm · Start" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-2-start.png"><img src="desktop/n2-life-2-start.png" alt="Stream mud shallows · digger worm · Start" loading="lazy"></a>
+<figcaption><b>Stream mud shallows · digger worm · Start</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-2-enforce.png"><img src="phone/n2-life-2-enforce.png" alt="Stream mud shallows · digger worm · Enforce after reaching size 3" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-2-enforce.png"><img src="desktop/n2-life-2-enforce.png" alt="Stream mud shallows · digger worm · Enforce after reaching size 3" loading="lazy"></a>
+<figcaption><b>Stream mud shallows · digger worm · Enforce after reaching size 3</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-2-result.png"><img src="phone/n2-life-2-result.png" alt="Stream mud shallows · digger worm · Result and fitness reasons" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-2-result.png"><img src="desktop/n2-life-2-result.png" alt="Stream mud shallows · digger worm · Result and fitness reasons" loading="lazy"></a>
+<figcaption><b>Stream mud shallows · digger worm · Result and fitness reasons</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-2-colony.png"><img src="phone/n2-life-2-colony.png" alt="Stream mud shallows · digger worm · The launch habitat after founding" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-2-colony.png"><img src="desktop/n2-life-2-colony.png" alt="Stream mud shallows · digger worm · The launch habitat after founding" loading="lazy"></a>
+<figcaption><b>Stream mud shallows · digger worm · The launch habitat after founding</b></figcaption></figure>
+</div>
+<h3>Northwest sand slope · digger worm</h3><div class="grid">
+<figure>
+<a class="phone" href="phone/n2-life-3-start.png"><img src="phone/n2-life-3-start.png" alt="Northwest sand slope · digger worm · Start" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-3-start.png"><img src="desktop/n2-life-3-start.png" alt="Northwest sand slope · digger worm · Start" loading="lazy"></a>
+<figcaption><b>Northwest sand slope · digger worm · Start</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-3-enforce.png"><img src="phone/n2-life-3-enforce.png" alt="Northwest sand slope · digger worm · Enforce after reaching size 3" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-3-enforce.png"><img src="desktop/n2-life-3-enforce.png" alt="Northwest sand slope · digger worm · Enforce after reaching size 3" loading="lazy"></a>
+<figcaption><b>Northwest sand slope · digger worm · Enforce after reaching size 3</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-3-result.png"><img src="phone/n2-life-3-result.png" alt="Northwest sand slope · digger worm · Result and fitness reasons" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-3-result.png"><img src="desktop/n2-life-3-result.png" alt="Northwest sand slope · digger worm · Result and fitness reasons" loading="lazy"></a>
+<figcaption><b>Northwest sand slope · digger worm · Result and fitness reasons</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-life-3-colony.png"><img src="phone/n2-life-3-colony.png" alt="Northwest sand slope · digger worm · The launch habitat after founding" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-life-3-colony.png"><img src="desktop/n2-life-3-colony.png" alt="Northwest sand slope · digger worm · The launch habitat after founding" loading="lazy"></a>
+<figcaption><b>Northwest sand slope · digger worm · The launch habitat after founding</b></figcaption></figure>
+</div>
+<div class="grid"><figure>
+<a class="phone" href="phone/n2-map-three-lives.png"><img src="phone/n2-map-three-lives.png" alt="Map after three Lives" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-map-three-lives.png"><img src="desktop/n2-map-three-lives.png" alt="Map after three Lives" loading="lazy"></a>
+<figcaption><b>Map after three Lives</b><br>All colonies remain at their launch habitat; no sea generation has passed.</figcaption></figure></div>
+<h2>Strike feedback · staged fixture</h2><p>The fixture sets a front strike on an exposed worm. Actual sim strike rules and playback show a hit, then a one-use enforced Sclerites block. This setup is separate from the normal Lives above.</p><div class="grid">
+<figure>
+<a class="phone" href="phone/n2-hit.png"><img src="phone/n2-hit.png" alt="Front strike · hit and torn tentacles" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-hit.png"><img src="desktop/n2-hit.png" alt="Front strike · hit and torn tentacles" loading="lazy"></a>
+<figcaption><b>Front strike · hit and torn tentacles</b></figcaption></figure>
+<figure>
+<a class="phone" href="phone/n2-block.png"><img src="phone/n2-block.png" alt="Front strike · enforced Sclerites block" loading="lazy"></a>
+<a class="desktop" href="desktop/n2-block.png"><img src="desktop/n2-block.png" alt="Front strike · enforced Sclerites block" loading="lazy"></a>
+<figcaption><b>Front strike · enforced Sclerites block</b></figcaption></figure>
+</div></main></html>

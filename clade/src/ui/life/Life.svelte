@@ -8,9 +8,10 @@
   let host: HTMLDivElement;
   let revision = $state(0);
   let error = $state('');
+  let devBusy = $state(true);
   let stage: LifeStage;
   onMount(() => {
-    stage = new LifeStage(life, complete, () => revision++);
+    stage = new LifeStage(life, complete, () => { revision++; devBusy = stage.busy; });
     stage.init(host).catch((e) => { error = `The board could not open: ${e.message}`; });
     return () => stage.destroy();
   });
@@ -36,5 +37,9 @@
     <div class="life-actions"><button id="grow">Grow</button><button id="lay">Lay</button><button id="wait">Wait</button></div>
     <div id="verbs"></div>
     <h2>Enforce</h2><div id="enforce"></div>
+    <div class="life-dev" aria-label="Life dev controls">
+      <span>Dev</span><button disabled={devBusy || life.phase !== 'play'} onclick={() => stage.addFood()}>+10 food</button>
+      <button disabled={devBusy || life.phase !== 'play'} onclick={() => stage.endSeason()}>End the season</button>
+    </div>
   </aside>
 </div>

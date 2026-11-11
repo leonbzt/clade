@@ -1,0 +1,67 @@
+
+> clade@0.0.1 look
+> node scripts/look.mjs /clade/ scripts/look/n2-sheet.json
+
+eval: undefined
+eval: true
+eval: 1
+shot: .shots/n2-board-01.png
+eval: true
+eval: 2
+shot: .shots/n2-board-02.png
+eval: true
+eval: 3
+shot: .shots/n2-board-03.png
+eval: true
+eval: 4
+shot: .shots/n2-board-04.png
+eval: true
+eval: 5
+shot: .shots/n2-board-05.png
+eval: true
+eval: 6
+shot: .shots/n2-board-06.png
+eval: true
+eval: 7
+shot: .shots/n2-board-07.png
+eval: true
+eval: 8
+shot: .shots/n2-board-08.png
+eval: undefined
+eval: true
+shot: .shots/n2-life-1-start.png
+eval: {}
+eval: []
+eval: undefined
+shot: .shots/n2-life-1-enforce.png
+eval: {"purpose":"Colonise Lee mud flats · graze mats · tier S","eggs":86,"health":3,"enforced":{"tentacles":1,"pouch":1,"sclerite":1},"report":"172 grazer worms founded · tier S · they grow here"}
+shot: .shots/n2-life-1-result.png
+shot: .shots/n2-life-1-colony.png
+eval: true
+shot: .shots/n2-life-2-start.png
+eval: {}
+eval: []
+eval: undefined
+shot: .shots/n2-life-2-enforce.png
+eval: {"purpose":"Colonise Stream mud shallows · dig detritus · tier S","eggs":60,"health":2,"enforced":{"bulb":1,"pouch":1,"eye":1},"report":"120 digger worms founded · tier S · they grow here"}
+shot: .shots/n2-life-2-result.png
+shot: .shots/n2-life-2-colony.png
+eval: true
+shot: .shots/n2-life-3-start.png
+eval: {}
+eval: []
+eval: undefined
+shot: .shots/n2-life-3-enforce.png
+eval: {"purpose":"Colonise Northwest sand slope · dig detritus · tier C","eggs":20,"health":3,"enforced":{"bulb":1},"report":"40 digger worms founded · tier C · they grow here"}
+shot: .shots/n2-life-3-result.png
+shot: .shots/n2-life-3-colony.png
+eval: undefined
+shot: .shots/n2-map-three-lives.png
+eval: {"boards":[{"seed":1,"purpose":"Colonise Northwest rock deeps · dig detritus · tier C","board":["....##.#","....##..",".bb.b.b#","s....#.#","....b.##","......s#","b##bb.b.",".####...","###s##..","b#..b...","s.s...s."],"food":{"buried":11,"shell":6}},{"seed":1,"purpose":"Colonise Sand slope · dig detritus · tier C","board":["........","#.....c.",".ssb....","s.......","..s..ss.","........","........","..b.b...","#.bb.b..","#.bsbb..","b..b...s"],"food":{"carcass":1,"shell":8,"buried":11}},{"seed":1,"purpose":"Colonise Open mud shallows · dig detritus · tier S","board":[".m.mb~mb",".msmb~~~","..cm~~~~","mmm.#~~b","~.mm~#~b","~b~m#bsb","~bbb~~~~","~~b~~~~~","b~~~bbbb","b~~..~bb","b~.mm~~~"],"food":{"mat":14,"buried":21,"shell":2,"carcass":1}},{"seed":2,"purpose":"Colonise Lee sand flats · graze mats · tier A","board":["..s...mm","..m.m.m.","...m...#","mm.m.m.m","......s#","....sc.m","~.mss.m#","m...m...","m.....sb","b.mm.s~~","bm.m.s~b"],"food":{"shell":8,"mat":21,"carcass":1,"buried":4}},{"seed":3,"purpose":"Colonise Southwest rock deeps · dig detritus · tier C","board":["...b.b.b","b..b.##.","....####","..#.s..#",".sb.....",".b...#..","bs...###",".s..####",".#...s##","##...s.b","##.b.b.."],"food":{"buried":11,"shell":6}},{"seed":3,"purpose":"Colonise Northwest sand slope · dig detritus · tier C","board":["bb....bb","b......b","s.....bb",".....ssb","....cs..","........","........",".s......","....s..#",".sbb..##","s......."],"food":{"buried":11,"shell":8,"carcass":1}},{"seed":3,"purpose":"Colonise Stream mud shallows · graze mats · tier S","board":["b~~b~~~~","~bbbb#~#","#~~b~~~~","m..~.bm~","b.~m~m~b","b~.~.s.b","~~~m~.b~","~~mmmb~b","b~..sm~b","~bbmm.bb","~~~mmmc~"],"food":{"buried":21,"mat":14,"shell":2,"carcass":1}},{"seed":3,"purpose":"Colonise Lee mud flats · graze mats · tier S","board":["mmm#~~~~","bm~.~~~~","~bb~mb~b","bb~mm~~~","~~~smm~b","~mcmmmmm","bm~mmm##","~b~bms.~","~~~~~~~~","~b~~~bm~","~~~b~~~~"],"food":{"mat":21,"buried":14,"shell":2,"carcass":1}}],"plays":[{"habitat":12,"purpose":"Colonise Lee mud flats · graze mats · tier S","eggs":86,"cause":"season","turn":20,"enforced":{"tentacles":1,"pouch":1,"sclerite":1},"ate":{"mat":144},"health":3,"report":{"heads":172,"outcome":"grows","slot":{"id":"mats","foods":["mats"],"name":"Graze mats","role":"grazer","accent":29,"capacity":21150},"fit":{"intake":4.5,"full":4.5,"upkeep":3,"survival":1,"value":3,"letter":"S","reasons":["Intake S: grazes mats, can't dig; food at 100%.","Upkeep D: tentacles, brood pouch; no eyes, no legs.","Survival S: nothing hunts it here."]},"text":"172 grazer worms founded · tier S · they grow here"}},{"habitat":6,"purpose":"Colonise Stream mud shallows · dig detritus · tier S","eggs":60,"cause":"season","turn":20,"enforced":{"bulb":1,"pouch":1,"eye":1},"ate":{"mat":10,"buried":77,"carcass":14},"health":2,"report":{"heads":120,"outcome":"grows","slot":{"id":"detritus","foods":["detritus"],"name":"Dig detritus","role":"burrower","accent":30,"capacity":59580},"fit":{"intake":4.5,"full":4.5,"upkeep":3,"survival":1,"value":3,"letter":"S","reasons":["Intake S: grazes mats, digs detritus; food at 100%.","Upkeep D: eye, brood pouch; eyes, no legs.","Survival S: nothing hunts it here."]},"text":"120 digger worms founded · tier S · they grow here"}},{"habitat":2,"purpose":"Colonise Northwest sand slope · dig detritus · tier C","eggs":20,"cause":"season","turn":20,"enforced":{"bulb":1},"ate":{"buried":49,"carcass":14},"health":3,"report":{"heads":40,"outcome":"grows","slot":{"id":"detritus","foods":["detritus"],"name":"Dig detritus","role":"burrower","accent":30,"capacity":16950},"fit":{"intake":0.75,"full":0.75,"upkeep":3,"survival":1,"value":0.5,"letter":"C","reasons":["Intake B: grazes mats, digs detritus; food at 100%.","Upkeep D: eye, brood pouch; eyes, no legs.","Survival S: nothing hunts it here."]},"text":"40 digger worms founded · tier C · they grow here"}}]}
+eval: true
+eval: undefined
+eval: undefined
+shot: .shots/n2-hit.png
+eval: undefined
+shot: .shots/n2-block.png
+eval: 3

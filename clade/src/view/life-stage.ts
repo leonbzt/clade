@@ -1,7 +1,7 @@
 // The ported board layers and input. One transient scene lives until Back to the map.
 import 'pixi.js/unsafe-eval';
 import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
-import { NODES } from '../data/life';
+import { NODES, TURNS } from '../data/life';
 import * as E from '../sim/economy';
 import * as L from '../sim/life';
 import { useVerb } from '../sim/verbs';
@@ -26,8 +26,11 @@ export class LifeStage {
   private disposed = false;
   private initialized = false;
   private ended = false;
+  private sceneReady = false;
+  get busy() { return !this.sceneReady || S.busy; }
   private key = (e: KeyboardEvent) => {
-    if (e.repeat || e.target instanceof HTMLButtonElement) return;
+    if (e.repeat || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement) return;
+    if (e.key === ' ' && e.target instanceof HTMLButtonElement) return;
     if (e.key === 'w' || e.key === ' ') { e.preventDefault(); void this.act(() => L.stay(this.life)); }
     if (e.key === 'l') void this.act(() => E.lay(this.life));
     if (e.key === 'm') void this.act(() => E.grow(this.life));
@@ -60,6 +63,7 @@ export class LifeStage {
       const c = centre(L.at(r.x, r.y)); b.place(c.x, c.y, -Math.PI / 2); return b;
     });
     Object.assign(S, { app, floor, fx, marks, cam, hud, hunter, you, rivals, life: this.life, busy: false });
+    this.sceneReady = true;
     floor.set(this.life);
     const start = centre(L.at(this.life.x, this.life.y)); you.place(start.x, start.y, dirAngle(this.life.facing));
     const inMud = (x: number, y: number) => {
@@ -106,6 +110,13 @@ export class LifeStage {
     finally { if (!this.disposed) { S.busy = false; this.sync(); S.hud.info(this.life.lines.slice(-2).join(' ')); } }
     if (!this.disposed && (this.life.phase as L.Life['phase']) === 'over' && !this.ended) { this.ended = true; this.complete(); }
   }
+  addFood() { return this.act(() => { this.life.food += 10; }); }
+  endSeason() {
+    return this.act(() => {
+      this.life.turn = TURNS; this.life.phase = 'over'; this.life.cause = 'season';
+      L.emit(this.life, { k: 'over', cause: 'season' });
+    });
+  }
   private verb(v: VerbId) { return this.act(() => useVerb(this.life, v)); }
   private enforce(p: PartId) { return this.act(() => E.enforce(this.life, p)); }
   private tileAt(x: number, y: number) {
@@ -124,7 +135,9 @@ export class LifeStage {
   }
   destroy() {
     this.disposed = true; window.removeEventListener('keydown', this.key); this.observer?.disconnect();
-    if (this.initialized) { S.hud.destroy(); this.stopTweens?.(); this.app.destroy(true, { children: true }); }
+    if (this.sceneReady) S.hud.destroy();
+    this.stopTweens?.();
+    if (this.initialized) this.app.destroy(true, { children: true });
     Reflect.deleteProperty(window, '__game');
   }
 }

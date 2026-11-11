@@ -86,8 +86,9 @@ export class Hud {
       const rank = l.enforced[part] ?? 0, cap = ENFORCE_HEADROOM + Math.max(0, l.ranks[part] ?? 0), cost = E.enforceCost(l);
       const done = rank >= cap;
       const label = `${PARTS[part].name}${rank ? ` · rank ${rank}` : ''} · ${done ? 'cap reached' : cost === null ? 'limit reached' : `${cost} food`}`;
-      const effectText = effect.kind === 'meal' ? `+${effect.amount} food per ${effect.meals === 'mats' ? 'mat' : effect.meals}` : effect.text;
-      const b = this.button(label, `${effectText} · ${E.payback(l, part) ?? 'all Enforce spent'}`);
+      const effectText = effect.kind === 'meal' ? `+${effect.amount} food per ${effect.meals.replace(/mats$/, 'mat').replace(/meals$/, 'meal')}` : effect.text;
+      const note = E.payback(l, part) ?? 'all Enforce spent';
+      const b = this.button(label, effect.kind === 'meal' ? `${effectText} · ${note}` : note);
       b.disabled = !play || !E.canEnforce(l, part); b.onclick = () => this.on.enforce(part);
       list.appendChild(b);
     }

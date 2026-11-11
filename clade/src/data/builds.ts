@@ -1,4 +1,4 @@
-// Fixed dev-bar choices, shared by placement and the N1 presets. No build editor until N2.
+// Fixed dev-bar choices, shared by placement and the N1 presets. No build editor in N2.
 import type { Lineage, Species } from '../sim/records';
 
 export const DEV_LINEAGES: Lineage[] = [
@@ -17,4 +17,8 @@ export const DEV_SPECIES: Species[] = [
     build: { clade: 'worm', parts: { sides: 'sclerite' }, genes: { size: 1, gut: 1 } } },
   { id: 'arthropod', lineage: 'arthropod-line', parent: 'sclerite-worm', name: 'Arthropod', born: 0,
     build: { clade: 'arthropod', parts: { front: 'rake' }, genes: { size: 1, gut: 1 } } },
+  { id: 'grazer-worm', lineage: 'worm-line', parent: 'tentacle-worm', name: 'Grazer worm', born: 0,
+    build: { clade: 'worm', parts: { front: 'tentacles', sides: 'sclerite', tail: 'pouch' }, genes: { size: 1, gut: 1 } } },
+  { id: 'digger-worm', lineage: 'worm-line', parent: 'bulb-worm', name: 'Digger worm', born: 0,
+    build: { clade: 'worm', parts: { tail: 'bulb', eyes: 'eye', sides: 'pouch' }, genes: { size: 1, gut: 1 } } },
 ];

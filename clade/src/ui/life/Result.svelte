@@ -15,8 +15,8 @@
 </div>
 
 <style>
-  .result-shade { position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; background: var(--line); opacity: 0.98; }
-  .life-result { background: var(--panel); border: 2px solid var(--paper); padding: 16px; width: 440px; max-width: 100%; box-sizing: border-box; }
+  .result-shade { position: absolute; inset: 0; display: grid; place-items: center; grid-template-columns: minmax(0, 1fr); padding: 12px; box-sizing: border-box; background: var(--line); opacity: 0.98; }
+  .life-result { background: var(--panel); border: 2px solid var(--paper); padding: 16px; width: 100%; max-width: 440px; min-width: 0; box-sizing: border-box; }
   h2 { font-size: 16px; margin: 0 0 12px; }
   p { margin: 0 0 12px; }
   ul { padding-left: 20px; margin: 0 0 16px; }

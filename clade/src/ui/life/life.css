@@ -32,6 +32,7 @@
 .life-actions, #verbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 #enforce { display: grid; gap: 4px; }
 #info { margin: 0 0 6px; min-height: 20px; }
+.life-dev { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 12px; color: var(--dim); }
 .board-error { padding: 16px; }
 @keyframes float-up { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -40px); } }
 @keyframes pip-pop { 50% { transform: scaleY(1.6); } }
