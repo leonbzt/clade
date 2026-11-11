@@ -189,12 +189,12 @@ describe('sea contracts', () => {
     expect(a.generation).toBe(160);
   });
 
-  it('law 2: the world contains no derived slot, tier, letter, role, link or head count', () => {
+  it('law 2: the world contains no derived slot, tier, letter, role, link, head count, level or points', () => {
     const world = run(seededScenario(8), 20);
     const visit = (value: unknown) => {
       if (!value || typeof value !== 'object') return;
       for (const [key, child] of Object.entries(value)) {
-        expect(key).not.toMatch(/^(slots?|tier|letter|role|link|heads|stats|fitness)$/);
+        expect(key).not.toMatch(/^(slots?|tier|letter|role|link|heads|stats|fitness|level|points?)$/);
         visit(child);
       }
     };

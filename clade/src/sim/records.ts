@@ -12,7 +12,7 @@ export type Food = 'mats' | 'detritus';
 export type DefenceKind = 'armour' | 'spines' | 'burrow';
 export type VerbId = 'graze' | 'dash' | 'dig' | 'sense' | 'brace' | 'crush';
 export type Letter = 'S' | 'A' | 'B' | 'C' | 'D' | 'F';
-export type Ranks = Partial<Record<PartId, number>>; // lean ranks, capped at the part's upkeep
+export type Ranks = Partial<Record<PartId, number>>; // line ranks cap at 3; lean savings floor each part's upkeep at 0
 
 export interface Recipe { from: CladeId; parts: PartId[]; tier: Letter }
 export interface Clade {

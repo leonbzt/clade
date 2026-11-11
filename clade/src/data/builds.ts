@@ -2,8 +2,8 @@
 import type { Lineage, Species } from '../sim/records';
 
 export const DEV_LINEAGES: Lineage[] = [
-  { id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'none' },
-  { id: 'arthropod-line', clade: 'arthropod', xp: 0, ranks: {}, job: 'none' },
+  { id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' },
+  { id: 'arthropod-line', clade: 'arthropod', xp: 0, ranks: {}, job: 'arthropod' },
 ];
 
 export const DEV_SPECIES: Species[] = [

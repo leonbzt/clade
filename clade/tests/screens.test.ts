@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import { DEV_SPECIES } from '../src/data/builds';
 import { PRESETS } from '../src/data/presets';
 import { ceiling, fitness, slots } from '../src/sim/fitness';
+import { pointsOf } from '../src/sim/line';
 import type { Build, World } from '../src/sim/records';
 import { step } from '../src/sim/sea';
 import { remember } from '../src/ui/history';
@@ -103,6 +104,7 @@ it('presets found apart or together as specified, preserve their data, and midga
       expect(world.lineages.find((l) => l.id === 'worm-line')?.ranks.tentacles).toBe(1);
       expect(history).toHaveLength(101);
     }
+    for (const line of world.lineages) expect(pointsOf(line)).toBeGreaterThanOrEqual(0);
   }
   expect({ PRESETS, DEV_SPECIES }).toEqual(before);
 });
