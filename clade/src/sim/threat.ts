@@ -25,6 +25,7 @@ function strike(l: Life) {
   }
   const h = hitOn(l, p.dir, l.facing, l.x, l.y);
   p.rest = h.rest;
+  if (h.enforced && h.part) l.spentGuards[h.part] = (l.spentGuards[h.part] ?? 0) + 1;
   if (h.kind === 'buried') say(l, 'You are buried: the strike misses.');
   else if (h.kind === 'enrolled') say(l, 'You roll up: the strike glances off.');
   else if (h.kind === 'blocked') say(l, h.part ? `Your ${PARTS[h.part].name.toLowerCase()} blocks a strike on your ${h.side}.` : `You are braced: the strike on your ${h.side} glances off.`);

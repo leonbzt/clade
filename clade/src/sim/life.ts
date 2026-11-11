@@ -33,7 +33,11 @@ export type Ev =
   | { k: 'move'; from: number; to: number; path: number[]; grab: boolean; dir: Dir }
   | { k: 'eat'; i: number; node: NodeId; gain: number; food: number }
   | { k: 'locked'; i: number; node: NodeId; why: string }
+  | { k: 'lay'; n: number; eggs: number; food: number }
   | { k: 'stay'; dir: Dir }
+  | { k: 'moult'; size: number; food: number }
+  | { k: 'part'; place: Place; part: PartId }
+  | { k: 'enforce'; part: PartId; rank: number; food: number }
   | { k: 'upkeep'; food: number }
   | { k: 'shed'; place: Place; part: PartId }
   | { k: 'hurt'; why: string; health: number }
@@ -53,7 +57,7 @@ export interface Life extends LifeBody {
   tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Rival & { x: number; y: number })[];
   turn: number; food: number; oxygen: number; health: number; eggs: number;
   phase: 'play' | 'over'; cause: 'season' | 'died' | null;
-  soft: boolean; moved: boolean;
+  grew: boolean; soft: boolean; moved: boolean;
   pred: Predator | null; lines: string[]; events: Ev[];
   recharge: Partial<Record<VerbId, number>>; dash: boolean; braced: boolean; dug: boolean;
   ate: Partial<Record<NodeId, number>>;
@@ -100,11 +104,11 @@ export const emit = (l: Life, e: Ev) => { l.events.push(e); };
 export function newLife(board: Board, build: Build, ranks: Ranks, _seed: number): Life {
   if (!isLifeBuild(build)) throw new Error('This clade has no Life on a grazer board');
   const l: Life = {
-    board, build, ranks, size: 1, lost: [],
+    board, build, ranks, size: 1, lost: [], enforced: {}, spentGuards: {},
     tiles: board.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
     x: board.start[0], y: board.start[1], facing: 1, rivals: board.rivals.map((v) => ({ ...v, x: v.at[0], y: v.at[1] })),
     turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0,
-    phase: 'play', soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
+    phase: 'play', grew: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
     recharge: {}, dash: false, braced: false, dug: false, ate: {},
   };
   l.oxygen = oxygenMax(l);
@@ -248,7 +252,7 @@ export function world(l: Life) {
   emit(l, { k: 'oxygen', oxygen: l.oxygen });
   l.rivals.forEach((_, k) => rivalStep(l, k));
   predatorStep(l);
-  l.soft = false; l.braced = false; l.dug = false;
+  l.grew = false; l.soft = false; l.braced = false; l.dug = false;
   reveal(l);
   if (l.health <= 0) {
     l.health = 0; l.phase = 'over'; l.cause = 'died';
