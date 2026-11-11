@@ -770,3 +770,11 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Parts switch on in family order** (feed, move, sense, guard, brood), derived from the build: "family order from
   build sounds good, would be cool to be able to customize eventually". Claude's advice: wait, since nothing could set
   a custom order before hatching (N3) or genes (R5), and an optional field later costs no more. Parked in `ideas.md`.
+
+## 11 Nov, the N2 Session 1 review
+- **Boards are generated from the habitat, not templates:** "generator sounds good, with ground from bottom type and
+  food from stocks, with included direction from neighbors". A board is "just a closeup of one small patch within the
+  habitat", so there is creative freedom: "maps should stay playable and a little mixed". The board event comes from
+  depth and bottom type ("sounds great"). Claude builds it in Session 1 ("you can build it now").
+- **Fit:** "its fine if there isn't enough food for a specific species in a habitat that doesn't support the main
+  playstyle"; a digger that doesn't fit can switch to mats. The board must agree with the sea's tier.

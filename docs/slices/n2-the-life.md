@@ -49,18 +49,21 @@ adult size; the N2 spec's three answers: the shadow, the numbers, family order).
   - **The Life's result** (a return value, never saved): eggs, enforced ranks per part (N3's clutch reads them), food
     eaten by kind, the cause (season or died), and the species witnessed on the board.
 - **D. The board and the founding** (`sim/board.ts`, `sim/found.ts`, `data/boards.ts`).
-  - **`boardFor(habitat, world, seed) → Board`**, pure (law 8). *Ground:* the three ported templates by substrate (mud
-    flats, sand shallows, volcanic rock; vent tiles become rock, sulfur mats become mats), mirrored by the seed.
-    Start, entry, rival spots, the hunter's turn and the board event come with the template. **The hunter is a
-    shadow from deep water** (*decided 11 Nov*: "no hunter till N4 is fine, if shadow from deep is cheap add it"):
-    the ported hunter, unnamed old life, at the template's turn, switched by `BOARD.shadow` in data. It is cheap
-    because the strike code is ported anyway; if it isn't, set the flag off and Guard waits for N4. N4 replaces it
-    with the sea's hunters. *Food samples the sea*
-    (*decided 11 Nov*): mat and buried nodes follow `density(habitat, food)` with door.ts's `follow` (the same spots go
-    first), capped at 1.5 × the template; so no mats on the slope or deep, and a grazed-down habitat has fewer.
-    Shell beds and carcasses stay as template features until N4 makes them a food. *Rivals:* the species present in
-    the habitat with at least `rivalAt` grams (in data), the heaviest first, one per template spot; each eats its best
-    slot's node.
+  - **`boardFor(habitat, world, seed) → Board`**, pure (law 8). **Generated from the habitat** (*decided 11 Nov,
+    after the review*; it replaces the three templates, which only held 1–2 buried nodes on sand and rock). The board
+    is a close-up of one patch: playable and a little mixed. *Ground from the bottom type:* smoothed noise gives mud
+    patches and rock outcrops (walls) at the old templates' shares (`GROUNDS` in data); walls never cut the board
+    and the start's surroundings stay clear. *Direction from the neighbours:* deeper neighbours pull, shallower ones
+    push, and map north is up; you start one cell in from the shore edge, and the shadow enters on the deep edge.
+    **The hunter is a shadow from deep water** (*decided 11 Nov*: "no hunter till N4 is fine, if shadow from deep is
+    cheap add it"): the ported hunter, unnamed old life, at the bottom type's turn, switched by `BOARD.shadow`. N4
+    replaces it with the sea's hunters. *Food from the stocks:* `round(BOARD.nodes × density(habitat, food))` mat and
+    buried nodes, at most 1.5 × `nodes`; a node brings its own ground (a buried node is a mud pocket). So no mats on
+    the slope or deep, and a grazed-down habitat has fewer. Shell beds and carcasses are bottom-type features until
+    N4 makes them a food. *The event from depth and bottom type:* low tide on the flats (the shore band runs dry);
+    below them a mudslide on mud, a vent surge on rock and an upwelling on sand (the deep band loses oxygen).
+    *Rivals:* the species present with at least `rivalAt` heads, the heaviest first, one spot at least 4 steps from
+    the start; each eats its best slot's node.
   - **`found(world, habitat, species, eggs)`:** adds `eggs × HEADS_PER_EGG × bodyMass(build)` grams to the habitat.
     `HEADS_PER_EGG = 2` (*decided 11 Nov*): a typical Life (10–18 eggs) founds 20–36 heads, about N1's tested 20; a poor
     one (4 eggs) founds 8. It takes plain numbers: the sea never knows how the eggs were made (law 7).
@@ -134,8 +137,8 @@ rebalance ported numbers.
 3. **C.** `clade/src/data/economy.ts` (the grow price, the Enforce costs and effect table, `HEADS_PER_EGG`, each with
    a comment naming its term) and `sim/economy.ts`: `growCost`, `grow`, `enforceCost`, `canEnforce`, `enforce`,
    `payback`, `lay`, `resultOf`. Tests in `clade/tests/economy.test.ts`.
-4. **D.** `clade/src/data/boards.ts` (the three templates from `game/src/data/habitats.ts`, `BOARD` numbers),
-   `sim/board.ts` (`boardFor`, porting `follow` from `game/src/sim/door.ts`) and `sim/found.ts` (`found`, the Colonise
+4. **D.** `clade/src/data/boards.ts` (`BOARD`, `GROUNDS` and the events; the templates were replaced by the
+   generator after the review), `sim/board.ts` (`boardFor`) and `sim/found.ts` (`found`, the Colonise
    check and judgement, using `fitness` and the sea's growth test exported from `sea.ts`). Tests in
    `clade/tests/board.test.ts`, plus law 7 in the existing import test.
 **Session 2: E–G.** Parts E, F and G in order. Run `npm run look -- /clade/` at 360 px and desktop size for the sheet
