@@ -9,7 +9,7 @@ type Template = Pick<Board, 'map' | 'start' | 'entry'> & {
 export const BOARD = {
   shadow: true, // hunter: use the template's arrival turn
   maxShare: 1.5, // food: upper bound on the share of template nodes
-  rivalAt: 6, // rivals: minimum resident grams, ported threshold
+  rivalAt: 6, // rivals: minimum resident heads (grams ÷ body mass); game/'s BOARD.rivalAt counted heads
 };
 
 export const TEMPLATES: Record<Substrate, Template> = {

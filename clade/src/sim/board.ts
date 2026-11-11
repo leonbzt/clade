@@ -1,6 +1,6 @@
 import { BOARD, TEMPLATES } from '../data/boards';
 import { COLS } from '../data/life';
-import { density } from './fitness';
+import { bodyMass, density } from './fitness';
 import type { Habitat } from './habitats';
 import type { Board, Rival } from './life';
 import type { World } from './records';
@@ -35,7 +35,7 @@ export function boardFor(habitat: Habitat, world: World, seed: number): Board {
   const mirrored = (seed & 1) !== 0;
   const spot = ([x, y]: [number, number]): [number, number] => [mirrored ? COLS - 1 - x : x, y];
   const residents = world.species.map((species) => ({ species, grams: habitat.pops[species.id] ?? 0 }))
-    .filter(({ grams }) => grams >= BOARD.rivalAt)
+    .filter(({ species, grams }) => grams / bodyMass(species.build) >= BOARD.rivalAt)
     .sort((a, b) => b.grams - a.grams);
   const rivals: Rival[] = [];
   for (const { species } of residents) {

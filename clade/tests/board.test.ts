@@ -95,6 +95,17 @@ describe('boardFor', () => {
     expect(boardFor(habitat, world, 2).rivals).toEqual([]);
   });
 
+  it('counts the rival cutoff in heads, not grams', () => {
+    const { habitat, world } = fixture('shallows', 'mud');
+    const big = worm('big', { tail: 'bulb' }, 3), mass = bodyMass(big.build);
+    world.species.push(big);
+    habitat.pops = { big: (BOARD.rivalAt - 1) * mass };
+    expect(habitat.pops.big).toBeGreaterThan(BOARD.rivalAt);
+    expect(boardFor(habitat, world, 2).rivals).toEqual([]);
+    habitat.pops.big = BOARD.rivalAt * mass;
+    expect(boardFor(habitat, world, 2).rivals).toMatchObject([{ species: 'big', eats: 'buried' }]);
+  });
+
   it('runs the whole season without a hunter when the shadow flag is off', () => {
     const { habitat, world } = fixture();
     const original = BOARD.shadow;
