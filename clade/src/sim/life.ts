@@ -118,7 +118,7 @@ export function newLife(board: Board, build: Build, ranks: Ranks, _seed: number)
   return l;
 }
 
-function isLifeBuild(build: Build): build is LifeBuild {
+export function isLifeBuild(build: Build): build is LifeBuild {
   return Object.hasOwn(PLANS, build.clade);
 }
 

@@ -1,6 +1,8 @@
 <!-- The tapped habitat: its slots and residents, recent ecology, ground and neighbours. -->
 <script lang="ts">
   import { css } from '../data/palette';
+  import { colonise as purposeOf } from '../sim/found';
+  import { isLifeBuild } from '../sim/life';
   import { bodyMass } from '../sim/fitness';
   import type { Habitat } from '../sim/habitats';
   import type { Ranks, Species, World } from '../sim/records';
@@ -9,10 +11,11 @@
   import HistoryGraph from './HistoryGraph.svelte';
   import TierCard from './TierCard.svelte';
 
-  let { hab, world, history, select, picked, ranks = {}, place }: {
+  let { hab, world, history, select, picked, ranks = {}, place, colonise }: {
     hab: Habitat; world: World; history: Frame[]; select: (id: number) => void;
-    picked?: Species; ranks?: Ranks; place?: () => void;
+    picked?: Species; ranks?: Ranks; place?: () => void; colonise?: () => void;
   } = $props();
+  const purpose = $derived(picked && isLifeBuild(picked.build) ? purposeOf(world, hab, picked) : null);
   const held = $derived(heldSlots(hab, world));
   const preview = $derived(picked ? predictions(picked.build, ranks, hab, world) : []);
 </script>
@@ -30,6 +33,7 @@
         <TierCard build={picked.build} {ranks} {slot} {hab} {world} name={picked.name} />
       {:else}<p>No food slot here</p>{/each}
       <button class="place" onclick={place} disabled={(hab.pops[picked.id] ?? 0) > 0}>{(hab.pops[picked.id] ?? 0) > 0 ? 'Already here' : 'Place · 20 heads'}</button>
+      {#if purpose}<button class="place" onclick={colonise} title={purpose.text}>Colonise</button>{/if}
     </section>
     <h3>Holders</h3>
   {/if}
