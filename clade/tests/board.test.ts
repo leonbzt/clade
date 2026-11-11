@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { BOARD, TEMPLATES } from '../src/data/boards';
-import { COLS, ROWS, TURNS } from '../src/data/life';
-import { boardFor } from '../src/sim/board';
-import { bodyMass, ceiling, fitness, slots } from '../src/sim/fitness';
+import { BOARD, GROUNDS } from '../src/data/boards';
+import { GROUND } from '../src/data/ground';
+import { CELL, COLS, ROWS, TURNS } from '../src/data/life';
+import { boardFor, deepEdge } from '../src/sim/board';
+import { bodyMass, ceiling, density, fitness, slots } from '../src/sim/fitness';
 import { colonise, coloniseJudgement, found } from '../src/sim/found';
 import type { Habitat, HabitatKind } from '../src/sim/habitats';
-import { newLife, stay, type Board } from '../src/sim/life';
+import { DX, DY, at, dist, eventArea, inB, newLife, stay, xy, type Board } from '../src/sim/life';
 import type { Build, Species, World } from '../src/sim/records';
 import { grows } from '../src/sim/sea';
 
@@ -25,60 +26,107 @@ function fixture(depth: HabitatKind['depth'] = 'shallows', substrate: HabitatKin
 
 const cells = (board: Pick<Board, 'map'>, node: string) =>
   [...board.map.join('')].flatMap((cell, i) => cell === node ? [i] : []);
+/** Open cells reachable from the start. */
+function reachable(board: Board): number {
+  const map = board.map.join(''), seen = new Set([at(...board.start)]), open = [...seen];
+  while (open.length) {
+    const [x, y] = xy(open.pop()!);
+    for (let d = 0; d < 4; d++) {
+      const j = at(x + DX[d], y + DY[d]);
+      if (inB(x + DX[d], y + DY[d]) && map[j] !== '#' && !seen.has(j)) { seen.add(j); open.push(j); }
+    }
+  }
+  return seen.size;
+}
 
 describe('boardFor', () => {
-  it('is deterministic, leaves the world intact, and mirrors the map, start, entry and rival spots by seed', () => {
+  it('is deterministic, leaves the world intact, and differs by seed', () => {
     const { habitat, world } = fixture();
     const grazer = worm('grazer', { front: 'tentacles' });
     world.species.push(grazer); habitat.pops.grazer = 30;
     const before = structuredClone(world);
-    const base = boardFor(habitat, world, 2), mirror = boardFor(habitat, world, 3);
+    const base = boardFor(habitat, world, 2);
     expect(boardFor(habitat, world, 2)).toEqual(base);
     expect(world).toEqual(before);
     expect(base.map).toHaveLength(ROWS);
     expect(base.map.every((row) => row.length === COLS)).toBe(true);
-    expect(mirror.map).toEqual(base.map.map((row) => [...row].reverse().join('')));
-    for (const [a, b] of [[base.start, mirror.start], [base.entry, mirror.entry], [base.rivals[0].at, mirror.rivals[0].at]])
-      expect(b).toEqual([COLS - 1 - a[0], a[1]]);
-    expect(mirror.event).toEqual(base.event);
-    expect(mirror.predatorAt).toBe(base.predatorAt);
+    expect(boardFor(habitat, world, 3).map).not.toEqual(base.map);
     grazer.build.parts.front = 'proboscis';
     expect(base.rivals[0].build.parts.front).toBe('tentacles');
   });
 
-  it('uses each template’s features, replacing vents and sampling away mats below the shallows', () => {
-    for (const substrate of ['sand', 'mud', 'rock'] as const) {
+  it('grows its ground from the bottom type, a little mixed and always playable', () => {
+    for (const substrate of ['sand', 'mud', 'rock'] as const) for (let seed = 1; seed <= 20; seed++) {
       const { habitat, world } = fixture('slope', substrate);
-      const template = TEMPLATES[substrate], board = boardFor(habitat, world, 2);
-      expect(board.map.join('')).not.toMatch(/[%o]/);
-      expect(cells(board, 'm')).toEqual([]);
-      expect(cells(board, 's')).toEqual(cells(template, 's'));
-      expect(cells(board, 'c')).toEqual(cells(template, 'c'));
-      expect([board.event, board.predatorAt]).toEqual([template.event, template.predatorAt]);
+      habitat.stocks = { mats: 0, detritus: 0 };
+      const board = boardFor(habitat, world, seed), map = board.map.join('');
+      const share = (t: string) => [...map].filter((c) => CELL[c][0] === t).length / map.length;
+      expect(map[at(...board.start)], `${substrate} ${seed}`).toMatch(/[.~]/);
+      expect(reachable(board), `${substrate} ${seed}`).toBe([...map].filter((c) => c !== '#').length);
+      expect(share(substrate === 'mud' ? 'mud' : 'sand')).toBeGreaterThan(0.5);
+      if (substrate === 'rock') expect(share('rock')).toBeGreaterThan(0.2);
+      expect(new Set([...map].map((c) => CELL[c][0])).size).toBeGreaterThan(1);
     }
   });
 
-  it('halving stocks never adds food nodes and zero stock removes all nodes of its food', () => {
+  it('starts by the shore and lets the shadow in from the deep side, read from the neighbours', () => {
+    const { habitat, world } = fixture('shallows', 'mud');
+    const deeper: Habitat = { ...structuredClone(habitat), id: 1, kind: { ...habitat.kind, depth: 'slope' } };
+    habitat.centre = { x: 100, y: 100 }; deeper.centre = { x: 100, y: 140 };
+    habitat.neighbours = [1]; habitat.borders = [30];
+    world.habitats.push(deeper);
+    expect(deepEdge(habitat, world)).toBe('bottom');
+    let board = boardFor(habitat, world, 2);
+    expect([board.start[1], board.entry[1]]).toEqual([1, ROWS - 1]);
+    deeper.centre = { x: 160, y: 100 };
+    board = boardFor(habitat, world, 2);
+    expect([board.start[0], board.entry[0]]).toEqual([1, COLS - 1]);
+    deeper.kind.depth = 'flat'; // a shallower neighbour pushes the deep side away from it
+    expect(deepEdge(habitat, world)).toBe('left');
+    habitat.neighbours = []; habitat.borders = []; habitat.centre = { x: GROUND.w / 2, y: GROUND.h - 1 };
+    expect(deepEdge(habitat, world)).toBe('bottom'); // no depth step: away from the island
+  });
+
+  it('puts food from the stocks: buried pockets on a rock deep, no mats without light, capped', () => {
+    const { habitat, world } = fixture('deep', 'rock');
+    const board = boardFor(habitat, world, 2);
+    expect(cells(board, 'b')).toHaveLength(Math.round(BOARD.nodes * density(habitat, 'detritus')));
+    expect(cells(board, 'b').length).toBeGreaterThanOrEqual(10);
+    expect(cells(board, 'm')).toEqual([]);
+    habitat.stocks = { mats: 10_000, detritus: 10_000 };
+    expect(cells(boardFor(habitat, world, 2), 'b')).toHaveLength(Math.floor(BOARD.nodes * BOARD.maxShare));
+    const flat = fixture('flat', 'sand');
+    expect(cells(boardFor(flat.habitat, flat.world, 2), 'm')).toHaveLength(Math.floor(BOARD.nodes * BOARD.maxShare));
+  });
+
+  it('halving a stock keeps a subset of its nodes and a stock at 0 gives none', () => {
     const { habitat, world } = fixture('shallows', 'mud');
     const rich = boardFor(habitat, world, 2);
-    habitat.stocks.mats /= 2;
-    habitat.stocks.detritus /= 2;
-    const thin = boardFor(habitat, world, 2);
-    for (const kind of ['m', 'b']) {
-      expect(cells(thin, kind).length).toBeLessThan(cells(rich, kind).length);
-      expect(cells(rich, kind)).toEqual(expect.arrayContaining(cells(thin, kind)));
+    for (const [node, food] of [['m', 'mats'], ['b', 'detritus']] as const) {
+      const full = habitat.stocks[food];
+      habitat.stocks[food] = full / 2;
+      const thin = boardFor(habitat, world, 2);
+      expect(cells(thin, node).length).toBeLessThan(cells(rich, node).length);
+      expect(cells(rich, node)).toEqual(expect.arrayContaining(cells(thin, node)));
+      habitat.stocks[food] = full;
     }
     habitat.stocks = { mats: 0, detritus: 0 };
     const empty = boardFor(habitat, world, 2);
     expect([cells(empty, 'm'), cells(empty, 'b')]).toEqual([[], []]);
   });
 
-  it('caps rich stocks at one and a half times the template node counts', () => {
-    const { habitat, world } = fixture('shallows', 'mud');
-    habitat.stocks = { mats: 10_000, detritus: 10_000 };
-    const board = boardFor(habitat, world, 2);
-    for (const kind of ['m', 'b'])
-      expect(cells(board, kind)).toHaveLength(Math.floor(cells(TEMPLATES.mud, kind).length * 1.5));
+  it('picks the event from depth and bottom type, with its band on the shore or the deep side', () => {
+    const eventOf = (depth: HabitatKind['depth'], substrate: HabitatKind['substrate']) => {
+      const { habitat, world } = fixture(depth, substrate); // no neighbours: the deep side is left, away from the island
+      return boardFor(habitat, world, 2);
+    };
+    expect(eventOf('flat', 'sand').event).toMatchObject({ name: 'Low tide', cols: [COLS - 3, COLS - 1] });
+    expect(eventOf('shallows', 'sand').event).toMatchObject({ name: 'Upwelling', cols: [0, 2] });
+    expect(eventOf('slope', 'mud').event).toMatchObject({ name: 'Mudslide', where: 'mud' });
+    expect(eventOf('deep', 'rock').event).toMatchObject({ name: 'Vent surge', where: 'all' });
+    expect(eventOf('deep', 'rock').predatorAt).toBe(GROUNDS.rock.shadowTurn);
+    const l = newLife(eventOf('flat', 'sand'), worm('worm').build, {}, 2);
+    expect([eventArea(l, COLS - 1, 5), eventArea(l, 0, 5)]).toEqual([true, false]);
   });
 
   it('uses the heaviest resident at the threshold and feeds it from its best slot', () => {
@@ -87,6 +135,11 @@ describe('boardFor', () => {
     world.species.push(grazer, digger);
     habitat.pops = { grazer: BOARD.rivalAt - 1, digger: BOARD.rivalAt };
     expect(boardFor(habitat, world, 2).rivals).toMatchObject([{ species: 'digger', eats: 'buried' }]);
+    for (let seed = 1; seed <= 20; seed++) {
+      const board = boardFor(habitat, world, seed), [x, y] = board.rivals[0].at;
+      expect(board.map[y][x]).not.toBe('#');
+      expect(dist(x, y, ...board.start)).toBeGreaterThanOrEqual(BOARD.rivalGap);
+    }
     habitat.pops.grazer = BOARD.rivalAt + 1;
     expect(boardFor(habitat, world, 2).rivals).toMatchObject([{ species: 'grazer', eats: 'mat' }]);
     habitat.stocks.mats = 0;

@@ -13,7 +13,7 @@ export type { Side } from './life-body';
 
 export interface Rival { at: [number, number]; species: Id; name: string; eats: NodeId | null; build: Build }
 export interface BoardEvent {
-  from: number; to: number; where: 'all' | Terrain; rows?: [number, number];
+  from: number; to: number; where: 'all' | Terrain; rows?: [number, number]; cols?: [number, number];
   name: string; text: string; look: 'murk' | 'dry' | 'haze';
 }
 export interface Board {
@@ -68,10 +68,11 @@ export const tile = (l: Life, x = l.x, y = l.y) => l.tiles[at(x, y)];
 export const onMud = (l: Life) => tile(l).t === 'mud';
 export const buriedAt = (l: Life, x: number, y: number) => l.build.clade === 'worm' && tile(l, x, y).t === 'mud';
 export const eventOn = (l: Life) => !!l.board.event && l.turn >= l.board.event.from && l.turn <= l.board.event.to;
-/** Whether the board's event covers (x, y), by terrain and rows. */
+/** Whether the board's event covers (x, y), by terrain, rows and columns. */
 export function eventArea(l: Life, x: number, y: number) {
   const ev = l.board.event, t = tile(l, x, y).t;
-  return !!ev && (ev.where === 'all' || ev.where === t) && (!ev.rows || (y >= ev.rows[0] && y <= ev.rows[1]));
+  return !!ev && (ev.where === 'all' || ev.where === t) && (!ev.rows || (y >= ev.rows[0] && y <= ev.rows[1]))
+    && (!ev.cols || (x >= ev.cols[0] && x <= ev.cols[1]));
 }
 export const airless = (l: Life, x = l.x, y = l.y) => !has(l, 'blood') && eventOn(l) && eventArea(l, x, y);
 export const upkeep = (l: Life) => B.upkeep(l, onMud(l));
