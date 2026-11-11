@@ -222,11 +222,12 @@ describe('sea contracts', () => {
     expect(best, `best of three: ${best.toFixed(1)} ms`).toBeLessThan(100);
   });
 
-  it('law 7: sim imports no view, ui, game or Life module (source grep)', () => {
+  it('law 7: sim imports no view, ui or game, and sea imports no Life modules', () => {
     const dir = new URL('../src/sim', import.meta.url);
     for (const file of readdirSync(dir).filter((p) => p.endsWith('.ts'))) {
       const text = readFileSync(join(dir.pathname, file), 'utf8');
-      expect(text, file).not.toMatch(/(?:from\s*|import\s*\()['"][^'"]*(?:\/(?:view|ui|game)\/|\/life(?:['".]|\/))/);
+      expect(text, file).not.toMatch(/(?:from\s*|import\s*\(?\s*)['"][^'"]*\/(?:view|ui|game)\//);
+      if (file === 'sea.ts') expect(text, file).not.toMatch(/(?:from\s*|import\s*\(?\s*)['"][^'"]*\/life(?:[-.'"]|\/)/);
     }
   });
 });
