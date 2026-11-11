@@ -11,7 +11,7 @@ export { DX, DY, at, dist, inB, xy, type Dir } from './grid';
 export { hitOn } from './threat';
 export type { Side } from './life-body';
 
-export interface Rival { at: [number, number]; species: Id; name: string; eats: NodeId; build: Build }
+export interface Rival { at: [number, number]; species: Id; name: string; eats: NodeId | null; build: Build }
 export interface BoardEvent {
   from: number; to: number; where: 'all' | Terrain; rows?: [number, number];
   name: string; text: string; look: 'murk' | 'dry' | 'haze';
@@ -91,7 +91,7 @@ export function cleared(l: Life, t: Tile) {
 }
 
 export const foodOf = (l: Life, node: NodeId) => B.foodOf(l, node);
-export const lockOf = (l: Life, node: NodeId) => B.lockOf(l, node, l.board.substrate);
+export const lockOf = (l: Life, node: NodeId, cracked = false) => B.lockOf(l, node, l.board.substrate, cracked);
 
 export function reveal(l: Life) {
   const R = sense(l);
@@ -175,7 +175,7 @@ export function dests(l: Life): Map<number, Dest> {
 export function eat(l: Life, i: number, cracked = false, bonus = 0) {
   const t = l.tiles[i];
   if (!t.node) return;
-  const lock = cracked && (t.node === 'shell' || t.node === 'carcass') ? null : lockOf(l, t.node);
+  const lock = lockOf(l, t.node, cracked);
   if (lock) { say(l, `${NODES[t.node].name} ${lock}.`); emit(l, { k: 'locked', i, node: t.node, why: lock }); return; }
   const f = foodOf(l, t.node) + bonus;
   say(l, `${NODES[t.node].name}: +${f} food.`);
@@ -205,6 +205,7 @@ export function stay(l: Life, dir: Dir = l.facing) {
 
 function rivalStep(l: Life, idx: number) {
   const v = l.rivals[idx], from = at(v.x, v.y);
+  if (!v.eats) return;
   let best = -1, bd = 1e9;
   l.tiles.forEach((t, i) => { if (t.node === v.eats) { const d = dist(v.x, v.y, ...xy(i)); if (d < bd) { bd = d; best = i; } } });
   if (best < 0) return;

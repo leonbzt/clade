@@ -5,7 +5,7 @@ import { FOODS, REGROW, SEA } from '../data/sea';
 import { bodyMass, ceiling, density, reach, score, slots, stats } from './fitness';
 import { makeGround } from './ground';
 import { findHabitats, type Habitat } from './habitats';
-import type { Build, Ranks, Slot, World } from './records';
+import type { Build, Ranks, Slot, Species, World } from './records';
 
 export function makeWorld(seed: number): World {
   const habitats = findHabitats(makeGround(seed)).list;
@@ -13,7 +13,10 @@ export function makeWorld(seed: number): World {
   return { seed, generation: 0, habitats, species: [], lineages: [] };
 }
 
-function best(build: Build, ranks: Ranks, h: Habitat, world: World, available = slots(h, world)) {
+export const ranksOf = (world: World, lineage: Species['lineage']): Ranks =>
+  world.lineages.find((line) => line.id === lineage)?.ranks ?? {};
+
+export function bestSlot(build: Build, ranks: Ranks, h: Habitat, world: World, available = slots(h, world)) {
   let chosen: { slot: Slot; fit: ReturnType<typeof score> } | undefined;
   for (const slot of available) {
     if (slot.foods.every((food) => h.stocks[food] <= 0)) continue;
@@ -24,7 +27,7 @@ function best(build: Build, ranks: Ranks, h: Habitat, world: World, available = 
 }
 
 /** A newcomer grows where appetite × value beats deaths at today's food: it moves only there. */
-const grows = (value: number) => SEA.appetite * value > SEA.deaths;
+export const grows = (value: number) => SEA.appetite * value > SEA.deaths;
 
 /** Mutates ecological state in place; geometry and the species/lineage records stay unchanged. */
 export function step(world: World): void {
@@ -36,7 +39,7 @@ export function step(world: World): void {
   const available = habitats.map((h) => slots(h, world)); // slots read ceilings only, not stocks
 
   habitats.forEach((h, hi) => {
-    const choices = species.map((s, i) => (h.pops[s.id] ?? 0) > 0 ? best(s.build, ranks[i], h, world, available[hi]) : undefined);
+    const choices = species.map((s, i) => (h.pops[s.id] ?? 0) > 0 ? bestSlot(s.build, ranks[i], h, world, available[hi]) : undefined);
     const eaten = new Float64Array(species.length);
 
     // 2. Each species eats in its best slot: pop × appetite × fitness's intake term (reach × food per tile), so a
@@ -81,7 +84,7 @@ export function step(world: World): void {
         if (to === undefined) return;
         let allowed = predictions[to].get(i);
         if (allowed === undefined) {
-          const prediction = best(s.build, ranks[i], habitats[to], world, available[to]);
+          const prediction = bestSlot(s.build, ranks[i], habitats[to], world, available[to]);
           allowed = !!prediction && grows(prediction.fit.value);
           predictions[to].set(i, allowed);
         }

@@ -158,6 +158,14 @@ describe('verbs', () => {
     expect(useVerb(l, 'crush')).toBe(true);
     expect(l.food).toBe(food + 14 + 4 - L.upkeep(l));
   });
+
+  it('an arthropod on a mud board has no feeding reach, including with Crush', () => {
+    const l = life({ front: 'claw' }, 'arthropod');
+    l.x = 4; l.y = 6;
+    expect(useVerb(l, 'crush')).toBe(true);
+    expect(l.events).toContainEqual(expect.objectContaining({ k: 'locked', node: 'carcass' }));
+    expect(l.ate).toEqual({});
+  });
 });
 
 describe('the shadow', () => {

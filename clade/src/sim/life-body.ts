@@ -1,4 +1,5 @@
 // A species' build stays intact through growth, tears and starvation. Only active places contribute.
+import { CLADES } from '../data/clades';
 import type { Substrate } from '../data/ground';
 import { ENFORCE_EFFECT } from '../data/economy';
 import { GUARDS, NODES, PLANS, RULE, STRUCK, type NodeId } from '../data/life';
@@ -69,7 +70,7 @@ function enforcedBonus(body: LifeBody, part: PartId): number {
 
 const SEA_FOOD: Partial<Record<NodeId, Food>> = { mat: 'mats', buried: 'detritus' };
 
-export function lockOf(body: LifeBody, node: NodeId, substrate: Substrate): string | null {
+export function lockOf(body: LifeBody, node: NodeId, substrate: Substrate, cracked = false): string | null {
   const food = SEA_FOOD[node];
   if (food) {
     const parts: Build['parts'] = {};
@@ -77,6 +78,8 @@ export function lockOf(body: LifeBody, node: NodeId, substrate: Substrate): stri
     if (reach({ ...body.build, parts }, body.ranks, food, { kind: { substrate } }) > 0) return null;
     return node === 'buried' ? 'is out of digging reach' : 'is out of grazing reach';
   }
+  if (CLADES[body.build.clade].substrate[substrate] === 0) return 'is out of feeding reach here';
+  if (cracked) return null;
   if (node === 'shell' && !has(body, 'claw') && !has(body, 'hook'))
     return body.build.clade === 'worm' ? 'needs a hooked proboscis' : 'needs a crushing claw';
   if (node === 'carcass' && body.size < RULE.carcassSize)
