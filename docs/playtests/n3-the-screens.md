@@ -36,3 +36,24 @@ no browser errors. Inspected `.shots/n3-b-mutation.png`: the Eye, Sense and Enfo
 No mutation cards yet: F will consume the pending offer and present the choice. Pending offers leave existing
 controls playable until that UI lands. Sure inheritance belongs to C; the full three-Life question still waits
 for the screens.
+
+## Part C · 11 Nov 2026
+
+Rules checkpoint. `npm run check` passes in 5.9 s. Fourteen clutch tests cover the 0/2/3-card egg thresholds,
+determinism, eligible gain/swap/lose changes across four clades, equal gain/lose kind weights independent of pool
+size, bare/full builds, compounded family weights across enforced parts, mutation-first inheritance after laying
+and shedding, and independent heir parts/genes. Existing gameplay checks pass. New gains and swaps use common
+parts' primary places; losses use the parent's actual occupied places, including alternate placements. Kind rolls
+are limited to legal changes, then part rolls use ×2 per rank enforced in that family. Rolls remain independent
+as in the original clutch; the sure mutation occupies the first card within the total and is excluded from rerolls.
+
+One deterministic phone run, `npm run look -- /clade/ scripts/look/n3-c.json`, at 390 × 844: launch from *first
+worm*, Grow to 3, pick and Enforce Tentacles, lay three eggs, end the season, then roll from that actual result.
+The two cards are Tentacles/front and Sclerites/sides; repeating the seed matches, 10 eggs gives three cards and
+0 gives none, the feed-family weight is 2, and the heir gains Tentacles without changing the parent or World.
+Return to the map leaves the bare parent intact. All assertions pass; no browser errors. Inspected
+`.shots/n3-c-result.png`: the existing result panel fits; a transient Lay floater crosses its text in this capture
+(the result screen is replaced in E). The sandbox initially blocked localhost; the authorized browser run passed.
+
+No hatch settlement or card UI yet: D/E will consume these rules. The full three-Life question still waits for
+the screens.
