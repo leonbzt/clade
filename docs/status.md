@@ -1,7 +1,11 @@
 # Status
 
 11 Nov 2026 · **M2, step 9 N2 (the Life): Session 1 A–D built on `n2-the-life`.**
-- `npm run check` passed in 5.2 s. Claude should review active-part reach, Enforce and shadow strikes, and the board/sea join. The rival cutoff is the ported value of 6 g.
+- `npm run check` passed in 5.2 s. **Claude reviewed it (11 Nov):** the parts that are on, food reach, Enforce, shadow
+  strikes and founding match the spec. Fixed (`1135fd0`): the rival cutoff counts heads (game/'s unit), not grams.
+- **Open, blocks the slope play test:** on sand and rock slopes and deep water a board has 0 mats and 1–2 buried
+  nodes (6–12 food), but the sea rates a bulb worm B or A there. The cap is 1.5 × the template's own count (sand 2, rock 1).
+  Seed 1 has 6 of its 13 habitats like this. The user picks a fix before Session 2.
 - Session 2 (E–G) wires the screen and Colonise loop, registers dev picks before `found`, and captures the sheet and three-habitat playtest.
 
 **Done (Claude):**
