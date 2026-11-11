@@ -128,6 +128,8 @@ describe('Lay and results', () => {
     expect(lay(l)).toBe(true);
     expect([l.turn, l.food, l.eggs]).toEqual([2, food - 4, 8]);
     expect(l.events[0]).toEqual({ k: 'lay', n: 8, eggs: 8, food: food - 4 });
+    expect(lay(l)).toBe(true);
+    expect(l.food).toBe(food - 4 - 6); // each later clutch costs 2 more
   });
 
   it('progenesis allows an early lay, and the finished result is a snapshot', () => {

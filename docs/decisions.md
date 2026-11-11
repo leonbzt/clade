@@ -778,3 +778,13 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   depth and bottom type ("sounds great"). Claude builds it in Session 1 ("you can build it now").
 - **Fit:** "its fine if there isn't enough food for a specific species in a habitat that doesn't support the main
   playstyle"; a digger that doesn't fit can switch to mats. The board must agree with the sea's tier.
+
+## 11 Nov, the N2 Session 2 review
+- **No early itch page:** "skip itch early feedback, stay at itch after n4". The closed test stays at roadmap step 12.
+- **The Lay price rises per lay:** 4, 6, 8, … food within a Life (`LAY_STEP = 2`); "with part that reduces it later"
+  (parked). The scripted Lives fall from 86 and 60 eggs to 46 and 38; tune by feel.
+- **More choice in the Life: keep the plan** (option A: N3's mutation event and clutch cards bring choice). An
+  equipping moment in the Life ("maybe c lateron") and bigger stock bars ("with ui rehaul") are parked in `ideas.md`.
+- **Fewer tokens:** "i want to test most things, instead of using heavy simulations and tests, also fewer
+  screenshots". Steps skip the separate review round unless the check fails or play feels off; one phone-size look
+  run per step (full sheets only for the play test); no scripted strategy comparisons; specs about 60 lines.

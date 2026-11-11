@@ -63,3 +63,15 @@ three Enforce rows are visible. The port keeps its old drawing colours in `view/
   into the corresponding `phone/` or `desktop/` sheet folder before running the other size.
 
 Type checks, simulation/UI integration tests, import laws and the final `npm run check` are recorded in status.
+
+## Your notes (11 Nov, a short first play)
+
+- "the base currently still plays well and the new maps feel really cool and its nice that they are different and
+  feel like the habitat youre in."
+- "its cool that the enforce show the payoff times"; the UI is clear and looks "very professional and nice".
+- **Main issue: too little choice.** "the current setups only had one enforce option and no body view, so it felt like
+  there was less choice and strategy involved"; "no feeling of equipping or crafting like an rpg, no body parts
+  selection."
+- Bars: "i liked to bigger well visible food health and oxygen bars better."
+- "where did the planned extra species go?" (Grazer and Digger worm are in the map bar's Build list, not in a preset.)
+- Old-Life feel verdict: more testing to come.

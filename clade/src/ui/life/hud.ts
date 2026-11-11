@@ -1,6 +1,6 @@
 // Ported pip bars and feedback; controls read the Life's economy directly.
 import { RULE, TURNS, VERBS } from '../../data/life';
-import { ENFORCE_EFFECT, ENFORCE_HEADROOM, LAY_COST } from '../../data/economy';
+import { ENFORCE_EFFECT, ENFORCE_HEADROOM } from '../../data/economy';
 import { PARTS } from '../../data/parts';
 import * as E from '../../sim/economy';
 import * as L from '../../sim/life';
@@ -72,7 +72,7 @@ export class Hud {
     grow.textContent = l.size >= RULE.maxSize ? 'Full grown' : `Grow · ${E.growCost(l)} food`;
     grow.disabled = !play || !E.canGrow(l);
     const lay = $<HTMLButtonElement>('lay');
-    lay.textContent = mature(l) ? `Lay · ${LAY_COST} food → ${E.layYield(l)} eggs` : `Lay · from size ${RULE.adultSize}`;
+    lay.textContent = mature(l) ? `Lay · ${E.layCost(l)} food → ${E.layYield(l)} eggs` : `Lay · from size ${RULE.adultSize}`;
     lay.disabled = !play || !E.canLay(l);
     const verbs = $('verbs'); verbs.replaceChildren();
     for (const v of L.verbs(l)) {

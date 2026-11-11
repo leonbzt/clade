@@ -55,7 +55,7 @@ export type Ev =
 export interface Life extends LifeBody {
   board: Board;
   tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Rival & { x: number; y: number })[];
-  turn: number; food: number; oxygen: number; health: number; eggs: number;
+  turn: number; food: number; oxygen: number; health: number; eggs: number; lays: number;
   phase: 'play' | 'over'; cause: 'season' | 'died' | null;
   grew: boolean; soft: boolean; moved: boolean;
   pred: Predator | null; lines: string[]; events: Ev[];
@@ -108,7 +108,7 @@ export function newLife(board: Board, build: Build, ranks: Ranks, _seed: number)
     board, build, ranks, size: 1, lost: [], enforced: {}, spentGuards: {},
     tiles: board.map.join('').split('').map((c) => { const [t, node] = CELL[c]; return { t, node, seen: false }; }),
     x: board.start[0], y: board.start[1], facing: 1, rivals: board.rivals.map((v) => ({ ...v, x: v.at[0], y: v.at[1] })),
-    turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0,
+    turn: 1, food: RULE.startFood, oxygen: RULE.oxygen, health: RULE.health, eggs: 0, lays: 0,
     phase: 'play', grew: false, soft: false, moved: false, pred: null, cause: null, lines: [], events: [],
     recharge: {}, dash: false, braced: false, dug: false, ate: {},
   };

@@ -1,5 +1,5 @@
 // The Life's three uses of surplus food, with effects and prices from data/economy.ts.
-import { ENFORCE_COSTS, ENFORCE_EFFECT, ENFORCE_HEADROOM, GROW_SHARE, LAY_COST } from '../data/economy';
+import { ENFORCE_COSTS, ENFORCE_EFFECT, ENFORCE_HEADROOM, GROW_SHARE, LAY_COST, LAY_STEP } from '../data/economy';
 import { PLANS, RULE, TURNS } from '../data/life';
 import { PARTS } from '../data/parts';
 import { activePlaces, clutch, has, mature } from './life-body';
@@ -62,14 +62,16 @@ export function payback(life: Life, part: PartId): string | null {
   return `${text} · ${turns} turn${turns === 1 ? '' : 's'} left`;
 }
 
+export const layCost = (life: Life) => LAY_COST + LAY_STEP * life.lays;
 export const layYield = (life: Life) => clutch(life, onMud(life));
-export const canLay = (life: Life) => life.phase === 'play' && mature(life) && life.food >= LAY_COST;
+export const canLay = (life: Life) => life.phase === 'play' && mature(life) && life.food >= layCost(life);
 
 export function lay(life: Life): boolean {
   if (!canLay(life)) return false;
   life.events = [];
   const n = layYield(life);
-  life.food -= LAY_COST;
+  life.food -= layCost(life);
+  life.lays++;
   life.eggs += n;
   life.moved = false;
   say(life, `Laid ${n} egg${n === 1 ? '' : 's'}.`);

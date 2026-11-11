@@ -196,3 +196,7 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - The sea keeps swinging: hunters whose appetite levels off (type II) cycle with their prey; or seasons (mats yield on a slow sine). You, 10 Nov: wait for the dynamics N4 brings first. For N4.
 - Life history in the sea: populations as a mix of growth stages; fast or slow growth, long or short life, longer or shorter larval stages as traits (you, 11 Nov: "sounds too complicated for now"). The sea uses the adult size until then. After release, or R5 if genes ask for it.
 - A species' own growth order (which part switches on first), set at hatching or as a gene; defaults to family order (you, 11 Nov: "would be cool to be able to customize eventually"). N3 or R5; `growthOrder(build)` is the one place it changes.
+- A part that lowers the rising Lay price (you, 11 Nov, N2 review: "with part that reduces it later"). R5 or with the next parts.
+- The Life HUD's food, health and oxygen pips bigger, one colour per stock, like the old game (you, 11 Nov: "fix later with ui rehaul"). R10.
+- Rivals on a board drawn at different sizes, not all full grown (you, 11 Nov). L1.
+- An equipping moment in the Life: at size 3 pick one of three parts for an empty place, the eggs carry it; N3's mutation event pulled forward (you, 11 Nov: "maybe c (equipping) lateron"). N3 or later.

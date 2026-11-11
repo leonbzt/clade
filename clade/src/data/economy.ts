@@ -2,7 +2,8 @@ import type { PartId } from '../sim/records';
 import type { NodeId } from './life';
 
 export const GROW_SHARE = 0.5; // Grow: fraction of the full moult price, rounded up
-export const LAY_COST = 4; // Lay: food paid per clutch
+export const LAY_COST = 4; // Lay: food paid for the Life's first clutch
+export const LAY_STEP = 2; // Lay: each later clutch of the same Life costs this much more (decided 11 Nov)
 export const ENFORCE_COSTS = [3, 5, 7, 9, 11] as const; // Enforce: food paid per purchase across the Life
 export const ENFORCE_HEADROOM = 1; // Enforce: ranks a part can reach above its line rank
 export const HEADS_PER_EGG = 2; // Founding: heads supplied by each egg
