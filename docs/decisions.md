@@ -761,3 +761,12 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **N2:** the Life is ported by bins (copy the board as is, write the joints fresh from the brief, drop the rest);
   the three coherence points (the board samples the sea, Enforce as payback, the economy in its own module);
   purpose is Colonise only; **Codex builds N2**; no Fable consult before N4 ("i lean port for now").
+
+## 11 Nov, the N2 spec (step 9)
+- **N1 merged:** "commit n1 fixes and merge". Fixes committed on `n1-the-core`, merged into `main`; N2 on `n2-the-life`.
+- **The hunter on N2 boards:** "no hunter till n4 is fine, if shadow from deep is cheap add it". The ported hunter
+  stays as an unnamed shadow from deep water, behind a data flag; N4 replaces it with the sea's hunters.
+- **Numbers:** 2 heads per egg; Enforce costs 3, 5, 7, 9, 11 food per Life; a part's cap is 1 + its line rank ("ok").
+- **Parts switch on in family order** (feed, move, sense, guard, brood), derived from the build: "family order from
+  build sounds good, would be cool to be able to customize eventually". Claude's advice: wait, since nothing could set
+  a custom order before hatching (N3) or genes (R5), and an optional field later costs no more. Parked in `ideas.md`.
