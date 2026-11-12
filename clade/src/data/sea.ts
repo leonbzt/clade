@@ -43,6 +43,14 @@ export const WILD = {
   founders: 20, // bud: grams the wild species starts with in that habitat
 };
 export const LIFE_GENS = 12; // the sea's generations per Life: they run on the way back to the map after hatching
+/** Living paint on the map (N4 F, view only): capsules per species and habitat, their speeds in tiles a second. */
+export const LIVING = {
+  most: 8, total: 150, // capsules: clamp(round(log2 heads), 1, most) each; at most `total` on the map
+  wander: 0.9, chase: 1.7, flee: 2.1, // speeds
+  sight: 7, fear: 4, // tiles: a hunter chases prey this near; prey veer from a hunter this near
+  turn: 5, // radians a second
+  fade: 2.5, // alpha a second, in and out
+};
 export const NEWS = {
   change: 0.3, // news: a population change bigger than this share is told
   most: 8, // news: lines kept after a Life, yours first

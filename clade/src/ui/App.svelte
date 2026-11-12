@@ -10,6 +10,7 @@
   import { PRESETS } from '../data/presets';
   import { bestFit, heldSlots, ranksOf } from '../view/tiers';
   import { MapView, type Camera } from '../view/map';
+  import { capsuleCounts } from '../view/living';
   import { VIEWS, type MapMode } from '../view/paint';
   import HabitatCard from './HabitatCard.svelte';
   import { remember } from './history';
@@ -153,6 +154,8 @@
     view.show(ground.g, ground.hab, mode, selected);
     if (fitted !== ground.g.seed) { fitted = ground.g.seed; home(); }
   });
+  // Living paint follows the populations (view only).
+  $effect(() => { if (ready && ground) view.living.sync(capsuleCounts(world)); });
 </script>
 
 <div class="shell" inert={active !== null || lineOpen !== null || treeOpen}>

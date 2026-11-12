@@ -25,3 +25,7 @@
   (`PREY_FOOD` 10). Dev species: Wild hook worm.
 - E done: "Challenge X (B) · your Y A" on a held slot, "X holds it" on map targets; "Wild here" offers Adopt;
   ≥ `ADOPT_EGGS` (10) joins your line, fewer hatch wild. `bestFit` follows the diet rule. Next: F.
+- Shadow off, Brace (12 Nov calls): a board has a predator only when a sea hunter that can eat you lives there
+  (`BOARD.shadow` false); Brace no longer blocks a hunter that beats armour.
+- F done: `view/living.ts` capsules per population (`LIVING` in `data/sea.ts`), drawn over the map, synced from
+  `capsuleCounts(world)`; hunters chase, prey flee, yours carry a gold pixel. Next: G.
