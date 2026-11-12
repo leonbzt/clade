@@ -42,6 +42,11 @@ export const WILD = {
   chance: 0.08, // bud: chance per generation for each slot with food that no population chooses
   founders: 20, // bud: grams the wild species starts with in that habitat
 };
+export const LIFE_GENS = 12; // the sea's generations per Life: they run on the way back to the map after hatching
+export const NEWS = {
+  change: 0.3, // news: a population change bigger than this share is told
+  most: 8, // news: lines kept after a Life, yours first
+};
 export const GUARD = 0.5; // hunt: each prey defence the hunter's beats lack multiplies its take by this
 export const MASS_BY_SIZE = [0, 1, 2, 4, 8, 16] as const; // body mass: grams per head at sizes 1–5 (index 0 unused)
 export const BASE_UPKEEP = [0, 1, 1.15, 1.3, 1.45, 1.6] as const; // upkeep: base(size), before parts and lean ranks

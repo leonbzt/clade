@@ -84,6 +84,9 @@ function letterFor(value: number, thresholds: readonly (readonly [Letter, number
   return thresholds[thresholds.length - 1][0];
 }
 
+/** A term's letter (intake, inverse upkeep, survival): the tier talk of reasons and news. */
+export const termLetter = (value: number) => letterFor(value, TERM_THRESHOLDS);
+
 /** The curve's numbers and letter without the reasons: the sea's hot loop. `fitness` adds the three sentences.
  *  `value` reads today's food (the growth rate the sea uses); the letter ranks the build at full food. Prey has no
  *  ceiling, so a hunt slot's full food is today's prey. `survival` comes from `threat` (the hunters here). */

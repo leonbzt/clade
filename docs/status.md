@@ -23,3 +23,7 @@
 - B done: `sim/wild.ts`: an unchosen slot with food buds (8%) from the heaviest nearby parent with a one- or two-step
   candidate at C or B (the clutch's `changes`, now shared); prey slots bud hunters too. Wild species living nowhere are
   pruned unless they parent another. `step` returns `{ buds, gone }`. N1's sea tests run with buds off. Next: C.
+- C done: `step` returns a report (tallies born/died, hunts, moves, buds, gone); `ui/sea-run.ts` runs `LIFE_GENS` (12)
+  on the way back to the map and keeps reports and news UI-side. `sim/news.ts`: one line per story (bud, arrival, loss,
+  ±30%), merged across habitats, yours first, cause = largest term in tier talk (survival measured over the Life).
+  Not shown until G. Next: D.

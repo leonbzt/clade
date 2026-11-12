@@ -15,6 +15,7 @@
   import { remember } from './history';
   import { place } from './placement';
   import { applyPreset, skip } from './scenarios';
+  import { runLife, type SeaRun } from './sea-run';
   import LifeScreen from './life/Life.svelte';
   import Hatch from './Hatch.svelte';
   import type { Card } from '../sim/clutch';
@@ -82,8 +83,12 @@
     if (!active || active.report || !finish(world, active, card)) return;
     world = { ...world }; past = remember(past, world); active = { ...active };
   }
+  let seaRun = $state.raw<SeaRun | null>(null);
+  // Back to the map: the sea ran while you lived. Its report and news are kept for the replay and the notes.
   function backToMap() {
     if (!active?.report) return;
+    const ran = runLife(world, past);
+    past = ran.history; seaRun = ran.run; world = { ...world };
     selected = active.habitat; active = null; clutch = null;
   }
 
@@ -137,7 +142,7 @@
     // For the look script: drive the map without taps.
     Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: (id = YOUR_LINE) => (lineOpen = id), openTree: () => (treeOpen = true), get tree() { return treeOpen; }, spend: spendPart, get dev() { return dev; },
       send: (id: string) => { const s = world.species.find((x) => x.id === id); return !!s && send(s); },
-      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; },
+      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; }, get news() { return seaRun?.news.map((l) => l.text) ?? []; },
       get session() { return active; }, get lifeCount() { return lifeCount; },
       setMode: (m: MapMode) => (mode = m), fit: () => view.fit(), look: (x: number, y: number, z: number) => view.look(x, y, z),
       get world() { return world; }, get ground() { return ground; }, get history() { return past; } } });
