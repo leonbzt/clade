@@ -90,3 +90,12 @@ dialog fits the phone and now sits above the Lay floater (the overlap noted afte
 dev buttons wait). `npm run check` passes in 7.0 s. Phone run `npm run look -- /clade/ scripts/look/n3-f.json`:
 Grow to 3 opens Eye/Burrowing bulb/Tentacles with Wait and Lay disabled; picking Eye keeps turn 2, closes the
 panel and shows "Mutation: Eye" in gold. All assertions pass; no browser errors. Inspected both shots.
+
+## Part G · 12 Nov 2026
+
+`view/home.ts` (yours, senders, one reason, the overlap rule), `MapView.frame`, App and card wiring; two tests in
+`tests/home.test.ts`. `npm run check` passes in 7.2 s. Phone run `npm run look -- /clade/ scripts/look/n3-g.json`:
+opens on *first worm* with no dev bar, zoomed on Open mud shallows (gold, B) and its one target, Northwest vent mud
+shallows ("B · needs digging"); the other labels name only; no two labels overlap; dev opens the old bar; the
+target's card offers "Bare worm from Open mud shallows" and launches "Colonise … tier B". Inspected the shots.
+Choice made here: when labels collide, yours and targets win before area (the spec says the smaller hides).

@@ -16,3 +16,10 @@ export const LINE_JOBS: Record<CladeId, string> = {
   trilobite: 'rakes and grazes the floor',
   swimmer: 'hunts in the water',
 };
+
+export const YOUR_LINE = 'worm-line'; // the player's line until R6 brings new lines
+// The home map's one reason per target: the habitat's richest food, and whether your best sender reaches it.
+export const TARGET_REASON = {
+  mats: { reached: 'mats here', missing: 'needs grazing' },
+  detritus: { reached: 'buried food here', missing: 'needs digging' },
+} as const;

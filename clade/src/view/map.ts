@@ -53,6 +53,15 @@ export class MapView {
     this.set({ z: to, x: Math.round(sx - ((sx - c.x) * to) / c.z), y: Math.round(sy - ((sy - c.y) * to) / c.z) });
   }
 
+  /** The largest whole zoom (2 to 8) that shows these tiles with room for labels, centred on them. */
+  frame(tiles: { x: number; y: number }[], pad = { x: 160, y: 240 }) {
+    if (!tiles.length) return this.fit();
+    const xs = tiles.map((t) => t.x), ys = tiles.map((t) => t.y), { width, height } = this.app.screen;
+    const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+    const z = Math.max(2, Math.min(8, Math.floor(Math.min((width - pad.x) / (x1 - x0 + 1), (height - pad.y) / (y1 - y0 + 1)))));
+    this.look((x0 + x1) / 2, (y0 + y1) / 2, z);
+  }
+
   /** Centre the tile (tx, ty) at zoom z. */
   look(tx: number, ty: number, z: number) {
     const { width, height } = this.app.screen;
