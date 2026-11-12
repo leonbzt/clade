@@ -37,8 +37,9 @@ and the step's spec; open the documents below only as the task needs them.
   [builds.md](design/builds.md) (the axes of plant life, a build system, 3 Nov) ·
   [after-playtest-02.md](design/after-playtest-02.md) (why it reads as a toy, steering, the new course, 3 Nov) ·
   [fable-brief.md](design/fable-brief.md) + [fable-brief-2.md](design/fable-brief-2.md) (the whole-game brief: your
-  vision, then the game as built, 10 Nov) · [fable-brief-3.md](design/fable-brief-3.md) (the maths pass, to run after
-  the N4 play test, 12 Nov).
+  vision, then the game as built, 10 Nov) · [fable-brief-3.md](design/fable-brief-3.md) (the brief for the maths pass, 12 Nov) ·
+  [maths-pass.md](design/maths-pass.md) (**the maths pass, 12 Nov: the slot board, the quiet sea, letters against the
+  meta, the line's tree, the body grammar; the order from N4 fix to L1**).
 - `research/`: sourced facts from the `researcher` agent (Mycelarium, Hatched, real evolution, mosses, the tree of
   life, layer sims, progression games, the virtual plant lab, diverse evolution in games,
   [the tree for the game](research/tree-for-the-game.md): the roster and three facts checked, 10 Nov).

@@ -819,3 +819,26 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **No direction fixed before the Fable pass:** "don't fix these decisions until the fable session". The Fable pass
   (brief 3) now also judges the N4 notes, P51 (one line, one ladder) and the other open proposals, and "has freedom to
   think a little outside the box and find what would actually fit best".
+
+## 12 Nov, the maths pass (Fable; [design/maths-pass.md](design/maths-pass.md))
+- **The frame is a slot board:** the map's holders become a grid of jobs per habitat ("Slot board"; "slot board
+  important anyways"). Also: "i also like seas as runs or eras, also xp should be important, or feeling like improving
+  the line and gaining evolutionary points or improving the current build."
+- **You first, the sea later** (the sea's pace). The concrete rules (claimed-cell spread, bars, the leash) are a proposal
+  in the maths pass, built in the N4 fix.
+- **Lines:** "i lean one active, rest live on, i like the finishing on reaching a named species, but it should also
+  always go on somehow"; "full parallel also sounds cool, and retiring and releasing also sounds good, full parallel
+  could also come lateron."
+- **Letters rank a build against the meta:** this build ÷ the best build known for that job in that habitat (unlocked
+  by you, or alive there). Replaces "at full food" in the 11 Nov call; `fitness` stays the only source of letters and a
+  higher letter still always wins its slot.
+- **Levels: a ladder, then a small tree.** Levels 1–3 unlock fixed things; from level 4 each level gives a point for a
+  tree of about 13 nodes (Feed, Guard, Brood); level 10 describes the line as its named species and opens the next line;
+  a per-line log goes on after that.
+- **The order:** "fix board line look, also the other planned species would be nice to add soon". So: N4 fix and the
+  quiet sea, N5 The board, N6 The line, N7 The other lines, L1 The look, then the closed test and R5. (N7 before L1 is
+  the AI's reading of "soon"; swap on your word.)
+- **P51 closed:** judged in the maths pass (Q0); its ladder and goal live on inside the slot board.
+- **Adopt stays** (liked in the N4 play): the second way to win a wild cousin's cell, and later the way to get a rare.
+- **The cousin's bar runs only in habitats you live in** (12 Nov, at the N4 fix kickoff: "go" on that lean). Widen it to
+  the habitats next door after play if the map is too still.

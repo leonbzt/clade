@@ -154,6 +154,8 @@ upkeep   = base(size) + part upkeeps − lean ranks
 survival = product over hunters and hazards here of 1 − threat × (1 − guard)
 value    = intake ÷ upkeep × survival × brood        letter = value at full food on a ×1.5 ladder from break-even (D)
 ```
+*Changed 12 Nov (decided):* from N5 the letter is this build's value ÷ the best known build's value for that slot in
+that habitat, on the same ×1.5 steps (S from 0.8). See [maths-pass.md](maths-pass.md) Q0 and Q1.
 **Laws, kept as tests:**
 1. Only `fitness` makes a tier letter. The sea, the preview, the tier card and the Life's richness all call it.
 2. Nothing derived is saved: no role, slot, tier or link in a save file.
@@ -180,6 +182,10 @@ One new thing per Life; no text before it is needed; two lines at most per beat.
 7. **Leaving and coming back:** patch notes and a banked clutch.
 
 ## 8. Build order
+**From N4 on, the order and several rules changed on 12 Nov:** read [maths-pass.md](maths-pass.md) (its summary and Q0's
+step table) with this section. Letters now rank against the meta, the sea waits for the player, and the steps after N4
+are N4 fix, N5 The board, N6 The line, N7 The other lines, L1.
+
 | Step | What | Sessions |
 |---|---|---|
 | **N0** | The ground: terrain kinds, the habitat finder, names, a bare zoomable map, the palette file | 1 |

@@ -205,3 +205,11 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Zoom levels: soil, patch, habitat, island, continent; which ones earn a decision of their own (you, 12 Nov). The Fable math pass.
 - Dual builds: a hunter that also grazes (an omnivore), after N4's hunters-only diet (you, 12 Nov). R5 with the gut gene.
 - A wild bud's name comes from its one change, so a hunter can be called "Wild brood pouch worm"; name hunters by their hunting part (AI, 12 Nov, N4 G look). L1 or R5.
+- Seas as runs: a sea ends when the board runs dry (about 25–30 Lives a line), with a score, and the next era starts from your lines as old life (you, 12 Nov; maths pass Q0). M4.
+- "Drifting larvae" as a tree node: your species also take open cells next door; the map filling by itself as a reward (AI, 12 Nov; maths pass Q0). N6.
+- Mats painted from a fixed threshold map per habitat (a frozen reaction–diffusion pattern): cover follows the stock at no sim cost (AI, 12 Nov; maths pass Q1). L1 or R7.
+- Discoveries from state: carcass bloom, shell bed, ash fall, each with one cause line (AI, 12 Nov; maths pass Q1). R7.
+- Land hazards as hunters without a body (drying against a cuticle, like a claw against armour) on the same engine (AI, 12 Nov; maths pass Q1). R9.
+- Six minigames from maths toys (boids, reaction–diffusion, L-systems, colony automata, slime-mould networks; Lenia as paint only): the table in maths pass Q7 (AI, 12 Nov). M3.
+- Variant names: a population a full gene pip from its founder gets an adjective ("dwarf", "long-gut") (AI, 12 Nov; maths pass Q5). R5.
+- Retro Diffusion only for fixed art: named-species cards, ground textures, title art, stamp reference sheets; untested (AI, 12 Nov; maths pass Q4). L1, R10.

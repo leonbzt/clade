@@ -15,13 +15,19 @@ P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea 
 P46, P47 and P48 were decided 9 Nov at the 21C review (P48: C; P46 and P47 closed): see decisions.md.
 P49 (use steers the body) and P50 (sea features) were decided 9 Nov: see decisions.md. None open.
 
-## P51. One line, one ladder (12 Nov, after the N4 play; M2 steps 11–12). For the Fable pass to judge, not decided
-The N4 play: "core there but no game". *AI lean:* (1) one lineage at a time; the map shows your line bright, its wild
-offshoots faint, hunters only where they threaten you; letters on tap. (2) An early ladder: each Life fills a bar,
-each step unlocks one thing (Enforce, Dig, claw, the first gate at ~8 min); the map always names one next goal.
-(3) The sea grows with you: wild branches start after the first unlock and bud from your line; hunter builds stay
-locked until there is prey. (4) R5 variants moved forward: populations drift, named variants pop up, adopt hunts them.
-Order: N4 fix pass → N5 "The ladder" → R5 → step 12.
-**Your leanings (12 Nov, not decided until after Fable):** 1 yes ("maybe later a few in parallel, or retire and start a
-new one"); 2 "sounds great", unlocks = verbs, parts and lineages, "maybe also habitat types alongside"; 3 "that's the
-feeling i want", off until the first unlock; 4 "yes maybe, sounds cool".
+P51 (one line, one ladder) closed 12 Nov: judged in the maths pass (Q0) and replaced by your calls there (slot board,
+letters against the meta, ladder then tree, the order): see decisions.md.
+
+## P52. A waste loop for detritus (12 Nov, the maths pass Q1; M2 step N5)
+Detritus loses its fixed ceiling: it comes from marine snow, mat slough and the dead, and most of it sinks one band
+down. The slope is then fed by the shallows and the deep by the slope; no new stock; about 25 lines in `sim/sea.ts`.
+It needs the letters against the meta (decided). In the toy only one of four deep cells opens at these numbers.
+*Options:* (a) build it in N5 (*AI lean*); (b) keep fixed ceilings until R7; (c) never.
+*Also:* cap `brood ÷ upkeep` at 1.25 either way (today a pouch with upkeep ranked to 0 makes 1.6 g per gram eaten).
+**Question:** a, b or c?
+
+## P53. Every part needs a place where it wins and one where it doesn't (12 Nov, the maths pass Q6; M2 step N6)
+Measured: the Gut gland helps everywhere, the Eye hurts everywhere, Gill and Sclerites do nothing in the sea without
+hunters, and nothing beats burrow. *AI lean:* retune these four under the "sign-change rule" in N6 and keep the rule
+as a test; let the digger beat burrow in N7. *Options:* (a) in N6; (b) with the genes in R5; (c) leave them.
+**Question:** a, b or c?

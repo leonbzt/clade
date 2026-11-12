@@ -1,28 +1,28 @@
 # Status
 
-- **Milestone:** M2, step 11, **N4 Who eats whom**, on branch `n4-who-eats-whom`. All parts A–G built; only your
-  four-Life play is left. [Spec](slices/n4-who-eats-whom.md).
-- **Done (12 Nov, this session):**
-  - No shadow: `BOARD.shadow` false in `clade/src/data/boards.ts`; a board has a predator only when a sea hunter that
-    can eat you lives there (`sim/board.ts`). Brace yields to a hunter that beats armour (`sim/life-body.ts`; the
-    verb note says "won't hold"). Tests in `tests/sea-hunter.test.ts`, `tests/board.test.ts`.
-  - F: `clade/src/view/living.ts`, capsules per population (`LIVING` in `data/sea.ts`), drawn by `view/map.ts`, synced
-    in `ui/App.svelte`; hunters chase, prey flee, yours carry a gold pixel.
-  - G: `clade/src/ui/replay.ts` plays the run's `frames` (now in `ui/sea-run.ts`) over 4 s (`REPLAY`): arrivals enter at
-    the shared border, buds flash and shout their name, the lost fade; tap to skip. Then `ui/Notes.svelte`; a notes
-    button on the bar reopens it. Look script `scripts/look/n4-g.json` (phone) plus one desktop shot; `tests/living.test.ts`.
-- **Verified:** `npm run check` passes in 7.6 s. Commits: `0f14f96`, `4397c19` (F), `8b78d8b` (G).
-- **Decided (12 Nov):** no shadow, only the habitat's hunters ("hunters only"); Brace doesn't block a hunter that gets
-  past armour; Adopt stays until the play test.
-- **N4 play (12 Nov, short):** "core there but no game". Notes in `docs/playtests/n4-who-eats-whom.md`; P51 (one
-  line, one ladder) open for Fable; nothing fixed until then (user's call).
-- **Next:** (1) the Fable pass from `docs/design/fable-brief-3.md` (now with Q0, the game around the sea). (2) Then the
-  N4 fix pass (stuck capsules, bud rate, no hunter build without prey, crush hint), merge, and the order Fable and you
-  settle.
+- **Milestone:** M2. N4 (step 11) is played and ticked; next is step 12, **N4 fix and the quiet sea**, on branch
+  `n4-who-eats-whom` (not merged). No spec for it yet.
+- **Done (12 Nov, this session): the maths pass** from `docs/design/fable-brief-3.md`. No code in `clade/` changed.
+  - `docs/design/maths-pass.md` (480 lines): a summary with a table of leans, then Q0–Q8. Q0 holds the next steps, each
+    with what it changes in `clade/`.
+  - `toys/sea-board.html`: the slot board with the quiet-sea rules and an "Old sea" box. 8 h of catch-up in 34–42 ms;
+    a midgame sea runs 1 000 generations with swings and no collapse.
+  - `toys/body-grammar.html`: seven lines from one grammar at three sizes, with the two checks as tables.
+  - Logs: `decisions.md` (12 Nov, the maths pass), `proposals.md` (P51 closed; P52, P53 open), `ideas.md` (8 lines),
+    `ROADMAP.md` "Now" (steps 12–21), `docs/README.md`, pointers in `whole-game-build.md` (§6 letter line, §8).
+- **Verified:** `npm run check` passes in 7.5 s. Each toy was looked at once on a phone viewport. Nothing is committed.
+- **Decided (12 Nov):** the slot board; you first, the sea later; one active line, the rest live on, a line finishes at
+  its named species and still goes on; letters against the meta (replaces "at full food"); a ladder, then a small
+  tree; the order "fix board line look, also the other planned species would be nice to add soon"; Adopt stays.
+- **Next:** (1) `/spec` the N4 fix and the quiet sea from maths-pass Q0's step table: stuck capsules, the crush hint,
+  no hunter build without prey, claimed-cell spread, wild cousins on a bar and a leash, a refuge per tile. (2) Build
+  it, play it, merge the branch. (3) Then N5 The board.
 - **Open:**
-  1. Early boards now have no predator at all (first worm: no hunters in the sea yet), and the first-worm map shows only
-     about 4 capsules. Does that feel too quiet in play?
-  2. A holder at F still makes the slot a Challenge.
-  3. Adopt shows for any wild species in a habitat you can see, even one with no slot (a hunter with no prey).
-  4. The spec's two leans stand (12 generations per Life; prey as big as its hunter).
-  5. A wild hunter can be named after a non-hunting change ("Wild brood pouch worm"); parked in `ideas.md`.
+  1. P52: the waste loop in N5 (AI lean) or fixed detritus ceilings until R7?
+  2. P53: retune Eye, Gill, Sclerites and Gut gland under the sign-change rule in N6 (AI lean) or in R5?
+  3. N7 (the other lines) before L1 (the look) is the AI's reading of "soon"; swap on your word.
+  4. Every rule inside the steps (bar lengths, the leash, the refuge numbers, the tree's nodes) is a proposal from the
+     toy, not tuned in the real game.
+  5. From the toy: only one of four deep cells opens with the waste loop; your own hunters push your diggers to F in
+     the sandy shallows; two line pairs overlap 0.76–0.78 on the board, so the silhouette check needs two sides.
+  6. Retro Diffusion's sizes and prices are from `docs/research/ai-sprite-workflows.md`, not tested this session.

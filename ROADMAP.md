@@ -26,13 +26,21 @@ stays playable until the new game passes the play test after N4. Slice 23 is re-
 8. [x] **N1** [The core](docs/slices/n1-the-core.md): the records, `fitness`, slots, the sea step, tier cards, the placement preview, dev presets · 2
 9. [x] **N2** [The Life](docs/slices/n2-the-life.md), ported, with Grow, Enforce and Lay; a purpose per Life; eggs found a population · 2
 10. [x] **N3** [The screens](docs/slices/n3-the-screens.md): home map, hatching, the line view, the tree with its trunk · 2
-11. [ ] **N4** [Who eats whom](docs/slices/n4-who-eats-whom.md): who eats whom; wild branches; displace and adopt; patch notes with a cause; living paint and a return replay on the map (*decided 12 Nov*) · 3
-12. [ ] **Play N0–N4 as a whole; the closed test:** an unlisted itch page for 3–5 Discord players
-13. [ ] **L1** The look contract in code: plans, stamps, channels, the contact sheet · 1–2
-14. [ ] **R5, R6** Genes and variants, banked clutches; gates from real traits · 2–3
-15. [ ] **A** The alpha pass: the first fifteen minutes, saving, a light UI pass; **the public alpha** on itch · 2–3
-16. [ ] **R7–R9** Sea features and engineering; lineages to 6–8; the shore. Each a public update · 4–6
-17. [ ] **R10, R11** Art and UI polish; the release (M1's leftovers, a clean repo, itch, Discord) · 3–4
+11. [x] **N4** [Who eats whom](docs/slices/n4-who-eats-whom.md): who eats whom; wild branches; displace and adopt; patch notes with a cause; living paint and a return replay on the map (*decided 12 Nov*) · 3. Played 12 Nov: "core there but no game".
+
+**From step 12 the order follows the maths pass** (*decided 12 Nov*: "fix board line look, also the other planned species
+would be nice to add soon"; [docs/design/maths-pass.md](docs/design/maths-pass.md) Q0). Each step's cut is a proposal until its spec.
+
+12. [ ] **N4 fix and** [the quiet sea](docs/slices/n4-fix-quiet-sea.md)**:** stuck capsules, the crush hint, no hunter build without prey; your species spread only into cells you won; wild cousins on a bar, on a leash; a refuge per tile · 1
+13. [ ] **N5** The board: the map's holders as a grid of jobs; the one next goal; letters against the meta; Take, Beat, Hold, Adopt · 2
+14. [ ] **N6** The line: XP from eggs and held cells; three fixed levels, then the tree; gates cross in `sim` (R6 moved here); the named species; the arthropod line · 2
+15. [ ] **N7** The other lines: trilobite and swimmer (gates, trees, named species) · 1
+16. [ ] **L1** The look contract in code: plans, stamps, channels, the contact sheet and its two checks · 1–2
+17. [ ] **Play N0–L1 as a whole; the closed test:** an unlisted itch page for 3–5 Discord players
+18. [ ] **R5** Genes as dials and variants, banked clutches · 2
+19. [ ] **A** The alpha pass: the first fifteen minutes, saving, a light UI pass; **the public alpha** on itch · 2–3
+20. [ ] **R7–R9** Sea features and engineering; lineages to 6–8; the shore. Each a public update · 4–6
+21. [ ] **R10, R11** Art and UI polish; the release (M1's leftovers, a clean repo, itch, Discord) · 3–4
 
 ## Built: M1, the first playable sea (5 Nov; "the basics seem fun and as imagined"; its release moved into M2, step 17)
 1. [x] [08 The stack test](docs/slices/08-stack-test.md): Godot or PixiJS → **PixiJS** (5 Nov)

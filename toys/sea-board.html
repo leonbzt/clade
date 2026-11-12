@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sea board toy</title>
+<!-- A toy for docs/design/maths-pass.md (Q0, Q1). One file, no build step. It is NOT the game: a Life here is one tap
+     that founds your best unlocked build. It asks: does a sea that waits for you still feel alive, does the map read
+     as a ladder, and does 8 h of catch-up stay fast with swings and no collapse? Rules mirror clade/src/sim/sea.ts. -->
+<style>
+:root{--ink:#15110d;--panel:#2a241c;--dim:#a89c8a;--paper:#ede4cb;--gold:#ffd34a;--goldd:#b8862a;--red:#e5462c;--sea:#0b2730;--wild:#6f7f80}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:var(--paper);font:14px/1.35 system-ui,sans-serif}
+main{max-width:430px;margin:0 auto;padding:10px 12px 30px}h1{font-size:16px;margin:0 0 2px}p{margin:4px 0}
+.dim{color:var(--dim);font-size:12px}#goal{background:var(--panel);border-left:4px solid var(--gold);padding:8px 10px;margin:8px 0;border-radius:4px}
+#board{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:4px}.hd{font-size:11px;color:var(--dim);text-align:center;align-self:end}
+.band{grid-column:1/-1;font-size:11px;color:var(--dim);margin-top:4px;text-transform:uppercase;letter-spacing:.06em}
+.name{font-size:12px;align-self:center}.cell{position:relative;height:44px;border-radius:5px;background:#1b1712;border:2px solid transparent;text-align:center;overflow:hidden}
+.cell b{display:block;font-size:17px;line-height:24px}.cell small{font-size:10px;color:var(--dim)}
+.cell.none,.cell.thin{opacity:.35}.cell.open{background:var(--sea)}.cell.wild{background:#39494a}.cell.wild b{color:#cfd8d8}
+.cell.yours{background:#4b3a12}.cell.yours b{color:var(--gold)}.cell.sel{border-color:var(--paper)}.cell.goal{border-color:var(--gold)}
+.cell i{position:absolute;left:0;bottom:0;height:4px;background:var(--red)}
+#detail{background:var(--panel);padding:8px 10px;margin:8px 0;border-radius:4px;min-height:74px}
+button{font:inherit;color:var(--ink);background:var(--paper);border:0;border-radius:5px;padding:9px 10px;margin:3px 3px 3px 0;min-height:40px}
+button.main{background:var(--gold);font-weight:600}button:disabled{opacity:.4}
+#xp{height:8px;background:#1b1712;border-radius:4px;overflow:hidden;margin:4px 0}#xp i{display:block;height:100%;background:var(--gold)}
+#news div{padding:2px 0;border-bottom:1px solid #2a241c}canvas{width:100%;height:90px;background:#1b1712;border-radius:4px;margin-top:6px}
+label{font-size:12px;color:var(--dim)}
+</style></head><body><main>
+<h1>Sea board toy</h1>
+<p class="dim">Each cell is a job in a habitat: graze, dig or hunt. Tap a cell, then live a Life there. Gold is yours, grey is a wild cousin, blue is open. A red bar on an open cell is a wild cousin on its way. F means it can't hold and is dying out.</p>
+<div id="goal"></div>
+<div id="stats" class="dim"></div><div id="xp"><i></i></div>
+<div id="board"></div>
+<div id="detail"></div>
+<button id="wait">Wait 1 Life</button><button id="away">8 h away</button><button id="stress">1 000 generations</button><button id="mid">Midgame</button><button id="reset">Reset</button>
+<label><input type="checkbox" id="old"> Old sea (N4 rules: dice, free spread, no leash)</label>
+<canvas id="chart" width="406" height="90"></canvas>
+<p class="dim">Chart, <span id="chartOf"></span>: grams of your food-eaters (gold), wild ones (grey) and hunters (red), last 240 generations.</p>
+<div id="news"></div>
+</main><script>
+// ---- Data (numbers from clade/src/data/sea.ts unless marked NEW) ----
+const SEA = { a: 1.4, m: 0.4, d: 0.8, ref: 20, floor: 100, rMats: 0.15, rDet: 0.1, spread: 0.06, min: 2, gens: 12 };
+const EVEN = SEA.m / SEA.a;
+const HUNT = { sat: 2, maxTake: 0.8, guard: 0.5, from: 500,      // NEW `from`: spare prey before a hunter can bud
+  refuge: { sand: 0.15, mud: 0.3, rock: 0.45 } };                  // NEW: grams of prey per tile that hunters can't reach
+const LOOP = { rain: 0.05, slough: 0.03, waste: 0.8, keep: { shallows: 0.3, slope: 0.3, deep: 1 }, scraps: 0.3 };
+// NEW, the waste loop: detritus is marine snow (rain), mat slough and the dead; a band keeps `keep` and the rest sinks one band down; `scraps` of a kill sinks too
+const BAR = 36;                              // NEW: generations for an open slot's bar to fill (about 3 Lives)
+const MATS = { sand: 30, mud: 20, rock: 15 }; // shallows only
+const DET = { shallows: { sand: 10, mud: 30, rock: 5 }, slope: { sand: 15, mud: 40, rock: 10 }, deep: { sand: 20, mud: 50, rock: 15 } }; // old sea
+const SUB = { sand: 1, mud: 3, rock: 1 };
+const W = { F: 1, D: 2, C: 3, B: 4, A: 5, S: 6 };
+const XP = [0, 0, 120, 300, 550, 900, 1400, 2100, 3000, 4200, 5800]; // toy curve: about a level per Life early, level 10 near Life 25
+const IDLE = 0.05;                           // NEW: XP per held cell per generation, times the letter's weight
+const PARTS = {
+  T: { name: 'tentacles', place: 0, up: 1, opens: 'mats' }, R: { name: 'proboscis', place: 0, up: 1, hunts: 1 },
+  H: { name: 'hooked proboscis', place: 0, up: 1, hunts: 1, beats: ['armour'], rare: 1 },
+  C: { name: 'bristles', place: 1, up: 0 }, S: { name: 'sclerites', place: 1, up: 0, guard: 'armour' },
+  G: { name: 'gut gland', place: 2, up: 1 }, P: { name: 'brood pouch', place: 3, up: 1 },
+  B: { name: 'burrowing bulb', place: 3, up: 0, opens: 'det', guard: 'burrow' } };
+const ORDER = ['T', 'G', 'B', 'C', 'P', 'S', 'R', 'H'];          // the toy's ladder: level n unlocks ORDER[n-1]
+const SLOTS = ['mats', 'det', 'prey'], SLOT_NAME = { mats: 'Graze', det: 'Dig', prey: 'Hunt' };
+const LAYOUT = [['shallows', ['sand', 'mud', 'rock', 'sand']], ['slope', ['mud', 'sand', 'rock', 'mud']], ['deep', ['rock', 'mud', 'sand', 'rock']]];
+const BUILDS = (() => { let out = ['']; for (let pl = 0; pl < 4; pl++) out = out.flatMap((b) => ['', ...Object.keys(PARTS).filter((p) => PARTS[p].place === pl)].map((p) => b + p)); return out; })();
+
+// ---- Bodies ----
+const bodies = {};
+function body(parts) {
+  return bodies[parts] ??= (() => { const b = { parts, hunts: false, up: 1, brood: 1, bite: 1, guards: [], beats: [], opens: {} };
+    for (const p of parts) { const d = PARTS[p]; b.up += d.up; if (d.hunts) b.hunts = true; if (d.opens) b.opens[d.opens] = 1;
+      if (d.guard) b.guards.push(d.guard); if (d.beats) b.beats.push(...d.beats); }
+    if (parts.includes('G')) b.bite = 3; if (parts.includes('P')) b.brood = 2; return b; })();
+}
+const B = (key) => body(key.slice(1));
+const nameOf = (parts) => parts ? [...parts].map((p) => PARTS[p].name).join(' + ') + ' worm' : 'bare worm';
+function reach(b, food, sub) {
+  if (b.hunts) return 0;
+  return Math.max(food === 'mats' ? 0.3 : 0, b.opens[food] ? 1 : 0) * b.bite * SUB[sub] * (sub === 'mud' && b.parts.includes('C') ? 2 : 1);
+}
+/** A build's slot is a fact of the body and the ground, never of this generation's stock (or holders flap between cells). */
+const slotOf = (b, h) => b.hunts ? 'prey' : h.K > 0 && reach(b, 'mats', h.sub) >= reach(b, 'det', h.sub) ? 'mats' : 'det';
+const cut = (hunter, prey) => prey.guards.reduce((c, g) => (hunter.beats.includes(g) ? c : c * HUNT.guard), 1);
+const huntLevel = (hb, total, area) => { const D = total / area; return hb.bite * D / (1 + D / HUNT.sat); };
+const preyOf = (h) => Object.keys(h.pops).filter((k) => !B(k).hunts);
+const sum = (h, keys) => keys.reduce((s, k) => s + h.pops[k], 0);
+/** Prey the hunters can reach: everything above the refuge (old sea: everything, once there are 100 g). */
+const spare = (w, h, total) => total < SEA.floor ? 0 : w.old ? total : Math.max(0, total - HUNT.refuge[h.sub] * h.area);
+
+// ---- World ----
+function rng32(a) { return () => { a |= 0; a = a + 0x6d2b79f5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function makeWorld(old) {
+  const hab = [];
+  LAYOUT.forEach(([band, subs], b) => subs.forEach((sub, i) => {
+    const area = 800 + ((i * 7 + b * 11) % 5) * 500, K = band === 'shallows' ? MATS[sub] * area : 0, Kd = DET[band][sub] * area;
+    hab.push({ id: b * 4 + i, band, sub, area, K, Kd, mats: K, det: old ? Kd : 0, inflow: 0, pops: {}, hist: [], bar: { mats: 0, det: 0, prey: 0 },
+      name: `${sub[0].toUpperCase()}${sub.slice(1)} ${band}${subs.indexOf(sub) < i ? ' 2' : ''}`,
+      nb: [b * 4 + (i + 1) % 4, b * 4 + (i + 3) % 4, ...(b > 0 ? [b * 4 - 4 + i] : []), ...(b < 2 ? [b * 4 + 4 + i] : [])] });
+  }));
+  const w = { old, gen: 0, hab, sp: {}, xp: 0, level: 1, lives: 0, unlocked: ['T'], rng: rng32(7), best: {}, bestGen: -99, hist: [], lost: 0, claimed: new Set(), cells: null, memo: {} };
+  if (!old) for (let i = 0; i < 60; i++) regrow(w, new Float64Array(12));  // let slough and rain settle before life
+  return w;
+}
+const legal = (w) => BUILDS.filter((b) => [...b].every((p) => w.unlocked.includes(p)));
+const refFood = (w, h, food) => food === 'mats' ? h.K : w.old ? h.Kd : Math.max(h.det, h.inflow / SEA.rDet);
+/** The share of a newcomer with this body that the hunters here would take each generation. */
+function threat(w, b, h) {
+  const total = sum(h, preyOf(h)), sp = spare(w, h, total); if (sp <= 0) return 0; let f = 0;
+  for (const k in h.pops) if (B(k).hunts) f += h.pops[k] * SEA.a * huntLevel(B(k), sp, h.area) * cut(B(k), b) / total;
+  return Math.min(HUNT.maxTake, f);
+}
+/** A build's slot here and its value on the straight part of the curve, at reference food (the letter's input). */
+function raw(w, parts, h) { return w.memo[h.id + parts] ??= rawNow(w, parts, h); }
+function rawNow(w, parts, h) {
+  const b = body(parts), slot = slotOf(b, h);
+  if (b.hunts) { const prey = preyOf(h), sp = spare(w, h, sum(h, prey)); if (sp < SEA.floor) return { slot: 'prey', value: 0 };
+    const sq = prey.reduce((s, k) => s + h.pops[k] ** 2, 0); let s = 0; for (const k of prey) s += h.pops[k] ** 2 / sq * cut(b, B(k));
+    return { slot: 'prey', value: huntLevel(b, sp, h.area) * s * b.brood / b.up }; }
+  return { slot, value: reach(b, slot, h.sub) * refFood(w, h, slot) / h.area / SEA.ref * (1 - threat(w, b, h)) * b.brood / b.up };
+}
+function best(w, h, slot) {            // the meta: the best unlocked build for this slot; refreshed once per Life
+  if (w.gen - w.bestGen >= SEA.gens) { w.best = {}; w.bestGen = w.gen; }
+  return w.best[h.id + slot] ??= legal(w).reduce((top, parts) => { const r = raw(w, parts, h); return r.slot === slot && r.value > top.value ? { parts, value: r.value } : top; }, { parts: null, value: 0 });
+}
+const letter = (w, parts, h) => letterOf(w, raw(w, parts, h), h);
+function letterOf(w, r, h) {
+  const k = r.value / EVEN;
+  if (r.value <= 0 || (k < 1 && (w.old || r.slot !== 'prey'))) return 'F';   // a hunter's food has no ceiling: F only with no prey
+  if (w.old) return k >= 5.06 ? 'S' : k >= 3.375 ? 'A' : k >= 2.25 ? 'B' : k >= 1.5 ? 'C' : 'D';          // against break-even
+  const rel = r.value / Math.max(r.value, best(w, h, r.slot).value);                                     // NEW: against the meta
+  return rel >= 0.8 ? 'S' : rel >= 0.53 ? 'A' : rel >= 0.36 ? 'B' : rel >= 0.24 ? 'C' : 'D';
+}
+/** The three cells of a habitat: each slot's heaviest population is its holder. */
+function cellsOf(w, h) {
+  const preyG = spare(w, h, sum(h, preyOf(h))), top = {};
+  for (const k in h.pops) { const r = raw(w, k.slice(1), h); if (!top[r.slot] || h.pops[k] > h.pops[top[r.slot].k]) top[r.slot] = { k, r }; }
+  return SLOTS.map((slot) => {
+    const exists = slot === 'mats' ? h.K >= SEA.floor : slot === 'det' ? (w.old ? true : refFood(w, h, 'det') >= SEA.floor) : preyG >= (w.old ? SEA.floor : HUNT.from);
+    const t = top[slot];
+    if (!t) return { h, slot, state: !exists ? 'none' : w.old || best(w, h, slot).value >= EVEN ? 'open' : 'thin',   // thin: food, but too little for any build you have
+       grams: slot === 'prey' ? preyG : slot === 'mats' ? h.mats : h.det };
+    return { h, slot, state: w.sp[t.k].yours ? 'yours' : 'wild', key: t.k, grams: h.pops[t.k], letter: letterOf(w, t.r, h) };
+  });
+}
+const cell = (w, h, slot) => cellsOf(w, h)[SLOTS.indexOf(slot)];
+function regrow(w, dead) {
+  for (const h of w.hab) {
+    h.mats += SEA.rMats * (h.K - h.mats);
+    if (w.old) { h.det += SEA.rDet * (h.Kd - h.det); continue; }
+    const up = h.band === 'shallows' ? null : w.hab[h.id - 4];   // waste sinks one band down the slope
+    h.inflow = LOOP.rain * h.area + LOOP.slough * h.mats + LOOP.waste * (LOOP.keep[h.band] * dead[h.id] + (up ? (1 - LOOP.keep[up.band]) * dead[up.id] : 0));
+    h.det += h.inflow - SEA.rDet * h.det;
+  }
+}
+function add(w, h, parts, yours, grams) {
+  const key = (yours ? 'y' : 'w') + parts; w.sp[key] ??= { key, parts, yours }; h.pops[key] = (h.pops[key] || 0) + grams; w.memo = {}; return key;
+}
+function step(w, events) {
+  const dead = new Float64Array(w.hab.length);
+  for (const h of w.hab) {
+    const ids = Object.keys(h.pops), eaten = {}, lost = {}; for (const k of ids) eaten[k] = lost[k] = 0;
+    const prey = ids.filter((k) => !B(k).hunts), total = sum(h, prey), sp = spare(w, h, total);
+    if (sp > 0) {                                                // hunt: type II level, share by grams squared, guards
+      const sq = prey.reduce((s, k) => s + h.pops[k] ** 2, 0), want = {};
+      for (const k of ids) { const hb = B(k); if (!hb.hunts) continue; const L = huntLevel(hb, sp, h.area);
+        for (const p of prey) (want[p] ??= []).push([k, h.pops[k] * SEA.a * L * h.pops[p] ** 2 / sq * cut(hb, B(p))]); }
+      for (const p in want) { const all = want[p].reduce((s, x) => s + x[1], 0), f = all > 0 ? Math.min(1, HUNT.maxTake * h.pops[p] * sp / total / all) : 0;
+        for (const [k, g] of want[p]) { eaten[k] += g * f * (w.old ? 1 : 1 - LOOP.scraps); lost[p] += g * f; if (!w.old) dead[h.id] += g * f * LOOP.scraps; } }
+    }
+    for (const food of ['mats', 'det']) {                         // eat: shortage shared by what each wants
+      const stock = h[food], dens = stock / h.area / SEA.ref, wants = {}; let all = 0;
+      for (const k of prey) { const b = B(k); if (slotOf(b, h) !== food) continue;
+        wants[k] = h.pops[k] * SEA.a * reach(b, food, h.sub) * dens; all += wants[k]; }
+      const share = all > 0 ? Math.min(1, stock / all) : 0;
+      for (const k in wants) eaten[k] += wants[k] * share;
+      h[food] = Math.max(0, stock - Math.min(stock, all));
+    }
+    for (const k of ids) {                                        // breed and die
+      const b = B(k), pop = h.pops[k], conv = SEA.d * b.brood / b.up;
+      const die = SEA.d * SEA.m * pop, next = pop + conv * eaten[k] - die - lost[k];
+      if (next >= SEA.min) { h.pops[k] = next; dead[h.id] += die; } else { delete h.pops[k]; dead[h.id] += die + Math.max(0, next); }
+    }
+  }
+  regrow(w, dead); w.memo = {};
+  const moves = [];                                               // spread: old = wherever it grows; NEW = yours only, back into cells you claimed
+  for (const h of w.hab) for (const k in h.pops) {
+    if (!w.old && !w.sp[k].yours) continue;
+    const moved = h.pops[k] * SEA.spread / h.nb.length; if (moved < SEA.min) continue;
+    for (const n of h.nb) { const t = w.hab[n];
+      if (!w.old && !w.claimed.has(t.id + raw(w, k.slice(1), t).slot)) continue;
+      if (!w.old && B(k).hunts && spare(w, t, sum(t, preyOf(t))) < HUNT.from) continue;   // a hunter waits for spare prey
+      if (letter(w, k.slice(1), t) !== 'F') moves.push([h, t, k, moved]); }
+  }
+  for (const [f, t, k, g] of moves) { f.pops[k] -= g; t.pops[k] = (t.pops[k] || 0) + g; }
+  if (moves.length) w.memo = {};
+  const cells = snapshot(w); let lost = 0;
+  if (w.cells) cells.forEach((c, i) => { if (w.cells[i].key && !c.key) lost++; });
+  w.cells = cells; bud(w, events, cells);
+  for (const k in w.sp) if (!w.sp[k].yours && !w.hab.some((h) => h.pops[k])) delete w.sp[k];
+  for (const c of cells) if (c.state === 'yours') w.xp += IDLE * W[c.letter];
+  for (const h of w.hab) { let y = 0, wd = 0, hu = 0; for (const k in h.pops) { if (B(k).hunts) hu += h.pops[k]; else if (w.sp[k].yours) y += h.pops[k]; else wd += h.pops[k]; }
+    h.hist.push([y, wd, hu]); if (h.hist.length > 240) h.hist.shift(); }
+  w.gen++; return lost;
+}
+/** One legal change from a build: add, swap or drop the part in one place. */
+function cousins(parts) {
+  const out = [];
+  for (let pl = 0; pl < 4; pl++) { const rest = [...parts].filter((p) => PARTS[p].place !== pl).join('');
+    for (const p of ['', ...Object.keys(PARTS).filter((x) => PARTS[x].place === pl && !PARTS[x].rare)]) { const c = BUILDS.find((b) => [...b].sort().join('') === [...rest + p].sort().join('')); if (c !== undefined && c !== parts) out.push(c); } }
+  return out;
+}
+function bud(w, events, cells) {
+  for (const h of w.hab) {
+    const here = Object.keys(h.pops), mine = here.some((k) => w.sp[k].yours);
+    for (const slot of SLOTS) {
+      const c = cells[h.id * 3 + SLOTS.indexOf(slot)], ready = c.state === 'open' && (slot !== 'prey' || c.grams >= (w.old ? SEA.floor : HUNT.from));
+      if (w.old) {                                                 // N4: dice, anywhere, from any species here or next door
+        if (!ready || w.rng() >= 0.08) continue;
+        const near = [...here, ...h.nb.flatMap((n) => Object.keys(w.hab[n].pops))]; if (!near.length) continue;
+        const pick = cousins(near[Math.floor(w.rng() * near.length)].slice(1)).filter((p) => raw(w, p, h).slot === slot && ['C', 'B'].includes(letter(w, p, h)));
+        if (pick.length) { const p = pick[Math.floor(w.rng() * pick.length)]; add(w, h, p, false, 40); events.push({ rank: 2, text: `A wild ${nameOf(p)} appeared in ${h.name}.` }); }
+        continue;
+      }
+      if (!ready || !mine) { h.bar[slot] = 0; continue; }           // NEW: only in your waters, on a bar you can watch
+      h.bar[slot] += 1 / BAR; if (h.bar[slot] < 1) continue; h.bar[slot] = 0;
+      let top = null;                                              // the leash: within two steps of a species here, at most B
+      const near = new Set(here.flatMap((k) => cousins(k.slice(1))).flatMap((p) => [p, ...cousins(p)]));
+      for (const p of near) { const r = raw(w, p, h); if (r.slot !== slot || W[letter(w, p, h)] > W.B || r.value < EVEN) continue; if (!top || r.value > top.value) top = { p, value: r.value }; }
+      if (top) { add(w, h, top.p, false, SEA.floor); events.push({ rank: 2, text: `A wild cousin took ${SLOT_NAME[slot]} in ${h.name}: ${nameOf(top.p)} (${letter(w, top.p, h)}).` }); }
+    }
+  }
+}
+function levelUp(w, events) {
+  while (w.level < 10 && w.xp >= XP[w.level + 1]) { w.level++; const p = ORDER[w.level - 1];
+    if (p) { w.unlocked.push(p); w.bestGen = -99; w.memo = {}; events.push({ rank: 0, text: `Level ${w.level}: ${PARTS[p].name} unlocked.` }); }
+    else events.push({ rank: 0, text: w.level === 10 ? 'Level 10: the line is described as Ottoia.' : `Level ${w.level}.` }); }
+}
+const snapshot = (w) => w.hab.flatMap((h) => cellsOf(w, h));
+function run(w, gens, events = []) {
+  const before = snapshot(w), t0 = performance.now(); let lost = 0;
+  for (let g = 0; g < gens; g++) lost += step(w, events);
+  const ms = performance.now() - t0; levelUp(w, events);
+  snapshot(w).forEach((c, i) => { const b = before[i], at = `${SLOT_NAME[c.slot]} in ${c.h.name}`;
+    if (b.state === 'yours' && c.state !== 'yours') events.push({ rank: 1, text: `You lost ${at}${c.state === 'wild' ? ' to a wild cousin' : ''}.` });
+    else if (b.state !== 'yours' && c.state === 'yours') events.push({ rank: 3, text: `You hold ${at} (${c.letter}).` });
+    else if (b.state === 'yours' && W[c.letter] < W[b.letter]) events.push({ rank: 1, text: `${at} slipped from ${b.letter} to ${c.letter}.` });
+    else if ((b.state === 'none' || b.state === 'thin') && c.state === 'open') events.push({ rank: 4, text: `${at} opened: there is food now.` }); });
+  w.lost += lost;
+  let swing = null;                                               // the widest swing among habitats with hunters, as evidence
+  for (const h of w.hab) { const x = h.hist.slice(-Math.min(gens, 240)).filter((v) => v[2] > 0).map((v) => v[0] + v[1]); if (x.length < 12) continue;
+    const lo = Math.min(...x), hi = Math.max(...x); if (!swing || hi / lo > swing.hi / swing.lo) swing = { h, lo, hi }; }
+  return { ms, lost, gens, swing, events: events.sort((a, b) => a.rank - b.rank) };
+}
+function bestBuild(w, h, slot) { const b = best(w, h, slot); return b.parts === null ? null : { parts: b.parts, letter: letter(w, b.parts, h), ok: b.value >= EVEN }; }
+function live(w, h, slot) {
+  const pick = bestBuild(w, h, slot); if (!pick || !pick.ok) return null;
+  const eggs = 30 + Math.floor(w.rng() * 21); add(w, h, pick.parts, true, eggs * 2); w.xp += eggs * W[pick.letter]; w.lives++; w.claimed.add(h.id + slot);
+  return run(w, SEA.gens, [{ rank: 0, text: `Life ${w.lives}: ${eggs} eggs as a ${nameOf(pick.parts)} (${pick.letter}), +${eggs * W[pick.letter]} XP.` }]);
+}
+/** A midgame to look at: you hold the shallows with middling builds, wild hunters have just arrived. */
+function midgame(old) {
+  const w = makeWorld(old); w.unlocked = ['T', 'G', 'B', 'C']; w.level = 4; w.xp = XP[4];
+  for (const h of w.hab.slice(0, 4)) { add(w, h, 'T', true, 300); w.claimed.add(h.id + 'mats'); if (letter(w, 'B', h) !== 'F') { add(w, h, 'B', true, 300); w.claimed.add(h.id + 'det'); } }
+  run(w, 36); for (const h of w.hab.slice(0, 4)) add(w, h, 'R', false, 100); run(w, 24); w.lives = 5; w.lost = 0; return w;
+}
+/** The one next goal: a cell of yours slipping, then a bar about to fill, then the best cell to take or improve. */
+function goal(w) {
+  const cells = snapshot(w), mine = new Set(cells.filter((c) => c.state === 'yours').map((c) => c.h.id));
+  if (!mine.size) { const c = cells.find((x) => x.slot === 'mats' && x.state === 'open'); return { c, text: `Found your line: live a Life grazing in ${c.h.name}.` }; }
+  const near = (c) => mine.has(c.h.id) || c.h.nb.some((n) => mine.has(n));
+  let top = null;
+  for (const c of cells) {
+    if (c.state === 'none' || c.state === 'thin' || !near(c)) continue; const b = bestBuild(w, c.h, c.slot); if (!b || !b.ok) continue;
+    const at = `${SLOT_NAME[c.slot]} in ${c.h.name}`, bar = c.h.bar[c.slot];
+    let score = 0, text = '';
+    if (c.state === 'yours' && W[b.letter] > W[c.letter] && W[c.letter] <= W.C) { score = 9; text = `Hold ${at}: you are at ${c.letter}, a ${nameOf(b.parts)} would be ${b.letter}.`; }
+    else if (c.state === 'open' && bar > 0.6) { score = 8; text = `Take ${at} before a wild cousin does (${Math.ceil((1 - bar) * BAR)} generations).`; }
+    else if (c.state === 'open') { score = 5 + (mine.has(c.h.id) ? 1 : 0); text = `Take ${at}: it is open and your ${nameOf(b.parts)} would be ${b.letter}.`; }
+    else if (c.state === 'wild' && W[b.letter] > W[c.letter]) { score = 4; text = `Beat the wild cousin at ${at}: it is ${c.letter}, you would be ${b.letter}.`; }
+    else if (c.state === 'yours' && W[b.letter] > W[c.letter]) { score = 3; text = `Improve ${at} from ${c.letter} to ${b.letter}.`; }
+    if (score && (!top || score > top.score)) top = { score, text, c };
+  }
+  return top ?? { c: null, text: 'Every cell near you is held at its best. Wait for the sea, or level up for a new part.' };
+}
+
+// ---- Screen ----
+if (typeof document !== 'undefined') {
+  const $ = (id) => document.getElementById(id); let w = makeWorld(false), sel = null, last = null;
+  const fmt = (g) => g >= 1000 ? `${(g / 1000).toFixed(1)} kg` : `${Math.round(g)} g`;
+  function draw() {
+    const g = goal(w); $('goal').textContent = `Next: ${g.text}`;
+    const held = snapshot(w).filter((c) => c.state === 'yours').length, all = snapshot(w).filter((c) => c.state !== 'none' && c.state !== 'thin').length;
+    $('stats').textContent = `Life ${w.lives} · generation ${w.gen} · level ${w.level} · ${Math.floor(w.xp)} XP${w.level < 10 ? ` of ${XP[w.level + 1]}` : ''} · you hold ${held} of ${all} cells · holders lost so far ${w.lost}`;
+    $('xp').firstChild.style.width = `${w.level >= 10 ? 100 : Math.min(100, 100 * (w.xp - XP[w.level]) / (XP[w.level + 1] - XP[w.level]))}%`;
+    const board = $('board'); board.innerHTML = '<span></span>' + SLOTS.map((s) => `<span class="hd">${SLOT_NAME[s]}</span>`).join('');
+    for (const h of w.hab) {
+      if (h.id % 4 === 0) board.insertAdjacentHTML('beforeend', `<div class="band">${h.band}</div>`);
+      board.insertAdjacentHTML('beforeend', `<div class="name">${h.name}</div>`);
+      for (const slot of SLOTS) { const c = cell(w, h, slot), el = document.createElement('div');
+        el.className = `cell ${c.state}${sel && sel.h === h && sel.slot === slot ? ' sel' : ''}${g.c && g.c.h === h && g.c.slot === slot ? ' goal' : ''}`;
+        el.innerHTML = `<b>${c.letter ?? (c.state === 'open' ? '·' : '')}</b><small>${c.state === 'none' ? 'no food' : c.state === 'thin' ? (best(w, h, slot).parts === null ? 'no part yet' : 'too thin') : fmt(c.grams)}</small>${c.state === 'open' && h.bar[slot] > 0 ? `<i style="width:${100 * h.bar[slot]}%"></i>` : ''}`;
+        el.onclick = () => { sel = { h, slot }; draw(); }; board.appendChild(el); }
+    }
+    const d = $('detail');
+    if (!sel) d.innerHTML = '<span class="dim">Tap a cell.</span>';
+    else { const c = cell(w, sel.h, sel.slot), b = bestBuild(w, sel.h, sel.slot), ok = b && b.ok && c.state !== 'none' && c.state !== 'thin';
+      const who = c.state === 'none' ? 'nothing to eat here yet' : c.state === 'thin' ? `${fmt(c.grams)} of food, ${best(w, sel.h, sel.slot).parts === null ? 'but your line has no part for this job yet' : 'too thin for any build of yours'}` : c.state === 'open' ? `open${sel.h.bar[sel.slot] > 0 ? `, a wild cousin in ${Math.ceil((1 - sel.h.bar[sel.slot]) * BAR)} generations` : ''}` : `${c.state === 'yours' ? 'yours' : 'wild'}: ${nameOf(c.key.slice(1))}, ${c.letter}, ${fmt(c.grams)}`;
+      d.innerHTML = `<b>${SLOT_NAME[sel.slot]} · ${sel.h.name}</b><br><span class="dim">${who}. ${ok ? `Your best build here: ${nameOf(b.parts)} (${b.letter}).` : 'Your line has no build for this yet.'}</span><br>`;
+      const btn = document.createElement('button'); btn.className = 'main'; btn.textContent = 'Live a Life here'; btn.disabled = !ok;
+      btn.onclick = () => { show(live(w, sel.h, sel.slot)); }; d.appendChild(btn); }
+    const hist = (sel ? sel.h : w.hab[0]).hist; $('chartOf').textContent = (sel ? sel.h : w.hab[0]).name;
+    const cv = $('chart'), x = cv.getContext('2d'), max = Math.max(1, ...hist.flat()); x.clearRect(0, 0, cv.width, cv.height);
+    ['#ffd34a', '#8a9a9b', '#e5462c'].forEach((col, j) => { x.strokeStyle = col; x.beginPath(); hist.forEach((v, i) => { const px = i * cv.width / 240, py = cv.height - 4 - v[j] / max * (cv.height - 8); i ? x.lineTo(px, py) : x.moveTo(px, py); }); x.stroke(); });
+    if (last) $('news').innerHTML = `<div class="dim">${last.gens} generations in ${last.ms.toFixed(1)} ms · holders lost in this run: ${last.lost}${last.swing ? ` · widest swing: prey in ${last.swing.h.name} between ${fmt(last.swing.lo)} and ${fmt(last.swing.hi)}` : ''}</div>` + last.events.slice(0, 3).map((e) => `<div>${e.text}</div>`).join('') + (last.events.length > 3 ? `<div class="dim">and ${last.events.length - 3} more</div>` : '');
+  }
+  const show = (r) => { if (r) last = r; draw(); };
+  $('wait').onclick = () => show(run(w, SEA.gens)); $('away').onclick = () => show(run(w, 96)); $('stress').onclick = () => show(run(w, 1000)); $('mid').onclick = () => { w = midgame($('old').checked); sel = { h: w.hab[0], slot: 'prey' }; last = null; draw(); };
+  $('reset').onclick = $('old').onchange = () => { w = makeWorld($('old').checked); sel = last = null; draw(); };
+  window.__toy = { get w() { return w; }, run, live, goal, snapshot, cell }; draw();
+} else module.exports = { midgame, add, step, makeWorld, run, live, goal, snapshot, cell, letter, raw, best, SEA, W, SLOTS };
+</script></body></html>
