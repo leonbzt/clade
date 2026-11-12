@@ -2,6 +2,7 @@
 import type { PartId, Place, PlanId, VerbId } from '../sim/records';
 
 export const COLS = 8, ROWS = 11, TURNS = 20;
+export const PREY_FOOD = 10; // food for crushing an adjacent rival you could eat (N4 D): between a shell bed and a carcass
 
 export const RULE = {
   startFood: 6, baseUpkeep: 1, oxygen: 3, health: 3,

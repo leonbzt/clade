@@ -21,4 +21,7 @@ export const DEV_SPECIES: Species[] = [
     build: { clade: 'worm', parts: { front: 'tentacles', sides: 'sclerite', tail: 'pouch' }, genes: { size: 1, gut: 1 } } },
   { id: 'digger-worm', lineage: 'worm-line', parent: 'bulb-worm', name: 'Digger worm', born: 0,
     build: { clade: 'worm', parts: { tail: 'bulb', eyes: 'eye', sides: 'pouch' }, genes: { size: 1, gut: 1 } } },
+  // A wild hunter to place by hand (N4): it hunts the other worms here.
+  { id: 'hook-worm', lineage: null, parent: 'root-worm', name: 'Wild hook worm', born: 0,
+    build: { clade: 'worm', parts: { front: 'hook' }, genes: { size: 1, gut: 1 } } },
 ];

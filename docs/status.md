@@ -27,3 +27,7 @@
   on the way back to the map and keeps reports and news UI-side. `sim/news.ts`: one line per story (bud, arrival, loss,
   ±30%), merged across habitats, yours first, cause = largest term in tier talk (survival measured over the Life).
   Not shown until G. Next: D.
+- D done: `boardFor(…, you)` takes the heaviest sea hunter here with `rivalAt` heads that can eat you as the board's
+  predator (drawn as its build in hunter red, named in banner, forecast and log); its `beats` switch off matching guards,
+  enrolment and burying (Brace still works). Rivals exclude it. Crush catches an adjacent rival you could eat:
+  `PREY_FOOD` 10. Dev species: Wild hook worm. Next: E.

@@ -1,6 +1,7 @@
 // The hunter, Anomalocaris: it swims above the floor (its shadow shows how high), its side flaps ripple in a wave,
 // its two grasping arms stay curled until it strikes, then uncurl as it dives. All facets take the same sun.
 import type { Graphics } from 'pixi.js';
+import type { Body } from './body';
 import { INK, PAL, SHADOW, flat, mixRamp, tri, type P3, type Ramp } from './shade';
 
 const HULL: [number, number][] = [[13, 2.2], [11, 4.4], [8.5, 4.6], [6.5, 3.6], [3, 4], [-1, 4], [-5, 3.6], [-9, 3], [-12, 2.2], [-14, 1.4]]; // x, half-width
@@ -16,11 +17,15 @@ export class Hunter {
   resting = false;
   flash = { v: 0 };
   big = false; // bigger eyes (the swimmer's compound eyes)
+  stand: Body | null = null; // a hunter from the sea (N4 D) is drawn as its own build, following `pos`
   private t = 0;
 
   constructor(private base: Ramp = PAL.hunter, public scale = 1) {}
 
-  update(dt: number) { this.t += dt * (0.6 + 2.6 * this.swim.v) * (this.resting ? 0.4 : 1); }
+  update(dt: number) {
+    this.t += dt * (0.6 + 2.6 * this.swim.v) * (this.resting ? 0.4 : 1);
+    if (this.stand) { this.stand.head.x = this.pos.x; this.stand.head.y = this.pos.y; this.stand.update(dt); }
+  }
 
   private tf() {
     const c = Math.cos(this.look.a), s = Math.sin(this.look.a), k = (0.95 + 0.15 * this.show.v) * this.scale, { x, y } = this.pos;
@@ -29,6 +34,7 @@ export class Hunter {
 
   draw(g: Graphics, sh: Graphics) {
     if (this.show.v <= 0.01) return;
+    if (this.stand) { this.stand.flash.v = this.flash.v; this.stand.draw(g, sh); return; }
     const P = this.tf(), a = this.show.v;
     let ramp = this.resting ? mixRamp(this.base, PAL.rock[2], 0.25) : this.base;
     if (this.flash.v > 0) ramp = mixRamp(ramp, INK.white, this.flash.v * 0.8);

@@ -66,7 +66,7 @@ export class Hud {
     $('body').textContent = `Size ${l.size} · ${L.stage(l)} · upkeep ${L.upkeep(l)}${l.soft ? ' · soft' : ''}`;
     $('mutant').textContent = l.mutation ? `Mutation: ${PARTS[l.mutation.part].name}` : '';
     const ev = l.board.event;
-    $('forecast').textContent = `${ev ? `${ev.name} · turns ${ev.from}–${ev.to}` : 'Quiet water'}${l.board.predatorAt !== null ? ` · shadow at ${l.board.predatorAt}` : ''}`;
+    $('forecast').textContent = `${ev ? `${ev.name} · turns ${ev.from}–${ev.to}` : 'Quiet water'}${l.board.predatorAt !== null ? ` · ${l.board.predator?.name ?? 'shadow'} at ${l.board.predatorAt}` : ''}`;
     const play = l.phase === 'play' && !busy;
     $<HTMLButtonElement>('wait').disabled = !play;
     const grow = $<HTMLButtonElement>('grow');

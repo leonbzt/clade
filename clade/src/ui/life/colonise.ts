@@ -16,7 +16,7 @@ export function launch(world: World, habitat: number, species: Species, count: n
   if (!purpose) return null;
   // Mix the three launch inputs; no clock or unseeded randomness affects a board.
   const seed = (Math.imul(world.seed, 73856093) ^ Math.imul(hab.id + 1, 19349663) ^ Math.imul(count, 83492791)) >>> 0;
-  const life = newLife(boardFor(hab, world, seed), structuredClone(species.build), { ...ranksOf(world, species.lineage) }, seed);
+  const life = newLife(boardFor(hab, world, seed, species.build), structuredClone(species.build), { ...ranksOf(world, species.lineage) }, seed);
   return { life, habitat: hab.id, species: structuredClone(species), purpose: purpose.text, report: null as ReturnType<typeof coloniseJudgement> | null,
     gain: null as { from: number; to: number } | null, heir: null as string | null };
 }

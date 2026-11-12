@@ -5,10 +5,12 @@ import { BOARD, EVENTS, EVENT_AT, GROUNDS } from '../data/boards';
 import { DEPTHS, GROUND } from '../data/ground';
 import { COLS, ROWS } from '../data/life';
 import { bodyMass, density } from './fitness';
+import { huntsWith, sizeOf } from './build';
+import { speciesKit } from './hunt';
 import { DX, DY, at, dist, inB, xy } from './grid';
 import type { Habitat } from './habitats';
-import type { Board, BoardEvent, Rival } from './life';
-import type { Food, World } from './records';
+import type { Board, BoardEvent, Rival, SeaHunter } from './life';
+import type { Build, Food, Species, World } from './records';
 import { seeded, type Rng } from './rng';
 import { bestSlot, ranksOf } from './sea';
 
@@ -83,7 +85,20 @@ function place(grid: string[], f: Float64Array, node: string, home: string, coun
 const nodesFor = (h: Habitat, food: Food) =>
   Math.min(Math.round(BOARD.nodes * density(h, food)), Math.floor(BOARD.nodes * BOARD.maxShare));
 
-export function boardFor(habitat: Habitat, world: World, seed: number): Board {
+/** The heaviest hunter here with `rivalAt` heads that could eat you: no bigger prey than itself, and never a hunter. */
+export function seaHunter(habitat: Habitat, world: World, you: Build): Species | null {
+  if (huntsWith(you)) return null;
+  let best: Species | null = null, most = 0;
+  for (const s of world.species) {
+    const grams = habitat.pops[s.id] ?? 0, kit = speciesKit(s);
+    if (!kit.hunts || kit.size < sizeOf(you) || grams / bodyMass(s.build) < BOARD.rivalAt || grams <= most) continue;
+    best = s; most = grams;
+  }
+  return best;
+}
+
+/** `you`: the build that plays this board; a sea hunter that can eat it replaces the shadow (N4 D). */
+export function boardFor(habitat: Habitat, world: World, seed: number, you?: Build): Board {
   const { substrate, depth } = habitat.kind, ground = GROUNDS[substrate];
   const rng = seeded(seed ^ Math.imul(habitat.id + 1, 0x9e3779b1));
   const deep = deepEdge(habitat, world), shore = OPPOSITE[deep];
@@ -113,11 +128,14 @@ export function boardFor(habitat: Habitat, world: World, seed: number): Board {
   place(grid, fields.buried, 'b', '~', nodesFor(habitat, 'detritus'), taken);
   place(grid, fields.mat, 'm', '.', nodesFor(habitat, 'mats'), taken);
 
-  // Rivals: the heaviest residents by heads, each on a spot well away from the start.
+  // The hunter: one from the sea that can eat you, else the shadow from deep water. Rivals: the heaviest other
+  // residents by grams, each on a spot well away from the start.
+  const hunter = you ? seaHunter(habitat, world, you) : null;
+  const predator: SeaHunter | null = hunter && { species: hunter.id, name: hunter.name, build: structuredClone(hunter.build), beats: speciesKit(hunter).beats };
   const [sx, sy] = xy(start);
   const spots = CELLS.filter((i) => grid[i] !== '#' && !taken.has(i) && dist(sx, sy, ...xy(i)) >= BOARD.rivalGap);
   const residents = world.species.map((species) => ({ species, grams: habitat.pops[species.id] ?? 0 }))
-    .filter(({ species, grams }) => grams / bodyMass(species.build) >= BOARD.rivalAt)
+    .filter(({ species, grams }) => species !== hunter && grams / bodyMass(species.build) >= BOARD.rivalAt)
     .sort((a, b) => b.grams - a.grams);
   const rivals: Rival[] = [];
   for (const { species } of residents) {
@@ -134,7 +152,7 @@ export function boardFor(habitat: Habitat, world: World, seed: number): Board {
   const { band: side, ...event } = EVENTS[EVENT_AT[depth][substrate]];
   return {
     substrate, map: [...Array(ROWS).keys()].map((y) => grid.slice(y * COLS, (y + 1) * COLS).join('')),
-    start: xy(start), entry: xy(entry), predatorAt: BOARD.shadow ? ground.shadowTurn : null, rivals,
+    start: xy(start), entry: xy(entry), predatorAt: BOARD.shadow || predator ? ground.shadowTurn : null, predator, rivals,
     event: { ...event, ...(side ? band(side === 'deep' ? deep : shore, BOARD.band) : {}) },
   };
 }

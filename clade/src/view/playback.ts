@@ -74,6 +74,13 @@ export async function play(evs: L.Ev[]) {
       }
       case 'hurt': hud.hp.set(e.health); you.flash.v = 1; tween(you.flash, { v: 0 }, 0.35); hud.flash(0.25); break;
       case 'oxygen': hud.oxy.set(e.oxygen); break;
+      case 'prey': {
+        const c = centre(e.at), s = screen(c);
+        S.caught.add(e.idx);
+        fx.burst(c.x, c.y, NODE_RAMP.carcass, feel.particles);
+        hud.floater(s.x, s.y, `+${e.gain}`, GOLD); hud.food.set(e.food);
+        break;
+      }
       case 'rival': {
         const c = centre(e.to), rival = S.rivals[e.idx];
         tween(rival.moving, { v: 1 }, 0.1);
@@ -85,7 +92,8 @@ export async function play(evs: L.Ev[]) {
       }
       case 'pred_arrive': {
         const c = centre(e.at);
-        hud.banner('A shadow from deep water arrives', RED);
+        hud.banner(life.board.predator ? `${life.board.predator.name} comes hunting` : 'A shadow from deep water arrives', RED);
+        if (hunter.stand) hunter.stand.place(c.x, c.y, Math.atan2(life.y * C - c.y, life.x * C - c.x));
         Object.assign(hunter.pos, c); hunter.look.a = turnTo(0, Math.atan2(life.y * C - c.y, life.x * C - c.x));
         hunter.show.v = 0; hunter.lift.v = 40; marks.entry = -1;
         tween(hunter.show, { v: 1 }, 0.4);
