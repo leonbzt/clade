@@ -40,7 +40,7 @@ names its rival).
 **Session 2: the Life and the purposes.**
 - **D. The board's hunter and rivals come from the sea.** If a hunter that can eat you lives here with at least
   `rivalAt` heads, it is the board's predator: drawn with its build, named in the banner, and its `beats` ignore that
-  defence of yours. Otherwise the shadow stays, as old life from deep water. Rivals stay the heaviest residents, so wild
+  defence of yours. Otherwise there is no predator (*decided 12 Nov*: no shadow; Brace doesn't stop a hunter that beats armour). Rivals stay the heaviest residents, so wild
   branches show up on boards. A build with `hunts` may crush an adjacent rival it could eat: the rival is gone and you
   gain `PREY_FOOD` food.
 - **E. Challenge and adopt** (habitat card, `ui/HabitatCard.svelte`, `sim/found.ts`). When the slot your species would
@@ -72,7 +72,7 @@ parts: after this step's play test (`ideas.md`).
 - [ ] Tests: the diet rule (tool, size, no hunter prey); law 3 both ways; guard cuts the take; buds are deterministic,
   C or B only, parent set, none in a held slot; adopt below and above `ADOPT_EGGS`; every news line has a cause;
   160 generations with 20 species under 100 ms; laws 2 and 7.
-- [ ] `npm run check` under 10 s; one phone-size look run per part; one desktop shot of the replay.
+- [x] `npm run check` under 10 s; one phone-size look run per part; one desktop shot of the replay.
 - [ ] Your notes are in `docs/playtests/n4-who-eats-whom.md`, then the whole N0–N4 play (step 12).
 
 ## Size check

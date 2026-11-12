@@ -1,33 +1,25 @@
 # Status
 
-- **Milestone:** M2, step 11, **N4 Who eats whom**, on branch `n4-who-eats-whom`. Parts A–E built; F and G (session
-  3, "the map moves") are left. [Spec](slices/n4-who-eats-whom.md).
-- **Done (12 Nov):** A–E, one commit each; see the progress list below. Look runs: D (sea hunter on the board) and E
-  (Challenge, Adopt) at phone size. C has no screen until G.
-- **Verified:** `npm run check` passes in 7.2 s. Law 6 with 20 species takes 77 ms inside the check, so the margin
-  under 100 ms is thin.
-- **Decided (12 Nov):** hunters don't graze for now; dual builds may come later (already logged).
-- **Next:** F, living paint (`view/living.ts`); then G, the return replay and the notes card plus button (they read
-  `seaRun` in `ui/App.svelte`: `reports`, `news`, `before`); then your four-Life N4 play.
-- **Open:** (1) Brace still blocks a sea hunter whose `beats` ignore your armour. Is that right? (2) A holder at F
-  still makes the slot a Challenge. (3) Adopt shows for any wild species in a habitat you can see, even one with no
-  slot (a hunter with no prey). (4) The spec's two leans stand (12 generations per Life; prey as big as its hunter).
-
-## N4 progress
-- A done: `sim/hunt.ts` (`hunted`, `threat`), a hunt slot, survival naming the hunter; hunters eat only prey;
-  `HUNT.saturation` 2; the sea step is allocation-free (law 6).
-- B done: `sim/wild.ts` buds wild species (8%) in unchosen slots, C or B only, parent set; wild species living nowhere
-  are pruned unless they parent another.
-- C done: `step` returns a report (tallies, hunts, moves, buds, gone); `ui/sea-run.ts` runs `LIFE_GENS` (12) on the way
-  back to the map; `sim/news.ts` writes one line per story, yours first, naming the cause in tier talk.
-- D done: `boardFor(…, you)` makes a sea hunter that can eat you the board's predator (drawn as its build, named);
-  its `beats` switch off matching guards, enrolment and burying. Crush catches an adjacent rival you could eat
-  (`PREY_FOOD` 10). Dev species: Wild hook worm.
-- E done: "Challenge X (B) · your Y A" on a held slot, "X holds it" on map targets; "Wild here" offers Adopt;
-  ≥ `ADOPT_EGGS` (10) joins your line, fewer hatch wild. `bestFit` follows the diet rule. Next: F.
-- Shadow off, Brace (12 Nov calls): a board has a predator only when a sea hunter that can eat you lives there
-  (`BOARD.shadow` false); Brace no longer blocks a hunter that beats armour.
-- F done: `view/living.ts` capsules per population (`LIVING` in `data/sea.ts`), drawn over the map, synced from
-  `capsuleCounts(world)`; hunters chase, prey flee, yours carry a gold pixel. Next: G.
-- G done: `ui/replay.ts` plays the run's `frames` over `REPLAY.seconds` (4 s): arrivals enter at the shared border,
-  buds flash and shout their name, the lost fade; tap to skip. Then `ui/Notes.svelte`; a notes button reopens it.
+- **Milestone:** M2, step 11, **N4 Who eats whom**, on branch `n4-who-eats-whom`. All parts A–G built; only your
+  four-Life play is left. [Spec](slices/n4-who-eats-whom.md).
+- **Done (12 Nov, this session):**
+  - No shadow: `BOARD.shadow` false in `clade/src/data/boards.ts`; a board has a predator only when a sea hunter that
+    can eat you lives there (`sim/board.ts`). Brace yields to a hunter that beats armour (`sim/life-body.ts`; the
+    verb note says "won't hold"). Tests in `tests/sea-hunter.test.ts`, `tests/board.test.ts`.
+  - F: `clade/src/view/living.ts`, capsules per population (`LIVING` in `data/sea.ts`), drawn by `view/map.ts`, synced
+    in `ui/App.svelte`; hunters chase, prey flee, yours carry a gold pixel.
+  - G: `clade/src/ui/replay.ts` plays the run's `frames` (now in `ui/sea-run.ts`) over 4 s (`REPLAY`): arrivals enter at
+    the shared border, buds flash and shout their name, the lost fade; tap to skip. Then `ui/Notes.svelte`; a notes
+    button on the bar reopens it. Look script `scripts/look/n4-g.json` (phone) plus one desktop shot; `tests/living.test.ts`.
+- **Verified:** `npm run check` passes in 7.6 s. Commits: `0f14f96`, `4397c19` (F), `8b78d8b` (G).
+- **Decided (12 Nov):** no shadow, only the habitat's hunters ("hunters only"); Brace doesn't block a hunter that gets
+  past armour; Adopt stays until the play test.
+- **Next:** (1) your four-Life N4 play from *first worm*, no dev bar; notes in `docs/playtests/n4-who-eats-whom.md`.
+  (2) Then fixes from it, merge to `main`, and step 12 (play N0–N4 as a whole).
+- **Open:**
+  1. Early boards now have no predator at all (first worm: no hunters in the sea yet), and the first-worm map shows only
+     about 4 capsules. Does that feel too quiet in play?
+  2. A holder at F still makes the slot a Challenge.
+  3. Adopt shows for any wild species in a habitat you can see, even one with no slot (a hunter with no prey).
+  4. The spec's two leans stand (12 generations per Life; prey as big as its hunter).
+  5. A wild hunter can be named after a non-hunting change ("Wild brood pouch worm"); parked in `ideas.md`.

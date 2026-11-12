@@ -204,3 +204,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Equipment and an RPG character: parts read as gear on a character sheet; more animals (you, 12 Nov, N3 play). R5–R6, R8.
 - Zoom levels: soil, patch, habitat, island, continent; which ones earn a decision of their own (you, 12 Nov). The Fable math pass.
 - Dual builds: a hunter that also grazes (an omnivore), after N4's hunters-only diet (you, 12 Nov). R5 with the gut gene.
+- A wild bud's name comes from its one change, so a hunter can be called "Wild brood pouch worm"; name hunters by their hunting part (AI, 12 Nov, N4 G look). L1 or R5.
