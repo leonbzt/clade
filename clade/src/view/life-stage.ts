@@ -29,8 +29,10 @@ export class LifeStage {
   private ended = false;
   private sceneReady = false;
   get busy() { return !this.sceneReady || S.busy; }
+  /** The mutation offer is modal: the board waits until a part is picked or passed. */
+  get offering() { return this.life.phase === 'play' && !!this.life.mutationOffer?.length; }
   private key = (e: KeyboardEvent) => {
-    if (e.repeat || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement) return;
+    if (e.repeat || this.offering || e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement || e.target instanceof HTMLTextAreaElement) return;
     if (e.key === ' ' && e.target instanceof HTMLButtonElement) return;
     if (e.key === 'w' || e.key === ' ') { e.preventDefault(); void this.act(() => L.stay(this.life)); }
     if (e.key === 'l') void this.act(() => E.lay(this.life));
@@ -101,10 +103,11 @@ export class LifeStage {
     S.floor.refresh(); dress(S.you, l); S.hunter.resting = l.pred?.state === 'rest';
     if (l.pred?.state !== 'strike') S.marks.marks = [];
     S.marks.entry = !l.pred && l.phase === 'play' && l.board.predatorAt !== null ? L.at(...l.board.entry) : -1;
-    S.marks.dests = S.busy ? new Map() : L.dests(l); S.hud.refresh(l, instant, S.busy); this.changed();
+    const wait = S.busy || this.offering;
+    S.marks.dests = wait ? new Map() : L.dests(l); S.hud.refresh(l, instant, wait); this.changed();
   }
-  async act(action: () => unknown) {
-    if (this.disposed || !this.initialized || S.busy || this.life.phase !== 'play') return;
+  async act(action: () => unknown, offer = false) {
+    if (this.disposed || !this.initialized || S.busy || this.life.phase !== 'play' || this.offering !== offer) return;
     S.busy = true; S.marks.dests.clear(); S.marks.hover = -1;
     this.life.events = []; action();
     S.hud.refresh(this.life, false, true); this.changed();
@@ -113,7 +116,7 @@ export class LifeStage {
     if (!this.disposed && (this.life.phase as L.Life['phase']) === 'over' && !this.ended) { this.ended = true; this.complete(); }
   }
   addFood() { return this.act(() => { this.life.food += 10; }); }
-  mutate(part: PartId | null) { return this.act(() => pickMutation(this.life, part)); }
+  mutate(part: PartId | null) { return this.act(() => pickMutation(this.life, part), true); }
   endSeason() {
     return this.act(() => {
       this.life.turn = TURNS; this.life.phase = 'over'; this.life.cause = 'season';
@@ -126,7 +129,7 @@ export class LifeStage {
     const tx = Math.floor(x / C), ty = Math.floor(y / C); return L.inB(tx, ty) ? L.at(tx, ty) : -1;
   }
   private tap(x: number, y: number) {
-    if (S.busy) return;
+    if (S.busy || this.offering) return;
     const i = this.tileAt(x, y); if (i < 0) return;
     if (L.dests(this.life).has(i)) void this.act(() => L.move(this.life, i));
     else {

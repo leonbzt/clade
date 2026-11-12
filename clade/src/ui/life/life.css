@@ -3,6 +3,7 @@
 .life-head { padding: 8px; }
 .life-head h1 { font-size: 16px; font-weight: 700; margin: 0 0 6px; }
 .life-counts { display: flex; gap: 8px 16px; flex-wrap: wrap; }
+.mutant { color: var(--gold); }
 .stocks { display: flex; gap: 8px 16px; flex-wrap: wrap; margin-top: 6px; }
 .stocks .stock { display: flex; align-items: center; gap: 5px; }
 .stocks b { font-weight: 400; }

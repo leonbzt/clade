@@ -64,6 +64,7 @@ export class Hud {
     this.setEggs(l.eggs);
     this.food.set(l.food, 0, instant); this.oxy.set(l.oxygen, L.oxygenMax(l), instant); this.hp.set(l.health, RULE.health, instant);
     $('body').textContent = `Size ${l.size} · ${L.stage(l)} · upkeep ${L.upkeep(l)}${l.soft ? ' · soft' : ''}`;
+    $('mutant').textContent = l.mutation ? `Mutation: ${PARTS[l.mutation.part].name}` : '';
     const ev = l.board.event;
     $('forecast').textContent = `${ev ? `${ev.name} · turns ${ev.from}–${ev.to}` : 'Quiet water'}${l.board.predatorAt !== null ? ` · shadow at ${l.board.predatorAt}` : ''}`;
     const play = l.phase === 'play' && !busy;
@@ -85,7 +86,7 @@ export class Hud {
       const effect = ENFORCE_EFFECT[part]; if (!effect) continue;
       const rank = l.enforced[part] ?? 0, cap = ENFORCE_HEADROOM + Math.max(0, l.ranks[part] ?? 0), cost = E.enforceCost(l);
       const done = rank >= cap;
-      const label = `${PARTS[part].name}${rank ? ` · rank ${rank}` : ''} · ${done ? 'cap reached' : cost === null ? 'limit reached' : `${cost} food`}`;
+      const label = `${PARTS[part].name}${l.mutation?.part === part ? ' (mutation)' : ''}${rank ? ` · rank ${rank}` : ''} · ${done ? 'cap reached' : cost === null ? 'limit reached' : `${cost} food`}`;
       const effectText = effect.kind === 'meal' ? `+${effect.amount} food per ${effect.meals.replace(/mats$/, 'mat').replace(/meals$/, 'meal')}` : effect.text;
       const note = E.payback(l, part) ?? 'all Enforce spent';
       const b = this.button(label, effect.kind === 'meal' ? `${effectText} · ${note}` : note);

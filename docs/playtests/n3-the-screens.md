@@ -83,3 +83,10 @@ Tentacles, lay 3, end the season. Two eggs lie face down (Hatch disabled); open 
 upkeep +1), Sclerites (B, upkeep 0). Hatch Tentacles: "Tentacles worm hatches", tier S, +12 XP, the bar fills to
 12 / 60. Back to the map: the child lives with `parent` root-worm. All assertions pass. Inspected the shots; the
 dialog fits the phone and now sits above the Lay floater (the overlap noted after C).
+
+## Part F · 12 Nov 2026
+
+`ui/life/Mutation.svelte` over the stage; `LifeStage.offering` makes the offer modal (taps, keys, Wait/Grow/Lay,
+dev buttons wait). `npm run check` passes in 7.0 s. Phone run `npm run look -- /clade/ scripts/look/n3-f.json`:
+Grow to 3 opens Eye/Burrowing bulb/Tentacles with Wait and Lay disabled; picking Eye keeps turn 2, closes the
+panel and shows "Mutation: Eye" in gold. All assertions pass; no browser errors. Inspected both shots.
