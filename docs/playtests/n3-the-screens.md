@@ -57,3 +57,16 @@ Return to the map leaves the bare parent intact. All assertions pass; no browser
 
 No hatch settlement or card UI yet: D/E will consume these rules. The full three-Life question still waits for
 the screens.
+
+## Part D · 12 Nov 2026
+
+Rules checkpoint. `npm run check` passes in 7.1 s. Twelve hatch tests cover keeping the parent, a gain, swap and
+lose child (independent of the parent), reuse of a build the line already has (key order, ancestors), full-build
+matching, numbered names and IDs, letter weights, derived points, zero eggs and rejection without partial
+settlement. `finish` now settles through `hatch` once; XP uses the played parent's letter, the report judges the heir.
+
+One deterministic phone run, `npm run look -- /clade/ scripts/look/n3-d.json`, at 390 × 844: launch from *first
+worm*, Grow to 3, pick Tentacles, lay 3, end the season. On a copy of the world the first clutch card hatches
+"Tentacles worm" (parent root-worm, same line, 6 g, 12 XP) and a second hatch reuses it. The real finish keeps the
+parent (no card UI until E): 6 g, 12 XP, one species, a repeat finish changes nothing. All assertions pass; no
+browser errors. Inspected both shots: the result card and the map's holders list fit the phone.

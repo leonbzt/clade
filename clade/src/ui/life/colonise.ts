@@ -1,7 +1,9 @@
-// The two UI joints: launch a transient Life, then pass only its eggs to the sea.
+// Launch a transient Life, then settle its chosen form through hatch, once.
 import { boardFor } from '../../sim/board';
-import { colonise, coloniseJudgement, found } from '../../sim/found';
+import type { Card } from '../../sim/clutch';
+import { colonise, coloniseJudgement } from '../../sim/found';
 import { resultOf } from '../../sim/economy';
+import { hatch } from '../../sim/hatch';
 import { newLife, isLifeBuild } from '../../sim/life';
 import type { Species, World } from '../../sim/records';
 import { ranksOf } from '../../sim/sea';
@@ -19,12 +21,14 @@ export function launch(world: World, habitat: number, species: Species, count: n
 }
 export type Colonisation = NonNullable<ReturnType<typeof launch>>;
 
-export function finish(world: World, session: Colonisation) {
+export function finish(world: World, session: Colonisation, card: Card | null = null) {
   const result = resultOf(session.life), hab = world.habitats.find((h) => h.id === session.habitat);
   if (!result || !hab || session.report) return session.report;
-  // Dev choices may not live in World yet. Register them and their ancestors before found.
+  // Dev choices may not live in World yet. Register them and their ancestors before hatch.
   registerSpecies(world, session.species);
-  found(world, hab, session.species, result.eggs);
-  session.report = coloniseJudgement(world, hab, session.species, result.eggs);
+  const played = coloniseJudgement(world, hab, session.species, result.eggs);
+  const heir = hatch(world, hab, session.species, card, result.eggs, played.fit?.letter ?? 'F');
+  if (!heir) return null;
+  session.report = coloniseJudgement(world, hab, heir, result.eggs);
   return session.report;
 }
