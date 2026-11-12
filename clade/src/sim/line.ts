@@ -26,3 +26,11 @@ export function spend(lineage: Lineage, part: PartId, species: readonly Species[
   lineage.ranks[part] = rank + 1;
   return true;
 }
+
+/** The XP bar's numbers at any (fractional) XP: the level, XP into it, its width, and the filled share. */
+export function barOf(xp: number) {
+  const level = levelOf(xp);
+  if (level >= LINE_RULE.cap) return { level, into: 0, step: 0, pct: 1 };
+  const into = xp - LINE_RULE.xpAt[level], step = LINE_RULE.xpAt[level + 1] - LINE_RULE.xpAt[level];
+  return { level, into, step, pct: Math.min(1, into / step) };
+}

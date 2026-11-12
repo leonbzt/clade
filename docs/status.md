@@ -10,3 +10,4 @@
 - B done: one seeded size-3 offer, weighted common parts for empty places, free pick/pass, immediate activation and upkeep, mutation/eggsAfter snapshots; checks and phone look pass; next: C.
 - C done: seeded gain/swap/lose clutch, equal gain/lose kind weights, per-rank Enforce family weights, mutation first within the 2/3-card total, independent heir builds; checks and phone look pass; next: D.
 - D done: `hatch` keeps the parent or founds a child (reused if the line has the build, named part + clade), awards XP at the played letter; `finish` settles through it once; checks and phone look pass; next: E.
+- E done: hatching screen replaces the result card: eggs face down, tap to open (kind, place, part, effect, signed upkeep, heir's letter here), Hatch this one or Keep the parent, then the XP bar and points; checks and phone look pass; next: F.

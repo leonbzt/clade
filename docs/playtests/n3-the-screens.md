@@ -70,3 +70,16 @@ worm*, Grow to 3, pick Tentacles, lay 3, end the season. On a copy of the world 
 "Tentacles worm" (parent root-worm, same line, 6 g, 12 XP) and a second hatch reuses it. The real finish keeps the
 parent (no card UI until E): 6 g, 12 XP, one species, a repeat finish changes nothing. All assertions pass; no
 browser errors. Inspected both shots: the result card and the map's holders list fit the phone.
+
+## Part E · 12 Nov 2026
+
+The hatching screen (`ui/Hatch.svelte`, `ui/XpBar.svelte`, `ui/life/hatching.ts`) replaces N2's result card.
+`npm run check` passes in 7.1 s; three new tests: the clutch screen is deterministic and leaves the world alone,
+each heir's letter is its judgement here, upkeep is signed; no eggs give no cards; settling records the heir and
+the XP gained; the bar's level, progress and cap. A Life with no eggs skips the cards and keeps the parent.
+
+One deterministic phone run, `npm run look -- /clade/ scripts/look/n3-e.json`, at 390 × 844: Grow to 3, pick
+Tentacles, lay 3, end the season. Two eggs lie face down (Hatch disabled); open both: Tentacles first (S here,
+upkeep +1), Sclerites (B, upkeep 0). Hatch Tentacles: "Tentacles worm hatches", tier S, +12 XP, the bar fills to
+12 / 60. Back to the map: the child lives with `parent` root-worm. All assertions pass. Inspected the shots; the
+dialog fits the phone and now sits above the Lay floater (the overlap noted after C).

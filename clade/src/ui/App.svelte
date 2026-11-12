@@ -15,8 +15,10 @@
   import { place } from './placement';
   import { applyPreset, skip } from './scenarios';
   import LifeScreen from './life/Life.svelte';
-  import Result from './life/Result.svelte';
+  import Hatch from './Hatch.svelte';
+  import type { Card } from '../sim/clutch';
   import { launch, finish, type Colonisation } from './life/colonise';
+  import { clutchOf } from './life/hatching';
 
   const asked = Number(new URLSearchParams(location.search).get('seed'));
   const initialSeed = Number.isInteger(asked) && asked > 0 ? asked : 1;
@@ -45,13 +47,20 @@
     if (!next) return false;
     lifeCount++; active = next; return true;
   }
+  let clutch = $state.raw<ReturnType<typeof clutchOf>>(null);
+  // The Life is over: roll its clutch once and open hatching. No eggs, no cards: settle the parent at once.
   function completeLife() {
-    if (!active || !finish(world, active)) return;
+    if (!active || clutch) return;
+    clutch = clutchOf(world, active);
+    if (clutch && !clutch.offers.length) settle(null);
+  }
+  function settle(card: Card | null) {
+    if (!active || active.report || !finish(world, active, card)) return;
     world = { ...world }; past = remember(past, world); active = { ...active };
   }
   function backToMap() {
     if (!active?.report) return;
-    selected = active.habitat; active = null;
+    selected = active.habitat; active = null; clutch = null;
   }
 
   function setSeed(s: number) {
@@ -92,6 +101,7 @@
     view.init(host).then(() => (ready = true));
     // For the look script: drive the map without taps.
     Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap,
+      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; },
       get session() { return active; }, get lifeCount() { return lifeCount; },
       setMode: (m: MapMode) => (mode = m), fit: () => view.fit(), look: (x: number, y: number, z: number) => view.look(x, y, z),
       get world() { return world; }, get ground() { return ground; }, get history() { return past; } } });
@@ -158,7 +168,7 @@
 
 {#if active}
   <LifeScreen life={active.life} purpose={active.purpose} complete={completeLife} />
-  {#if active.report}<Result session={active} back={backToMap} />{/if}
+  {#if clutch}<Hatch session={active} {world} {clutch} {settle} back={backToMap} />{/if}
 {/if}
 
 <style>
