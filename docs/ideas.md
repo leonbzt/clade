@@ -200,3 +200,6 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - The Life HUD's food, health and oxygen pips bigger, one colour per stock, like the old game (you, 11 Nov: "fix later with ui rehaul"). R10.
 - Rivals on a board drawn at different sizes, not all full grown (you, 11 Nov). L1.
 - Line levels as an evolution tree: points buy verbs, special abilities or part upgrades, not only ranks (you, 11 Nov, N3 spec). R5 or later.
+- Home map targets' one reason could name a rival or a missing part ("Bulb worm holds it", "a bulb opens it"), not only the richest food (AI, 12 Nov, after N3 G). N4 with rivals.
+- Equipment and an RPG character: parts read as gear on a character sheet; more animals (you, 12 Nov, N3 play). R5–R6, R8.
+- Zoom levels: soil, patch, habitat, island, continent; which ones earn a decision of their own (you, 12 Nov). The Fable math pass.

@@ -1,9 +1,12 @@
 # Status
 
-- **11 Nov 2026 · M2, N3 A–C done on `n3-the-screens`.** Checkpoint: **`N3 C: add deterministic clutch cards and heir builds`**, after B at `6aa99ad` (N2 merge still pending). [N3 spec](slices/n3-the-screens.md).
-- **Your calls (decisions.md, 11 Nov):** pick one of three for the mutation; a level gives a point (an evolution tree later, parked); Codex builds N3 with a breakpoint per part. Token rules stand: you test by playing, one phone-size look run per step, no review round.
-- **Verified:** `npm run check` passes (5.9 s); fourteen clutch tests, existing gameplay checks and one 390 × 844 browser run. [Notes](playtests/n3-the-screens.md). C is rules only; hatching/card UI is D/E and mutation UI is F. The three-Life play question remains open.
-- **Claude handoff:** C's kind/part pools, per-rank family weights, mutation-first card totals and independent heir builds are the review surface; no review round per part. The existing result's transient Lay-floater overlap is noted for E. **Next:** start a fresh build session for N3 D, hatching, on this branch.
+- **Milestone:** M2, step 10, **N3 The screens**: all parts A–I built on `n3-the-screens` (last commit `N3 I: the tree of life with its faded trunk`; N2's merge to `main` still pending). [Spec](slices/n3-the-screens.md).
+- **Done this session (12 Nov):** F, the mutation offer as cards over the board (`ui/life/Mutation.svelte`, modal via `LifeStage.offering`, HUD "Mutation: X"); G, the home map (`view/home.ts`, `MapView.frame`, App/HabitatCard: opens on *first worm* framed on your habitats, dev behind **dev**, gold yours, targets with letter + reason, light fog, no label overlap, **Colonise from a neighbour**); H, the line view (`ui/Line.svelte`, `view/line.ts`); I, the tree (`ui/Tree.svelte`, `view/tree.ts`, `OLD_LIFE` in `data/clades.ts`). Tests in `tests/home.test.ts`; look scripts `scripts/look/n3-f…i.json`; notes in `playtests/n3-the-screens.md`.
+- **Verified:** `npm run check` passes (7.4 s, under 10 s); one phone run per part plus E/F rerun after G–I, all assertions pass, shots inspected.
+- **Decided:** nothing new by you this session (commits per part follow the spec's build brief).
+- **Choices made in the build (yours to overrule):** colliding labels keep yours and targets before area (spec: smaller hides); the map opens zoomed on your habitats, **home** recentres; tree gate hints sit one part per line; line view shortens 3+ homes to "N habitats · best X in Y".
+- **Next:** 1) you play the three-Life question (`npm run dev`, `/clade/`, no dev bar) and note it in `playtests/n3-the-screens.md`; 2) fixes from your notes; 3) merge N2/N3 to `main`, tick N2 and N3 in `ROADMAP.md`, then N4's spec.
+- **Open:** does a bare worm's only target ("B · needs digging") give enough reason to pick an heir? The play will tell.
 
 ## N3 progress
 - A done: original XP curve, derived points, carried-part spending capped at rank 3, job text, funded midgame preset; checks and phone look pass; next: B.

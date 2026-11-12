@@ -114,3 +114,15 @@ Phone run `npm run look -- /clade/ scripts/look/n3-i.json`: five clade nodes, on
 arthropod's hint "sclerites + / proboscis / 0 of 2 carried"; every label inside the frame; tapping the worm opens its
 line view, Back returns to the tree, Back again to the map. Inspected the shot. Gate hints sit one part per line
 (the spec's one-line form overflowed at phone width).
+
+## Your play · 12 Nov 2026
+
+Played the finished N3 (three Lives and more). Your words, lightly trimmed:
+- "Everything is looking solid and the UI is nice." "Nothing major is wrong."
+- "It was fun to move on to colonise suitable habitats, and grow." "The mutations were nice."
+- "The runs themselves are a little boring currently." "I don't feel a lot of decisions in the runs, and in between
+  yet."
+- "I'm still missing the equipment and RPG character, and more animals."
+- "Important to have more action going on on the habitat map, and seeing things move around and unfold."
+- The mutation and trait selection screens are very wide on desktop. *Fixed:* the mutation panel is capped at 440 px
+  and centred, like the hatching, line and tree screens.

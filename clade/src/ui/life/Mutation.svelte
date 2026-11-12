@@ -23,7 +23,7 @@
 </div>
 
 <style>
-  .mutation { position: absolute; top: 8px; left: 8px; right: 8px; max-height: calc(100% - 16px); z-index: 4; display: flex; flex-direction: column; gap: 6px; padding: 10px;
+  .mutation { position: absolute; top: 8px; left: 8px; right: 8px; max-width: 440px; margin: 0 auto; max-height: calc(100% - 16px); z-index: 4; display: flex; flex-direction: column; gap: 6px; padding: 10px;
     overflow-y: auto; background: var(--panel); border: 2px solid var(--gold); box-sizing: border-box; }
   h2 { font-size: 16px; margin: 0; color: var(--gold); }
   p { margin: 0; }
