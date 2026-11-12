@@ -16,3 +16,7 @@
 
 ## N4 progress
 (one line per part: "X done: what landed; next: Y")
+- A done: `sim/hunt.ts` (`hunted`, `threat`), a hunt slot per habitat, survival in `fitness` naming the hunter, the sea
+  removes the take; a hunting tool eats only prey (my lean: no grazing hunters, so roles stay crisp); `HUNT.saturation`
+  2 (at 1 a hunter tops out at D). The sea step was rewritten allocation-free for law 6: 20 species 91 ms, N1's 27 ms.
+  Next: B, wild branches.

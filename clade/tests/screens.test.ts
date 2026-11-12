@@ -20,6 +20,7 @@ const makeFixture = (): World => ({ seed: 1, generation: 0, species: [], lineage
 it('the intake sentence names the current fraction of its own slot food, including zero', () => {
   const world = makeFixture(), hab = world.habitats[0];
   for (const slot of slots(hab, world)) {
+    if (slot.id === 'prey') continue;
     hab.stocks[slot.id] = ceiling(hab, slot.id) * 0.38;
     expect(fitness(worm, {}, slot, hab, world).reasons[0]).toContain('food at 38%');
     hab.stocks[slot.id] = 0;

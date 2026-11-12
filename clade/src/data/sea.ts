@@ -1,6 +1,6 @@
 // Starting N1 numbers, tuned by feel. All biomass is grams; yields are grams per tile (×10 after the N1 review, 11 Nov).
 import type { Depth, Substrate } from './ground';
-import type { Food, Letter } from '../sim/records';
+import type { Food, Letter, SlotId } from '../sim/records';
 
 export const FOODS: Food[] = ['mats', 'detritus'];
 export const YIELDS: Record<Food, Record<Depth, Record<Substrate, number>>> = {
@@ -27,8 +27,17 @@ export const SEA = {
   slotFloor: 100, // slots: minimum food ceiling, in grams
   referenceDensity: 20, // intake: food grams per tile representing one share of stock
   openedReach: 1, // intake / eat: reach supplied by a food-opening part
-  survival: 1, // survival: nothing hunts or harms populations until N4
 };
+// Who eats whom (N4 A): a build with a hunting part eats only prey, the populations here no bigger than it with no
+// hunting part. The take per gram of hunter is type II (levels off as prey grows) and split by share of grams squared.
+export const HUNT = {
+  reach: 1, // hunt intake: prey reach per bite, like a food-opening part's reach
+  referenceDensity: 1, // hunt intake: prey grams per tile representing one share (prey stand far thinner than mats)
+  saturation: 2, // hunt intake, type II: the take per gram of hunter levels off at reach × saturation
+  maxTake: 0.8, // hunt: hunters together take at most this share of a prey population per generation
+  probe: 20, // survival preview: grams of a newcomer that is not here yet, as hunters would meet it
+};
+export const GUARD = 0.5; // hunt: each prey defence the hunter's beats lack multiplies its take by this
 export const MASS_BY_SIZE = [0, 1, 2, 4, 8, 16] as const; // body mass: grams per head at sizes 1–5 (index 0 unused)
 export const BASE_UPKEEP = [0, 1, 1.15, 1.3, 1.45, 1.6] as const; // upkeep: base(size), before parts and lean ranks
 export const PART_EFFECT = {
@@ -44,7 +53,7 @@ const EVEN = SEA.deaths / SEA.appetite; // break-even: value where a population 
 const LADDER: readonly (readonly [Letter, number])[] = [
   ['S', EVEN * 1.5 ** 4], ['A', EVEN * 1.5 ** 3], ['B', EVEN * 1.5 ** 2], ['C', EVEN * 1.5], ['D', EVEN], ['F', 0],
 ];
-export const LETTER_THRESHOLDS: Record<Food, readonly (readonly [Letter, number])[]> = { mats: LADDER, detritus: LADDER };
+export const LETTER_THRESHOLDS: Record<SlotId, readonly (readonly [Letter, number])[]> = { mats: LADDER, detritus: LADDER, prey: LADDER };
 export const TERM_THRESHOLDS: readonly (readonly [Letter, number])[] = [
   ['S', 1], ['A', 0.8], ['B', 0.6], ['C', 0.4], ['D', 0.2], ['F', 0], // term letters: intake, inverse upkeep, survival
 ];

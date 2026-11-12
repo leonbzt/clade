@@ -22,7 +22,7 @@ export interface Clade {
 export interface Part {
   id: PartId; place: Place; pool: 'shared' | CladeId;
   family: 'feed' | 'guard' | 'brood' | 'move' | 'sense';
-  upkeep: number; opens?: Food[]; defence?: DefenceKind; beats?: DefenceKind[]; verb?: VerbId; stamp: Id;
+  upkeep: number; opens?: Food[]; defence?: DefenceKind; beats?: DefenceKind[]; hunts?: boolean; verb?: VerbId; stamp: Id;
   name: string; does: string; rare?: boolean;
   // Keep all old places/pools in the one table, including parts with several homes and variant-only diggers.
   plans: PlanId[]; homes: [PlanId[], Place[]][];
@@ -39,8 +39,12 @@ export interface World {
 }
 
 export interface Stats { bite: number; thrift: number; defence: number; speed: number; senses: number; brood: number }
+export type SlotId = Food | 'prey';
+/** One prey population as the hunt slot sees it: grams here, body size and its defences. */
+export interface Prey { id: Id; grams: number; size: number; guards: DefenceKind[] }
 export interface Slot {
-  id: Food; foods: Food[]; name: string; role: 'grazer' | 'burrower'; accent: number; capacity: number;
+  id: SlotId; foods: Food[]; name: string; role: 'grazer' | 'burrower' | 'hunter'; accent: number; capacity: number;
+  prey?: Prey[]; // the hunt slot only: its food is these populations, so no new stock
 }
 export interface Fitness {
   // intake and value read today's food (the sea's growth rate); full and letter rank the build at full food.

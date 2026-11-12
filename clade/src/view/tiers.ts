@@ -1,5 +1,5 @@
 // Read-only views of fitness. A resident eats in its best stocked slot, just as in the sea step.
-import { fitness, slots } from '../sim/fitness';
+import { fitness, slots, stocked } from '../sim/fitness';
 import type { Habitat } from '../sim/habitats';
 import type { Build, Ranks, World } from '../sim/records';
 
@@ -11,7 +11,7 @@ export function predictions(build: Build, ranks: Ranks, hab: Habitat, world: Wor
 }
 
 export function bestFit(build: Build, ranks: Ranks, hab: Habitat, world: World) {
-  return predictions(build, ranks, hab, world).filter(({ slot }) => slot.foods.some((food) => hab.stocks[food] > 0))
+  return predictions(build, ranks, hab, world).filter(({ slot }) => stocked(slot, hab))
     .reduce<ReturnType<typeof predictions>[number] | undefined>((best, p) => !best || p.fit.value > best.fit.value ? p : best, undefined);
 }
 
