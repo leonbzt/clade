@@ -15,10 +15,10 @@ function chroma(c: number) {
 }
 
 describe('palette', () => {
-  it('is the only file with colour literals', () => {
+  it('keeps colour literals in the palette and the N2 port’s temporary shade palette', () => {
     const literal = /0x[0-9a-f]{6}\b|#[0-9a-f]{3,8}\b|\brgba?\(\s*\d|\bhsla?\(\s*\d/i;
     const found = files(SRC)
-      .filter((f) => /\.(ts|svelte|css|html)$/.test(f) && !f.endsWith(join('data', 'palette.ts')))
+      .filter((f) => /\.(ts|svelte|css|html)$/.test(f) && !f.endsWith(join('data', 'palette.ts')) && !f.endsWith(join('view', 'shade.ts')))
       .filter((f) => literal.test(readFileSync(f, 'utf8')));
     expect(found).toEqual([]);
   });

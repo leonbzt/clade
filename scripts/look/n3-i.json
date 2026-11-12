@@ -1,0 +1,20 @@
+[
+  {"until": "!!window.__clade"},
+  {"wait": 300},
+  {"click": "button.tree"},
+  {"wait": 300},
+  {"assert": "document.querySelectorAll('svg .node').length===5 && document.querySelectorAll('svg .node.on').length===1 && document.querySelector('.node.on').dataset.clade==='worm'"},
+  {"assert": "[...document.querySelectorAll('.hint')].map(t=>t.textContent).join('|').includes('sclerites +|proboscis|0 of 2 carried')"},
+  {"assert": "(()=>{const s=document.querySelector('.tree svg').getBoundingClientRect();return [...document.querySelectorAll('.tree svg text')].every(t=>{const r=t.getBoundingClientRect();return r.left>=s.left-1&&r.right<=s.right+1})})()"},
+  {"shot": "n3-i-tree"},
+  {"click": ".node.on"},
+  {"wait": 300},
+  {"assert": "!!document.querySelector('.line[role=dialog]')"},
+  {"click": ".line[role=dialog] button:has-text('Back to the map')"},
+  {"wait": 200},
+  {"assert": "!!window.__clade.tree"},
+  {"eval": "window.__clade.setPreset"},
+  {"click": ".tree[role=dialog] button:has-text('Back to the map')"},
+  {"wait": 200},
+  {"assert": "!window.__clade.tree"}
+]

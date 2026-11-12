@@ -1,0 +1,16 @@
+[
+  {"until": "!!window.__clade"},
+  {"eval": "window.__clade.setPreset('three-worms')"},
+  {"wait": 100},
+  {"shot": "n3-a-map"},
+  {"eval": "(async()=>{const c=window.__clade;const {addXp,xpFor,spend,pointsOf,levelOf}=await import('/clade/src/sim/line.ts');const {colonise}=await import('/clade/src/sim/found.ts');const line=c.world.lineages.find(l=>l.id==='worm-line');addXp(line,xpFor(18,'B'));const spent=spend(line,'tentacles',c.world.species);const parent=c.world.species.find(s=>s.id==='tentacle-worm');const target=c.world.habitats.find(h=>colonise(c.world,h,parent));c.pick(parent.id);c.select(target.id);const launched=c.colonise();window.__n3a={xp:line.xp,level:levelOf(line.xp),points:pointsOf(line),spent,launched};return window.__n3a})()"},
+  {"assert": "window.__n3a.xp===72 && window.__n3a.level===2 && window.__n3a.points===0 && window.__n3a.spent && window.__n3a.launched"},
+  {"until": "!!window.__game"},
+  {"assert": "window.__game.life.ranks.tentacles===1 && window.__game.life.phase==='play'"},
+  {"shot": "n3-a-life"},
+  {"click": "button:has-text('End the season')"},
+  {"until": "!!window.__clade.session.report"},
+  {"click": "button:has-text('Back to the map')"},
+  {"until": "!window.__game"},
+  {"assert": "window.__clade.world.lineages.find(l=>l.id==='worm-line').ranks.tentacles===1"}
+]

@@ -1,18 +1,24 @@
 <!-- The tapped habitat: its slots and residents, recent ecology, ground and neighbours. -->
 <script lang="ts">
   import { css } from '../data/palette';
+  import { colonise as purposeOf } from '../sim/found';
+  import { isLifeBuild } from '../sim/life';
   import { bodyMass } from '../sim/fitness';
   import type { Habitat } from '../sim/habitats';
   import type { Ranks, Species, World } from '../sim/records';
   import { heldSlots, predictions } from '../view/tiers';
+  import { reasonFor, senders, yoursHere } from '../view/home';
   import type { Frame } from './history';
   import HistoryGraph from './HistoryGraph.svelte';
   import TierCard from './TierCard.svelte';
 
-  let { hab, world, history, select, picked, ranks = {}, place }: {
+  let { hab, world, history, select, picked, ranks = {}, place, colonise, send }: {
     hab: Habitat; world: World; history: Frame[]; select: (id: number) => void;
-    picked?: Species; ranks?: Ranks; place?: () => void;
+    picked?: Species; ranks?: Ranks; place?: () => void; colonise?: () => void; send?: (s: Species) => void;
   } = $props();
+  const mine = $derived(yoursHere(world, hab));
+  const sent = $derived(picked ? [] : senders(world, hab));
+  const purpose = $derived(picked && isLifeBuild(picked.build) ? purposeOf(world, hab, picked) : null);
   const held = $derived(heldSlots(hab, world));
   const preview = $derived(picked ? predictions(picked.build, ranks, hab, world) : []);
 </script>
@@ -30,7 +36,23 @@
         <TierCard build={picked.build} {ranks} {slot} {hab} {world} name={picked.name} />
       {:else}<p>No food slot here</p>{/each}
       <button class="place" onclick={place} disabled={(hab.pops[picked.id] ?? 0) > 0}>{(hab.pops[picked.id] ?? 0) > 0 ? 'Already here' : 'Place · 20 heads'}</button>
+      {#if purpose}<button class="place" onclick={colonise} title={purpose.text}>Colonise</button>{/if}
     </section>
+    <h3>Holders</h3>
+  {:else}
+    {#if mine.length}
+      <h3 class="gold">Yours here</h3>
+      {#each mine as m (m.species.id)}<p><b class="gold">{m.letter}</b> {m.species.name} · {m.slot.toLowerCase()}</p>{/each}
+    {/if}
+    {#if sent.length}
+      <section class="placement" aria-label="Colonise">
+        <h3>Colonise from a neighbour</h3>
+        {#each sent as s (s.species.id)}
+          <button class="send" onclick={() => send?.(s.species)} title={s.purpose.text}>
+            <b>{s.purpose.fit.letter}</b> {s.species.name} from {s.from.name}<small>{s.purpose.slot.name.toLowerCase()} · {reasonFor(world, hab, s.species)}</small></button>
+        {/each}
+      </section>
+    {/if}
     <h3>Holders</h3>
   {/if}
   {#each held as { slot, holders } (slot.id)}
@@ -65,5 +87,8 @@
   li { display: flex; justify-content: space-between; gap: 12px; margin: 2px 0; }
   li button { background: none; border: 0; padding: 0; text-align: left; text-decoration: underline; }
   li span { color: var(--dim); }
+  .gold { color: var(--gold); }
+  .send { display: block; width: 100%; text-align: left; margin-top: 6px; }
+  .send small { display: block; font: inherit; color: var(--dim); }
   .close { position: absolute; top: 4px; right: 4px; padding: 0 8px; }
 </style>

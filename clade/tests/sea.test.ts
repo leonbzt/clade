@@ -189,12 +189,12 @@ describe('sea contracts', () => {
     expect(a.generation).toBe(160);
   });
 
-  it('law 2: the world contains no derived slot, tier, letter, role, link or head count', () => {
+  it('law 2: the world contains no derived slot, tier, letter, role, link, head count, level or points', () => {
     const world = run(seededScenario(8), 20);
     const visit = (value: unknown) => {
       if (!value || typeof value !== 'object') return;
       for (const [key, child] of Object.entries(value)) {
-        expect(key).not.toMatch(/^(slots?|tier|letter|role|link|heads|stats|fitness)$/);
+        expect(key).not.toMatch(/^(slots?|tier|letter|role|link|heads|stats|fitness|level|points?)$/);
         visit(child);
       }
     };
@@ -222,11 +222,13 @@ describe('sea contracts', () => {
     expect(best, `best of three: ${best.toFixed(1)} ms`).toBeLessThan(100);
   });
 
-  it('law 7: sim imports no view, ui, game or Life module (source grep)', () => {
+  it('law 7: sim imports no view, ui or game, and sea and founding import no Life rules', () => {
     const dir = new URL('../src/sim', import.meta.url);
     for (const file of readdirSync(dir).filter((p) => p.endsWith('.ts'))) {
       const text = readFileSync(join(dir.pathname, file), 'utf8');
-      expect(text, file).not.toMatch(/(?:from\s*|import\s*\()['"][^'"]*(?:\/(?:view|ui|game)\/|\/life(?:['".]|\/))/);
+      expect(text, file).not.toMatch(/(?:from\s*|import\s*\(?\s*)['"][^'"]*\/(?:view|ui|game)\//);
+      if (file === 'sea.ts' || file === 'found.ts')
+        expect(text, file).not.toMatch(/(?:from\s*|import\s*\(?\s*)['"](?:\.\/(?:life(?:-body)?|grid|verbs|threat|economy|board)|\.\.\/data\/(?:life|boards))(?:\.ts)?['"]/);
     }
   });
 });

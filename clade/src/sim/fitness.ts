@@ -9,6 +9,7 @@ import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, Stats, World } 
 const partsOf = (b: Build): PartId[] => Object.values(b.parts).filter((p): p is PartId => p !== undefined);
 const sizeOf = (b: Build) => Math.max(1, Math.min(MASS_BY_SIZE.length - 1, Math.round(b.genes.size)));
 export const bodyMass = (b: Build): number => MASS_BY_SIZE[sizeOf(b)];
+export const partUpkeep = (part: PartId, ranks: Ranks) => Math.max(0, PARTS[part].upkeep - Math.max(0, ranks[part] ?? 0));
 export const ceiling = (h: Habitat, food: Food) => YIELDS[food][h.kind.depth][h.kind.substrate] * h.area;
 /** Food per tile against the reference density: the one food term of intake, read by `fitness` and the sea's eating. */
 export const density = (h: Habitat, food: Food) => Math.max(0, h.stocks[food]) / Math.max(1, h.area) / SEA.referenceDensity;
@@ -23,7 +24,7 @@ function deriveStats(build: Build, ranks: Ranks, ids: PartId[]): Stats {
   const c = CLADES[build.clade];
   let bite = Math.max(0, build.genes.gut), thrift = 0, defence = 0, speed = c.speed, senses = c.senses, brood = 1;
   for (const p of ids) {
-    thrift += Math.min(PARTS[p].upkeep, Math.max(0, ranks[p] ?? 0));
+    thrift += PARTS[p].upkeep - partUpkeep(p, ranks);
     if (PARTS[p].defence) defence++;
     if (p === 'gut') bite += PART_EFFECT.gutFood;
     if (p === 'leg') speed += PART_EFFECT.legSpeed;
@@ -46,12 +47,14 @@ export function slots(habitat: Habitat, _world: World): Slot[] {
 }
 
 /** The same reach feeds both the intake prediction and the sea's proportional food requests. */
-export function reach(build: Build, ranks: Ranks, food: Food, habitat: Habitat): number {
+type FeedingGround = { kind: Pick<Habitat['kind'], 'substrate'> };
+
+export function reach(build: Build, ranks: Ranks, food: Food, habitat: FeedingGround): number {
   const ids = partsOf(build);
   return foodReach(build, ids, deriveStats(build, ranks, ids), food, habitat);
 }
 
-function foodReach(build: Build, ids: PartId[], traits: Stats, food: Food, h: Habitat): number {
+function foodReach(build: Build, ids: PartId[], traits: Stats, food: Food, h: FeedingGround): number {
   const clade = CLADES[build.clade];
   const mouth = clade.mouth[food] ?? 0;
   const opened = ids.some((p) => PARTS[p].opens?.includes(food)) ? SEA.openedReach : 0;
@@ -87,7 +90,7 @@ export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat
     const max = ceiling(habitat, food);
     return `${slot.foods.length > 1 ? `${food} ` : ''}food at ${Math.round(max > 0 ? 100 * habitat.stocks[food] / max : 0)}%`;
   }).join(', ');
-  const costs = partsOf(build).filter((p) => PARTS[p].upkeep > Math.max(0, ranks[p] ?? 0)).map((p) => PARTS[p].name.toLowerCase());
+  const costs = partsOf(build).filter((p) => partUpkeep(p, ranks) > 0).map((p) => PARTS[p].name.toLowerCase());
   return {
     ...fit,
     reasons: [

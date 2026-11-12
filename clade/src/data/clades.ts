@@ -36,3 +36,6 @@ export const CLADES: Record<CladeId, Clade & {
     mouth: {}, substrate: { sand: 1, mud: 1, rock: 1 },
   },
 };
+
+// Old life: older branches of the same trunk, wild, drawn faded on the tree. Names only; no rules read them.
+export const OLD_LIFE = ['Mats', 'Algae', 'Sponges', 'Jellies'] as const;

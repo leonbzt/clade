@@ -36,6 +36,6 @@ export function applyPreset(world: World, id: string): Frame[] {
     }
   }
   const worms = world.lineages.find((l) => l.id === 'worm-line');
-  if (worms) worms.ranks = { ...preset.ranks };
+  if (worms) { worms.xp = preset.xp; worms.ranks = { ...preset.ranks }; }
   return skip(world, remember([], world), preset.generations);
 }

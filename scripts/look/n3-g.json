@@ -1,0 +1,23 @@
+[
+  {"until": "!!window.__clade"},
+  {"wait": 600},
+  {"assert": "!window.__clade.dev && !document.querySelector('select') && window.__clade.world.habitats.some(h=>h.pops['root-worm']>0)"},
+  {"assert": "document.querySelectorAll('.label.yours').length>=1 && [...document.querySelectorAll('.label.yours')].every(l=>l.querySelector('.big'))"},
+  {"assert": "(()=>{const r=[...document.querySelectorAll('.label')].map(l=>l.getBoundingClientRect());return r.every((a,i)=>r.every((b,j)=>i>=j||a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top))})()"},
+  {"eval": "({labels:document.querySelectorAll('.label').length, reasons:[...document.querySelectorAll('.reason')].map(r=>r.textContent)})"},
+  {"shot": "n3-g-home"},
+  {"click": "button.dev"},
+  {"wait": 200},
+  {"assert": "window.__clade.dev && !!document.querySelector('select')"},
+  {"shot": "n3-g-dev"},
+  {"click": "button.dev"},
+  {"wait": 200},
+  {"eval": "(()=>{const c=window.__clade,name=document.querySelector('.reason').closest('.label').firstChild.textContent.trim(),h=c.world.habitats.find(x=>x.name===name);c.select(h.id);return name})()"},
+  {"wait": 200},
+  {"assert": "document.querySelectorAll('.send').length===1 && document.querySelector('.send').textContent.includes('Bare worm')"},
+  {"shot": "n3-g-card"},
+  {"click": ".send"},
+  {"until": "!!window.__game && !window.__game.busy"},
+  {"assert": "window.__clade.session.purpose.startsWith('Colonise ')"},
+  {"eval": "window.__clade.session.purpose"}
+]
