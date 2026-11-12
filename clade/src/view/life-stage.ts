@@ -5,7 +5,7 @@ import { NODES, TURNS } from '../data/life';
 import * as E from '../sim/economy';
 import * as L from '../sim/life';
 import { pickMutation } from '../sim/mutation';
-import { useVerb } from '../sim/verbs';
+import { edible, huntHint, useVerb } from '../sim/verbs';
 import type { Build, PartId, VerbId } from '../sim/records';
 import { Hud } from '../ui/life/hud';
 import { feel } from '../ui/life/feel';
@@ -88,7 +88,7 @@ export class LifeStage {
       shadows.clear(); bodies.clear(); above.clear();
       rivals.forEach((r, k) => { if (!S.caught.has(k)) r.draw(bodies, shadows); }); you.draw(bodies, shadows, inMud); hunter.draw(above, shadows);
     });
-    this.sync(true); hud.info('Tap a lit tile to move. Drag to pan; pinch or wheel to zoom.');
+    this.sync(true); hud.info(`${huntHint(this.life) ?? ''} Tap a lit tile to move. Drag to pan; pinch or wheel to zoom.`.trim());
     window.addEventListener('keydown', this.key);
     Object.assign(window, { __game: {
       get life() { return S.life; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)),
@@ -107,10 +107,11 @@ export class LifeStage {
     S.marks.entry = !l.pred && l.phase === 'play' && l.board.predatorAt !== null ? L.at(...l.board.entry) : -1;
     const wait = S.busy || this.offering;
     S.marks.dests = wait ? new Map() : L.dests(l); S.hud.refresh(l, instant, wait); this.changed();
+    S.marks.prey = wait || l.phase !== 'play' ? [] : edible(l).map((i) => L.at(l.rivals[i].x, l.rivals[i].y));
   }
   async act(action: () => unknown, offer = false) {
     if (this.disposed || !this.initialized || S.busy || this.life.phase !== 'play' || this.offering !== offer) return;
-    S.busy = true; S.marks.dests.clear(); S.marks.hover = -1;
+    S.busy = true; S.marks.dests.clear(); S.marks.prey = []; S.marks.hover = -1;
     this.life.events = []; action();
     S.hud.refresh(this.life, false, true); this.changed();
     try { await play(this.life.events.slice()); }

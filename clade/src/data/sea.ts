@@ -36,6 +36,7 @@ export const HUNT = {
   saturation: 2, // hunt intake, type II: the take per gram of hunter levels off at reach × saturation
   maxTake: 0.8, // hunt: hunters together take at most this share of a prey population per generation
   probe: 20, // survival preview: grams of a newcomer that is not here yet, as hunters would meet it
+  preyHeads: 6, // a hunter's Life: heads of a prey species per place it takes on the board; none, no Life as a hunter here
 };
 // Wild branches (N4 B): an unchosen slot with food buds a wild species, one or two legal changes from a nearby parent.
 export const WILD = {

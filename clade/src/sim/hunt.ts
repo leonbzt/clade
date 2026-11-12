@@ -2,7 +2,7 @@
 // removes exactly that and fitness reads it as survival. Pure: it reads populations and changes nothing.
 import { PARTS } from '../data/parts';
 import { GUARD, HUNT, SEA } from '../data/sea';
-import { biteOf, buildKey, huntsWith, partsOf, sizeOf } from './build';
+import { biteOf, bodyMass, buildKey, huntsWith, partsOf, sizeOf } from './build';
 import type { Habitat } from './habitats';
 import type { Build, DefenceKind, Id, Prey, Species, World } from './records';
 
@@ -42,6 +42,17 @@ export function preyIn(h: Habitat, world: World, extra?: Newcomer): Prey[] {
   const kit = extra && extra.grams > 0 ? kitOf(extra.build) : null;
   if (extra && kit && !kit.hunts) out.push({ id: extra.id, grams: extra.grams, size: kit.size, guards: kit.guards });
   return out;
+}
+
+/** The species here a hunting build could eat (no hunting part, no bigger than it) with at least `heads` heads, heaviest
+ *  first. A hunter's Life needs one: its board's prey (N4 fix B). */
+export function preyFor(build: Build, h: Habitat, world: World, heads = HUNT.preyHeads): Species[] {
+  if (!huntsWith(build)) return [];
+  const size = sizeOf(build), grams = (s: Species) => h.pops[s.id] ?? 0;
+  return world.species.filter((s) => {
+    const kit = speciesKit(s);
+    return !kit.hunts && kit.size <= size && grams(s) / bodyMass(s.build) >= heads;
+  }).sort((a, b) => grams(b) - grams(a));
 }
 
 /** The type II level: grams per gram of hunter per generation over all prey it can eat, before guards. */

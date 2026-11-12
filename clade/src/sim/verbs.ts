@@ -23,18 +23,27 @@ export function verbNote(l: Life, v: VerbId): string {
     if (v === 'crush') {
       const r = preyBeside(l);
       if (r >= 0) return `catch ${l.rivals[r].name}`;
-      const i = crushTarget(l); return i < 0 ? 'nothing to crack' : NODES[l.tiles[i].node!].name.toLowerCase();
+      const i = crushTarget(l); return i >= 0 ? NODES[l.tiles[i].node!].name.toLowerCase() : edible(l).length ? 'stand beside prey' : 'nothing to crack';
     }
     return VERBS[v].free ? 'free' : 'ready';
   }
   return `ready in ${l.recharge[v]}`;
 }
 
-/** A rival beside you that you could eat (N4 D): you hunt, it doesn't, and it is no bigger than you. */
-function preyBeside(l: Life) {
-  if (!huntsWith(l.build)) return -1;
+/** The rivals you could eat (N4 D), by index: you hunt, they don't, and they are no bigger than you. */
+export function edible(l: Life): number[] {
+  if (!huntsWith(l.build)) return [];
+  return l.rivals.flatMap((r, i) => (!r.caught && !huntsWith(r.build) && sizeOf(r.build) <= sizeOf(l.build) ? [i] : []));
+}
+/** One of them beside you, or -1: Crush catches it. */
+export function preyBeside(l: Life) {
   const beside = around(l, false);
-  return l.rivals.findIndex((r) => !r.caught && beside.includes(at(r.x, r.y)) && !huntsWith(r.build) && sizeOf(r.build) <= sizeOf(l.build));
+  return edible(l).find((i) => beside.includes(at(l.rivals[i].x, l.rivals[i].y))) ?? -1;
+}
+/** A hunter's first line (N4 fix B), or null when there is nothing to hunt. */
+export function huntHint(l: Life): string | null {
+  const [first] = edible(l);
+  return first === undefined ? null : `You hunt: stand beside ${l.rivals[first].name} and Crush.`;
 }
 
 function crushTarget(l: Life) {

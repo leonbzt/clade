@@ -4,9 +4,10 @@
 import { BOARD, EVENTS, EVENT_AT, GROUNDS } from '../data/boards';
 import { DEPTHS, GROUND } from '../data/ground';
 import { COLS, ROWS } from '../data/life';
+import { HUNT } from '../data/sea';
 import { bodyMass, density } from './fitness';
 import { huntsWith, sizeOf } from './build';
-import { speciesKit } from './hunt';
+import { preyFor, speciesKit } from './hunt';
 import { DX, DY, at, dist, inB, xy } from './grid';
 import type { Habitat } from './habitats';
 import type { Board, BoardEvent, Rival, SeaHunter } from './life';
@@ -97,6 +98,14 @@ export function seaHunter(habitat: Habitat, world: World, you: Build): Species |
   return best;
 }
 
+/** The prey on a hunter's board, heaviest first; a species takes a further place for every `HUNT.preyHeads` heads. */
+function preyPlaces(you: Build, habitat: Habitat, world: World): Species[] {
+  const out: Species[] = [], prey = preyFor(you, habitat, world);
+  for (let round = 1; round <= BOARD.prey && out.length < BOARD.prey; round++)
+    for (const s of prey) if (habitat.pops[s.id] / bodyMass(s.build) >= round * HUNT.preyHeads) out.push(s);
+  return out;
+}
+
 /** `you`: the build that plays this board; only a sea hunter here that can eat it hunts you (N4 D; no shadow, 12 Nov). */
 export function boardFor(habitat: Habitat, world: World, seed: number, you?: Build): Board {
   const { substrate, depth } = habitat.kind, ground = GROUNDS[substrate];
@@ -134,12 +143,16 @@ export function boardFor(habitat: Habitat, world: World, seed: number, you?: Bui
   const predator: SeaHunter | null = hunter && { species: hunter.id, name: hunter.name, build: structuredClone(hunter.build), beats: speciesKit(hunter).beats };
   const [sx, sy] = xy(start);
   const spots = CELLS.filter((i) => grid[i] !== '#' && !taken.has(i) && dist(sx, sy, ...xy(i)) >= BOARD.rivalGap);
-  const residents = world.species.map((species) => ({ species, grams: habitat.pops[species.id] ?? 0 }))
+  // A hunter's board holds its prey instead (N4 fix B): up to `BOARD.prey` places, a species again for every
+  // `preyHeads` heads it has.
+  const hunting = !!you && huntsWith(you), most = hunting ? BOARD.prey : BOARD.rivals;
+  const residents = hunting ? preyPlaces(you!, habitat, world) : world.species
+    .map((species) => ({ species, grams: habitat.pops[species.id] ?? 0 }))
     .filter(({ species, grams }) => species !== hunter && grams / bodyMass(species.build) >= BOARD.rivalAt)
-    .sort((a, b) => b.grams - a.grams);
+    .sort((a, b) => b.grams - a.grams).map(({ species }) => species);
   const rivals: Rival[] = [];
-  for (const { species } of residents) {
-    if (rivals.length === BOARD.rivals || !spots.length) break;
+  for (const species of residents) {
+    if (rivals.length === most || !spots.length) break;
     const spot = spots.splice(Math.floor(rng() * spots.length), 1)[0];
     const choice = bestSlot(species.build, ranksOf(world, species.lineage), habitat, world);
     const food = choice && choice.fit.intake > 0 ? choice.slot.id : null;

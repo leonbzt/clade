@@ -62,4 +62,34 @@ describe('challenge and adopt', () => {
     expect(world.species.find((s) => s.id === 'wild-t')).toMatchObject({ lineage: YOUR_LINE, parent: 'root-worm' });
     expect(world.lineages[0].xp).toBeGreaterThan(xp);
   });
+
+  it('a hunter gets a Life only where its board would hold prey; then up to three prey stand on it (N4 fix B)', async () => {
+    const { BOARD } = await import('../src/data/boards');
+    const { HUNT } = await import('../src/data/sea');
+    const { adoptPurpose, noPrey } = await import('../src/sim/found');
+    const { edible, huntHint, preyBeside, verbNote } = await import('../src/sim/verbs');
+    const { world, hab } = setup(), hook = structuredClone(DEV_SPECIES.find((s) => s.id === 'hook-worm')!);
+    world.species.push(hook);
+    hab.pops[hook.id] = 20;
+    hab.pops['wild-t'] = (HUNT.preyHeads - 1) * bodyMass(wild.build); // too few heads to stand on a board
+    expect(noPrey(world, hab, hook)).toBe(true);
+    expect(adoptPurpose(world, hab, hook)).toBeNull();
+    expect(launch(world, hab.id, hook, 1, true)).toBeNull();
+    expect(noPrey(world, hab, tentacle)).toBe(false); // a grazer is never held back by this
+
+    hab.pops['wild-t'] = 40 * bodyMass(wild.build);
+    hab.pops['root-worm'] = HUNT.preyHeads * bodyMass(wild.build);
+    const session = launch(world, hab.id, hook, 1, true)!, life = session.life;
+    expect(life.rivals.map((r) => r.species)).toEqual(['wild-t', 'root-worm', 'wild-t']); // heaviest first, again per 6 heads
+    expect(life.rivals).toHaveLength(BOARD.prey);
+    expect(edible(life)).toEqual([0, 1, 2]);
+    expect(huntHint(life)).toBe('You hunt: stand beside Wild tentacle worm and Crush.');
+    expect(preyBeside(life)).toBe(-1);
+    expect(verbNote(life, 'crush')).toMatch(/stand beside prey|shell bed|carcass/);
+    Object.assign(life.rivals[1], { x: life.x + 1, y: life.y });
+    expect(preyBeside(life)).toBe(1);
+    const grazer = launch(world, hab.id, world.species.find((s) => s.id === 'wild-t')!, 1, true)!.life;
+    expect(grazer.rivals).toHaveLength(BOARD.rivals);
+    expect(huntHint(grazer)).toBeNull();
+  });
 });

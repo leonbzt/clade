@@ -2,8 +2,10 @@
 import { ADOPT_EGGS, HEADS_PER_EGG } from '../data/economy';
 import { YOUR_LINE } from '../data/lines';
 import { SEA } from '../data/sea';
+import { huntsWith } from './build';
 import { bodyMass, fitness, slots } from './fitness';
 import type { Habitat } from './habitats';
+import { preyFor } from './hunt';
 import type { Fitness, Letter, Ranks, Slot, SlotId, Species, World } from './records';
 import { bestSlot, grows, ranksOf } from './sea';
 
@@ -30,6 +32,10 @@ function bestFullSlot(world: World, habitat: Habitat, species: Species, ranks: R
   return best;
 }
 
+/** A hunter with nothing to eat here: no Life as it in this habitat (N4 fix B). */
+export const noPrey = (world: World, habitat: Habitat, species: Species) =>
+  huntsWith(species.build) && !preyFor(species.build, habitat, world).length;
+
 export interface Holder { species: Species; letter: Letter }
 /** The heaviest species of another line whose best slot here is this one: the one a newcomer must outgrow. */
 export function holderOf(world: World, habitat: Habitat, slot: SlotId, species: Species): Holder | null {
@@ -46,7 +52,7 @@ export function holderOf(world: World, habitat: Habitat, slot: SlotId, species: 
 /** The purpose offered for this species, including the slot and tier to show at launch. A held slot is a Challenge:
  *  shares by fitness settle it in the sea, with no new rule (N4 E). */
 export function colonise(world: World, habitat: Habitat, species: Species) {
-  if ((habitat.pops[species.id] ?? 0) > 0) return null;
+  if ((habitat.pops[species.id] ?? 0) > 0 || noPrey(world, habitat, species)) return null;
   const best = bestFullSlot(world, habitat, species, ranksOf(world, species.lineage));
   if (!best || best.fit.letter === 'F') return null;
   const holder = holderOf(world, habitat, best.slot.id, species);
@@ -58,7 +64,7 @@ export function colonise(world: World, habitat: Habitat, species: Species) {
 
 /** Adopt (N4 E): play a Life as a wild species where it lives. Whether its clade has a Life is the launcher's check. */
 export function adoptPurpose(world: World, habitat: Habitat, species: Species) {
-  if (species.lineage !== null || (habitat.pops[species.id] ?? 0) <= 0) return null;
+  if (species.lineage !== null || (habitat.pops[species.id] ?? 0) <= 0 || noPrey(world, habitat, species)) return null;
   const best = bestFullSlot(world, habitat, species, {});
   if (!best) return null;
   return { ...best, holder: null, text: `Adopt ${species.name} in ${habitat.name} · lay ${ADOPT_EGGS} eggs and it joins your line` };

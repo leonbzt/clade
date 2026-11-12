@@ -2,7 +2,7 @@
 <script lang="ts">
   import { ADOPT_EGGS } from '../data/economy';
   import { css } from '../data/palette';
-  import { colonise as purposeOf } from '../sim/found';
+  import { colonise as purposeOf, noPrey } from '../sim/found';
   import { isLifeBuild } from '../sim/life';
   import { bodyMass } from '../sim/fitness';
   import type { Habitat } from '../sim/habitats';
@@ -40,7 +40,8 @@
         <TierCard build={picked.build} {ranks} {slot} {hab} {world} name={picked.name} />
       {:else}<p>No food slot here</p>{/each}
       <button class="place" onclick={place} disabled={(hab.pops[picked.id] ?? 0) > 0}>{(hab.pops[picked.id] ?? 0) > 0 ? 'Already here' : 'Place · 20 heads'}</button>
-      {#if purpose}<button class="place" onclick={colonise} title={purpose.text}>{purpose.holder ? `Challenge ${purpose.holder.species.name} (${purpose.holder.letter})` : 'Colonise'}</button>{/if}
+      {#if purpose}<button class="place" onclick={colonise} title={purpose.text}>{purpose.holder ? `Challenge ${purpose.holder.species.name} (${purpose.holder.letter})` : 'Colonise'}</button>
+      {:else if noPrey(world, hab, picked)}<p class="empty">No prey here for a hunter.</p>{/if}
     </section>
     <h3>Holders</h3>
   {:else}
@@ -70,7 +71,8 @@
   {#if wild.length}
     <h3>Wild here</h3>
     {#each wild as s (s.id)}
-      <button class="send" onclick={() => adopt?.(s)}>Adopt {s.name}<small>play a Life as it; lay {ADOPT_EGGS} eggs and it joins your line</small></button>
+      {#if noPrey(world, hab, s)}<p class="empty">{s.name}: no prey here for a hunter.</p>
+      {:else}<button class="send" onclick={() => adopt?.(s)}>Adopt {s.name}<small>play a Life as it; lay {ADOPT_EGGS} eggs and it joins your line</small></button>{/if}
     {/each}
   {/if}
   <HistoryGraph {hab} {world} {history} />
