@@ -796,3 +796,13 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   evolution tree, maybe with verbs, special abilities or part upgrades possible" (parked in `ideas.md`).
 - **Codex builds N3**, "but the limit is very low, set it up so there is a lot of breakpoints so you can pick up if its
   over": one commit and one status line per part, A to I.
+
+## 12 Nov, the N3 play and the N4 spec
+- **N3 played:** "everything is looking solid and ui is nice", "nothing major is wrong"; but "the runs themselves are a
+  little boring" and "I don't feel a lot of decisions in the runs, and in between yet"; still missing "the equipment
+  and rpg character, and more animals"; "more action going on on the habitat map". N2 and N3 merged to `main`, ticked.
+- **N4 adds living paint and a return replay on the map** ("1 yes"): three sessions instead of two.
+  [Spec](slices/n4-who-eats-whom.md).
+- **Fable after the N4 play test, as the brief plans** ("3 after n4, write the brief"): a maths pass on the living sea
+  (and the land later), a fresh take on a tile sim, organism generation and drawing, genetics, skill and evolution
+  trees and their balance, minigames from maths toys, zoom levels. [Brief](design/fable-brief-3.md).

@@ -1,20 +1,18 @@
 # Status
 
-- **Milestone:** M2, step 10, **N3 The screens**: all parts A–I built on `n3-the-screens` (last commit `N3 I: the tree of life with its faded trunk`; N2's merge to `main` still pending). [Spec](slices/n3-the-screens.md).
-- **Done this session (12 Nov):** F, the mutation offer as cards over the board (`ui/life/Mutation.svelte`, modal via `LifeStage.offering`, HUD "Mutation: X"); G, the home map (`view/home.ts`, `MapView.frame`, App/HabitatCard: opens on *first worm* framed on your habitats, dev behind **dev**, gold yours, targets with letter + reason, light fog, no label overlap, **Colonise from a neighbour**); H, the line view (`ui/Line.svelte`, `view/line.ts`); I, the tree (`ui/Tree.svelte`, `view/tree.ts`, `OLD_LIFE` in `data/clades.ts`). Tests in `tests/home.test.ts`; look scripts `scripts/look/n3-f…i.json`; notes in `playtests/n3-the-screens.md`.
-- **Verified:** `npm run check` passes (7.4 s, under 10 s); one phone run per part plus E/F rerun after G–I, all assertions pass, shots inspected.
-- **Decided:** nothing new by you this session (commits per part follow the spec's build brief).
-- **Choices made in the build (yours to overrule):** colliding labels keep yours and targets before area (spec: smaller hides); the map opens zoomed on your habitats, **home** recentres; tree gate hints sit one part per line; line view shortens 3+ homes to "N habitats · best X in Y".
-- **Next:** 1) you play the three-Life question (`npm run dev`, `/clade/`, no dev bar) and note it in `playtests/n3-the-screens.md`; 2) fixes from your notes; 3) merge N2/N3 to `main`, tick N2 and N3 in `ROADMAP.md`, then N4's spec.
-- **Open:** does a bare worm's only target ("B · needs digging") give enough reason to pick an heir? The play will tell.
+- **Milestone:** M2, step 11, **N4 Who eats whom**: spec ready, not started, on branch `n4-who-eats-whom` (from `main`
+  after the N2/N3 merge). [Spec](slices/n4-who-eats-whom.md).
+- **Done this session (12 Nov):** your N3 play written into `playtests/n3-the-screens.md`; the mutation panel capped at
+  440 px on desktop; N2 and N3 merged to `main` and ticked; the N4 spec; the Fable maths brief
+  ([fable-brief-3.md](design/fable-brief-3.md)); two ideas parked (equipment and an RPG character; zoom levels).
+- **Verified:** `npm run check` passes (7.4 s). No look run for the width fix (CSS only).
+- **Decided (12 Nov):** N4 gets living paint and a return replay (3 sessions); Fable runs after the N4 play test with
+  brief 3.
+- **Found:** the sea never runs between Lives today (only the dev skip). N4 C makes a Life run `LIFE_GENS` (12)
+  generations; that's open question 1 in the spec, followed unless you change it.
+- **Next:** build N4 parts A–G in order, with a breakpoint after each (who builds is your pick: Codex as in N3, or
+  Claude). Then your N4 play, the N0–N4 play test and the closed test (step 12), then the Fable pass.
+- **Open:** the spec's two leans (12 generations per Life; prey as big as its hunter until R5).
 
-## N3 progress
-- A done: original XP curve, derived points, carried-part spending capped at rank 3, job text, funded midgame preset; checks and phone look pass; next: B.
-- B done: one seeded size-3 offer, weighted common parts for empty places, free pick/pass, immediate activation and upkeep, mutation/eggsAfter snapshots; checks and phone look pass; next: C.
-- C done: seeded gain/swap/lose clutch, equal gain/lose kind weights, per-rank Enforce family weights, mutation first within the 2/3-card total, independent heir builds; checks and phone look pass; next: D.
-- D done: `hatch` keeps the parent or founds a child (reused if the line has the build, named part + clade), awards XP at the played letter; `finish` settles through it once; checks and phone look pass; next: E.
-- E done: hatching screen replaces the result card: eggs face down, tap to open (kind, place, part, effect, signed upkeep, heir's letter here), Hatch this one or Keep the parent, then the XP bar and points; checks and phone look pass; next: F.
-- F done: at size 3 three cards over the board (part, place, effect, upkeep) and Pass; the board, keys and dev buttons wait while it's open; picking costs no turn; the HUD shows "Mutation: X" in gold and marks it in Enforce; checks and phone look pass; next: G.
-- G done: the game opens on *first worm*, framed on your habitats (**home** recentres); the dev bar sits behind **dev**; your habitats are gold with letters, neighbours Colonise allows show your best letter and one reason, the rest name only; labels never overlap (yours, then targets, then area); the card lists yours here and **Colonise from a neighbour** per sender; checks and phone look pass; next: H.
-- H done: the map bar's line button (level, points) opens the line view: level, XP bar, points, job; the family tree (parent → child, where each lives or "gone", best letter); carried parts with rank, upkeep and **+1 rank** while a point is left; checks and phone look pass; next: I.
-- I done: the map bar's **tree** opens the tree of life (SVG): a faded trunk to *First cell* with Mats, Algae, Sponges, Jellies as faded branches (names in `data/clades.ts`), the worm lit with its level, arthropod, trilobite and swimmer as silhouettes with their gate parts and "n of 2 carried"; tap a lit node for its line view; checks and phone look pass. **N3's parts are all built; the three-Life play question is next (yours).**
+## N4 progress
+(one line per part: "X done: what landed; next: Y")
