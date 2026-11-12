@@ -49,6 +49,7 @@ export const LIVING = {
   wander: 0.9, chase: 1.7, flee: 2.1, // speeds
   sight: 7, fear: 4, // tiles: a hunter chases prey this near; prey veer from a hunter this near
   turn: 5, // radians a second
+  edge: 0.8, // seconds a capsule walks back inside after touching its habitat's border, before it chases or flees again
   fade: 2.5, // alpha a second, in and out
 };
 /** The return replay (N4 G): the Life's generations over `seconds`, after a short `lead` to look at the start. */

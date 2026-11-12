@@ -37,3 +37,33 @@ it('the replay reads a run kept outside World (law 2): one frame per generation,
   for (const r of run.reports) for (const g of r.gone) expect(run.species.map((s) => s.id)).toContain(g.id);
   expect(capsuleCounts(world, run.before, run.species).length).toBeGreaterThan(0);
 });
+
+it('capsules keep moving on a real map: none stands at a border while hunters chase (N4 fix A)', async () => {
+  const { vi } = await import('vitest');
+  const { makeGround } = await import('../src/sim/ground');
+  const { findHabitats } = await import('../src/sim/habitats');
+  const { seeded } = await import('../src/sim/rng');
+  const { LivingPaint } = await import('../src/view/living');
+  const random = vi.spyOn(Math, 'random').mockImplementation(seeded(5));
+  const ground = makeGround(3), habs = findHabitats(ground);
+  const stub: unknown = new Proxy({}, { get: () => () => stub }); // a Graphics that draws nothing
+  const paint = new LivingPaint(stub as never);
+  paint.setGround(habs, ground.w);
+  paint.sync(habs.list.flatMap((h) => [
+    { habitat: h.id, species: 'prey', n: 6, role: 'grazer' as const, yours: true },
+    { habitat: h.id, species: 'hunter', n: 2, role: 'hunter' as const, yours: false },
+  ]));
+  const caps = (paint as unknown as { caps: { x: number; y: number; pause: number }[] }).caps;
+  const still = caps.map(() => 0), dt = 1 / 30, crawl = 0.3 * LIVING.wander * dt;
+  let longest = 0; // frames in a row that a capsule, not pausing, barely moved
+  for (let frame = 0; frame < 30 * 30; frame++) {
+    const was = caps.map((c) => [c.x, c.y, c.pause]);
+    paint.tick(dt, { x: 0, y: 0, z: 8 });
+    caps.forEach((c, i) => {
+      still[i] = was[i][2] <= 0 && Math.hypot(c.x - was[i][0], c.y - was[i][1]) < crawl ? still[i] + 1 : 0;
+      longest = Math.max(longest, still[i]);
+    });
+  }
+  random.mockRestore();
+  expect(longest * dt).toBeLessThan(1); // seconds; the N4 capsules stood at borders for many seconds
+});

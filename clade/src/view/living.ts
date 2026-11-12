@@ -44,6 +44,7 @@ interface Capsule {
   key: string; habitat: number; role: Role; yours: boolean;
   x: number; y: number; a: number; tx: number; ty: number; pause: number;
   alpha: number; dying: boolean; flash: number;
+  edge: number; // seconds left of walking back inside after touching the border: no chasing or fleeing meanwhile
 }
 
 const keyOf = (habitat: number, species: Id) => `${habitat}:${species}`;
@@ -74,7 +75,7 @@ export class LivingPaint {
       for (let k = have.length; k < w.n; k++) {
         const at = from?.(w) ?? this.spot(w.habitat);
         this.caps.push({ key, habitat: w.habitat, role: w.role, yours: w.yours, x: at.x, y: at.y, a: Math.random() * 6.28,
-          tx: at.x, ty: at.y, pause: Math.random(), alpha: 0, dying: false, flash: 0 });
+          tx: at.x, ty: at.y, pause: Math.random(), alpha: 0, dying: false, flash: 0, edge: 0 });
       }
     }
     for (const gone of live.values()) for (const c of gone) c.dying = true;
@@ -122,22 +123,38 @@ export class LivingPaint {
     return best;
   }
 
+  /** Is the first stretch from the capsule toward (x, y) inside its habitat? */
+  private open(c: Capsule, x: number, y: number) {
+    const k = Math.min(1, 0.6 / (Math.hypot(x - c.x, y - c.y) || 1));
+    return this.inside(c, c.x + (x - c.x) * k, c.y + (y - c.y) * k);
+  }
+
   private steer(c: Capsule, dt: number) {
     c.alpha = Math.max(0, Math.min(1, c.alpha + (c.dying ? -1 : 1) * LIVING.fade * dt));
     c.flash = Math.max(0, c.flash - dt);
+    c.edge = Math.max(0, c.edge - dt);
     let dx = c.tx - c.x, dy = c.ty - c.y, speed = LIVING.wander;
-    const prey = c.role === 'hunter' ? this.nearest(c, false, LIVING.sight) : null;
-    const threat = c.role !== 'hunter' ? this.nearest(c, true, LIVING.fear) : null;
+    const free = c.edge <= 0;
+    const prey = free && c.role === 'hunter' ? this.nearest(c, false, LIVING.sight) : null;
+    const threat = free && c.role !== 'hunter' ? this.nearest(c, true, LIVING.fear) : null;
     if (prey) { dx = prey.x - c.x; dy = prey.y - c.y; speed = LIVING.chase; c.pause = 0; }
     else if (threat) { dx = c.x - threat.x; dy = c.y - threat.y; speed = LIVING.flee; c.pause = 0; }
     else if (c.pause > 0) { c.pause -= dt; return; }
     else if (dx * dx + dy * dy < 0.25) { const s = this.spot(c.habitat); c.tx = s.x; c.ty = s.y; c.pause = Math.random() * 1.5; return; }
     const want = Math.atan2(dy, dx), turn = Math.atan2(Math.sin(want - c.a), Math.cos(want - c.a));
     c.a += Math.max(-LIVING.turn * dt, Math.min(LIVING.turn * dt, turn));
-    const nx = c.x + Math.cos(c.a) * speed * dt, ny = c.y + Math.sin(c.a) * speed * dt;
-    if (this.inside(c, nx, ny)) { c.x = nx; c.y = ny; return; }
-    const s = this.spot(c.habitat); c.tx = s.x; c.ty = s.y; // the edge: turn toward somewhere else inside
-    if (threat) c.a += Math.PI / 2;
+    const sx = Math.cos(c.a) * speed * dt, sy = Math.sin(c.a) * speed * dt;
+    if (this.inside(c, c.x + sx, c.y + sy)) { c.x += sx; c.y += sy; return; }
+    // The edge (N4 fix A). Head for a spot inside that the way to is open, and leave prey and hunters be for a moment;
+    // meanwhile slide along the border, or face the spot at once when there is no way along it.
+    if (free || !this.open(c, c.tx, c.ty)) {
+      let s = this.spot(c.habitat);
+      for (let k = 0; k < 8 && !this.open(c, s.x, s.y); k++) s = this.spot(c.habitat);
+      c.tx = s.x; c.ty = s.y; c.edge = LIVING.edge; c.pause = 0;
+    }
+    if (this.inside(c, c.x + sx, c.y)) c.x += sx;
+    else if (this.inside(c, c.x, c.y + sy)) c.y += sy;
+    else c.a = Math.atan2(c.ty - c.y, c.tx - c.x);
   }
 
   private draw(cam: { x: number; y: number; z: number }) {

@@ -21,7 +21,7 @@ it('marks your habitats, lights only neighbours Colonise allows, and fogs the re
   if (target.kind === 'target') expect(target.reason).toMatch(/here|needs/);
   expect(homeLabel(w, w.habitats[2])).toEqual({ kind: 'fog' });
   expect(senders(w, w.habitats[1]).map((s) => [s.species.id, s.from.id])).toEqual([['w', 0]]);
-  w.species[0].lineage = 'other';
+  w.species[0].lineage = null; // wild: only a null lineage is not yours (N4 fix)
   expect(homeLabel(w, w.habitats[0])).toEqual({ kind: 'fog' });
 });
 

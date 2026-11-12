@@ -45,3 +45,16 @@ describe('news', () => {
     expect(life(world)).toEqual([]);
   });
 });
+
+it('a species of any line of yours that dies out is told first, with its cause (N4 fix A: the placed arthropod)', async () => {
+  const { DEV_SPECIES } = await import('../src/data/builds');
+  const { makeWorld } = await import('../src/sim/sea');
+  const { place } = await import('../src/ui/placement');
+  const { applyPreset } = await import('../src/ui/scenarios');
+  const { runLife } = await import('../src/ui/sea-run');
+  const world = makeWorld(3), past = applyPreset(world, 'first-worm');
+  const flats = world.habitats.find((h) => h.kind.depth === 'flat' && h.kind.substrate === 'mud')!;
+  place(world, flats.id, DEV_SPECIES.find((s) => s.id === 'arthropod')!);
+  const lost = runLife(world, past).run.news.find((l) => l.species === 'arthropod');
+  expect(lost?.text).toBe(`Your Arthropod died out in ${flats.name}: food ran short, graze mats F.`);
+});

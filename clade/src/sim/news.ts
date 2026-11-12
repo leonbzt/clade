@@ -1,8 +1,8 @@
 // The news of a Life (N4 C), grouping ported from game/src/sim/sea-news.ts: what the sea did while you lived. Any
 // change over `NEWS.change`, arrival, bud or loss is one story; the same story in several habitats is one line, and every
 // line names its largest term in tier talk. Read from the step reports and the populations before; changes nothing.
-import { YOUR_LINE } from '../data/lines';
 import { NEWS } from '../data/sea';
+import { isYours } from './build';
 import { termLetter } from './fitness';
 import type { Habitat } from './habitats';
 import type { Id, Species, World } from './records';
@@ -41,7 +41,7 @@ export function news(world: World, before: Pops, reports: StepReport[]): Headlin
     for (const s of r.gone) if (!known.has(s.id)) known.set(s.id, s);
   }
   const habitatName = (id: number) => world.habitats.find((h) => h.id === id)?.name ?? 'a habitat';
-  const mine = (s?: Species) => s?.lineage === YOUR_LINE;
+  const mine = (s?: Species) => !!s && isYours(s);
   const called = (s: Species) => `${mine(s) ? 'your ' : ''}${s.name}`;
   // Survival over the Life, as measured: the grams hunted against all the grams it had there.
   const survival = (h: number, id: Id) => {
@@ -104,7 +104,7 @@ export function news(world: World, before: Pops, reports: StepReport[]): Headlin
 
 /** "Wild proboscis worm budded in Lee mud flats from Bulb worm, hunts your Bulb worm: survival C." */
 function textOf(sp: Species, l: Headline, habitatName: (id: number) => string): string {
-  const name = `${sp.lineage === YOUR_LINE ? 'Your ' : ''}${sp.name}`;
+  const name = `${isYours(sp) ? 'Your ' : ''}${sp.name}`;
   const where = l.habitats.length === 1 ? habitatName(l.habitats[0]) : `${l.habitats.length} habitats`;
   const pct = `${Math.round((100 * Math.abs(l.to - l.from)) / Math.max(1e-9, l.from))}%`;
   const verb = { bud: 'budded in', arrive: 'arrived in', lost: 'died out in', rise: `rose ${pct} in`, fall: `fell ${pct} in` }[l.kind];

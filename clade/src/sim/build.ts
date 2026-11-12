@@ -1,7 +1,7 @@
 // Small pure reads of a build, shared by fitness and the hunt so neither imports the other's module.
 import { PARTS } from '../data/parts';
 import { MASS_BY_SIZE, PART_EFFECT } from '../data/sea';
-import type { Build, PartId } from './records';
+import type { Build, PartId, Species } from './records';
 
 export const partsOf = (b: Build): PartId[] => Object.values(b.parts).filter((p): p is PartId => p !== undefined);
 export const sizeOf = (b: Build) => Math.max(1, Math.min(MASS_BY_SIZE.length - 1, Math.round(b.genes.size)));
@@ -13,3 +13,5 @@ export const huntsWith = (b: Build, ids = partsOf(b)) => ids.some((p) => PARTS[p
 /** Two builds with the same clade, parts and genes are the same body in the sea. */
 export const buildKey = (b: Build) =>
   `${b.clade}|${Object.entries(b.parts).filter(([, p]) => p).sort().map(([k, p]) => `${k}:${p}`).join(',')}|${b.genes.size}|${b.genes.gut}`;
+/** Yours or wild (§6: a null lineage is wild). Every opened line is the player's. */
+export const isYours = (s: Pick<Species, 'lineage'>) => s.lineage !== null;

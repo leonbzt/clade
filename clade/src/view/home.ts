@@ -1,5 +1,6 @@
 // The home map, read-only: where your species live, which neighbours you can colonise, and the light fog.
-import { TARGET_REASON, YOUR_LINE } from '../data/lines';
+import { TARGET_REASON } from '../data/lines';
+import { isYours } from '../sim/build';
 import { ceiling, reach } from '../sim/fitness';
 import { colonise } from '../sim/found';
 import type { Habitat } from '../sim/habitats';
@@ -7,7 +8,7 @@ import { isLifeBuild } from '../sim/life';
 import type { Letter, Species, World } from '../sim/records';
 import { bestFit, ranksOf } from './tiers';
 
-export const isYours = (s: Species) => s.lineage === YOUR_LINE;
+export { isYours };
 const lives = (h: Habitat, s: Species) => (h.pops[s.id] ?? 0) > 0;
 
 /** Your species living here, each with its letter in its best stocked slot. */
