@@ -51,6 +51,8 @@ export const LIVING = {
   turn: 5, // radians a second
   fade: 2.5, // alpha a second, in and out
 };
+/** The return replay (N4 G): the Life's generations over `seconds`, after a short `lead` to look at the start. */
+export const REPLAY = { seconds: 4, lead: 0.6, shout: 1.6 };
 export const NEWS = {
   change: 0.3, // news: a population change bigger than this share is told
   most: 8, // news: lines kept after a Life, yours first

@@ -8,7 +8,8 @@ import { LIVING } from '../data/sea';
 import { huntsWith, partsOf } from '../sim/build';
 import { bodyMass } from '../sim/fitness';
 import type { Habitats } from '../sim/habitats';
-import type { Id, World } from '../sim/records';
+import type { Pops } from '../sim/news';
+import type { Id, Species, World } from '../sim/records';
 import { PARTS } from '../data/parts';
 import { isYours } from './home';
 import { bestFit, ranksOf } from './tiers';
@@ -20,11 +21,12 @@ const roleOf = (world: World, s: World['species'][number], h: World['habitats'][
   bestFit(s.build, ranksOf(world, s.lineage), h, world)?.slot.role
     ?? (huntsWith(s.build) ? 'hunter' : partsOf(s.build).some((p) => PARTS[p].opens?.includes('detritus')) ? 'burrower' : 'grazer');
 
-/** How many capsules each population gets: at most `LIVING.total`, the biggest counts trimmed first, yours kept. */
-export function capsuleCounts(world: World): Want[] {
+/** How many capsules each population gets: at most `LIVING.total`, the biggest counts trimmed first, yours kept.
+ *  `pops` and `species` replay a past generation (N4 G); by default, the world as it is. */
+export function capsuleCounts(world: World, pops?: Pops, species: Species[] = world.species): Want[] {
   const wants: Want[] = [];
-  for (const h of world.habitats) for (const s of world.species) {
-    const grams = h.pops[s.id] ?? 0;
+  for (const h of world.habitats) for (const s of species) {
+    const grams = (pops ? pops[h.id]?.[s.id] : h.pops[s.id]) ?? 0;
     if (!(grams > 0)) continue;
     const n = Math.max(1, Math.min(LIVING.most, Math.round(Math.log2(grams / bodyMass(s.build)))));
     wants.push({ habitat: h.id, species: s.id, n, role: roleOf(world, s, h), yours: isYours(s) });
@@ -81,6 +83,15 @@ export class LivingPaint {
   /** A burst of light on one population's capsules (the replay's buds). */
   flash(habitat: number, species: Id) {
     for (const c of this.caps) if (c.key === keyOf(habitat, species)) c.flash = 1;
+  }
+
+  /** A point just inside `habitat` on its border with `from` (an arrival walks in), else anywhere inside. */
+  border(habitat: number, from: number) {
+    const w = this.w, edge = (this.tiles[habitat] ?? []).filter((i) =>
+      [i - w, i + w, i % w ? i - 1 : -1, (i + 1) % w ? i + 1 : -1].some((j) => j >= 0 && this.of[j] === from));
+    if (!edge.length) return this.spot(habitat);
+    const i = edge[Math.floor(Math.random() * edge.length)];
+    return { x: (i % w) + 0.5, y: Math.floor(i / w) + 0.5 };
   }
 
   /** A random point inside one of the habitat's tiles. */

@@ -29,3 +29,5 @@
   (`BOARD.shadow` false); Brace no longer blocks a hunter that beats armour.
 - F done: `view/living.ts` capsules per population (`LIVING` in `data/sea.ts`), drawn over the map, synced from
   `capsuleCounts(world)`; hunters chase, prey flee, yours carry a gold pixel. Next: G.
+- G done: `ui/replay.ts` plays the run's `frames` over `REPLAY.seconds` (4 s): arrivals enter at the shared border,
+  buds flash and shout their name, the lost fade; tap to skip. Then `ui/Notes.svelte`; a notes button reopens it.

@@ -25,3 +25,15 @@ it('gives each population clamp(round(log2 heads), 1, 8) capsules with its role,
   expect(total).toBeLessThanOrEqual(LIVING.total);
   expect(wants.filter((w) => w.yours)).toHaveLength(40);
 });
+
+it('the replay reads a run kept outside World (law 2): one frame per generation, the gone species kept', async () => {
+  const { runLife } = await import('../src/ui/sea-run');
+  const { makeWorld } = await import('../src/sim/sea');
+  const { applyPreset } = await import('../src/ui/scenarios');
+  const world = makeWorld(3), past = applyPreset(world, 'midgame'), keys = Object.keys(world).sort();
+  const { run } = runLife(world, past, 4);
+  expect(run.frames).toHaveLength(4);
+  expect(Object.keys(world).sort()).toEqual(keys);
+  for (const r of run.reports) for (const g of r.gone) expect(run.species.map((s) => s.id)).toContain(g.id);
+  expect(capsuleCounts(world, run.before, run.species).length).toBeGreaterThan(0);
+});
