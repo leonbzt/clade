@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 import type { Habitat } from '../src/sim/habitats';
 import type { World } from '../src/sim/records';
 import { homeLabel, senders, visibleLabels } from '../src/view/home';
+import { carriedParts, familyOf } from '../src/view/line';
 
 const hab = (id: number, neighbours: number[]): Habitat => ({
   id, name: `H${id}`, kind: { depth: 'shallows', substrate: 'mud', exposure: 'open' }, tiles: [], area: 100,
@@ -26,4 +27,13 @@ it('marks your habitats, lights only neighbours Colonise allows, and fogs the re
 it('hides the lower-ranked of two overlapping labels', () => {
   const box = (id: number, rank: number, x: number) => ({ id, rank, x, y: 0, w: 40, h: 20 });
   expect([...visibleLabels([box(0, 1, 0), box(1, 2, 30), box(2, 0, 100)])].sort()).toEqual([1, 2]);
+});
+
+it('the line view nests children under parents, marks the extinct gone, and lists each carried part once', () => {
+  const w = world(), line = w.lineages[0];
+  w.species.push({ id: 'c', lineage: 'worm-line', parent: 'w', name: 'Child', born: 1, build: { clade: 'worm', parts: { front: 'tentacles', tail: 'bulb' }, genes: { size: 1, gut: 1 } } });
+  w.habitats[1].pops.c = 100;
+  const [root] = familyOf(w, line);
+  expect([root.species.id, root.homes, root.children.map((c) => [c.species.id, c.homes.map((h) => h.name)])]).toEqual(['w', [], [['c', ['H1']]]]);
+  expect(carriedParts(w, line).map((p) => p.id)).toEqual(['tentacles', 'bulb']);
 });

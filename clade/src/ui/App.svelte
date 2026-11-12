@@ -22,8 +22,9 @@
   import { clutchOf } from './life/hatching';
   import { homeLabel, visibleLabels } from '../view/home';
   import { YOUR_LINE } from '../data/lines';
-  import { levelOf } from '../sim/line';
-  import type { Species } from '../sim/records';
+  import { levelOf, pointsOf, spend } from '../sim/line';
+  import type { PartId, Species } from '../sim/records';
+  import LineView from './Line.svelte';
 
   const asked = Number(new URLSearchParams(location.search).get('seed'));
   const initialSeed = Number.isInteger(asked) && asked > 0 ? asked : 1;
@@ -34,6 +35,7 @@
   let pickedId = $state('root-worm');
   let presetId = $state('first-worm');
   let dev = $state(false);
+  let lineOpen = $state(false);
   let cam = $state<Camera>({ x: 0, y: 0, z: 4 });
   let ready = $state(false);
   let host: HTMLDivElement;
@@ -82,6 +84,14 @@
     selected = active.habitat; active = null; clutch = null;
   }
 
+  function spendPart(part: PartId) {
+    const l = world.lineages.find((x) => x.id === YOUR_LINE);
+    if (!l || !spend(l, part, world.species)) return;
+    // A fresh line object, so the line view re-reads it.
+    world.lineages = world.lineages.map((x) => (x === l ? { ...l, ranks: { ...l.ranks } } : x));
+    world = { ...world }; past = remember(past, world);
+  }
+
   function setSeed(s: number) {
     if (active) return;
     lifeCount = 0;
@@ -122,7 +132,7 @@
     view.onTap = (t) => (selected = t >= 0 ? ground.hab.of[t] : -1);
     view.init(host).then(() => (ready = true));
     // For the look script: drive the map without taps.
-    Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), get dev() { return dev; },
+    Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: () => (lineOpen = true), spend: spendPart, get dev() { return dev; },
       send: (id: string) => { const s = world.species.find((x) => x.id === id); return !!s && send(s); },
       hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; },
       get session() { return active; }, get lifeCount() { return lifeCount; },
@@ -137,9 +147,9 @@
   });
 </script>
 
-<div class="shell" inert={active !== null}>
+<div class="shell" inert={active !== null || lineOpen}>
   <header class="bar">
-    {#if line}<span class="line">Worm line · level {levelOf(line.xp)}</span>{/if}
+    {#if line}<button class="line" onclick={() => (lineOpen = true)}>Worm line · level {levelOf(line.xp)}{#if pointsOf(line) > 0} · {pointsOf(line)} point{pointsOf(line) === 1 ? '' : 's'}{/if}</button>{/if}
     <span class="gap"></span>
     <button onclick={home}>home</button>
     <button class="dev" class:on={dev} onclick={() => (dev = !dev)}>dev</button>
@@ -200,6 +210,7 @@
   </div>
 </div>
 
+{#if lineOpen && line && !active}<LineView {world} {line} spend={spendPart} back={() => (lineOpen = false)} />{/if}
 {#if active}
   <LifeScreen life={active.life} purpose={active.purpose} complete={completeLife} />
   {#if clutch}<Hatch session={active} {world} {clutch} {settle} back={backToMap} />{/if}

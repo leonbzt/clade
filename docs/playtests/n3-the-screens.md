@@ -99,3 +99,10 @@ opens on *first worm* with no dev bar, zoomed on Open mud shallows (gold, B) and
 shallows ("B · needs digging"); the other labels name only; no two labels overlap; dev opens the old bar; the
 target's card offers "Bare worm from Open mud shallows" and launches "Colonise … tier B". Inspected the shots.
 Choice made here: when labels collide, yours and targets win before area (the spec says the smaller hides).
+
+## Part H · 12 Nov 2026
+
+`ui/Line.svelte`, `view/line.ts`; one test. `npm run check` passes in 7.1 s. Phone run `npm run look -- /clade/
+scripts/look/n3-h.json` on Midgame: Worm line level 2, no points, Bare worm (gone) with three children, homes
+shortened to "10 habitats · best S in Open mud shallows" past two; at 130 XP, one point, +1 rank on Burrowing bulb
+gives rank 1/3 and disables every +1. Inspected both shots; fits the phone.
