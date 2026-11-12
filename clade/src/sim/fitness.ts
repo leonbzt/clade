@@ -5,7 +5,7 @@ import { ACCENT } from '../data/palette';
 import { BASE_UPKEEP, FOODS, LETTER_THRESHOLDS, PART_EFFECT, SEA, TERM_THRESHOLDS, YIELDS } from '../data/sea';
 import { biteOf, huntsWith, partsOf, sizeOf } from './build';
 import type { Habitat } from './habitats';
-import { kitOf, preyIn, takeRates, threat, type Kit } from './hunt';
+import { kitOf, preyIn, takeTotal, threat, type Kit } from './hunt';
 import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, Stats, World } from './records';
 
 export { bodyMass } from './build';
@@ -22,8 +22,9 @@ export function stats(build: Build, ranks: Ranks): Stats {
 
 /** A build read once: its parts and derived stats. The sea prepares one per species per generation (law 6). */
 export interface Body { build: Build; ids: PartId[]; traits: Stats; hunts: boolean; kit: Kit; upkeep: number; opens: Food[] }
-export function bodyOf(build: Build, ranks: Ranks): Body {
-  const ids = partsOf(build), kit = kitOf(build, ids), traits = deriveStats(build, ranks, ids);
+export function bodyOf(build: Build, ranks: Ranks, kit?: Kit): Body {
+  const ids = partsOf(build), traits = deriveStats(build, ranks, ids);
+  kit ??= kitOf(build, ids);
   let upkeep = BASE_UPKEEP[sizeOf(build)] - traits.thrift;
   for (const p of ids) upkeep += PARTS[p].upkeep;
   return { build, ids, traits, hunts: kit.hunts, kit, upkeep, opens: ids.flatMap((p) => PARTS[p].opens ?? []) };
@@ -94,7 +95,7 @@ export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, 
     intake += r * density(habitat, food);
     full += r * fullDensity(habitat, food);
   }
-  if (slot.prey) intake = full = takeRates(body.kit, slot.prey, habitat.area).reduce((sum, rate) => sum + rate, 0);
+  if (slot.prey) intake = full = takeTotal(body.kit, slot.prey, habitat.area);
   const per = survival * traits.brood / upkeep;
   return { intake, full, upkeep, survival, value: intake * per, letter: letterFor(full * per, LETTER_THRESHOLDS[slot.id]) };
 }
@@ -102,7 +103,7 @@ export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, 
 /** The sea's hot loop: `score`'s value for a prepared body, with no letter, reasons or allocation. */
 export function valueIn(body: Body, slot: Slot, h: Habitat, survival: number): number {
   let intake = 0;
-  if (slot.prey) { if (body.hunts) for (const rate of takeRates(body.kit, slot.prey, h.area)) intake += rate; }
+  if (slot.prey) intake = takeTotal(body.kit, slot.prey, h.area);
   else if (!body.hunts) for (const food of slot.foods) intake += foodReach(body, food, h) * density(h, food);
   return intake * survival * body.traits.brood / body.upkeep;
 }

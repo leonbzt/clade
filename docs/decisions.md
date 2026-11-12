@@ -806,3 +806,5 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Fable after the N4 play test, as the brief plans** ("3 after n4, write the brief"): a maths pass on the living sea
   (and the land later), a fresh take on a tile sim, organism generation and drawing, genetics, skill and evolution
   trees and their balance, minigames from maths toys, zoom levels. [Brief](design/fable-brief-3.md).
+- **Hunters don't graze, for now** (12 Nov, after N4 A: "hunters not grazing is fine for now, later maybe dual builds
+  could exist"). A hunting tool commits the build to prey.

@@ -5,8 +5,9 @@ import { FOODS, REGROW, SEA } from '../data/sea';
 import { bodyMass, bodyOf, ceiling, density, reach, score, slots, stocked, valueIn, type Body } from './fitness';
 import { makeGround } from './ground';
 import { findHabitats, type Habitat } from './habitats';
-import { hunted, threat } from './hunt';
-import type { Build, Ranks, Slot, Species, World } from './records';
+import { hunted, speciesKit, threat } from './hunt';
+import type { Build, Ranks, Slot, SlotId, Species, World } from './records';
+import { bud, prune, type Bud } from './wild';
 
 export function makeWorld(seed: number): World {
   const habitats = findHabitats(makeGround(seed)).list;
@@ -45,16 +46,20 @@ function choose(body: Body, h: Habitat, available: Slot[], survival: number) {
   return slot && { slot, value: best };
 }
 
-/** Mutates ecological state in place; geometry and the species/lineage records stay unchanged. */
-export function step(world: World): void {
+/** What one generation did that the screens tell (N4 C extends it). Never stored in World (law 2). */
+export interface StepReport { buds: Bud[]; gone: Species[] }
+
+/** Mutates ecological state in place; geometry stays. Species records change only by wild buds and pruning. */
+export function step(world: World): StepReport {
   const { habitats, species } = world, n = species.length;
   const lines = new Map(world.lineages.map((line) => [line.id, line.ranks]));
-  const bodies = species.map((s) => bodyOf(s.build, s.lineage === null ? {} : lines.get(s.lineage) ?? {}));
+  const bodies = species.map((s) => bodyOf(s.build, s.lineage === null ? {} : lines.get(s.lineage) ?? {}, speciesKit(s)));
   const floors = species.map((s) => SEA.extinctionHeads * bodyMass(s.build)); // two heads' mass
   const available = habitats.map((h) => slots(h, world)); // food slots read ceilings; the hunt slot reads opening prey
   const index = new Map(species.map((s, i) => [s.id, i]));
   const pops = new Float64Array(n), eaten = new Float64Array(n), lost = new Float64Array(n);
   const choices: (Slot | undefined)[] = new Array(n);
+  const held = habitats.map(() => new Set<SlotId>());
 
   for (let hi = 0; hi < habitats.length; hi++) {
     const h = habitats[hi];
@@ -70,7 +75,10 @@ export function step(world: World): void {
       eaten[index.get(take.hunter)!] += take.grams;
       lost[index.get(take.prey)!] += take.grams;
     }
-    for (let i = 0; i < n; i++) choices[i] = pops[i] > 0 ? choose(bodies[i], h, available[hi], 1 - lost[i] / pops[i])?.slot : undefined;
+    for (let i = 0; i < n; i++) {
+      choices[i] = pops[i] > 0 ? choose(bodies[i], h, available[hi], 1 - lost[i] / pops[i])?.slot : undefined;
+      if (choices[i]) held[hi].add(choices[i]!.id);
+    }
 
     // 2. Each species eats in its best slot: pop × appetite × fitness's intake term (reach × food per tile), so a
     // grazed-down stock feeds less and the letter is the growth rate. Shortages are shared by pop × reach.
@@ -115,19 +123,24 @@ export function step(world: World): void {
       for (let border = 0; border < h.neighbours.length; border++) {
         const to = byId.get(h.neighbours[border]);
         if (to === undefined) continue;
+        const moved = pop * SEA.spread * h.borders[border] / h.perimeter;
+        if (moved < floors[i]) continue; // under two heads it would only die there
         const k = to * n + i;
         if (!allowed[k]) {
           const best = choose(bodies[i], habitats[to], available[to], 1);
           allowed[k] = best && grows(best.value) ? 1 : -1;
         }
         if (allowed[k] < 0) continue;
-        const moved = pop * SEA.spread * h.borders[border] / h.perimeter;
-        if (moved < floors[i]) continue; // under two heads it would only die there
         nextPops[from][id] -= moved;
         nextPops[to][id] = (nextPops[to][id] ?? 0) + moved;
       }
     }
   });
   habitats.forEach((h, i) => (h.pops = nextPops[i]));
+
+  // 6. Bud: a slot with food that nobody chose may grow a wild branch. Then wild species living nowhere leave.
+  const buds = bud(world, available, held);
+  const gone = prune(world);
   world.generation++;
+  return { buds, gone };
 }

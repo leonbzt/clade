@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { describe, expect, it } from 'vitest';
-import { FOODS, REGROW, SEA } from '../src/data/sea';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { FOODS, REGROW, SEA, WILD } from '../src/data/sea';
 import { bodyMass, ceiling, density, fitness, reach, slots } from '../src/sim/fitness';
 import type { Habitat } from '../src/sim/habitats';
 import type { Build, Species, World } from '../src/sim/records';
@@ -20,6 +20,10 @@ const sea = (habitats = [habitat()], residents = [species()]): World => ({
   seed: 7, generation: 0, habitats, species: residents,
   lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'none' }],
 });
+// N1's sea laws, measured without N4's wild buds.
+const chance = WILD.chance;
+beforeAll(() => { WILD.chance = 0; });
+afterAll(() => { WILD.chance = chance; });
 function run(world: World, generations: number) { for (let i = 0; i < generations; i++) step(world); return world; }
 const biomass = (world: World) => world.habitats.reduce((sum, h) => sum + Object.values(h.pops).reduce((a, b) => a + b, 0), 0);
 

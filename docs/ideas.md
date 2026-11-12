@@ -203,3 +203,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Home map targets' one reason could name a rival or a missing part ("Bulb worm holds it", "a bulb opens it"), not only the richest food (AI, 12 Nov, after N3 G). N4 with rivals.
 - Equipment and an RPG character: parts read as gear on a character sheet; more animals (you, 12 Nov, N3 play). R5–R6, R8.
 - Zoom levels: soil, patch, habitat, island, continent; which ones earn a decision of their own (you, 12 Nov). The Fable math pass.
+- Dual builds: a hunter that also grazes (an omnivore), after N4's hunters-only diet (you, 12 Nov). R5 with the gut gene.

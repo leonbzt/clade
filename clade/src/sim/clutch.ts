@@ -26,6 +26,22 @@ function pick<T>(pool: T[], weight: (entry: T) => number, rng: Rng): T {
   return pool[pool.length - 1];
 }
 
+/** Every legal one-step change of a build: gain or swap a non-rare part of its clade, or lose a carried part. The
+ *  clutch's pools, and the wild branches' candidates (N4 B). */
+export function changes(build: Build): Card[] {
+  const out: Card[] = [];
+  for (const part of Object.values(PARTS)) {
+    if (part.rare || !part.plans.includes(build.clade)) continue;
+    const carried = build.parts[part.place];
+    if (carried !== part.id) out.push({ kind: carried === undefined ? 'gain' : 'swap', part: part.id, place: part.place });
+  }
+  for (const place of PLACES) {
+    const part = build.parts[place];
+    if (part) out.push({ kind: 'lose', part, place });
+  }
+  return out;
+}
+
 /** Counts include the sure mutation. Other cards are independent rolls, as in the original clutch. */
 export function rollClutch(result: Result, species: Species, seed: number): Card[] {
   const count = clutchSize(result.eggs), cards: Card[] = [];
@@ -33,17 +49,7 @@ export function rollClutch(result: Result, species: Species, seed: number): Card
   if (result.mutation && result.eggsAfter > 0) cards.push({ kind: 'gain', ...result.mutation });
 
   const pools: Record<CardKind, Card[]> = { gain: [], swap: [], lose: [] };
-  for (const part of Object.values(PARTS)) {
-    if (part.rare || !part.plans.includes(species.build.clade)) continue;
-    const carried = species.build.parts[part.place];
-    if (carried === part.id || cards.some((card) => card.part === part.id)) continue;
-    const kind = carried === undefined ? 'gain' : 'swap';
-    pools[kind].push({ kind, part: part.id, place: part.place });
-  }
-  for (const place of PLACES) {
-    const part = species.build.parts[place];
-    if (part) pools.lose.push({ kind: 'lose', part, place });
-  }
+  for (const card of changes(species.build)) if (card.kind === 'lose' || !cards.some((c) => c.part === card.part)) pools[card.kind].push(card);
 
   // Pick the kind before its part: a larger gain pool must not make gains more likely than losses.
   const kinds = (Object.keys(pools) as CardKind[]).filter((kind) => pools[kind].length);

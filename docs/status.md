@@ -20,3 +20,6 @@
   removes the take; a hunting tool eats only prey (my lean: no grazing hunters, so roles stay crisp); `HUNT.saturation`
   2 (at 1 a hunter tops out at D). The sea step was rewritten allocation-free for law 6: 20 species 91 ms, N1's 27 ms.
   Next: B, wild branches.
+- B done: `sim/wild.ts`: an unchosen slot with food buds (8%) from the heaviest nearby parent with a one- or two-step
+  candidate at C or B (the clutch's `changes`, now shared); prey slots bud hunters too. Wild species living nowhere are
+  pruned unless they parent another. `step` returns `{ buds, gone }`. N1's sea tests run with buds off. Next: C.

@@ -37,6 +37,11 @@ export const HUNT = {
   maxTake: 0.8, // hunt: hunters together take at most this share of a prey population per generation
   probe: 20, // survival preview: grams of a newcomer that is not here yet, as hunters would meet it
 };
+// Wild branches (N4 B): an unchosen slot with food buds a wild species, one or two legal changes from a nearby parent.
+export const WILD = {
+  chance: 0.08, // bud: chance per generation for each slot with food that no population chooses
+  founders: 20, // bud: grams the wild species starts with in that habitat
+};
 export const GUARD = 0.5; // hunt: each prey defence the hunter's beats lack multiplies its take by this
 export const MASS_BY_SIZE = [0, 1, 2, 4, 8, 16] as const; // body mass: grams per head at sizes 1–5 (index 0 unused)
 export const BASE_UPKEEP = [0, 1, 1.15, 1.3, 1.45, 1.6] as const; // upkeep: base(size), before parts and lean ranks
