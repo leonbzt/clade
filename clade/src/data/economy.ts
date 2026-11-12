@@ -6,6 +6,7 @@ export const LAY_COST = 4; // Lay: food paid for the Life's first clutch
 export const LAY_STEP = 2; // Lay: each later clutch of the same Life costs this much more (decided 11 Nov)
 export const ENFORCE_COSTS = [3, 5, 7, 9, 11] as const; // Enforce: food paid per purchase across the Life
 export const ENFORCE_HEADROOM = 1; // Enforce: ranks a part can reach above its line rank
+export const ADOPT_EGGS = 10; // Adopt (N4 E): eggs a Life as a wild species must lay for it to join your line
 export const HEADS_PER_EGG = 2; // Founding: heads supplied by each egg
 
 type Effect =

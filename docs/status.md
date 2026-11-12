@@ -31,3 +31,7 @@
   predator (drawn as its build in hunter red, named in banner, forecast and log); its `beats` switch off matching guards,
   enrolment and burying (Brace still works). Rivals exclude it. Crush catches an adjacent rival you could eat:
   `PREY_FOOD` 10. Dev species: Wild hook worm. Next: E.
+- E done: `colonise` names the heaviest other-line holder of your slot: the button and purpose read "Challenge X (B) ·
+  your Y A"; a map target's reason reads "X holds it". The card's "Wild here" list offers Adopt for wild species in a
+  seen habitat; ≥ `ADOPT_EGGS` (10) sets `lineage` (parent kept) and hatches as usual, fewer hatch wild with no form or
+  XP. `bestFit` follows the diet rule. Next: F.

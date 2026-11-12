@@ -42,7 +42,9 @@ export function homeLabel(world: World, hab: Habitat): HomeLabel {
   const mine = yoursHere(world, hab);
   if (mine.length) return { kind: 'yours', letters: mine.map((m) => m.letter) };
   const best = senders(world, hab)[0];
-  return best ? { kind: 'target', letter: best.purpose.fit.letter, reason: reasonFor(world, hab, best.species) } : { kind: 'fog' };
+  if (!best) return { kind: 'fog' };
+  const holder = best.purpose.holder;
+  return { kind: 'target', letter: best.purpose.fit.letter, reason: holder ? `${holder.species.name} holds it` : reasonFor(world, hab, best.species) };
 }
 
 /** Labels never overlap: yours first, then targets, then the larger habitat; the rest hide. Boxes are screen px. */

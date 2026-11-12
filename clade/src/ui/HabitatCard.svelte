@@ -1,5 +1,6 @@
 <!-- The tapped habitat: its slots and residents, recent ecology, ground and neighbours. -->
 <script lang="ts">
+  import { ADOPT_EGGS } from '../data/economy';
   import { css } from '../data/palette';
   import { colonise as purposeOf } from '../sim/found';
   import { isLifeBuild } from '../sim/life';
@@ -7,15 +8,18 @@
   import type { Habitat } from '../sim/habitats';
   import type { Ranks, Species, World } from '../sim/records';
   import { heldSlots, predictions } from '../view/tiers';
-  import { reasonFor, senders, yoursHere } from '../view/home';
+  import { homeLabel, reasonFor, senders, yoursHere } from '../view/home';
   import type { Frame } from './history';
   import HistoryGraph from './HistoryGraph.svelte';
   import TierCard from './TierCard.svelte';
 
-  let { hab, world, history, select, picked, ranks = {}, place, colonise, send }: {
+  let { hab, world, history, select, picked, ranks = {}, place, colonise, send, adopt }: {
     hab: Habitat; world: World; history: Frame[]; select: (id: number) => void;
-    picked?: Species; ranks?: Ranks; place?: () => void; colonise?: () => void; send?: (s: Species) => void;
+    picked?: Species; ranks?: Ranks; place?: () => void; colonise?: () => void; send?: (s: Species) => void; adopt?: (s: Species) => void;
   } = $props();
+  // Adopt: a wild species with a Life, in a habitat you can see (yours or a target).
+  const seen = $derived(homeLabel(world, hab).kind !== 'fog');
+  const wild = $derived(adopt && seen ? world.species.filter((s) => s.lineage === null && (hab.pops[s.id] ?? 0) > 0 && isLifeBuild(s.build)) : []);
   const mine = $derived(yoursHere(world, hab));
   const sent = $derived(picked ? [] : senders(world, hab));
   const purpose = $derived(picked && isLifeBuild(picked.build) ? purposeOf(world, hab, picked) : null);
@@ -36,7 +40,7 @@
         <TierCard build={picked.build} {ranks} {slot} {hab} {world} name={picked.name} />
       {:else}<p>No food slot here</p>{/each}
       <button class="place" onclick={place} disabled={(hab.pops[picked.id] ?? 0) > 0}>{(hab.pops[picked.id] ?? 0) > 0 ? 'Already here' : 'Place · 20 heads'}</button>
-      {#if purpose}<button class="place" onclick={colonise} title={purpose.text}>Colonise</button>{/if}
+      {#if purpose}<button class="place" onclick={colonise} title={purpose.text}>{purpose.holder ? `Challenge ${purpose.holder.species.name} (${purpose.holder.letter})` : 'Colonise'}</button>{/if}
     </section>
     <h3>Holders</h3>
   {:else}
@@ -49,7 +53,8 @@
         <h3>Colonise from a neighbour</h3>
         {#each sent as s (s.species.id)}
           <button class="send" onclick={() => send?.(s.species)} title={s.purpose.text}>
-            <b>{s.purpose.fit.letter}</b> {s.species.name} from {s.from.name}<small>{s.purpose.slot.name.toLowerCase()} · {reasonFor(world, hab, s.species)}</small></button>
+            {#if s.purpose.holder}Challenge {s.purpose.holder.species.name} ({s.purpose.holder.letter}) · your {s.species.name} <b>{s.purpose.fit.letter}</b>
+            {:else}<b>{s.purpose.fit.letter}</b> {s.species.name}{/if} from {s.from.name}<small>{s.purpose.slot.name.toLowerCase()} · {s.purpose.holder ? `${s.purpose.holder.species.name} holds it` : reasonFor(world, hab, s.species)}</small></button>
         {/each}
       </section>
     {/if}
@@ -62,6 +67,12 @@
       <p class="population">{Math.round(hab.pops[species.id] / bodyMass(species.build)).toLocaleString('en')} heads · {Math.round(hab.pops[species.id]).toLocaleString('en')} g</p>
     {:else}<p class="empty">Unheld</p>{/each}
   {/each}
+  {#if wild.length}
+    <h3>Wild here</h3>
+    {#each wild as s (s.id)}
+      <button class="send" onclick={() => adopt?.(s)}>Adopt {s.name}<small>play a Life as it; lay {ADOPT_EGGS} eggs and it joins your line</small></button>
+    {/each}
+  {/if}
   <HistoryGraph {hab} {world} {history} />
   <h3>Neighbours</h3>
   <ul>

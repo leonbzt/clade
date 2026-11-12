@@ -66,9 +66,9 @@
   let active = $state.raw<Colonisation | null>(null);
   let lifeCount = 0;
   const colonisePicked = () => !!picked && send(picked);
-  function send(species: Species) {
+  function send(species: Species, adopting = false) {
     if (active) return false;
-    const next = launch(world, selected, species, lifeCount + 1);
+    const next = launch(world, selected, species, lifeCount + 1, adopting);
     if (!next) return false;
     lifeCount++; active = next; return true;
   }
@@ -141,7 +141,7 @@
     view.init(host).then(() => (ready = true));
     // For the look script: drive the map without taps.
     Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: (id = YOUR_LINE) => (lineOpen = id), openTree: () => (treeOpen = true), get tree() { return treeOpen; }, spend: spendPart, get dev() { return dev; },
-      send: (id: string) => { const s = world.species.find((x) => x.id === id); return !!s && send(s); },
+      send: (id: string, adopting = false) => { const s = world.species.find((x) => x.id === id); return !!s && send(s, adopting); },
       hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; }, get news() { return seaRun?.news.map((l) => l.text) ?? []; },
       get session() { return active; }, get lifeCount() { return lifeCount; },
       setMode: (m: MapMode) => (mode = m), fit: () => view.fit(), look: (x: number, y: number, z: number) => view.look(x, y, z),
@@ -213,7 +213,7 @@
     </div>
     {#if selected >= 0 && world.habitats[selected]}
       {#key `${selected}:${pickedId}`}
-        <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} picked={dev ? picked : undefined} {ranks} place={placePicked} colonise={colonisePicked} {send} />
+        <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} picked={dev ? picked : undefined} {ranks} place={placePicked} colonise={colonisePicked} {send} adopt={(s) => send(s, true)} />
       {/key}
     {/if}
   </div>
