@@ -104,7 +104,7 @@ export interface Hit {
 const SIDES: Side[] = ['front', 'right', 'back', 'left'];
 export const sideOf = (dir: number, facing: number): Side => SIDES[(dir - facing + 4) % 4];
 
-/** Mud, Dig, enrolment and Brace resolve before a guard or a tear. */
+/** Mud, Dig, enrolment and Brace resolve before a guard or a tear; a hunter that beats armour gets past Brace (12 Nov). */
 export function strikeOn(body: LifeBody, side: Side, ctx: StrikeCtx = {}): Hit {
   const safe = { part: null, tear: null, damage: 0, rest: RULE.restAfterStrike };
   const beaten = (kind?: DefenceKind) => !!kind && !!ctx.beats?.includes(kind);
@@ -112,7 +112,7 @@ export function strikeOn(body: LifeBody, side: Side, ctx: StrikeCtx = {}): Hit {
   if ((ctx.buried || ctx.dug) && !beaten('burrow')) return { ...safe, kind: 'buried' };
   if (ctx.stayed && !beaten('armour') && (body.build.clade === 'trilobite' || has(body, 'enrol')))
     return { ...safe, kind: 'enrolled', part: has(body, 'enrol') ? 'enrol' : null };
-  if (ctx.braced) return { ...safe, kind: 'blocked', rest: RULE.restAfterSpine };
+  if (ctx.braced && !beaten('armour')) return { ...safe, kind: 'blocked', rest: RULE.restAfterSpine };
   const target = side === 'left' || side === 'right' ? 'flank' : side;
   const active = activePlaces(body);
   const struck = PLACES.filter((place) => active.includes(place)

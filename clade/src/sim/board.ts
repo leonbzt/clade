@@ -97,7 +97,7 @@ export function seaHunter(habitat: Habitat, world: World, you: Build): Species |
   return best;
 }
 
-/** `you`: the build that plays this board; a sea hunter that can eat it replaces the shadow (N4 D). */
+/** `you`: the build that plays this board; only a sea hunter here that can eat it hunts you (N4 D; no shadow, 12 Nov). */
 export function boardFor(habitat: Habitat, world: World, seed: number, you?: Build): Board {
   const { substrate, depth } = habitat.kind, ground = GROUNDS[substrate];
   const rng = seeded(seed ^ Math.imul(habitat.id + 1, 0x9e3779b1));
@@ -128,7 +128,7 @@ export function boardFor(habitat: Habitat, world: World, seed: number, you?: Bui
   place(grid, fields.buried, 'b', '~', nodesFor(habitat, 'detritus'), taken);
   place(grid, fields.mat, 'm', '.', nodesFor(habitat, 'mats'), taken);
 
-  // The hunter: one from the sea that can eat you, else the shadow from deep water. Rivals: the heaviest other
+  // The hunter: one from the sea that can eat you (the shadow only behind `BOARD.shadow`). Rivals: the heaviest other
   // residents by grams, each on a spot well away from the start.
   const hunter = you ? seaHunter(habitat, world, you) : null;
   const predator: SeaHunter | null = hunter && { species: hunter.id, name: hunter.name, build: structuredClone(hunter.build), beats: speciesKit(hunter).beats };

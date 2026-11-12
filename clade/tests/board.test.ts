@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOARD, GROUNDS } from '../src/data/boards';
+import { BOARD } from '../src/data/boards';
 import { GROUND } from '../src/data/ground';
 import { CELL, COLS, ROWS, TURNS } from '../src/data/life';
 import { boardFor, deepEdge } from '../src/sim/board';
@@ -124,7 +124,7 @@ describe('boardFor', () => {
     expect(eventOf('shallows', 'sand').event).toMatchObject({ name: 'Upwelling', cols: [0, 2] });
     expect(eventOf('slope', 'mud').event).toMatchObject({ name: 'Mudslide', where: 'mud' });
     expect(eventOf('deep', 'rock').event).toMatchObject({ name: 'Vent surge', where: 'all' });
-    expect(eventOf('deep', 'rock').predatorAt).toBe(GROUNDS.rock.shadowTurn);
+    expect(eventOf('deep', 'rock').predatorAt).toBeNull(); // no sea hunter here, and no shadow (12 Nov)
     const l = newLife(eventOf('flat', 'sand'), worm('worm').build, {}, 2);
     expect([eventArea(l, COLS - 1, 5), eventArea(l, 0, 5)]).toEqual([true, false]);
   });

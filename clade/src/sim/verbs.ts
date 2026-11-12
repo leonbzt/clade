@@ -19,7 +19,7 @@ export function verbNote(l: Life, v: VerbId): string {
   if (!(l.recharge[v]! > 0)) {
     if (v === 'graze') { const n = around(l, true).filter((i) => l.tiles[i].node === 'mat').length; return n ? `${n} mat${n > 1 ? 's' : ''}` : 'no mats near'; }
     if (v === 'dig') { const n = [at(l.x, l.y), ...around(l, false)].filter((i) => l.tiles[i].node === 'buried').length; return n ? `${n} buried` : 'hides you'; }
-    if (v === 'brace') return l.pred?.state === 'strike' ? 'strike marked!' : 'no strike yet';
+    if (v === 'brace') return l.board.predator?.beats.includes('armour') ? "won't hold" : l.pred?.state === 'strike' ? 'strike marked!' : 'no strike yet';
     if (v === 'crush') {
       const r = preyBeside(l);
       if (r >= 0) return `catch ${l.rivals[r].name}`;

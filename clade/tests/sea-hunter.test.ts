@@ -23,16 +23,16 @@ function sea(...residents: [Species, number][]) {
 const you = worm('you', { front: 'tentacles', sides: 'sclerite' }).build;
 
 describe('the board from the sea', () => {
-  it('a sea hunter that can eat you is the predator, not a rival; else the shadow stays', () => {
+  it('a sea hunter that can eat you is the predator, not a rival; else no predator', () => {
     const hook = worm('Wild hook worm', { front: 'hook' }), grazer = worm('grazer', { front: 'tentacles' });
     const { habitat, world } = sea([hook, BOARD.rivalAt], [grazer, 40]);
     const board = boardFor(habitat, world, 2, you);
     expect(board.predator).toMatchObject({ species: hook.id, name: 'Wild hook worm', beats: ['armour'] });
     expect(board.predatorAt).not.toBeNull();
     expect(board.rivals.map((r) => r.species)).toEqual(['grazer']);
-    // Too few heads, a hunter yourself, or bigger than the hunter: the shadow.
+    // Too few heads, a hunter yourself, or bigger than the hunter: no predator at all.
     habitat.pops[hook.id] = (BOARD.rivalAt - 1) * bodyMass(hook.build);
-    expect(boardFor(habitat, world, 2, you).predator).toBeNull();
+    expect(boardFor(habitat, world, 2, you)).toMatchObject({ predator: null, predatorAt: null });
     habitat.pops[hook.id] = 20 * bodyMass(hook.build);
     expect(boardFor(habitat, world, 2, worm('h', { front: 'proboscis' }).build).predator).toBeNull();
     expect(boardFor(habitat, world, 2, { ...you, genes: { size: 2, gut: 1 } }).predator).toBeNull();
@@ -44,6 +44,9 @@ describe('the board from the sea', () => {
     expect(strikeOn(l, 'right')).toMatchObject({ kind: 'blocked', part: 'sclerite' });
     expect(strikeOn(l, 'right', { beats: ['armour'] }).kind).toBe('hit');
     expect(strikeOn(l, 'right', { buried: true, beats: ['armour'] }).kind).toBe('buried');
+    // Brace holds against the shadow's kind of strike, not against a hunter that gets past armour.
+    expect(strikeOn(l, 'right', { braced: true }).kind).toBe('blocked');
+    expect(strikeOn(l, 'front', { braced: true, beats: ['armour'] }).kind).toBe('hit');
   });
 
   it('a hunter crushes a rival beside it that it could eat: the rival is gone and you gain PREY_FOOD', () => {

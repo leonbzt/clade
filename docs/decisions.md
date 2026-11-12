@@ -808,3 +808,8 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   trees and their balance, minigames from maths toys, zoom levels. [Brief](design/fable-brief-3.md).
 - **Hunters don't graze, for now** (12 Nov, after N4 A: "hunters not grazing is fine for now, later maybe dual builds
   could exist"). A hunting tool commits the build to prey.
+- **No shadow from the deep any more** (12 Nov, after N4 E: "there should only be hunters now if there are hunters in
+  the habitat"; asked, "hunters only"). A board has a predator only when a sea hunter that can eat you lives there;
+  boards without one have none. `BOARD.shadow` keeps the old shadow behind a flag, off.
+- **Brace doesn't stop a hunter that gets past armour** ("brace shouldn't block a hunter who can get past armour").
+- **Adopt stays until the play test** ("I don't like adopt i think but I'll wait for the playtest").

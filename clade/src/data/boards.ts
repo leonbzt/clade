@@ -4,7 +4,7 @@ import type { Depth, Substrate } from './ground';
 import type { BoardEvent } from '../sim/life';
 
 export const BOARD = {
-  shadow: true, // hunter: a shadow from deep water at the bottom type's turn; off = no hunter until N4
+  shadow: false, // on = a shadow from deep water when no sea hunter can eat you; off = only the sea's hunters (*decided 12 Nov*)
   rivalAt: 6, // rivals: minimum resident heads (grams ÷ body mass); game/'s BOARD.rivalAt counted heads
   rivals: 1, // rivals: residents on the board, heaviest first
   rivalGap: 4, // rivals: minimum steps from the start
