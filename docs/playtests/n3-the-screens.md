@@ -106,3 +106,11 @@ Choice made here: when labels collide, yours and targets win before area (the sp
 scripts/look/n3-h.json` on Midgame: Worm line level 2, no points, Bare worm (gone) with three children, homes
 shortened to "10 habitats · best S in Open mud shallows" past two; at 130 XP, one point, +1 rank on Burrowing bulb
 gives rank 1/3 and disables every +1. Inspected both shots; fits the phone.
+
+## Part I · 12 Nov 2026
+
+`ui/Tree.svelte`, `view/tree.ts`, `OLD_LIFE` in `data/clades.ts`; one test. `npm run check` passes in 7.2 s.
+Phone run `npm run look -- /clade/ scripts/look/n3-i.json`: five clade nodes, only the worm lit (gold, level 1);
+arthropod's hint "sclerites + / proboscis / 0 of 2 carried"; every label inside the frame; tapping the worm opens its
+line view, Back returns to the tree, Back again to the map. Inspected the shot. Gate hints sit one part per line
+(the spec's one-line form overflowed at phone width).

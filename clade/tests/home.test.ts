@@ -3,6 +3,7 @@ import type { Habitat } from '../src/sim/habitats';
 import type { World } from '../src/sim/records';
 import { homeLabel, senders, visibleLabels } from '../src/view/home';
 import { carriedParts, familyOf } from '../src/view/line';
+import { treeOf } from '../src/view/tree';
 
 const hab = (id: number, neighbours: number[]): Habitat => ({
   id, name: `H${id}`, kind: { depth: 'shallows', substrate: 'mud', exposure: 'open' }, tiles: [], area: 100,
@@ -36,4 +37,13 @@ it('the line view nests children under parents, marks the extinct gone, and list
   const [root] = familyOf(w, line);
   expect([root.species.id, root.homes, root.children.map((c) => [c.species.id, c.homes.map((h) => h.name)])]).toEqual(['w', [], [['c', ['H1']]]]);
   expect(carriedParts(w, line).map((p) => p.id)).toEqual(['tentacles', 'bulb']);
+});
+
+it('the tree lights clades with a line and counts gate parts the parent clade carries', () => {
+  const w = world();
+  w.species[0].build.parts.sides = 'sclerite';
+  const nodes = treeOf(w), by = (id: string) => nodes.find((n) => n.id === id)!;
+  expect(nodes.filter((n) => n.line).map((n) => n.id)).toEqual(['worm']);
+  expect(by('arthropod').hint).toEqual(['sclerites +', 'proboscis', '1 of 2 carried']);
+  expect(by('cell').trunk && by('worm').parent?.lit === false).toBe(true);
 });

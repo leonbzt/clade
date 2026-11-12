@@ -25,6 +25,7 @@
   import { levelOf, pointsOf, spend } from '../sim/line';
   import type { PartId, Species } from '../sim/records';
   import LineView from './Line.svelte';
+  import TreeView from './Tree.svelte';
 
   const asked = Number(new URLSearchParams(location.search).get('seed'));
   const initialSeed = Number.isInteger(asked) && asked > 0 ? asked : 1;
@@ -35,7 +36,8 @@
   let pickedId = $state('root-worm');
   let presetId = $state('first-worm');
   let dev = $state(false);
-  let lineOpen = $state(false);
+  let lineOpen = $state<string | null>(null);
+  let treeOpen = $state(false);
   let cam = $state<Camera>({ x: 0, y: 0, z: 4 });
   let ready = $state(false);
   let host: HTMLDivElement;
@@ -48,6 +50,7 @@
   const labels = $derived(world.habitats.map((h) => ({ hab: h, held: heldSlots(h, world), home: homeLabel(world, h),
     preview: dev && picked ? bestFit(picked.build, ranks, h, world) : undefined })));
   const line = $derived(world.lineages.find((l) => l.id === YOUR_LINE));
+  const shownLine = $derived(world.lineages.find((l) => l.id === lineOpen));
   // Labels never overlap. Widths come from the font; yours, then targets, then the larger habitat keep theirs.
   const measure = document.createElement('canvas').getContext('2d')!;
   measure.font = "16px 'Clade Text'";
@@ -85,7 +88,7 @@
   }
 
   function spendPart(part: PartId) {
-    const l = world.lineages.find((x) => x.id === YOUR_LINE);
+    const l = world.lineages.find((x) => x.id === lineOpen);
     if (!l || !spend(l, part, world.species)) return;
     // A fresh line object, so the line view re-reads it.
     world.lineages = world.lineages.map((x) => (x === l ? { ...l, ranks: { ...l.ranks } } : x));
@@ -132,7 +135,7 @@
     view.onTap = (t) => (selected = t >= 0 ? ground.hab.of[t] : -1);
     view.init(host).then(() => (ready = true));
     // For the look script: drive the map without taps.
-    Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: () => (lineOpen = true), spend: spendPart, get dev() { return dev; },
+    Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: (id = YOUR_LINE) => (lineOpen = id), openTree: () => (treeOpen = true), get tree() { return treeOpen; }, spend: spendPart, get dev() { return dev; },
       send: (id: string) => { const s = world.species.find((x) => x.id === id); return !!s && send(s); },
       hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; },
       get session() { return active; }, get lifeCount() { return lifeCount; },
@@ -147,10 +150,11 @@
   });
 </script>
 
-<div class="shell" inert={active !== null || lineOpen}>
+<div class="shell" inert={active !== null || lineOpen !== null || treeOpen}>
   <header class="bar">
-    {#if line}<button class="line" onclick={() => (lineOpen = true)}>Worm line · level {levelOf(line.xp)}{#if pointsOf(line) > 0} · {pointsOf(line)} point{pointsOf(line) === 1 ? '' : 's'}{/if}</button>{/if}
+    {#if line}<button class="line" onclick={() => (lineOpen = YOUR_LINE)}>Worm line · level {levelOf(line.xp)}{#if pointsOf(line) > 0} · {pointsOf(line)} point{pointsOf(line) === 1 ? '' : 's'}{/if}</button>{/if}
     <span class="gap"></span>
+    <button class="tree" onclick={() => (treeOpen = true)}>tree</button>
     <button onclick={home}>home</button>
     <button class="dev" class:on={dev} onclick={() => (dev = !dev)}>dev</button>
     {#if dev}
@@ -210,7 +214,8 @@
   </div>
 </div>
 
-{#if lineOpen && line && !active}<LineView {world} {line} spend={spendPart} back={() => (lineOpen = false)} />{/if}
+{#if treeOpen && !active}<TreeView {world} open={(id) => (lineOpen = id)} back={() => (treeOpen = false)} />{/if}
+{#if shownLine && !active}<LineView {world} line={shownLine} spend={spendPart} back={() => (lineOpen = null)} />{/if}
 {#if active}
   <LifeScreen life={active.life} purpose={active.purpose} complete={completeLife} />
   {#if clutch}<Hatch session={active} {world} {clutch} {settle} back={backToMap} />{/if}
