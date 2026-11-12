@@ -813,3 +813,9 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   boards without one have none. `BOARD.shadow` keeps the old shadow behind a flag, off.
 - **Brace doesn't stop a hunter that gets past armour** ("brace shouldn't block a hunter who can get past armour").
 - **Adopt stays until the play test** ("I don't like adopt i think but I'll wait for the playtest").
+
+## 12 Nov, the N4 play (short)
+- **Verdict:** "core there but no game" fits. Notes in [playtests/n4-who-eats-whom.md](playtests/n4-who-eats-whom.md).
+- **No direction fixed before the Fable pass:** "don't fix these decisions until the fable session". The Fable pass
+  (brief 3) now also judges the N4 notes, P51 (one line, one ladder) and the other open proposals, and "has freedom to
+  think a little outside the box and find what would actually fit best".

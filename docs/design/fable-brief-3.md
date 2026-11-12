@@ -10,9 +10,43 @@ and system could really improve the game"; "I want to cater to Fable's wide reas
 The user knows boids, cellular automata, Lenia and L-systems from their own toys, and wants critical, realistic takes
 with measured numbers, not a vision in prose.
 
+## Added after the N4 play (12 Nov): Q0 comes first
+The N4 play's verdict, the user agreeing: **"core there but no game."** Being the creature, the living paint and the
+population swings pull; what's missing is a game around the sea: no goal after the first Life, no sense of what is
+yours, no ladder, the map floods with wild species and letters. Read the notes in full
+(`docs/playtests/n4-who-eats-whom.md`), then **P51 in `docs/proposals.md`** (Opus's "one line, one ladder" and the
+user's leanings on it).
+
+**Freedom.** The user, 12 Nov: give Fable "freedom to think a little outside the box and find what would actually fit
+best". Nothing past N4 is fixed ("don't fix these decisions until the fable session"): P51, the roadmap's order from
+step 12 on, slices 18, 21 and 22, adopt, the purposes (Colonise, Challenge, Adopt) and §1's limits are all open to a
+better idea. Judge P51 against at least one structurally different answer, not only refinements of it. Keep what the
+user's tastes and play evidence say works; say plainly what you would cut.
+
+**Q0. The game around the sea (spend the most depth here, before Q1).** What turns "a sea you watch and a Life you
+play" into a game with a goal at every scale? Cover: the first 15 minutes and the early ladder (the user: unlocks as
+"verbs, parts and lineages, maybe also habitat types alongside"); one lineage at a time versus parallel lines versus
+retiring a line and starting a new one; ownership on the map (mine, wild, where hunters come from); what pulls the
+player to grind a line; how wild branches, adopt and v1-style variants ("you see how the populations naturally evolve
+and change over time") fit in; the one next goal the map shows. End with a concrete order for the next 3–5 steps.
+
+**Art input for Q4.** The user has basic access to **Retro Diffusion** (AI pixel art: API and MCP, 12–256 px,
+cents per image; `docs/research/ai-sprite-workflows.md`). The user: "if we want lots of art, code-generated will still
+beat anything else." Say where RD earns a place (Opus's lean: stamps and reference sheets that code assembles, terrain
+tiles and textures, card and title art; never per-creature sprites) and where it doesn't.
+
+## What came before (the first Fable session, 10 Nov)
+- **Its briefs:** [part 1](fable-brief.md) (the user's vision in their words; skim for quotes) and [part 2](fable-brief-2.md)
+  (the game as it was then, with v1's summary in §5).
+- **Its output:** `whole-game.md` (Part A, the concept; Part B, the diagnosis and routes; §12, the user's replies and
+  the calls) and `whole-game-build.md` (the build brief; §1 lists what the user decided on 10 Nov).
+- **The calls since:** `docs/decisions.md` from "10 Nov, the Fable brief" to the end (N0–N4, the N4 play).
+- **Ideas parked for this pass:** `docs/ideas.md` lines tagged "Fable" (the tree's root pick, zoom levels).
+Build on that work where it held up in play; say where it didn't.
+
 ## 0. How to work
 - **Read, in order:** this file; `docs/tastes.md` (the taste every answer must fit); `whole-game-build.md` §3–§6 and
-  §10; `whole-game.md` §3, §4 and §12; `docs/status.md`; the N4 spec and the user's N4 notes; `ROADMAP.md` "Now".
+  §10; `whole-game.md` §3, §4 and §12; `docs/status.md`; the N4 spec, the user's N4 notes and P51 in `docs/proposals.md`; `ROADMAP.md` "Now".
   Then the code the answers touch, for measured facts: `clade/src/sim/{sea,fitness,hunt,wild,news}.ts`,
   `clade/src/data/{sea,parts,clades}.ts`. v1 (25 Oct – 2 Nov) is summarised in part 2 §5; its code stays off limits
   unless the user opens it.
@@ -24,7 +58,7 @@ with measured numbers, not a vision in prose.
   Describe any other toy as a spec for a later session.
 - **Questions to the user:** at most three per round, two rounds, options with a lean. Proposals: at most three open in
   `docs/proposals.md`. The user owns the design; nothing here becomes the plan without their call.
-- **Spend the depth on Q1, then Q3–Q6.** Q2, Q7 and Q8 can be shorter.
+- **Spend the depth on Q0, then Q1 and Q3–Q6.** Q2, Q7 and Q8 can be shorter (Q8 folds into Q0 where they meet).
 
 ## 1. Hard limits (change one only by naming it and saying why)
 - Phone first; 8 h catch-up about 5 s (up to 10); `npm run check` under 10 s; 160 generations under 100 ms.

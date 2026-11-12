@@ -14,8 +14,11 @@
 - **Verified:** `npm run check` passes in 7.6 s. Commits: `0f14f96`, `4397c19` (F), `8b78d8b` (G).
 - **Decided (12 Nov):** no shadow, only the habitat's hunters ("hunters only"); Brace doesn't block a hunter that gets
   past armour; Adopt stays until the play test.
-- **Next:** (1) your four-Life N4 play from *first worm*, no dev bar; notes in `docs/playtests/n4-who-eats-whom.md`.
-  (2) Then fixes from it, merge to `main`, and step 12 (play N0–N4 as a whole).
+- **N4 play (12 Nov, short):** "core there but no game". Notes in `docs/playtests/n4-who-eats-whom.md`; P51 (one
+  line, one ladder) open for Fable; nothing fixed until then (user's call).
+- **Next:** (1) the Fable pass from `docs/design/fable-brief-3.md` (now with Q0, the game around the sea). (2) Then the
+  N4 fix pass (stuck capsules, bud rate, no hunter build without prey, crush hint), merge, and the order Fable and you
+  settle.
 - **Open:**
   1. Early boards now have no predator at all (first worm: no hunters in the sea yet), and the first-worm map shows only
      about 4 capsules. Does that feel too quiet in play?

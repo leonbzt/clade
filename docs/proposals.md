@@ -14,3 +14,14 @@ P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea 
 
 P46, P47 and P48 were decided 9 Nov at the 21C review (P48: C; P46 and P47 closed): see decisions.md.
 P49 (use steers the body) and P50 (sea features) were decided 9 Nov: see decisions.md. None open.
+
+## P51. One line, one ladder (12 Nov, after the N4 play; M2 steps 11–12). For the Fable pass to judge, not decided
+The N4 play: "core there but no game". *AI lean:* (1) one lineage at a time; the map shows your line bright, its wild
+offshoots faint, hunters only where they threaten you; letters on tap. (2) An early ladder: each Life fills a bar,
+each step unlocks one thing (Enforce, Dig, claw, the first gate at ~8 min); the map always names one next goal.
+(3) The sea grows with you: wild branches start after the first unlock and bud from your line; hunter builds stay
+locked until there is prey. (4) R5 variants moved forward: populations drift, named variants pop up, adopt hunts them.
+Order: N4 fix pass → N5 "The ladder" → R5 → step 12.
+**Your leanings (12 Nov, not decided until after Fable):** 1 yes ("maybe later a few in parallel, or retire and start a
+new one"); 2 "sounds great", unlocks = verbs, parts and lineages, "maybe also habitat types alongside"; 3 "that's the
+feeling i want", off until the first unlock; 4 "yes maybe, sounds cool".
