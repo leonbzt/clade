@@ -1,28 +1,30 @@
 # Status
 
-- **Milestone:** M2. N4 (step 11) is played and ticked; next is step 12, **N4 fix and the quiet sea**, on branch
-  `n4-who-eats-whom` (not merged). No spec for it yet.
-- **Done (12 Nov, this session): the maths pass** from `docs/design/fable-brief-3.md`. No code in `clade/` changed.
-  - `docs/design/maths-pass.md` (480 lines): a summary with a table of leans, then Q0–Q8. Q0 holds the next steps, each
-    with what it changes in `clade/`.
-  - `toys/sea-board.html`: the slot board with the quiet-sea rules and an "Old sea" box. 8 h of catch-up in 34–42 ms;
-    a midgame sea runs 1 000 generations with swings and no collapse.
-  - `toys/body-grammar.html`: seven lines from one grammar at three sizes, with the two checks as tables.
-  - Logs: `decisions.md` (12 Nov, the maths pass), `proposals.md` (P51 closed; P52, P53 open), `ideas.md` (8 lines),
-    `ROADMAP.md` "Now" (steps 12–21), `docs/README.md`, pointers in `whole-game-build.md` (§6 letter line, §8).
-- **Verified:** `npm run check` passes in 7.5 s. Each toy was looked at once on a phone viewport. Nothing is committed.
-- **Decided (12 Nov):** the slot board; you first, the sea later; one active line, the rest live on, a line finishes at
-  its named species and still goes on; letters against the meta (replaces "at full food"); a ladder, then a small
-  tree; the order "fix board line look, also the other planned species would be nice to add soon"; Adopt stays.
-- **Next:** (1) `/spec` the N4 fix and the quiet sea from maths-pass Q0's step table: stuck capsules, the crush hint,
-  no hunter build without prey, claimed-cell spread, wild cousins on a bar and a leash, a refuge per tile. (2) Build
-  it, play it, merge the branch. (3) Then N5 The board.
+- **Milestone:** M2. Step 12, **the N4 fix and the quiet sea** ([spec](slices/n4-fix-quiet-sea.md)): built 15 Nov,
+  not played. Branch `n4-who-eats-whom`, not merged; all committed (code at `10fcbfb`, then "docs: the direction page").
+- **Done (15 Nov, an architect session, docs only):**
+  - [design/direction.md](design/direction.md): the one design page that wins. A present-day island of real species;
+    a lineage is a real clade with dials; laws balance, rows are data; the trait pipeline; the plan; the roles.
+  - The roadmap from step 13 re-cut and **adopted**: W1 the wide toy, W2 the model swap, N5 the board, the closed
+    test, W3 the pipeline, W4 the land, W5 lines, L1, A.
+  - Roles and commands: `/architect` and `/build` (`.claude/commands/`), a spec template with a Contract and a Build
+    brief (`slices/_template.md`), "For the architect" in this file. Pointers updated in `CLAUDE.md`, `AGENTS.md`,
+    `workflow.md`, `README.md`, `/spec`, `/handoff`, the `researcher` agent.
+  - P52 parked; P53, P54 and P55 closed. No proposal is open.
+- **Decided (15 Nov):** 1c a lineage is a real clade with a fixed plan and 2–3 dials, named real species are the
+  leaves; 2b a present-day island, the tree is the unlock map; 3a movers only are playable, plants and sessile life
+  are board pieces; traits get hand authoring and researcher batches over time; Fable architects, weaker agents build.
+  "Adopt" (the roadmap); a young island with colonists; a recognisable mix as the roster; the first line is a marine
+  worm; animals come to land only as lines gain key adaptations; variant hunting makes the map its own loop.
+- **Verified:** docs only; links checked. `npm run check` not re-run (no code changed; 7.8 s, 173 tests at `10fcbfb`).
+- **Next:**
+  1. You: play the N4 fix ten minutes (five Lives from *first worm*, then Midgame), notes to
+     `docs/playtests/n4-fix-quiet-sea.md`; merge the branch into `main`; tick step 12.
+  2. A fresh session at high effort: `/architect W1 the wide toy` (the spec with its contract: the row schema, the
+     laws, the data tests, about 40 drafted species, variants on a bar). Parts go to `/build W1 A` at medium effort.
 - **Open:**
-  1. P52: the waste loop in N5 (AI lean) or fixed detritus ceilings until R7?
-  2. P53: retune Eye, Gill, Sclerites and Gut gland under the sign-change rule in N6 (AI lean) or in R5?
-  3. N7 (the other lines) before L1 (the look) is the AI's reading of "soon"; swap on your word.
-  4. Every rule inside the steps (bar lengths, the leash, the refuge numbers, the tree's nodes) is a proposal from the
-     toy, not tuned in the real game.
-  5. From the toy: only one of four deep cells opens with the waste loop; your own hunters push your diggers to F in
-     the sandy shallows; two line pairs overlap 0.76–0.78 on the board, so the silhouette check needs two sides.
-  6. Retro Diffusion's sizes and prices are from `docs/research/ai-sprite-workflows.md`, not tested this session.
+  1. Direction §11: who else comes ashore after you (W4), how a key adaptation is won (W4, W5), the genome budget
+     (W2). None blocks W1.
+  2. The budget "4 stocks per habitat, 3 dials per line, 6 mutations per clade" is a proposal (`CLAUDE.md` rule 6).
+  3. The tree and trait sources in direction §6 are from background knowledge, unverified; W3 starts with that check.
+  4. The N4 fix's open points (calm or dead map, the Dig cell without a cousin, untuned numbers) wait for your play.

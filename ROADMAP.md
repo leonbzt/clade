@@ -32,15 +32,25 @@ stays playable until the new game passes the play test after N4. Slice 23 is re-
 would be nice to add soon"; [docs/design/maths-pass.md](docs/design/maths-pass.md) Q0). Each step's cut is a proposal until its spec.
 
 12. [ ] **N4 fix and** [the quiet sea](docs/slices/n4-fix-quiet-sea.md)**:** stuck capsules, the crush hint, no hunter build without prey; your species spread only into cells you won; wild cousins on a bar, on a leash; a refuge per tile · 1
-13. [ ] **N5** The board: the map's holders as a grid of jobs; the one next goal; letters against the meta; Take, Beat, Hold, Adopt · 2
-14. [ ] **N6** The line: XP from eggs and held cells; three fixed levels, then the tree; gates cross in `sim` (R6 moved here); the named species; the arthropod line · 2
-15. [ ] **N7** The other lines: trilobite and swimmer (gates, trees, named species) · 1
-16. [ ] **L1** The look contract in code: plans, stamps, channels, the contact sheet and its two checks · 1–2
-17. [ ] **Play N0–L1 as a whole; the closed test:** an unlisted itch page for 3–5 Discord players
-18. [ ] **R5** Genes as dials and variants, banked clutches · 2
-19. [ ] **A** The alpha pass: the first fifteen minutes, saving, a light UI pass; **the public alpha** on itch · 2–3
-20. [ ] **R7–R9** Sea features and engineering; lineages to 6–8; the shore. Each a public update · 4–6
-21. [ ] **R10, R11** Art and UI polish; the release (M1's leftovers, a clean repo, itch, Discord) · 3–4
+
+**From step 13 the order follows the direction page** ([docs/design/direction.md](docs/design/direction.md), 15 Nov).
+*Decided 15 Nov:* a present-day island of real species, sea, shore and land (2b); a lineage is a real clade with a
+fixed plan and 2–3 dials, and named real species are its leaves (1c); movers only are playable, plants and sessile
+life are board pieces (3a); the island is young and real species arrive as colonists; animals come to land only as
+lines gain key adaptations; variant hunting makes the map its own loop. **Adopted 15 Nov** ("adopt"). The steps
+replace the 12 Nov order (N5, N6, N7, L1, the closed test, R5, A, R7–R11); N6 and N7 are gone, N5 and L1 stay. Each
+step's cut is a proposal until its spec.
+
+13. [ ] **W1** The wide toy: about 40 real species as data rows, sea, shore and land cells on the slot board, the laws, the derived food web, the one next goal, variants to compare and adopt ("is this a board I want to climb and look through, and can I tell species apart?") · 2
+14. [ ] **W2** The model swap in `clade/`: records become clades, dials and mutations, `fitness` and the hunt run on the laws, the data tests; the first line plays as the worm did · 2
+15. [ ] **N5** The board: the map's holders as a grid of jobs; the one next goal; letters against the meta; Take, Beat, Hold, Adopt; variants drawn and marked on the map · 2
+16. [ ] **The closed test:** an unlisted itch page for 3–5 Discord players (sea and shore, about 30 species, one or two lines)
+17. [ ] **W3** The trait pipeline and the roster to 60: the source check, the generated tree, grades per trait, the roster sheet, researcher batches · 1, plus batches
+18. [ ] **W4** The land: ground kinds, producers as board pieces colonising on a bar, a habitat names the adaptations it needs, the first line to come ashore by a key adaptation · 2
+19. [ ] **W5** Lines: XP from eggs and held cells, levels, dial steps and mutations in the clutch, named species, the tree as the unlock map · 2
+20. [ ] **L1** The look contract in code: a plan per clade from the body grammar, stamps, the contact sheet and its two checks · 2
+21. [ ] **A** The alpha pass: the first fifteen minutes, saving, a light UI pass; **the public alpha** on itch (roster 100–150) · 2–3
+22. [ ] **After the alpha**, each a public update: sea and land features, engineering, more lines and species, art and UI polish, the release (M1's leftovers, a clean repo, Discord)
 
 ## Built: M1, the first playable sea (5 Nov; "the basics seem fun and as imagined"; its release moved into M2, step 17)
 1. [x] [08 The stack test](docs/slices/08-stack-test.md): Godot or PixiJS → **PixiJS** (5 Nov)

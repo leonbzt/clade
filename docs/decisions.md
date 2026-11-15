@@ -842,3 +842,41 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Adopt stays** (liked in the N4 play): the second way to win a wild cousin's cell, and later the way to get a rare.
 - **The cousin's bar runs only in habitats you live in** (12 Nov, at the N4 fix kickoff: "go" on that lean). Widen it to
   the habitats next door after play if the map is too still.
+- **The N4 fix spec's two leans stand** (12 Nov: "build", with both open questions shown): a wild cousin may carry any
+  part a clutch could offer your line today, and a hunter's board holds up to three prey.
+
+## 15 Nov, the direction after the maths pass ([design/direction.md](design/direction.md))
+- **The aim widens:** "I want a full game, with many different species, preferably many real recent ones, alongside
+  land life and plants." "Most important is fun and a hooking core, second is a full ecosystem/slots board and food
+  chains." "The current version still feels pretty barebones."
+- **On the maths pass:** "too much focus on fixing the current system instead of finding the overall best approach";
+  it "feels a lot like only thinking about the worm builds"; not "a good idea to rebuild and rebalance everything in
+  small steps" if a wide roster means "going through this again".
+- **1c:** a lineage is a real clade with a fixed plan and 2–3 dials; named real species are the leaves you reach.
+  Replaces parts on places as the build (10 Nov).
+- **2b:** a present-day island; the tree is the unlock map and ancestors are nodes you pass through. Replaces the
+  Cambrian start at the worm (10 Nov).
+- **3a:** movers only are playable at release (forage, hunt, dig); plants and sessile life are board pieces that hold
+  slots.
+- **Traits:** "a real bottleneck, and will have to be done well, and could be fleshed out over time with some hand
+  authoring and researcher agents."
+- **The findings** (species as data rows, laws do the balancing, the tree sources give no gameplay traits, the model
+  swap inside `clade/`, wide and shallow first): "I agree mainly, it sounds like good inputs. Include all of your
+  findings." Their details stay proposals in the direction page.
+- **Process:** Fable for "advice and deeper architecture that I can follow through with weaker agents"; "make sure
+  there won't be a lot of drift". Set up as the architect, builder and researcher roles (workflow.md).
+- **Not decided:** the re-cut roadmap (P54), who lives on the island before you, which real island sets the roster,
+  the first line (direction §11).
+
+## 15 Nov, the second round (P54, P55)
+- **"Adopt":** the roadmap from step 13 follows direction §8 (W1, W2, N5, the closed test, W3, W4, W5, L1, A).
+- **A young island (1a):** real species arrive as colonists on a bar; your lines radiate into what is open. Replaces
+  "only opened lineages live in the sea" (10 Nov) and the cousin on the leash as the only newcomer (12 Nov).
+- **The roster (2c):** a mix chosen for recognisability, not one real island.
+- **The first line (3a):** a present-day marine worm; the tuned worm Life ports as it is.
+- **Land by evolution:** "life should come to land as the lines evolve in that way, as it could have happened in real
+  life. Key adaptations should allow it, like walking or breathing." Life ashore moves from "After" into the release (W4).
+- **Variant hunting:** "the hunting for variants with differing genomes and mutations was very fun, so I would like to
+  include it if feasible, to make looking at the map its own core gameplay loop." It is feasible (a variant is a
+  `Build` with other numbers); how it works (dials plus named mutations, the bar, adopt) is a proposal in direction §5.
+- **Not decided:** who else comes ashore after you, how a key adaptation is won, the genome budget (direction §11).

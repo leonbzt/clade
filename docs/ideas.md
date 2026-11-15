@@ -213,3 +213,15 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Six minigames from maths toys (boids, reaction–diffusion, L-systems, colony automata, slime-mould networks; Lenia as paint only): the table in maths pass Q7 (AI, 12 Nov). M3.
 - Variant names: a population a full gene pip from its founder gets an adjective ("dwarf", "long-gut") (AI, 12 Nov; maths pass Q5). R5.
 - Retro Diffusion only for fixed art: named-species cards, ground textures, title art, stamp reference sheets; untested (AI, 12 Nov; maths pass Q4). L1, R10.
+- Bars also in the habitats next to yours, if the still map reads as dead (AI, 12 Nov, N4 fix spec; your call was to wait). After the N4 fix play.
+- A wild cousin can be a twin of one of your species (same build): skip twins on the leash, or name them as such (AI, 15 Nov, N4 fix E). N5.
+- Where no digger reads B or lower (mud), the first cousin is a hunter, about generation 42: a longer bar for the Hunt cell, or food cells first (AI, 15 Nov, N4 fix look). After the N4 fix play.
+- A waste loop for detritus: the dead and mat slough feed it and most sinks one band down; cap brood ÷ upkeep at 1.25 (AI, 12 Nov, was P52; maths pass Q1). Re-judge on the wide island, W4.
+- The Cambrian sea as an era with its own roster (trilobite, swimmer, radiodont; the worm with a past), after the present-day island ships (AI, 15 Nov; your 10 Nov start, replaced by 2b). M4.
+- Flying and rafting colonists on land after your first line is ashore (birds, lizards on driftwood) (AI, 15 Nov; direction §11). W4.
+- A plant Life (grow and spread as a playable verb); at release plants are board pieces (you chose 3a, 15 Nov). M3.
+- PhyloPic silhouettes for undiscovered tree nodes and as the card fallback if the body grammar fails on vertebrates (AI, 15 Nov; direction §6). L1.
+- The cost of opening a clade grows with its distance on the real tree, so relatives come first (AI, 15 Nov; direction §5). W5.
+- Known feeding links as a check file the derived web must reproduce (AI, 15 Nov; direction §4). W1 or W3.
+- Tidy the repo root: the plant game (`src/`, `tests/`, `index.html`) and the frozen `game/` into an archive folder once `clade/` passes its play test; old design docs into `docs/design/history/` with a link check (AI, 15 Nov). One builder session, on your word.
+

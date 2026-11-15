@@ -64,8 +64,11 @@ capacity. This is not v1's tile simulation: tiles are ground and paint, never ru
   same habitat state and seed give the same board.
 - **The sea step,** per habitat and generation: (1) *regrow* stocks toward their ceiling; (2) *eat*: when food is
   short, split it by population × fitness; (3) *breed and die*: eaten × brood ÷ upkeep, less base deaths; (4) *hunt*:
-  the commonest prey most; (5) *spread* to neighbours where the newcomer would grow at today's food, by border length;
-  (6) *drift and bud*, rarely; (7) *engineer*; (8) *news*: for any change over about 30%, name the largest term.
+  the commonest prey most, and only the prey above a refuge per tile (sand 0.15 g, mud 0.30, rock 0.45); (5) *spread*:
+  only your species, only into a cell you have won (`World.claimed`), where the newcomer would grow at today's food, by
+  border length; (6) *bars*: an open cell in a habitat you live in waits 36 generations (`World.bars`), then a wild
+  cousin within two legal changes of a species living there takes it, B at most; no dice (*built 15 Nov, the N4 fix;
+  numbers tuned by play*); (7) *engineer*; (8) *news*: for any change over about 30%, name the largest term.
 - **Swings:** the lag between a food and its eaters gives one overshoot, then the sea settles (measured, N1). Lasting
   swings wait for N4's hunters (*decided 11 Nov*); seasons are parked.
 - **Cost:** 16 habitats × 8 species × 160 generations is milliseconds. v1's island generator and habitat finder may be

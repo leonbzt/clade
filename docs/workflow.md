@@ -6,23 +6,24 @@ Every idea takes the same path, and each step has one home:
 
 ```
 idea ──► ideas.md (one line) ──► proposals.md (when a milestone needs it: options, AI lean, ≤3 questions)
-     ──► your call ──► decisions.md (dated) + whole-game-build.md ──► a slice spec ──► build ──► playtests/
+     ──► your call ──► decisions.md (dated) + design/direction.md ──► a step spec ──► build ──► playtests/
 ```
 
 - **Ideas don't skip steps.** A new idea mid-session gets one line in `ideas.md`, and the work goes on.
 - **A proposal must name the milestone it serves.** If the current milestone doesn't need it, it stays an idea.
 - **At most three open proposals.** When you decide, the call is logged and the proposal is deleted; when one goes
   stale, it moves back to `ideas.md` as one line.
-- **design/whole-game-build.md (how) and whole-game.md (why) lead the rebuild;** they win over
-  `full-version.md`. `spec.md` describes the archived plant game. `tastes.md` keeps
+- **`design/direction.md` (15 Nov) is the one design page that wins.** Its §9 names the sections of
+  `whole-game-build.md` and `maths-pass.md` still in force; the rest of `design/` is history. A new design doc needs
+  your word. `spec.md` describes the archived plant game. `tastes.md` keeps
   your tastes and lessons; `decisions.md` keeps the history; the active slice defines the current task.
 
 ## Milestones and the scope gate
 
 - `ROADMAP.md` lists milestones. **Only the current one gets specs and code.**
 - Before any spec or code, ask: *does the current milestone need this?* If not, park it.
-- **Budgets** (in the roadmap): speed, check time, and at most 4 stocks, 6 stats and 10 genes per kingdom. A new
-  stock, stat or gene replaces one, or needs your explicit OK.
+- **Budgets** (in the roadmap): speed, check time, and at most 4 stocks per habitat, 6 stats, 3 dials per line and
+  6 mutations per clade (*proposal 15 Nov*). A new stock, stat or dial replaces one, or needs your explicit OK.
 - A milestone ends when its "done when" holds in play, not when the code is in. Then we plan the next one from the
   roadmap and `ideas.md`, with options first.
 
@@ -30,8 +31,8 @@ idea ──► ideas.md (one line) ──► proposals.md (when a milestone need
 
 | Type | What it's for | Starts with | Ends with |
 | --- | --- | --- | --- |
-| **Design** | Decide things and write one spec | `status.md`, the active scope and relevant decisions | Saved spec and handoff |
-| **Build** | Implement one approved slice or named part | `status.md`, the slice and relevant source files | Verified commit and handoff |
+| **Architect** (`/architect`) | Advice, a big call's options, the contract and one step spec with its build brief; an audit | `status.md` ("For the architect"), `direction.md`, measured code | Saved spec, contract tests, handoff |
+| **Build** (`/build`) | One part of a build brief | `status.md`, the spec and the files the part names | Verified commit and handoff, or a question for the architect |
 | **Research** | Answer one unresolved question | A bounded question from the active task | Findings, sources and implications |
 
 - **Fresh session per task (7 Nov).** Finish the spec, bug or named slice part before starting a new topic.
@@ -82,12 +83,20 @@ idea ──► ideas.md (one line) ──► proposals.md (when a milestone need
 independent. Give each a bounded file scope and avoid overlapping edits. Searches, routine checks and small tasks
 do not justify delegation; parallel agents can multiply tokens and conflicting changes.
 
-### Claude plans, Codex builds (*decided 9 Nov*)
-- **Claude (Opus):** kickoff, play triage, design calls, specs, the **build brief** (a short section at the end of
-  the slice spec: files, behaviour, checks) and the review of Codex's diff.
-- **Codex (ChatGPT Pro):** builds one brief per session on the slice branch, runs `npm run check` (and
-  `npm run look` for screens), commits, updates `status.md`. It asks instead of deciding design.
-- The commands live in `.claude/commands/` (`kickoff`, `spec`, `handoff`); Codex follows the same files (`AGENTS.md`).
+### Roles: the architect designs, builders build (*decided 9 Nov; widened 15 Nov*)
+- **Architect (the strongest model, high effort):** advice, options for your calls, `direction.md`, the **contract**
+  (types and the tests that carry a step's rules, written before the build), the step spec with its **build brief**,
+  and an audit of the diff against the direction before each itch build. It never builds.
+- **Builder (a weaker model at medium effort, or Codex):** one brief part per session on the step's branch, inside
+  the part's "Touch" list; `npm run check` (and one `npm run look` for a screen); one commit; `status.md`.
+- **The one-way valve:** a builder never decides design and never edits a contract test to pass it. It writes the
+  question under **For the architect** in `status.md` and stops. The next architect session answers and clears it.
+- **Researcher:** one batch of at most ten species rows with sources (`docs/research/species/`); a builder copies
+  the rows in; you give the `hand` grade (direction §6).
+- **Why this holds against drift:** rules live in tests, scope lives in "Touch" lists, design lives in one page, and
+  every part ends in a commit you can play or revert.
+- The commands live in `.claude/commands/` (`kickoff`, `architect`, `build`, `spec`, `handoff`); Codex follows the
+  same files (`AGENTS.md`).
 
 | Agent | Defined in | What it does |
 | --- | --- | --- |
@@ -99,7 +108,8 @@ do not justify delegation; parallel agents can multiply tokens and conflicting c
 - Guardrails and process here are defaults. Say so when one gets in the way of a better idea (5 Nov).
 - Remind the user when a saved, verified task boundary makes a fresh session useful; do not append a reminder to every reply.
 - Big calls: 2–4 options with a lean, at most three questions; converge after the user reacts, then plan.
-- Big reviews: measured numbers, blunt critique, one plan with a lean.
+- Big reviews: measured numbers, blunt critique, one plan with a lean. Question the frame before fixing inside it:
+  is this the best overall approach for the aim, or a patch of the last shape (15 Nov)?
 - Specs give headline timings only; the user tunes pacing by feel over several passes.
 - Keep test, sim and screenshot output small; usage is light.
 - The user knows boids, CA, L-systems and Lenia; they want critical, realistic takes.

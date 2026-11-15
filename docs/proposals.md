@@ -18,16 +18,8 @@ P49 (use steers the body) and P50 (sea features) were decided 9 Nov: see decisio
 P51 (one line, one ladder) closed 12 Nov: judged in the maths pass (Q0) and replaced by your calls there (slot board,
 letters against the meta, ladder then tree, the order): see decisions.md.
 
-## P52. A waste loop for detritus (12 Nov, the maths pass Q1; M2 step N5)
-Detritus loses its fixed ceiling: it comes from marine snow, mat slough and the dead, and most of it sinks one band
-down. The slope is then fed by the shallows and the deep by the slope; no new stock; about 25 lines in `sim/sea.ts`.
-It needs the letters against the meta (decided). In the toy only one of four deep cells opens at these numbers.
-*Options:* (a) build it in N5 (*AI lean*); (b) keep fixed ceilings until R7; (c) never.
-*Also:* cap `brood ÷ upkeep` at 1.25 either way (today a pouch with upkeep ranked to 0 makes 1.6 g per gram eaten).
-**Question:** a, b or c?
+P52 (the waste loop) is parked in ideas.md and P53 (parts with no decision) is closed, both 15 Nov: the direction
+page replaces parts with dials, and P53's sign-change rule lives on there as a data test (direction §4).
 
-## P53. Every part needs a place where it wins and one where it doesn't (12 Nov, the maths pass Q6; M2 step N6)
-Measured: the Gut gland helps everywhere, the Eye hurts everywhere, Gill and Sclerites do nothing in the sea without
-hunters, and nothing beats burrow. *AI lean:* retune these four under the "sign-change rule" in N6 and keep the rule
-as a test; let the digger beat burrow in N7. *Options:* (a) in N6; (b) with the genes in R5; (c) leave them.
-**Question:** a, b or c?
+P54 (the roadmap re-cut) and P55 (the island and its roster) were decided 15 Nov: see decisions.md. None open; the
+direction page's three open questions (§11) become proposals when W2 and W4 need them.

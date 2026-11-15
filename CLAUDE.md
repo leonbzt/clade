@@ -4,10 +4,12 @@ An idle / incremental evolution game. Web: TypeScript, PixiJS (the board), Svelt
 lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
 garden becomes is the next board you walk on.
 
-**Start here: `docs/status.md` and its active slice spec. Read only the relevant sections of `docs/design/whole-game-build.md` (how) and `whole-game.md` (why); they win over `full-version.md`, `docs/planning/plan.md` and `big-picture.md`. `ROADMAP.md` when needed.**
-The game is being rebuilt in `clade/` (*decided 10 Nov*): a new core with organs ported from `game/`. A build session
-reads `docs/design/whole-game-build.md` and its step spec, nothing else by default; where `game/` and that file
-disagree, the file wins. `game/` (PixiJS, 5 Nov) is frozen: playable and the port source until the new game passes the
+**Start here: `docs/status.md` and its active step spec. `docs/design/direction.md` (15 Nov) is the one design page
+that wins: a present-day island of real species, lineages as real clades with dials, movers playable. Its §9 names the
+sections of older docs still in force; everything else in `docs/design/` is history. `ROADMAP.md` when needed.**
+The game lives in `clade/` (*decided 10 Nov*) and stays there: the direction is a model swap inside it, not a new
+folder. A build session reads its step spec and what the spec names, nothing else; where code and the spec disagree,
+the spec wins, and where the spec is silent the builder asks. `game/` (PixiJS, 5 Nov) is frozen: playable and the port source until the new game passes the
 play test after N4, then archived. The plant game in `docs/spec.md`, `src/` and `tests/` is the archive.
 
 **The guardrails against tangling (big-picture §12) are defaults, not laws (the user's words, 5 Nov: don't take them too seriously or stop thinking outside them).**
@@ -16,7 +18,7 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 ## Where things are
 - `ROADMAP.md`: milestones, the current steps, the budgets. **The current milestone is the only thing we build for.**
 - `docs/status.md`: the last handoff. `docs/README.md`: the docs index (open only what the task needs).
-- `docs/design/whole-game-build.md`: the rebuild's plan (how); `whole-game.md`: why. `big-picture.md`: background (4 Nov). `docs/spec.md`: the archived plant game.
+- `docs/design/direction.md`: the direction (what the game is, the organism model, the plan, who does what). `whole-game-build.md`, `maths-pass.md`: in force only where direction §9 says. `docs/spec.md`: the archived plant game.
 - `docs/tastes.md`: the user's tastes, wishes and lessons. `docs/decisions.md`: the dated log of their calls.
 - `docs/proposals.md`: open AI proposals (three at most). `docs/ideas.md`: the parking lot.
 - `docs/slices/`: one spec per slice (`_template.md`); `docs/playtests/`: the user's notes after playing.
@@ -39,7 +41,7 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 5. **One slice = one question.** Write a spec from the template before code. One or two sessions each. Play it
    before calling it done.
 6. **Budgets** (in the roadmap): 8 h catch-up about 5 s (up to 10), `npm run check` < 10 s; at most 4
-   stocks, 6 stats and 10 genes per kingdom. Adding one means removing one, or the user's call. No long headless sim
+   stocks per habitat, 6 stats, 3 dials per line and 6 mutations per clade (*proposal 15 Nov*; before: 10 genes per kingdom). Adding one means removing one, or the user's call. No long headless sim
    runs: model tests run hours of garden in under a second.
 7. **Code:** files under ~400 lines; data separate from logic. Balance by feel, a simple curve model and the dev
    panel; no balance bot.
@@ -50,5 +52,8 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 9. **Be critical and lean.** Keep replies, docs and test output short.
 
 ## Session flow
-`/kickoff <topic>` to start · `/spec <slice>` to write a spec · `/handoff` before `/clear`.
+`/kickoff <topic>` to start · `/architect <topic>` for advice, contracts and specs (the strongest model; never
+builds) · `/build <step> <part>` for one part of a build brief (a weaker model; never decides design: it writes the
+question under "For the architect" in `docs/status.md` and stops) · `/spec <step>` · `/handoff` before `/clear`.
+**A rule a builder must keep is a test, not a sentence.**
 How we work: `docs/workflow.md`; shared context and Git rules: `AGENTS.md`. When a large task is done, run the `/handoff` steps yourself without being asked (*decided 8 Nov*), then tell the user it is ready for `/clear`. One agent by default; delegation requires an explicit request and an independent task.

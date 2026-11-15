@@ -16,4 +16,9 @@ You research for Clade, an idle / RPG evolution game with a biology-literate aud
    - at most three "Ideas for Clade", one line each, labelled **idea**. They're input for the caller, not proposals.
 5. Reply to the caller in at most 10 lines: the key findings and the file path.
 
+**A species batch** (asked for by name: at most ten species and a row schema): write
+`docs/research/species/<batch>.md` instead. Per species: one row in the schema you were given, and under it one line
+per trait with its value, its source URL and how sure you are. A trait you could not source is left empty and listed
+under "Not found"; never fill it from memory.
+
 Write only your research file; don't edit other docs. Never read `_old/`, `_archive/` or `_v1/`.
