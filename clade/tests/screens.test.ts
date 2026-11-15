@@ -11,7 +11,7 @@ import { applyPreset, skip } from '../src/ui/scenarios';
 import { bestFit, heldSlots } from '../src/view/tiers';
 
 const worm: Build = { clade: 'worm', parts: {}, genes: { size: 1, gut: 1 } };
-const makeFixture = (): World => ({ seed: 1, generation: 0, species: [], lineages: [], habitats: [{
+const makeFixture = (): World => ({ seed: 1, generation: 0, claimed: [], bars: {}, species: [], lineages: [], habitats: [{
   id: 0, name: 'Test shallows', kind: { depth: 'shallows', substrate: 'sand', exposure: 'open' },
   tiles: [], area: 100, centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 40,
   stocks: { mats: 3000, detritus: 1000 }, pops: {},
@@ -58,7 +58,7 @@ it('UI history captures every generation, bounds the window to 160, and owns cop
   for (let i = 0; i < 200; i++) { step(world); history = remember(history, world); }
   expect(history).toHaveLength(161);
   expect(history.map((f) => f.generation)).toEqual(Array.from({ length: 161 }, (_, i) => i + 40));
-  expect(Object.keys(world).sort()).toEqual(['generation', 'habitats', 'lineages', 'seed', 'species']);
+  expect(Object.keys(world).sort()).toEqual(['bars', 'claimed', 'generation', 'habitats', 'lineages', 'seed', 'species']);
 });
 
 it('placement founds twenty heads in grams, preserves an existing population and does not mutate its template', () => {

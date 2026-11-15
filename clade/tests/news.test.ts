@@ -23,7 +23,7 @@ describe('news', () => {
   it('every line has a cause; yours come first; a hunter on yours is named', () => {
     WILD.chance = 0.3;
     const world: World = {
-      seed: 5, generation: 0, lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
+      seed: 5, generation: 0, claimed: [], bars: {}, lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
       habitats: [habitat(0, { t: 300, hook: 30 }, [1]), habitat(1, {}, [0])],
       species: [sp('t', worm({ front: 'tentacles' })), sp('hook', worm({ front: 'proboscis' }), null)],
     };
@@ -41,7 +41,7 @@ describe('news', () => {
 
   it('a quiet sea has no news', () => {
     WILD.chance = 0;
-    const world: World = { seed: 1, generation: 0, lineages: [], habitats: [habitat(0, {})], species: [] };
+    const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, lineages: [], habitats: [habitat(0, {})], species: [] };
     expect(life(world)).toEqual([]);
   });
 });

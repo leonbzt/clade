@@ -1,8 +1,8 @@
-// One generation, in grams: choose a slot and eat → breed/die → regrow → simultaneous spread. Regrow runs after the
+// One generation, in grams: choose a slot and eat → breed/die → regrow → simultaneous spread into claimed cells. Regrow runs after the
 // eating so the stored stock is the standing food: what the next eaters find and what every letter reads.
 // Every slot and prediction below is temporary. World holds only the records, never a role or tier.
 import { FOODS, HUNT, REGROW, SEA } from '../data/sea';
-import { bodyMass, bodyOf, ceiling, density, reach, score, slots, stocked, valueIn, type Body } from './fitness';
+import { bodyMass, bodyOf, ceiling, cellKey, density, reach, score, slots, stocked, valueIn, type Body } from './fitness';
 import { makeGround } from './ground';
 import { findHabitats, type Habitat } from './habitats';
 import { hunted, speciesKit, threat } from './hunt';
@@ -12,7 +12,7 @@ import { bud, prune, type Bud } from './wild';
 export function makeWorld(seed: number): World {
   const habitats = findHabitats(makeGround(seed)).list;
   for (const h of habitats) for (const food of FOODS) h.stocks[food] = ceiling(h, food);
-  return { seed, generation: 0, habitats, species: [], lineages: [] };
+  return { seed, generation: 0, habitats, species: [], lineages: [], claimed: [], bars: {} };
 }
 
 export const ranksOf = (world: World, lineage: Species['lineage']): Ranks =>
@@ -119,16 +119,17 @@ export function step(world: World): StepReport {
   // 1. Regrow toward yield × area, once per food and habitat.
   for (const h of habitats) for (const food of FOODS) h.stocks[food] += REGROW[food] * (ceiling(h, food) - h.stocks[food]);
 
-  // 5. Spread where the newcomer would grow on the regrown stocks it finds. Cache only for this generation.
-  // Survival 1: a newcomer is rare prey, and the commonest-prey rule leaves it almost untouched at first.
-  const byId = new Map(habitats.map((h, i) => [h.id, i]));
+  // 5. Spread: only your species, and only into a cell you have won, so a claimed cell refills after a crash and
+  // the map changes by your Lives (N4 fix D). The newcomer must still grow on the regrown stocks it finds. Survival
+  // 1: a newcomer is rare prey, and the commonest-prey rule leaves it almost untouched at first.
+  const byId = new Map(habitats.map((h, i) => [h.id, i])), claimed = new Set(world.claimed);
   const allowed = new Int8Array(habitats.length * n); // 0 unknown, 1 grows there, −1 doesn't
   const nextPops = habitats.map((h) => ({ ...h.pops }));
   habitats.forEach((h, from) => {
     if (h.perimeter <= 0) return;
     for (let i = 0; i < n; i++) {
       const id = species[i].id, pop = h.pops[id] ?? 0;
-      if (pop <= 0) continue;
+      if (pop <= 0 || species[i].lineage === null) continue; // wild species never spread
       for (let border = 0; border < h.neighbours.length; border++) {
         const to = byId.get(h.neighbours[border]);
         if (to === undefined) continue;
@@ -138,7 +139,8 @@ export function step(world: World): StepReport {
         if (!allowed[k]) {
           const best = choose(bodies[i], habitats[to], available[to], 1);
           // A hunter arrives only where the prey above the refuge weighs `HUNT.from` (N4 fix C).
-          allowed[k] = best && grows(best.value) && (!best.slot.prey || best.slot.capacity >= HUNT.from) ? 1 : -1;
+          allowed[k] = best && grows(best.value) && claimed.has(cellKey(habitats[to].id, best.slot.id))
+            && (!best.slot.prey || best.slot.capacity >= HUNT.from) ? 1 : -1;
         }
         if (allowed[k] < 0) continue;
         nextPops[from][id] -= moved;

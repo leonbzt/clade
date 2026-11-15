@@ -1,9 +1,10 @@
 // Founder biomass comes from an egg count. Fitness supplies the purpose and the sea supplies the growth test.
+// Founding is also how a cell becomes yours: `claim`.
 import { ADOPT_EGGS, HEADS_PER_EGG } from '../data/economy';
 import { YOUR_LINE } from '../data/lines';
 import { SEA } from '../data/sea';
-import { huntsWith } from './build';
-import { bodyMass, fitness, slots } from './fitness';
+import { huntsWith, isYours } from './build';
+import { bodyMass, cellKey, fitness, slots } from './fitness';
 import type { Habitat } from './habitats';
 import { preyFor } from './hunt';
 import type { Fitness, Letter, Ranks, Slot, SlotId, Species, World } from './records';
@@ -17,7 +18,19 @@ export function found(world: World, habitat: Habitat, species: Species, eggs: nu
   if (!target || !resident) return 0;
   const grams = eggs * HEADS_PER_EGG * bodyMass(resident.build);
   target.pops[resident.id] = (target.pops[resident.id] ?? 0) + grams;
+  claim(world, target, resident);
   return grams;
+}
+
+/** Claims the cell a species of yours takes here (N4 fix D): its best slot, if at least two heads live here and,
+ *  unless it is `settled` (an adopted cousin already holds its cell), it grows there on today's food. */
+export function claim(world: World, habitat: Habitat, species: Species, settled = false): boolean {
+  if (!isYours(species) || !((habitat.pops[species.id] ?? 0) >= SEA.extinctionHeads * bodyMass(species.build))) return false;
+  const choice = bestSlot(species.build, ranksOf(world, species.lineage), habitat, world);
+  if (!choice || !(settled || grows(choice.fit.value))) return false;
+  const key = cellKey(habitat.id, choice.slot.id);
+  if (!world.claimed.includes(key)) world.claimed.push(key);
+  return true;
 }
 
 interface FitSlot { slot: Slot; fit: Fitness }
@@ -74,6 +87,7 @@ export function adopt(world: World, species: Species, eggs: number): boolean {
   const s = world.species.find((x) => x.id === species.id);
   if (!s || s.lineage !== null || !(eggs >= ADOPT_EGGS) || !world.lineages.some((l) => l.id === YOUR_LINE)) return false;
   s.lineage = YOUR_LINE;
+  for (const h of world.habitats) claim(world, h, s, true); // its cells are yours now
   return true;
 }
 

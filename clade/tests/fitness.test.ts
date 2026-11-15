@@ -15,7 +15,7 @@ const habitat = (): Habitat => ({
   tiles: [], area: 100, centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 40,
   stocks: { mats: 3000, detritus: 1000 }, pops: {},
 });
-const world: World = { seed: 1, generation: 0, habitats: [], species: [], lineages: [] };
+const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, habitats: [], species: [], lineages: [] };
 
 describe('fitness contracts', () => {
   it('law 1: only fitness makes letters or reads the letter thresholds (source grep)', () => {

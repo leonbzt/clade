@@ -118,7 +118,7 @@ describe('line XP and points', () => {
     expect(Object.keys(line).sort()).toEqual(['clade', 'id', 'job', 'ranks', 'xp']);
     const stored = JSON.stringify(world);
     expect(stored).not.toMatch(/"(?:points?|level|letters?|tiers?|slots?)":/);
-    expect(Object.keys(world).sort()).toEqual(['generation', 'habitats', 'lineages', 'seed', 'species']);
+    expect(Object.keys(world).sort()).toEqual(['bars', 'claimed', 'generation', 'habitats', 'lineages', 'seed', 'species']);
   });
 
   it('has job text for every clade and registers each dev line with its job ID', () => {

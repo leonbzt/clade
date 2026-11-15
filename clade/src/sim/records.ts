@@ -36,6 +36,10 @@ export interface Species {
 export interface Lineage { id: Id; clade: CladeId; xp: number; ranks: Ranks; job: Id }
 export interface World {
   seed: number; generation: number; habitats: Habitat[]; species: Species[]; lineages: Lineage[];
+  /** The cells you have won, as `cellKey`s: a choice, never derived (law 2). Your species spread only into these. */
+  claimed: string[];
+  /** The generations each open cell has waited for a wild cousin, by `cellKey`: a timer. */
+  bars: Record<string, number>;
 }
 
 export interface Stats { bite: number; thrift: number; defence: number; speed: number; senses: number; brood: number }

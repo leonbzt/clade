@@ -16,7 +16,7 @@ function sea(...residents: [Species, number][]) {
   const habitat: Habitat = { id: 0, name: 'Lee shallows', kind: { depth: 'shallows', substrate: 'sand', exposure: 'open' },
     area: 100, tiles: [], centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 40, stocks: { mats: 0, detritus: 0 }, pops: {} };
   habitat.stocks = { mats: ceiling(habitat, 'mats'), detritus: ceiling(habitat, 'detritus') };
-  const world: World = { seed: 1, generation: 0, habitats: [habitat], species: residents.map(([s]) => s), lineages: [] };
+  const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, habitats: [habitat], species: residents.map(([s]) => s), lineages: [] };
   for (const [s, heads] of residents) habitat.pops[s.id] = heads * bodyMass(s.build);
   return { habitat, world };
 }

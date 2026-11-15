@@ -15,7 +15,7 @@ const habitat = (id: number, pops: Record<string, number>, substrate: 'sand' | '
   centre: { x: id, y: 0 }, neighbours: [], borders: [], perimeter: 20, stocks: { mats: 1200, detritus: 400 }, pops,
 });
 const sea = (habitats: Habitat[], species: Species[], seed = 3): World => ({
-  seed, generation: 0, habitats, species, lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
+  seed, generation: 0, claimed: [], bars: {}, habitats, species, lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
 });
 /** A sand flat whose mats your tentacle worm holds and whose detritus nobody digs. */
 const flat = (seed = 3) => sea([habitat(0, { t: 200 })], [yours('t', worm({ front: 'tentacles' }))], seed);

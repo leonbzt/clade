@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { FOODS, REGROW, SEA, WILD } from '../src/data/sea';
-import { bodyMass, ceiling, density, fitness, reach, slots } from '../src/sim/fitness';
+import { bodyMass, ceiling, cellKey, density, fitness, reach, slots } from '../src/sim/fitness';
 import type { Habitat } from '../src/sim/habitats';
 import type { Build, Species, World } from '../src/sim/records';
 import { makeWorld, step } from '../src/sim/sea';
@@ -17,7 +17,7 @@ function habitat(id = 0): Habitat {
   };
 }
 const sea = (habitats = [habitat()], residents = [species()]): World => ({
-  seed: 7, generation: 0, habitats, species: residents,
+  seed: 7, generation: 0, claimed: [], bars: {}, habitats, species: residents,
   lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'none' }],
 });
 // N1's sea laws, measured without N4's wild buds.
@@ -135,6 +135,7 @@ describe('spread', () => {
     dark.kind.depth = 'deep'; dark.stocks.mats = 0;
     depleted.stocks.mats = 0;
     const world = sea([source, good, dark, depleted]);
+    world.claimed = [1, 2, 3].map((id) => cellKey(id, 'mats')); // spread enters only cells you have won (N4 fix D)
     const isolated = structuredClone(world);
     isolated.habitats[0].neighbours = []; isolated.habitats[0].borders = [];
     step(isolated);
@@ -156,7 +157,9 @@ describe('spread', () => {
     habitats[0].neighbours = [1]; habitats[0].borders = [10]; habitats[0].pops.worm = 400;
     habitats[1].neighbours = [0, 2]; habitats[1].borders = [10, 10];
     habitats[2].neighbours = [1]; habitats[2].borders = [10];
-    const world = sea(habitats), reversed = structuredClone(world);
+    const world = sea(habitats);
+    world.claimed = [cellKey(1, 'mats'), cellKey(2, 'mats')];
+    const reversed = structuredClone(world);
     reversed.habitats.reverse();
     step(world); step(reversed);
     expect(habitats[1].pops.worm).toBeGreaterThan(0);
@@ -167,7 +170,9 @@ describe('spread', () => {
   it('keeps a move under two heads\' mass at home, where it would only die on arrival', () => {
     const [source, good] = [0, 1].map(habitat);
     source.neighbours = [1]; source.borders = [10]; source.perimeter = 100; source.pops.worm = 40;
-    const world = sea([source, good]), isolated = structuredClone(world);
+    const world = sea([source, good]);
+    world.claimed = [cellKey(1, 'mats')];
+    const isolated = structuredClone(world);
     isolated.habitats[0].neighbours = []; isolated.habitats[0].borders = [];
     step(world); step(isolated);
     expect(source.pops.worm * SEA.spread * 10 / 100).toBeLessThan(SEA.extinctionHeads * bodyMass(worm));
@@ -203,17 +208,22 @@ describe('sea contracts', () => {
       }
     };
     visit(world);
-    expect(Object.keys(world).sort()).toEqual(['generation', 'habitats', 'lineages', 'seed', 'species']);
+    // `claimed` is a choice and `bars` a timer: neither can be worked out from the rest (N4 fix D, E).
+    expect(Object.keys(world).sort()).toEqual(['bars', 'claimed', 'generation', 'habitats', 'lineages', 'seed', 'species']);
   });
 
   it('law 6: 160 generations of 16 habitats × 8 living species take under 100 ms', () => {
     const residents = Array.from({ length: 8 }, (_, i) => species(`worm-${i}`));
-    const fixture = () => sea(Array.from({ length: 16 }, (_, i) => {
-      const h = habitat(i);
-      h.neighbours = [(i + 15) % 16, (i + 1) % 16]; h.borders = [10, 10];
-      h.pops = Object.fromEntries(residents.map((s) => [s.id, 20]));
-      return h;
-    }), residents);
+    const fixture = () => {
+      const world = sea(Array.from({ length: 16 }, (_, i) => {
+        const h = habitat(i);
+        h.neighbours = [(i + 15) % 16, (i + 1) % 16]; h.borders = [10, 10];
+        h.pops = Object.fromEntries(residents.map((s) => [s.id, 20]));
+        return h;
+      }), residents);
+      world.claimed = world.habitats.map((h) => cellKey(h.id, 'mats')); // every cell won, so the spread runs in full
+      return world;
+    };
     run(fixture(), 160); // warm the same path before timing, as in the ground test
     let best = Infinity;
     for (let i = 0; i < 3; i++) {

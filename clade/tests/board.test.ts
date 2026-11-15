@@ -20,7 +20,7 @@ function fixture(depth: HabitatKind['depth'] = 'shallows', substrate: HabitatKin
     stocks: { mats: 0, detritus: 0 }, pops: {},
   };
   habitat.stocks = { mats: ceiling(habitat, 'mats'), detritus: ceiling(habitat, 'detritus') };
-  const world: World = { seed: 1, generation: 0, habitats: [habitat], species: [], lineages: [] };
+  const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, habitats: [habitat], species: [], lineages: [] };
   return { habitat, world };
 }
 

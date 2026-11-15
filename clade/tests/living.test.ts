@@ -13,7 +13,7 @@ const sp = (id: string, lineage: string | null, parts: Species['build']['parts']
 
 it('gives each population clamp(round(log2 heads), 1, 8) capsules with its role, at most LIVING.total', () => {
   const mine = sp('mine', 'worm-line', { front: 'tentacles' }), hook = sp('hook', null, { front: 'hook' });
-  const world: World = { seed: 1, generation: 0, habitats: [hab(0)], species: [mine, hook], lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }] };
+  const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, habitats: [hab(0)], species: [mine, hook], lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }] };
   world.habitats[0].pops = { mine: 20 * bodyMass(mine.build), hook: 1 };
   expect(capsuleCounts(world)).toEqual([
     { habitat: 0, species: 'mine', n: 4, role: 'grazer', yours: true },

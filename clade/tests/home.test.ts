@@ -9,7 +9,7 @@ const hab = (id: number, neighbours: number[]): Habitat => ({
   id, name: `H${id}`, kind: { depth: 'shallows', substrate: 'mud', exposure: 'open' }, tiles: [], area: 100,
   centre: { x: 0, y: 0 }, neighbours, borders: neighbours.map(() => 1), perimeter: 40, stocks: { mats: 3000, detritus: 3000 }, pops: {},
 });
-const world = (): World => ({ seed: 1, generation: 0, habitats: [hab(0, [1]), hab(1, [0, 2]), hab(2, [1])],
+const world = (): World => ({ seed: 1, generation: 0, claimed: [], bars: {}, habitats: [hab(0, [1]), hab(1, [0, 2]), hab(2, [1])],
   lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
   species: [{ id: 'w', lineage: 'worm-line', parent: null, name: 'Worm', born: 0, build: { clade: 'worm', parts: { front: 'tentacles' }, genes: { size: 1, gut: 1 } } }] });
 

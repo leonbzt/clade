@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { GUARD, HUNT } from '../src/data/sea';
-import { fitness, slots } from '../src/sim/fitness';
+import { cellKey, fitness, slots } from '../src/sim/fitness';
 import type { Habitat } from '../src/sim/habitats';
 import { hunted, preyIn, spare, threat } from '../src/sim/hunt';
 import type { Build, Species, World } from '../src/sim/records';
@@ -13,7 +13,7 @@ const habitat = (pops: Record<string, number>, substrate: 'sand' | 'mud' | 'rock
   id: 0, name: 'Test', kind: { depth: 'shallows', substrate, exposure: 'open' }, tiles: [], area: 40,
   centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 20, stocks: { mats: 800, detritus: 1200 }, pops,
 });
-const sea = (h: Habitat, species: Species[]): World => ({ seed: 1, generation: 0, habitats: [h], species, lineages: [] });
+const sea = (h: Habitat, species: Species[]): World => ({ seed: 1, generation: 0, claimed: [], bars: {}, habitats: [h], species, lineages: [] });
 const take = (world: World, h: Habitat, prey: string) =>
   hunted(h, world).filter((t) => t.prey === prey).reduce((sum, t) => sum + t.grams, 0);
 
@@ -104,10 +104,12 @@ describe('who eats whom', () => {
 
   it('law 6: 160 generations of 20 species (four hunters), 8 in each of 16 habitats, take under 100 ms', () => {
     const fronts = ['tentacles', undefined, 'tentacles', undefined] as const, tails = ['bulb', 'pouch', undefined, 'bulb'] as const;
-    const species = Array.from({ length: 20 }, (_, i) => i < 4
+    const species = Array.from({ length: 20 }, (_, i) => ({ ...(i < 4
       ? sp(`h${i}`, worm({ front: i % 2 ? 'hook' : 'proboscis', sides: i > 1 ? 'chaetae' : undefined }))
-      : sp(`g${i}`, worm({ front: fronts[i % 4], tail: tails[(i >> 2) % 4], sides: i % 3 ? 'sclerite' : undefined })));
-    const fixture = (): World => ({ seed: 1, generation: 0, species, lineages: [], habitats: Array.from({ length: 16 }, (_, i) => ({
+      : sp(`g${i}`, worm({ front: fronts[i % 4], tail: tails[(i >> 2) % 4], sides: i % 3 ? 'sclerite' : undefined }))), lineage: 'yours' }));
+    // All yours and every cell won, so the claimed-cell spread runs in full (N4 fix D).
+    const claimed = Array.from({ length: 16 }, (_, i) => (['mats', 'detritus', 'prey'] as const).map((slot) => cellKey(i, slot))).flat();
+    const fixture = (): World => ({ seed: 1, generation: 0, claimed: [...claimed], bars: {}, species, lineages: [], habitats: Array.from({ length: 16 }, (_, i) => ({
       // Like N1's law: 8 species per habitat, two of them hunters; the 20 overlap from habitat to habitat.
       ...habitat(Object.fromEntries([species[i % 4], species[(i + 1) % 4], ...Array.from({ length: 6 }, (_, k) => species[4 + (i + k) % 16])]
         .map((s) => [s.id, 30]))), id: i, area: 120,

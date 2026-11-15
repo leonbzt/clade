@@ -6,7 +6,7 @@ import { BASE_UPKEEP, FOODS, LETTER_THRESHOLDS, PART_EFFECT, SEA, TERM_THRESHOLD
 import { biteOf, huntsWith, partsOf, sizeOf } from './build';
 import type { Habitat } from './habitats';
 import { kitOf, preyIn, spare, takeTotal, threat, type Kit } from './hunt';
-import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, Stats, World } from './records';
+import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, SlotId, Stats, World } from './records';
 
 export { bodyMass } from './build';
 export const partUpkeep = (part: PartId, ranks: Ranks) => Math.max(0, PARTS[part].upkeep - Math.max(0, ranks[part] ?? 0));
@@ -60,6 +60,8 @@ export function slots(habitat: Habitat, world: World): Slot[] {
 }
 
 /** A slot with something in it to eat today. */
+/** A cell is one slot in one habitat. */
+export const cellKey = (habitat: number, slot: SlotId) => `${habitat}:${slot}`;
 export const stocked = (slot: Slot, h: Habitat) => slot.prey ? slot.capacity > 0 : slot.foods.some((food) => h.stocks[food] > 0);
 
 /** The same reach feeds both the intake prediction and the sea's proportional food requests. */
