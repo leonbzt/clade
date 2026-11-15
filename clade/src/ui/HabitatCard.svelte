@@ -64,11 +64,11 @@
   {/if}
   {#each held as { slot, holders } (slot.id)}
     {@const wait = cousinIn(world, hab.id, slot.id)}
-    <h3 style:color={css(slot.accent)}>{slot.name}{#if world.claimed.includes(cellKey(hab.id, slot.id))}<span class="gold"> · your cell</span>{/if}</h3>
+    <h3 style:color={css(slot.accent)}>{slot.name}{#if world.claimed.includes(cellKey(hab.id, slot.id))}<span class="gold">{' · your cell'}</span>{/if}</h3>
     {#each holders as { species, ranks } (species.id)}
       <TierCard build={species.build} {ranks} {slot} {hab} {world} name={species.name} />
       <p class="population">{Math.round(hab.pops[species.id] / bodyMass(species.build)).toLocaleString('en')} heads · {Math.round(hab.pops[species.id]).toLocaleString('en')} g</p>
-    {:else}<p class="empty">Unheld{#if wait} · {cousinFor(world, hab, slot) ? `a wild cousin in ${wait} generation${wait === 1 ? '' : 's'}` : 'no wild cousin fits here'}{/if}</p>{/each}
+    {:else}<p class="empty">Unheld{#if wait}{cousinFor(world, hab, slot) ? ` · a wild cousin in ${wait} generation${wait === 1 ? '' : 's'}` : ' · no wild cousin fits here'}{/if}</p>{/each}
   {/each}
   {#if wild.length}
     <h3>Wild here</h3>
