@@ -1,7 +1,7 @@
 // One generation, in grams: choose a slot and eat → breed/die → regrow → simultaneous spread. Regrow runs after the
 // eating so the stored stock is the standing food: what the next eaters find and what every letter reads.
 // Every slot and prediction below is temporary. World holds only the records, never a role or tier.
-import { FOODS, REGROW, SEA } from '../data/sea';
+import { FOODS, HUNT, REGROW, SEA } from '../data/sea';
 import { bodyMass, bodyOf, ceiling, density, reach, score, slots, stocked, valueIn, type Body } from './fitness';
 import { makeGround } from './ground';
 import { findHabitats, type Habitat } from './habitats';
@@ -137,7 +137,8 @@ export function step(world: World): StepReport {
         const k = to * n + i;
         if (!allowed[k]) {
           const best = choose(bodies[i], habitats[to], available[to], 1);
-          allowed[k] = best && grows(best.value) ? 1 : -1;
+          // A hunter arrives only where the prey above the refuge weighs `HUNT.from` (N4 fix C).
+          allowed[k] = best && grows(best.value) && (!best.slot.prey || best.slot.capacity >= HUNT.from) ? 1 : -1;
         }
         if (allowed[k] < 0) continue;
         nextPops[from][id] -= moved;

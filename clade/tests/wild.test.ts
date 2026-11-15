@@ -24,7 +24,11 @@ describe('wild branches', () => {
   it('an unchosen slot buds a wild species: parent set, no lineage, C or B, named, with founders', () => {
     WILD.chance = 1;
     const world = flat(), { buds } = step(world);
-    expect(buds.map((b) => [b.slot, b.species.name])).toEqual([['detritus', 'Wild burrowing bulb worm'], ['prey', 'Wild proboscis worm']]);
+    expect(buds.map((b) => [b.slot, b.species.name])).toEqual([['detritus', 'Wild burrowing bulb worm']]);
+    // A hunter comes only once the prey above the refuge weighs HUNT.from (N4 fix C).
+    const rich = flat();
+    rich.habitats[0].pops.t = 700;
+    expect(step(rich).buds.map((b) => [b.slot, b.species.name])).toContainEqual(['prey', 'Wild proboscis worm']);
     const bud = buds[0];
     expect(['B', 'C']).toContain(bud.letter);
     expect(bud.species).toMatchObject({ lineage: null, parent: 't' });

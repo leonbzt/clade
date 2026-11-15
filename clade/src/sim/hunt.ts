@@ -55,11 +55,21 @@ export function preyFor(build: Build, h: Habitat, world: World, heads = HUNT.pre
   }).sort((a, b) => grams(b) - grams(a));
 }
 
-/** The type II level: grams per gram of hunter per generation over all prey it can eat, before guards. */
-function level(hunter: Kit, prey: Prey[], area: number): { level: number; squares: number } {
+/** The share of the prey here that hunters can reach: everything above the refuge, a few grams a tile by bottom
+ *  type (N4 fix C). 0 when the prey stand at or under it. */
+export function openShare(h: Habitat, prey: Prey[]): number {
+  let total = 0;
+  for (const p of prey) total += p.grams;
+  return total > 0 ? Math.max(0, 1 - HUNT.refuge[h.kind.substrate] * h.area / total) : 0;
+}
+/** The grams of prey above the refuge: the hunt slot's capacity, and what a hunter needs `HUNT.from` of to arrive. */
+export const spare = (h: Habitat, prey: Prey[]) => openShare(h, prey) * prey.reduce((sum, p) => sum + p.grams, 0);
+
+/** The type II level: grams per gram of hunter per generation over the prey it can eat and reach, before guards. */
+function level(hunter: Kit, prey: Prey[], h: Habitat, open: number): { level: number; squares: number } {
   let grams = 0, squares = 0;
   for (const p of prey) if (p.size <= hunter.size) { grams += p.grams; squares += p.grams * p.grams; }
-  const density = grams / Math.max(1, area) / HUNT.referenceDensity;
+  const density = grams * open / Math.max(1, h.area) / HUNT.referenceDensity;
   return { level: grams > 0 ? HUNT.reach * hunter.bite * density / (1 + density / HUNT.saturation) : 0, squares };
 }
 /** The share of the level that falls on this prey: its share of grams squared, cut by each guard the hunter can't beat. */
@@ -73,36 +83,38 @@ function share(hunter: Kit, p: Prey, squares: number): number {
 /** Grams of each prey per gram of this hunter per generation, before appetite and the cap; all 0 without a hunting
  *  part. Prey must be no bigger than the hunter. Type II: the total levels off as prey grows. It falls on the commonest
  *  prey most (share of grams squared), so rare prey has a refuge. Each prey defence the hunter can't beat cuts it. */
-export function takeRates(hunter: Kit, prey: Prey[], area: number): Float64Array {
+export function takeRates(hunter: Kit, prey: Prey[], h: Habitat, open = openShare(h, prey)): Float64Array {
   const rates = new Float64Array(prey.length);
-  if (!hunter.hunts) return rates;
-  const l = level(hunter, prey, area);
+  if (!hunter.hunts || open <= 0) return rates;
+  const l = level(hunter, prey, h, open);
   if (l.level > 0) prey.forEach((p, i) => (rates[i] = l.level * share(hunter, p, l.squares)));
   return rates;
 }
 /** The sum of `takeRates`, without the array: a hunter's intake term in the sea's hot loop. */
-export function takeTotal(hunter: Kit, prey: Prey[], area: number): number {
+export function takeTotal(hunter: Kit, prey: Prey[], h: Habitat): number {
   if (!hunter.hunts) return 0;
-  const l = level(hunter, prey, area);
+  const open = openShare(h, prey);
+  if (open <= 0) return 0;
+  const l = level(hunter, prey, h, open);
   if (l.level <= 0) return 0;
   let sum = 0;
   for (const p of prey) sum += share(hunter, p, l.squares);
   return l.level * sum;
 }
 
-/** The grams each hunter here takes from each prey this generation. No hunt slot (prey under `slotFloor`), no take.
- *  Hunters together take at most `maxTake` of any one prey. `prey` defaults to `preyIn`; the sea passes its hunt slot's. */
+/** The grams each hunter here takes from each prey this generation. Nothing above the refuge, no take. Hunters
+ *  together take at most `maxTake` of each prey's share of the spare, so hunting never empties the refuge.
+ *  `prey` defaults to `preyIn`; the sea passes its hunt slot's. */
 export function hunted(h: Habitat, world: World, extra?: Newcomer, prey = preyIn(h, world, extra)): Take[] {
-  let total = 0;
-  for (const p of prey) total += p.grams;
-  if (total < SEA.slotFloor) return [];
+  const open = openShare(h, prey);
+  if (open <= 0) return [];
   const takes: Take[] = [], at: number[] = [], wanted = new Float64Array(prey.length);
   for (const s of world.species) {
     const pop = h.pops[s.id] ?? 0;
     if (pop <= 0) continue;
     const kit = speciesKit(s);
     if (!kit.hunts) continue;
-    const rates = takeRates(kit, prey, h.area);
+    const rates = takeRates(kit, prey, h, open);
     for (let i = 0; i < prey.length; i++) {
       if (rates[i] <= 0) continue;
       const grams = pop * SEA.appetite * rates[i];
@@ -112,7 +124,7 @@ export function hunted(h: Habitat, world: World, extra?: Newcomer, prey = preyIn
     }
   }
   for (let k = 0; k < takes.length; k++) {
-    const i = at[k], cap = HUNT.maxTake * prey[i].grams;
+    const i = at[k], cap = HUNT.maxTake * prey[i].grams * open;
     if (wanted[i] > cap) takes[k].grams *= cap / wanted[i];
   }
   return takes;

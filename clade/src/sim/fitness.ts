@@ -5,7 +5,7 @@ import { ACCENT } from '../data/palette';
 import { BASE_UPKEEP, FOODS, LETTER_THRESHOLDS, PART_EFFECT, SEA, TERM_THRESHOLDS, YIELDS } from '../data/sea';
 import { biteOf, huntsWith, partsOf, sizeOf } from './build';
 import type { Habitat } from './habitats';
-import { kitOf, preyIn, takeTotal, threat, type Kit } from './hunt';
+import { kitOf, preyIn, spare, takeTotal, threat, type Kit } from './hunt';
 import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, Stats, World } from './records';
 
 export { bodyMass } from './build';
@@ -46,7 +46,7 @@ function deriveStats(build: Build, ranks: Ranks, ids: PartId[]): Stats {
   return { bite, thrift, defence, speed, senses, brood };
 }
 
-/** Food slots read ceilings; the hunt slot reads today's prey, whose grams are its capacity (N4 A). */
+/** Food slots read ceilings; the hunt slot reads today's prey: its capacity is the grams above the refuge (N4 fix C). */
 export function slots(habitat: Habitat, world: World): Slot[] {
   const out = FOODS.flatMap((food): Slot[] => {
     const capacity = ceiling(habitat, food);
@@ -54,8 +54,8 @@ export function slots(habitat: Habitat, world: World): Slot[] {
     const role = food === 'mats' ? 'grazer' : 'burrower';
     return [{ id: food, foods: [food], name: food === 'mats' ? 'Graze mats' : 'Dig detritus', role, accent: ACCENT[role], capacity }];
   });
-  const prey = preyIn(habitat, world), capacity = prey.reduce((sum, p) => sum + p.grams, 0);
-  if (capacity >= SEA.slotFloor) out.push({ id: 'prey', foods: [], name: 'Hunt prey', role: 'hunter', accent: ACCENT.hunter, capacity, prey });
+  const prey = preyIn(habitat, world), capacity = spare(habitat, prey);
+  if (capacity > 0) out.push({ id: 'prey', foods: [], name: 'Hunt prey', role: 'hunter', accent: ACCENT.hunter, capacity, prey });
   return out;
 }
 
@@ -98,7 +98,7 @@ export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, 
     intake += r * density(habitat, food);
     full += r * fullDensity(habitat, food);
   }
-  if (slot.prey) intake = full = takeTotal(body.kit, slot.prey, habitat.area);
+  if (slot.prey) intake = full = takeTotal(body.kit, slot.prey, habitat);
   const per = survival * traits.brood / upkeep;
   return { intake, full, upkeep, survival, value: intake * per, letter: letterFor(full * per, LETTER_THRESHOLDS[slot.id]) };
 }
@@ -106,7 +106,7 @@ export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, 
 /** The sea's hot loop: `score`'s value for a prepared body, with no letter, reasons or allocation. */
 export function valueIn(body: Body, slot: Slot, h: Habitat, survival: number): number {
   let intake = 0;
-  if (slot.prey) intake = takeTotal(body.kit, slot.prey, h.area);
+  if (slot.prey) intake = takeTotal(body.kit, slot.prey, h);
   else if (!body.hunts) for (const food of slot.foods) intake += foodReach(body, food, h) * density(h, food);
   return intake * survival * body.traits.brood / body.upkeep;
 }
@@ -115,7 +115,7 @@ export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat
   const danger = threat(build, habitat, world);
   const fit = score(build, ranks, slot, habitat, danger.survival);
   const hunter = huntsWith(build), grazes = reach(build, ranks, 'mats', habitat) > 0, digs = reach(build, ranks, 'detritus', habitat) > 0;
-  const prey = slot.prey ? `${slot.prey.length} prey kind${slot.prey.length === 1 ? '' : 's'} here, ${Math.round(slot.capacity)} g` : '';
+  const prey = slot.prey ? `${slot.prey.length} prey kind${slot.prey.length === 1 ? '' : 's'} here, ${Math.round(slot.capacity)} g in reach` : '';
   const foodLeft = slot.prey ? prey : slot.foods.map((food) => {
     const max = ceiling(habitat, food);
     return `${slot.foods.length > 1 ? `${food} ` : ''}food at ${Math.round(max > 0 ? 100 * habitat.stocks[food] / max : 0)}%`;

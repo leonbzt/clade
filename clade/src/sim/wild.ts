@@ -2,7 +2,7 @@
 // the clutch's own machinery (one legal change, then two). Wild species are pruned once they live nowhere.
 import { CLADES } from '../data/clades';
 import { PARTS } from '../data/parts';
-import { WILD } from '../data/sea';
+import { HUNT, WILD } from '../data/sea';
 import { buildKey } from './build';
 import { changes, heirBuild, type Card } from './clutch';
 import { bodyOf, score, stocked, type Body } from './fitness';
@@ -84,7 +84,7 @@ export function bud(world: World, available: Slot[][], held: Set<SlotId>[]): Bud
   world.habitats.forEach((h, hi) => {
     const cache = new Map<string, number>();
     available[hi].forEach((slot, si) => {
-      if (held[hi].has(slot.id) || !stocked(slot, h)) return;
+      if (held[hi].has(slot.id) || !stocked(slot, h) || (slot.prey && slot.capacity < HUNT.from)) return;
       if (budRoll(world.seed, world.generation, h.id, si) >= WILD.chance) return;
       const near = [h, ...h.neighbours.map((id) => world.habitats.find((n) => n.id === id)).filter((n): n is Habitat => !!n)];
       const parents = world.species.map((s) => ({ s, grams: Math.max(...near.map((n) => n.pops[s.id] ?? 0)) }))

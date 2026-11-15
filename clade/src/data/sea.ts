@@ -30,11 +30,14 @@ export const SEA = {
 };
 // Who eats whom (N4 A): a build with a hunting part eats only prey, the populations here no bigger than it with no
 // hunting part. The take per gram of hunter is type II (levels off as prey grows) and split by share of grams squared.
+// Hunters reach only the prey above the habitat's refuge, so a trough has a floor that scales with area.
 export const HUNT = {
   reach: 1, // hunt intake: prey reach per bite, like a food-opening part's reach
   referenceDensity: 1, // hunt intake: prey grams per tile representing one share (prey stand far thinner than mats)
   saturation: 2, // hunt intake, type II: the take per gram of hunter levels off at reach × saturation
-  maxTake: 0.8, // hunt: hunters together take at most this share of a prey population per generation
+  maxTake: 0.8, // hunt: hunters together take at most this share of the prey they can reach, per generation
+  refuge: { sand: 0.15, mud: 0.3, rock: 0.45 }, // hunt: grams of prey per tile that hunters cannot reach; rock hides more (N4 fix C)
+  from: 500, // hunt: grams of prey above the refuge before a hunter arrives, by spread or as a wild cousin
   probe: 20, // survival preview: grams of a newcomer that is not here yet, as hunters would meet it
   preyHeads: 6, // a hunter's Life: heads of a prey species per place it takes on the board; none, no Life as a hunter here
 };

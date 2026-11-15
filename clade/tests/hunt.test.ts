@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { GUARD, SEA } from '../src/data/sea';
+import { GUARD, HUNT } from '../src/data/sea';
 import { fitness, slots } from '../src/sim/fitness';
 import type { Habitat } from '../src/sim/habitats';
-import { hunted, preyIn, threat } from '../src/sim/hunt';
+import { hunted, preyIn, spare, threat } from '../src/sim/hunt';
 import type { Build, Species, World } from '../src/sim/records';
 import { step } from '../src/sim/sea';
 
 const worm = (parts: Build['parts'] = {}, size = 1): Build => ({ clade: 'worm', parts, genes: { size, gut: 1 } });
 const grazer = worm({ front: 'tentacles' }), hunter = worm({ front: 'proboscis' });
 const sp = (id: string, build: Build): Species => ({ id, lineage: null, parent: 'root', build, name: id, born: 0 });
-const habitat = (pops: Record<string, number>, substrate: 'sand' | 'mud' = 'mud'): Habitat => ({
+const habitat = (pops: Record<string, number>, substrate: 'sand' | 'mud' | 'rock' = 'mud'): Habitat => ({
   id: 0, name: 'Test', kind: { depth: 'shallows', substrate, exposure: 'open' }, tiles: [], area: 40,
   centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 20, stocks: { mats: 800, detritus: 1200 }, pops,
 });
@@ -33,10 +33,28 @@ describe('who eats whom', () => {
     for (const food of slots(h, world).filter((s) => s.id !== 'prey')) expect(fitness(hunter, {}, food, h, world).intake).toBe(0);
   });
 
-  it('no hunt slot while the prey weighs under slotFloor, and then no take', () => {
-    const h = habitat({ g: SEA.slotFloor - 1, p: 50 }), world = sea(h, [sp('g', grazer), sp('p', hunter)]);
+  it('no hunt slot while the prey stand at their refuge, and then no take', () => {
+    const refuge = HUNT.refuge.mud * 40;
+    const h = habitat({ g: refuge, p: 50 }), world = sea(h, [sp('g', grazer), sp('p', hunter)]);
     expect(slots(h, world).some((s) => s.id === 'prey')).toBe(false);
     expect(hunted(h, world)).toEqual([]);
+    h.pops.g = refuge + 30;
+    expect(slots(h, world).find((s) => s.id === 'prey')!.capacity).toBeCloseTo(30);
+    expect(spare(h, preyIn(h, world))).toBeCloseTo(30);
+  });
+
+  it('prey is never hunted below its refuge, however many hunters; rock hides three times what sand does', () => {
+    const left = (substrate: 'sand' | 'mud' | 'rock', grams: number) => {
+      const h = habitat({ g: grams, rare: grams / 10, p: 1e6 }, substrate);
+      const world = sea(h, [sp('g', grazer), sp('rare', worm({ tail: 'pouch' })), sp('p', hunter)]);
+      const took = hunted(h, world).reduce((sum, t) => sum + t.grams, 0);
+      expect(took).toBeCloseTo(HUNT.maxTake * spare(h, preyIn(h, world)));
+      for (let i = 0; i < 40; i++) { step(world); h.pops.p = 1e6; h.stocks = { mats: 800, detritus: 1200 }; }
+      return (h.pops.g ?? 0) + (h.pops.rare ?? 0);
+    };
+    for (const substrate of ['sand', 'mud', 'rock'] as const)
+      for (const grams of [20, 300]) expect(left(substrate, grams)).toBeGreaterThanOrEqual(HUNT.refuge[substrate] * 40 - 1e-9);
+    expect(HUNT.refuge.rock).toBeCloseTo(3 * HUNT.refuge.sand);
   });
 
   it('law 3: adding a hunter lowers its prey\'s survival, and the reason names it', () => {
