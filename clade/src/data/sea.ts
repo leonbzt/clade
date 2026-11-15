@@ -41,10 +41,11 @@ export const HUNT = {
   probe: 20, // survival preview: grams of a newcomer that is not here yet, as hunters would meet it
   preyHeads: 6, // a hunter's Life: heads of a prey species per place it takes on the board; none, no Life as a hunter here
 };
-// Wild branches (N4 B): an unchosen slot with food buds a wild species, one or two legal changes from a nearby parent.
+// Wild cousins (N4 fix E): an open cell in a habitat you live in waits `bar` generations, then a build within two
+// legal changes of a species living there takes it.
 export const WILD = {
-  chance: 0.08, // bud: chance per generation for each slot with food that no population chooses
-  founders: 20, // bud: grams the wild species starts with in that habitat
+  bar: 36, // cousin: generations an open cell waits, about three Lives
+  founders: 20, // cousin: grams the wild species starts with in that habitat
 };
 export const LIFE_GENS = 12; // the sea's generations per Life: they run on the way back to the map after hatching
 /** Living paint on the map (N4 F, view only): capsules per species and habitat, their speeds in tiles a second. */

@@ -1,5 +1,5 @@
 // The return replay (N4 G, view only): after hatching, the Life's generations play over about `REPLAY.seconds` on the
-// map. Capsule counts follow the populations, arrivals walk in across the shared border, buds flash once with their
+// map. Capsule counts follow the populations, arrivals walk in across the shared border, wild cousins flash once with their
 // name, the lost fade. `skip` jumps to the end. Reads the sea run; changes nothing in World.
 import { REPLAY } from '../data/sea';
 import type { Species, World } from '../sim/records';
@@ -25,7 +25,7 @@ export function replay(view: MapView, world: World, run: SeaRun, shout: (s: Shou
     });
     for (const b of r.buds) {
       view.living.flash(b.habitat, b.species.id);
-      shout({ habitat: b.habitat, text: `${names.get(b.species.id)?.name ?? b.species.name} buds` });
+      shout({ habitat: b.habitat, text: `A wild cousin: ${names.get(b.species.id)?.name ?? b.species.name}` });
     }
     k++;
     timer = window.setTimeout(next, wait);

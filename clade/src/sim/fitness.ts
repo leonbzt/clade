@@ -60,6 +60,8 @@ export function slots(habitat: Habitat, world: World): Slot[] {
 }
 
 /** A slot with something in it to eat today. */
+/** A newcomer grows where appetite × value beats deaths at today's food. */
+export const grows = (value: number) => SEA.appetite * value > SEA.deaths;
 /** A cell is one slot in one habitat. */
 export const cellKey = (habitat: number, slot: SlotId) => `${habitat}:${slot}`;
 export const stocked = (slot: Slot, h: Habitat) => slot.prey ? slot.capacity > 0 : slot.foods.some((food) => h.stocks[food] > 0);

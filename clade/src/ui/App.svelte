@@ -19,6 +19,7 @@
   import { runLife, type SeaRun } from './sea-run';
   import { replay, type Shout } from './replay';
   import Notes from './Notes.svelte';
+  import { nearestBar } from '../sim/news';
   import { REPLAY } from '../data/sea';
   import LifeScreen from './life/Life.svelte';
   import Hatch from './Hatch.svelte';
@@ -156,7 +157,7 @@
     // For the look script: drive the map without taps.
     Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: (id = YOUR_LINE) => (lineOpen = id), openTree: () => (treeOpen = true), get tree() { return treeOpen; }, spend: spendPart, get dev() { return dev; },
       send: (id: string, adopting = false) => { const s = world.species.find((x) => x.id === id); return !!s && send(s, adopting); },
-      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; }, get news() { return seaRun?.news.map((l) => l.text) ?? []; },
+      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; }, get news() { return seaRun?.news.map((l) => l.text) ?? []; }, get nextCousin() { return nearestBar(world)?.text ?? null; },
       get session() { return active; }, get lifeCount() { return lifeCount; }, get replaying() { return replaying; }, skipReplay: () => skipReplay?.(), get notesOpen() { return notesOpen; },
       setMode: (m: MapMode) => (mode = m), fit: () => view.fit(), look: (x: number, y: number, z: number) => view.look(x, y, z),
       get world() { return world; }, get ground() { return ground; }, get history() { return past; } } });
@@ -233,7 +234,7 @@
     {/each}
     {#if replaying}<button class="skip" onclick={() => skipReplay?.()}><span>The sea while you lived · tap to skip</span></button>{/if}
     {#if notesOpen && seaRun}
-      <Notes news={seaRun.news} look={lookAt} close={() => (notesOpen = false)} />
+      <Notes news={seaRun.news} next={nearestBar(world)} look={lookAt} close={() => (notesOpen = false)} />
     {:else if selected >= 0 && world.habitats[selected]}
       {#key `${selected}:${pickedId}`}
         <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} picked={dev ? picked : undefined} {ranks} place={placePicked} colonise={colonisePicked} {send} adopt={(s) => send(s, true)} />

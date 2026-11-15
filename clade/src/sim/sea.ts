@@ -2,7 +2,7 @@
 // eating so the stored stock is the standing food: what the next eaters find and what every letter reads.
 // Every slot and prediction below is temporary. World holds only the records, never a role or tier.
 import { FOODS, HUNT, REGROW, SEA } from '../data/sea';
-import { bodyMass, bodyOf, ceiling, cellKey, density, reach, score, slots, stocked, valueIn, type Body } from './fitness';
+import { bodyMass, bodyOf, ceiling, cellKey, density, grows, reach, score, slots, stocked, valueIn, type Body } from './fitness';
 import { makeGround } from './ground';
 import { findHabitats, type Habitat } from './habitats';
 import { hunted, speciesKit, threat } from './hunt';
@@ -32,8 +32,7 @@ export function bestSlot(build: Build, ranks: Ranks, h: Habitat, world: World, a
   return chosen;
 }
 
-/** A newcomer grows where appetite × value beats deaths at today's food: it moves only there. */
-export const grows = (value: number) => SEA.appetite * value > SEA.deaths;
+export { grows };
 
 /** The sea's choice: the first stocked slot of the body's diet with the highest value, as `bestSlot` picks it. */
 function choose(body: Body, h: Habitat, available: Slot[], survival: number) {
@@ -54,7 +53,7 @@ export interface Move { from: number; to: number; species: Id; grams: number }
 /** What one generation did, for the news, the paint and the replay. The UI keeps it; never World (law 2). */
 export interface StepReport { generation: number; tallies: Tally[]; hunts: Hunt[]; moves: Move[]; buds: Bud[]; gone: Species[] }
 
-/** Mutates ecological state in place; geometry stays. Species records change only by wild buds and pruning. */
+/** Mutates ecological state in place; geometry stays. Species records change only by wild cousins and pruning. */
 export function step(world: World): StepReport {
   const { habitats, species } = world, n = species.length;
   const lines = new Map(world.lineages.map((line) => [line.id, line.ranks]));
@@ -151,7 +150,7 @@ export function step(world: World): StepReport {
   });
   habitats.forEach((h, i) => (h.pops = nextPops[i]));
 
-  // 6. Bud: a slot with food that nobody chose may grow a wild branch. Then wild species living nowhere leave.
+  // 6. Bars: an open cell in a habitat you live in counts up to a wild cousin. Then wild species living nowhere leave.
   report.buds = bud(world, available, held);
   report.gone = prune(world);
   world.generation++;

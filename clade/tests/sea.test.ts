@@ -20,10 +20,10 @@ const sea = (habitats = [habitat()], residents = [species()]): World => ({
   seed: 7, generation: 0, claimed: [], bars: {}, habitats, species: residents,
   lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'none' }],
 });
-// N1's sea laws, measured without N4's wild buds.
-const chance = WILD.chance;
-beforeAll(() => { WILD.chance = 0; });
-afterAll(() => { WILD.chance = chance; });
+// N1's sea laws, measured without wild cousins: their bars never fill here.
+const bar = WILD.bar;
+beforeAll(() => { WILD.bar = Infinity; });
+afterAll(() => { WILD.bar = bar; });
 function run(world: World, generations: number) { for (let i = 0; i < generations; i++) step(world); return world; }
 const biomass = (world: World) => world.habitats.reduce((sum, h) => sum + Object.values(h.pops).reduce((a, b) => a + b, 0), 0);
 

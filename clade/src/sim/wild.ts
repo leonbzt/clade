@@ -1,70 +1,68 @@
-// Wild branches (N4 B): a slot with food that no population chooses may bud a wild species from a nearby parent, on
-// the clutch's own machinery (one legal change, then two). Wild species are pruned once they live nowhere.
+// Wild cousins (N4 fix E): an open cell in a habitat you live in fills a bar, one generation at a time. When it is
+// full, a cousin of a species living there takes the cell: no dice, so the sea changes on a clock you can read.
+// The leash is the clutch's own machinery (two legal changes). Wild species are pruned once they live nowhere.
 import { CLADES } from '../data/clades';
 import { PARTS } from '../data/parts';
 import { HUNT, WILD } from '../data/sea';
-import { buildKey } from './build';
+import { buildKey, isYours } from './build';
 import { changes, heirBuild, type Card } from './clutch';
-import { bodyOf, score, stocked, type Body } from './fitness';
+import { bodyOf, cellKey, grows, score, slots, stocked, valueIn, type Body } from './fitness';
 import type { Habitat } from './habitats';
 import { speciesKit, threat } from './hunt';
 import type { Build, Letter, Slot, SlotId, Species, World } from './records';
-import { seeded } from './rng';
 
-const KEEP: Letter[] = ['B', 'C']; // a bud is never stronger than B: the strong slots stay the player's to take
 const RANK: Record<Letter, number> = { S: 6, A: 5, B: 4, C: 3, D: 2, F: 1 };
+const CAP = RANK.B; // a cousin is never stronger than B: the strong cells stay yours to take
 
-/** The roll for one slot in one habitat this generation: the same world seed, generation and habitat give the same. */
-export const budRoll = (seed: number, generation: number, habitat: number, slot: number) =>
-  seeded(Math.imul(seed ^ 0x9e3779b9, 31) + Math.imul(generation, 1000003) + Math.imul(habitat, 7919) + slot * 104729)();
-
-interface Candidate { build: Build; cards: Card[]; letter: Letter; full: number }
 interface Option { build: Build; cards: Card[]; body: Body }
-
-/** The builds one or two legal changes from the parent that eat this slot's kind of food and read C or better before
- *  any hunter (survival lowers a letter, never raises it). For a food slot this depends only on the parent, the slot
- *  and the habitat's kind, so it is memoised; the answer is the same either way. */
+/** Every build one or two legal changes from the parent, the nearer path first. It depends only on the parent. */
 const memo = new Map<string, Option[]>();
-function options(parent: Build, slot: Slot, h: Habitat, steps: 1 | 2): Option[] {
-  const key = slot.prey ? '' : `${buildKey(parent)}|${h.kind.depth}|${h.kind.substrate}|${slot.id}|${steps}`;
-  const known = key && memo.get(key);
+function options(parent: Build): Option[] {
+  const key = buildKey(parent), known = memo.get(key);
   if (known) return known;
-  const seen = new Set<string>([buildKey(parent)]), out: Option[] = [];
-  const visit = (build: Build, cards: Card[], left: number) => {
-    for (const card of changes(build)) {
-      const next = heirBuild(build, card), path = [...cards, card];
-      if (left > 1) { visit(next, path, left - 1); continue; } // only the last step's builds are candidates
-      const id = buildKey(next);
-      if (seen.has(id)) continue;
-      seen.add(id);
-      const body = bodyOf(next, {});
-      if (!slot.prey !== !body.hunts) continue; // the diet rule: it must eat this slot's food
-      if (RANK[score(next, {}, slot, h, 1, body).letter] >= RANK.C) out.push({ build: next, cards: path, body });
-    }
-  };
-  visit(parent, [], steps);
-  if (key) {
-    if (memo.size > 4000) memo.clear();
-    memo.set(key, out);
+  const one = changes(parent).map((card) => ({ build: heirBuild(parent, card), cards: [card] }));
+  const two = one.flatMap((o) => changes(o.build).map((card) => ({ build: heirBuild(o.build, card), cards: [...o.cards, card] })));
+  const seen = new Set([key]), out: Option[] = [];
+  for (const o of [...one, ...two]) {
+    const id = buildKey(o.build);
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push({ ...o, body: bodyOf(o.build, {}) });
   }
+  if (memo.size > 200) memo.clear();
+  memo.set(key, out);
   return out;
 }
 
-/** A newcomer's survival depends only on its size and guards, so one habitat's buds share it (`cache`). */
-function candidates(parent: Build, slot: Slot, h: Habitat, world: World, steps: 1 | 2, cache: Map<string, number>): Candidate[] {
-  const out: Candidate[] = [];
-  for (const { build, cards, body } of options(parent, slot, h, steps)) {
-    const here = world.species.some((s) => (h.pops[s.id] ?? 0) > 0 && speciesKit(s).key === body.kit.key);
-    const kind = `${body.kit.size}|${body.kit.guards.join()}`;
-    let survival = here ? undefined : cache.get(kind);
-    if (survival === undefined) {
-      survival = threat(build, h, world).survival;
-      if (!here) cache.set(kind, survival);
+export interface Cousin { build: Build; cards: Card[]; parent: Species; letter: Letter; value: number }
+/** The leash: the best build within two legal changes of a species living here that eats this cell's food, would take
+ *  this cell, grows there today and reads B at most. Parents are tried heaviest first; no such build, no cousin. */
+export function cousinFor(world: World, h: Habitat, slot: Slot, available = slots(h, world)): Cousin | null {
+  const parents = world.species.map((s) => ({ s, grams: h.pops[s.id] ?? 0 })).filter((p) => p.grams > 0)
+    .sort((a, b) => b.grams - a.grams || a.s.id.localeCompare(b.s.id));
+  const others = available.filter((s) => s !== slot && !s.prey && stocked(s, h));
+  const tried = new Set<string>(), cache = new Map<string, number>(); // survival depends only on size and guards
+  let best: Cousin | null = null;
+  for (const { s: parent } of parents) {
+    const key = buildKey(parent.build);
+    if (tried.has(key)) continue; // the same body gives the same candidates
+    tried.add(key);
+    for (const { build, cards, body } of options(parent.build)) {
+      if (!slot.prey !== !body.hunts) continue; // the diet rule: it must eat this cell's food
+      const here = world.species.some((s) => (h.pops[s.id] ?? 0) > 0 && speciesKit(s).key === body.kit.key);
+      const kind = `${body.kit.size}|${body.kit.guards.join()}`;
+      let survival = here ? undefined : cache.get(kind);
+      if (survival === undefined) {
+        survival = threat(build, h, world).survival;
+        if (!here) cache.set(kind, survival);
+      }
+      const fit = score(build, {}, slot, h, survival, body);
+      if (RANK[fit.letter] > CAP || !grows(fit.value) || (best && fit.value <= best.value)) continue;
+      if (!slot.prey && others.some((other) => valueIn(body, other, h, survival!) > fit.value)) continue; // it would eat elsewhere
+      best = { build, cards, parent, letter: fit.letter, value: fit.value };
     }
-    const fit = score(build, {}, slot, h, survival, body);
-    if (KEEP.includes(fit.letter)) out.push({ build, cards, letter: fit.letter, full: fit.full });
   }
-  return out;
+  return best;
 }
 
 function wildName(world: World, build: Build, cards: Card[]): string {
@@ -76,42 +74,42 @@ function wildName(world: World, build: Build, cards: Card[]): string {
   return name;
 }
 
+/** A cell waits for a cousin while it has food to offer: any for a food cell, `HUNT.from` grams of prey above the
+ *  refuge for the hunt cell. */
+const waits = (slot: Slot, h: Habitat) => stocked(slot, h) && (!slot.prey || slot.capacity >= HUNT.from);
+/** Generations until a cousin takes this cell, or null when its bar is not running. */
+export function cousinIn(world: World, habitat: number, slot: SlotId): number | null {
+  const bar = world.bars[cellKey(habitat, slot)];
+  return bar === undefined ? null : Math.max(1, WILD.bar - bar);
+}
+
 export interface Bud { species: Species; habitat: number; parent: Species; slot: SlotId; letter: Letter }
 
-/** Buds for this generation. `held` lists, per habitat, the slots some population chose. Adds founders in place. */
+/** One generation of bars. `held` lists, per habitat, the slots some population chose. A bar runs on a cell that
+ *  waits, that nobody holds, in a habitat where a species of yours lives; every other bar starts again from 0. A full
+ *  bar brings a cousin (its founders are added in place) and restarts, cousin or not. */
 export function bud(world: World, available: Slot[][], held: Set<SlotId>[]): Bud[] {
-  const buds: Bud[] = [];
+  const buds: Bud[] = [], bars: World['bars'] = {};
   world.habitats.forEach((h, hi) => {
-    const cache = new Map<string, number>();
+    if (!world.species.some((s) => isYours(s) && (h.pops[s.id] ?? 0) > 0)) return;
     available[hi].forEach((slot, si) => {
-      if (held[hi].has(slot.id) || !stocked(slot, h) || (slot.prey && slot.capacity < HUNT.from)) return;
-      if (budRoll(world.seed, world.generation, h.id, si) >= WILD.chance) return;
-      const near = [h, ...h.neighbours.map((id) => world.habitats.find((n) => n.id === id)).filter((n): n is Habitat => !!n)];
-      const parents = world.species.map((s) => ({ s, grams: Math.max(...near.map((n) => n.pops[s.id] ?? 0)) }))
-        .filter((p) => p.grams > 0).sort((a, b) => b.grams - a.grams || a.s.id.localeCompare(b.s.id));
-      const tried = new Set<string>();
-      for (const { s: parent } of parents) {
-        const key0 = buildKey(parent.build);
-        if (tried.has(key0)) continue; // the same body gives the same candidates
-        tried.add(key0);
-        const found = candidates(parent.build, slot, h, world, 1, cache);
-        const pool = found.length ? found : candidates(parent.build, slot, h, world, 2, cache);
-        if (!pool.length) continue;
-        const best = pool.reduce((a, b) => RANK[b.letter] > RANK[a.letter] || (b.letter === a.letter && b.full > a.full) ? b : a);
-        const key = buildKey(best.build);
-        let species = world.species.find((s) => s.lineage === null && buildKey(s.build) === key);
-        if (!species) {
-          species = { id: `wild-${world.generation}-${h.id}-${si}`, lineage: null, parent: parent.id, build: best.build,
-            name: wildName(world, best.build, best.cards), born: world.generation };
-          world.species.push(species);
-        }
-        h.pops[species.id] = (h.pops[species.id] ?? 0) + WILD.founders;
-        held[hi].add(slot.id);
-        buds.push({ species, habitat: h.id, parent, slot: slot.id, letter: best.letter });
-        break;
+      if (held[hi].has(slot.id) || !waits(slot, h)) return;
+      const key = cellKey(h.id, slot.id), bar = (world.bars[key] ?? 0) + 1;
+      if (bar < WILD.bar) { bars[key] = bar; return; }
+      const cousin = cousinFor(world, h, slot, available[hi]);
+      if (!cousin) return;
+      const id = buildKey(cousin.build);
+      let species = world.species.find((s) => s.lineage === null && buildKey(s.build) === id);
+      if (!species) {
+        species = { id: `wild-${world.generation}-${h.id}-${si}`, lineage: null, parent: cousin.parent.id, build: cousin.build,
+          name: wildName(world, cousin.build, cousin.cards), born: world.generation };
+        world.species.push(species);
       }
+      h.pops[species.id] = (h.pops[species.id] ?? 0) + WILD.founders;
+      buds.push({ species, habitat: h.id, parent: cousin.parent, slot: slot.id, letter: cousin.letter });
     });
   });
+  world.bars = bars;
   return buds;
 }
 

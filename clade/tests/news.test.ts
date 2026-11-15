@@ -1,12 +1,10 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { WILD } from '../src/data/sea';
 import type { Habitat } from '../src/sim/habitats';
-import { news, popsOf } from '../src/sim/news';
+import { nearestBar, news, popsOf } from '../src/sim/news';
 import type { Build, Species, World } from '../src/sim/records';
 import { step, type StepReport } from '../src/sim/sea';
 
-const chance = WILD.chance;
-afterEach(() => { WILD.chance = chance; });
 const worm = (parts: Build['parts'] = {}): Build => ({ clade: 'worm', parts, genes: { size: 1, gut: 1 } });
 const sp = (id: string, build: Build, lineage: string | null = 'worm-line'): Species => ({ id, lineage, parent: null, build, name: id, born: 0 });
 const habitat = (id: number, pops: Record<string, number>, neighbours: number[] = []): Habitat => ({
@@ -21,7 +19,6 @@ const life = (world: World, gens = 12) => {
 
 describe('news', () => {
   it('every line has a cause; yours come first; a hunter on yours is named', () => {
-    WILD.chance = 0.3;
     const world: World = {
       seed: 5, generation: 0, claimed: [], bars: {}, lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
       habitats: [habitat(0, { t: 300, hook: 30 }, [1]), habitat(1, {}, [0])],
@@ -40,9 +37,21 @@ describe('news', () => {
   });
 
   it('a quiet sea has no news', () => {
-    WILD.chance = 0;
     const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, lineages: [], habitats: [habitat(0, {})], species: [] };
     expect(life(world)).toEqual([]);
+    expect(nearestBar(world)).toBeNull();
+  });
+
+  it('a wild cousin is told with its cell, its letter and the species of yours it came from; a quiet sea names the nearest bar', () => {
+    const world: World = {
+      seed: 5, generation: 0, claimed: [], bars: { '0:detritus': WILD.bar - 7 }, lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
+      habitats: [habitat(0, { t: 300 })], species: [{ ...sp('t', worm({ front: 'tentacles' })), name: 'Tentacle worm' }],
+    };
+    expect(nearestBar(world)).toEqual({ habitat: 0, text: 'A wild cousin takes Dig in H0 in 7 generations.' });
+    const lines = life(world, 7), cousin = lines.find((l) => l.kind === 'bud')!;
+    expect(cousin.text).toMatch(/^A wild cousin took Dig in H0: Wild [a-z ]+ \([BCD]\), from your Tentacle worm\.$/);
+    expect(cousin.yours).toBe(true);
+    expect(lines[0].yours).toBe(true);
   });
 });
 

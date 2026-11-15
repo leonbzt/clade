@@ -4,7 +4,8 @@
   import { css } from '../data/palette';
   import { colonise as purposeOf, noPrey } from '../sim/found';
   import { isLifeBuild } from '../sim/life';
-  import { bodyMass } from '../sim/fitness';
+  import { bodyMass, cellKey } from '../sim/fitness';
+  import { cousinFor, cousinIn } from '../sim/wild';
   import type { Habitat } from '../sim/habitats';
   import type { Ranks, Species, World } from '../sim/records';
   import { heldSlots, predictions } from '../view/tiers';
@@ -62,11 +63,12 @@
     <h3>Holders</h3>
   {/if}
   {#each held as { slot, holders } (slot.id)}
-    <h3 style:color={css(slot.accent)}>{slot.name}</h3>
+    {@const wait = cousinIn(world, hab.id, slot.id)}
+    <h3 style:color={css(slot.accent)}>{slot.name}{#if world.claimed.includes(cellKey(hab.id, slot.id))}<span class="gold"> · your cell</span>{/if}</h3>
     {#each holders as { species, ranks } (species.id)}
       <TierCard build={species.build} {ranks} {slot} {hab} {world} name={species.name} />
       <p class="population">{Math.round(hab.pops[species.id] / bodyMass(species.build)).toLocaleString('en')} heads · {Math.round(hab.pops[species.id]).toLocaleString('en')} g</p>
-    {:else}<p class="empty">Unheld</p>{/each}
+    {:else}<p class="empty">Unheld{#if wait} · {cousinFor(world, hab, slot) ? `a wild cousin in ${wait} generation${wait === 1 ? '' : 's'}` : 'no wild cousin fits here'}{/if}</p>{/each}
   {/each}
   {#if wild.length}
     <h3>Wild here</h3>
