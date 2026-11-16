@@ -40,6 +40,14 @@ the user says so. A build session reads its step spec, not this page; the spec c
   yours at the tide line; adopting it opens shore cells. The land shows its plants only. This uses the lean of
   §11.2 for the toy and does not decide it for W4.
 
+**Fourth round, 16 Nov (after the first play of W1; your words are in `decisions.md`):**
+- **W1 gets a round two before W2:** the toy's gaps are fixed in the toy (variants you could not read, one cell a
+  place, no progression).
+- **Opposition, on a visible bar:** a better-reading wild species comes for a held cell, yours included, one
+  challenge a place at a time, and you get a Hold goal. This changes the 12 Nov call that wild never beats you.
+- **Progression is radiate, then a new line; species cards are collected.** Your wish, not yet a call: each line as
+  its own skill bar on a steep curve, so many low lines are cheap and the top of one is long and specialised (W5).
+
 ## 2. Findings: why the frame had to move
 *Measured in `clade/src` on 15 Nov.*
 - **The sim's world is written as types, not data:** 5 clades, 2 foods, 3 roles, 3 defence kinds and 27 named parts
@@ -122,9 +130,13 @@ data on the clade and a rule in the Life, not a new system.
   is one of three kinds: a look (a colour morph: yours to collect), a push (a dial beyond its normal range, at a
   cost), or a key adaptation (opens a realm and a clade). Feasible and cheap: a variant is the same `Build` record
   with other numbers, so the sim, the letters and the drawing already handle it.
+- **Radiation and cards (*proposal 16 Nov*, under the fourth round; W1 round two tests it):** there is no one heir.
+  Each cell's population is its own build; a Life founds from the best population nearby. A population walks, a dial
+  step a variant, toward the real species of its clade that fits its cell, and becoming one wins that species' card.
+  Cards open the next line. One step moves a value by 4 to 5% (measured), so the unit you can read is the species.
 - **The map loop:** every population drifts a dial step toward what its cell demands (the 9 Nov wish) and now and
   then throws a variant, on a bar. On the map a variant is drawn differently and marked. You tap it, compare its
-  genome and letter with your line's, and **adopt** it (it becomes your line's heir there), leave it, or watch it
+  genome and letter with your line's, and **adopt** it (it becomes that cell's population; *16 Nov*, before: your line's heir), leave it, or watch it
   win or lose its cell by itself. Coming back after hours means new variants to look through. Rare ones are worth
   hunting; where they appear follows a rule you can learn (the edge, a crash, a new rival).
 - **Lives (3a):** three kinds, the verbs that exist: forage, dig, hunt. Every mover clade names one. Swimming, walking
@@ -235,3 +247,7 @@ sea, the next goal), Q2 (zoom), Q3 and Q4 (grammar and drawing). Everything else
 2. **How is a key adaptation won?** (a) *Lean:* as a rare variant you find on the map or in a clutch, in a population
    living at the edge; (b) as a level on the line's ladder; (c) both: the ladder raises the chance. For W4 and W5.
 3. **The budget:** 3 dials per line and at most 6 mutations per clade, replacing "10 genes per kingdom"? For W2.
+4. **The laws' second cut** (16 Nov). 43 of 54 clade dials are flat: their best step moves no cell by a tenth, and
+   inside a clade bigger wins everywhere. Sweeps of the numbers did not change it; the formulas are smooth between
+   a few thresholds. *Lean:* its own architect pass with W3's rows (each dial gets a threshold where it flips, and
+   size gets a cost that bites). The ratchets `FLAT_MOST` and `UNDER` in `data.test.ts` hold the line until then.

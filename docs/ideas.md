@@ -230,3 +230,9 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Wild species vary and spread on their own (in W1 only your line varies). · Push variants show more often where a hunter holds a cell.
 - A producer's letter from more than the grams it makes (a lichen reads weak only because it makes little).
 - A roster gap finder: the coverage table proposes the kind of species a thin cell needs (W3's researcher batches).
+
+## From the W1 round-two session (16 Nov)
+- *The user's wish, for W5:* each line is its own skill bar on an OSRS-like curve: many low lines are cheap, the top of one takes long and much specialisation.
+- (AI) A data test "at home somewhere": every named species is the best of its clade in some cell (today a bigger sister wins everywhere).
+- (AI) A mutation variant prefers a mutation its destination species has, so cards that need one are reached sooner.
+- (AI) Rivals for cells on the shore and the land, once animals arrive there (W4).

@@ -892,3 +892,16 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   open for W4.
 - **Not decided:** every number, the law formulas, the board rules of the toy and the roster's rows. They are the
   architect's proposals in `docs/slices/w1-the-wide-toy.md` and `clade/src/data/roster/`.
+
+## 16 Nov (the W1 architect session after the first play; three questions)
+- **The next step:** "W1 round two". The toy's gaps are fixed in the toy before W2. (The other options: W2 now and
+  fix in the game; the laws first.)
+- **Opposition:** "Yes, on a visible bar". A better-reading wild species comes for a held cell, yours included, on a
+  bar you can watch, one challenge a place at a time; you get a Hold goal. This changes the 12 Nov call that a wild
+  holder never beats you.
+- **Progression:** "radiate then a new line as described, i like collecting the cards. each lineage or clade could
+  also be its own progress or skill bar in a way that has an osrs progression curve. so you can start many low level
+  lineages but to get to the top of one takes a long time and a lot of specialization." Radiation, cards and a
+  second line go into W1 round two; the skill-bar curve is a wish for W5 (lines), not a call yet.
+- **Not decided:** the rules of round two (founder, destination, when Adopt is asked, the rival's threshold of
+  ×1.25, which lines open at how many cards). They are the architect's proposals in the W1 spec.

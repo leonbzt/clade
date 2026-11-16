@@ -1,32 +1,29 @@
 # Status
 
-- **Milestone:** M2. Step 13, **W1 the wide toy** ([spec](slices/w1-the-wide-toy.md)): parts A and B built 16 Nov;
-  your play is next. Step 12 (the N4 fix) is still built and not played. Branch `n4-who-eats-whom`; commits
-  `a245a57` (the contract), `bdec94c` (part A), `7316a2d` (part B).
-- **Done (16 Nov, part B):** `toys/wide.html` and four files `toys/wide*.ts` (397 lines in all), one entry in
-  `toys/index.html`. Nothing under `clade/` changed. The goal sentence at the top (tap it to do it), your heir in words,
-  a Board tab (land, shore, sea by depth; gold chips are yours, grey wild, dashed open, dim out of reach; red text is the
-  missing adaptation; a pink ✦ is a variant), a card as a bottom sheet (holder or comer, stat bars, reasons, eats and
-  eaten by here, your heir's letter and Take/Beat/Improve or why not; a variant shows both builds side by side and
-  Adopt), news, a Roster tab (rows, realm filter, full card over the roster, the coverage table) and a folded dev panel.
-- **Where the brief was silent, the builder chose** (change any in a line):
-  - Tapping a "Wait" goal steps one Life's generations (12); it does not count as a Life.
-  - Mainning another clade starts from its first named species in the roster.
-  - "Force a variant" sets every held cell's variant bar one short, then steps one generation.
-- **Verified:** `npm run check` passes, 10.2 s (the budget is 10). Types are clean. One look run at 390 px: a fresh board,
-  then following the goal alone reached a shore cell at generation 852, 25 Lives. Cards and the roster render. One
-  404 in the console, most likely the favicon (no toy has one). Not verified: how it feels.
-- **What a look run showed** (for your play): following the goal, generations 264 to 756 were almost all "Wait a
-  Life": nothing in reach was open. The air key came from a mutation variant on the Mud slope, not on the flats.
-- **For the architect** (none blocks play):
-  1. **`reach` is not exported** from `board.ts`, and the page needs it to dim cells. `toys/wide-board.ts` mirrors rule
-     3 in four lines (`reachOf`). Lean: export it in the contract and drop the copy.
-  2. Following the goal makes the heir churn and can **drop the air key** (from part A). Adopt comes first, and each
-     variant was made from the heir at the time. Options: make variants from the cell's holder, have adopt keep the
-     heir's mutations, or adopt only when the letter changes.
+- **Milestone:** M2. Step 13, **W1 the wide toy** ([spec](slices/w1-the-wide-toy.md)): round one (parts A, B) played
+  16 Nov; **round two** is specified and its contract is code. Step 12 (the N4 fix) is still built and not played.
+  Branch `n4-who-eats-whom`. **Nothing of this session is committed.**
+- **Your calls (16 Nov, in `decisions.md`):** round two before W2 · a better-reading wild species comes for a held
+  cell on a visible bar, yours included, and you get a Hold goal · radiate, then a new line, with cards to collect.
+  Your skill-bar wish (an OSRS curve per line) is parked for W5 in `ideas.md`.
+- **Done (16 Nov, architect):** the spec's "Round two" section (rules C0–C7, D1–D3, parts C, D, E); direction §1
+  (fourth round), §5, §11.4; `board.ts` carries the new shapes (`Cell.rival`, `Board.lines/starts/cards`,
+  `Option.from`, `Goal.line`, `reach` exported) and five stubs that throw; `TOY.challenge`, `TOY.rivalBar` and
+  `LINES` in `toy.ts`; `board.test.ts` rewritten (19 tests, skipped until part C), `board-lines.test.ts` (5, skipped
+  until part D), `board-help.ts`; three new data tests (passing).
+- **The builder's two questions, answered:** (1) `reach` is exported; part E deletes the page's copy. (2) Variants
+  come from the cell's own population and the heir goes (C0, C3), so a key is never lost to a variant.
+- **Measured:** following the goal for 1 500 generations gave 90 Adopt and 62 Wait of about 215 goals, no Beat, no
+  Hold, 6 of 59 cells held, no named heir. One dial step moves a value 4 to 5%.
+- **Not delivered:** the retune I offered. 43 of 54 clade dials are flat and four sweeps of the laws' numbers did
+  not move that; it is the formulas. Now direction §11.4 and two ratchets (`FLAT_MOST`, `UNDER`).
+- **Verified:** `npm run check` passes, 8.6 s (types clean; 24 board tests skipped until built); the data the new
+  tests lean on (two ragworm species grow at home, a new line has a cell near home, air opens both shore places).
+  **Not verified:** the 24 skipped tests have never run, so some may fail on the data: the builder stops and asks.
+- **Expected:** `/toys/wide.html` still plays round one now; it will not run between part C and part E.
 - **Next:**
-  1. You: play `/toys/wide.html` ten minutes (`npm run dev`) and put your notes in
-     `docs/playtests/w1-the-wide-toy.md`. Still owed: the N4 fix play and the merge (step 12).
-  2. Then `/architect W1` with the notes and the two questions above.
-- **Open:** the spec's three questions (hunting reads light; gaps in the roster; `nextGoal` puts Adopt first), the two
-  above, direction §11.
+  1. `/build W1 C` (populations radiate), then `/build W1 D` (rivals and lines), then `/build W1 E` (the page).
+  2. You: play round two ten minutes and add notes to `docs/playtests/w1-the-wide-toy.md`. Still owed: the N4 fix
+     play and the merge (step 12).
+- **Open:** the spec's six questions (4: the laws' second cut; 5: the rival threshold of ×1.25, not the full letter
+  I named when asking; 6: a card can cost value), direction §11.
