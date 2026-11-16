@@ -24,8 +24,7 @@
   The reasoning, the traps and the acceptance checks for both: `docs/handoff-b0.md` (read it once, before part A).
   Then you play `/clade/?toy=build` and write `docs/playtests/b0-the-build-toy.md`; W2's spec waits for that.
 - **Open:**
-  - The N4 fix play (step 12): answered, none; W2 replaces its rules.
-  - Rivals and Hold in the wide toy: you did not say whether they read. It can wait for N5's spec.
+  - Rivals and Hold in the wide toy: you did not say whether they read; it waits for N5's spec. (The N4 fix play: none.)
   - The spec's three questions (the tree is shallow; nothing was played; branch to dial for B1).
   - Said wrongly in round 2: "a bar of three verbs" is not in B0. A worm has four verbs at most, and the cap needs
     slot levels, so it waits for B1 or W5 (`ideas.md`).
