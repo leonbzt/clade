@@ -918,3 +918,7 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 - **Not decided:** the goal rules that came with it (the goal names an Improve only a letter higher and never
   against a walk to a card; Hold only when one tap ends the challenge; no line hunts itself). They are the
   architect's proposals in the W1 spec, part D.
+
+## 16 Nov (build W1 part D)
+- **Codex may build a part.** Asked "can i built it using codex?", the user chose "Codex builds, I verify": Claude
+  hands the part to `codex exec` with a short brief, then reads the diff against the spec, runs the check and commits.
