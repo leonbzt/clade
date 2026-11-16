@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Toy: The wide toy</title>
+    <style>
+      @font-face { font-family: 'Clade Text'; src: url('../game/src/ui/fonts/CladeText-Plain.woff2') format('woff2'); }
+      @font-face { font-family: 'Clade Text'; font-weight: bold; src: url('../game/src/ui/fonts/CladeText-Bold.woff2') format('woff2'); }
+      :root { --ink: #0a0d10; --panel: #2a241b; --edge: #6d5a35; --dim: #b4a689; --gold: #ffe033; --text: #f3e9cc; --wild: #8f8f8f; }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 8px 8px 50vh; background: #14110c; color: var(--text); font: 16px 'Clade Text', monospace; font-synthesis: none; -webkit-font-smoothing: none; }
+      a { color: #5ec4d6; }
+      button { font: inherit; color: var(--text); background: #3a3023; border: 2px solid var(--edge); padding: 1px 8px; cursor: pointer; text-align: left; }
+      button.on { background: var(--edge); color: var(--gold); }
+      .gold { color: var(--gold); }
+      .dim, small { color: var(--dim); font-size: 16px; }
+      .grp { display: inline-flex; flex-wrap: wrap; gap: 3px; }
+      .panel { background: var(--panel); border: 2px solid var(--edge); padding: 6px 8px; margin-bottom: 8px; }
+      h2 { margin: 0 0 4px; font-size: 16px; color: var(--gold); }
+      h3 { margin: 10px 0 4px; font-size: 16px; color: var(--dim); text-transform: uppercase; }
+      #top { position: sticky; top: 0; z-index: 2; background: #14110c; padding-bottom: 4px; }
+      #goal { width: 100%; border-color: var(--gold); color: var(--gold); padding: 4px 8px; }
+      .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; margin: 4px 0; }
+      .place { border-left: 3px solid var(--edge); padding: 2px 0 6px 6px; margin-bottom: 4px; }
+      .place.farp .pname { color: var(--dim); }
+      .cells { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+      .cell { display: flex; flex-direction: column; min-width: 0; max-width: 100%; padding: 2px 6px; }
+      .cell small { font-size: 16px; }
+      .cell.mine { border-color: var(--gold); color: var(--gold); }
+      .cell.wild { color: #d0d0d0; border-color: var(--wild); }
+      .cell.open { border-style: dashed; }
+      .cell.far { opacity: 0.45; }
+      .cell em { font-style: normal; color: #ff9a80; }
+      .var { color: #ff8ae6; }
+      .bars { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1px 8px; align-items: center; margin: 4px 0; }
+      .bar { position: relative; height: 12px; background: var(--ink); }
+      .bar i { position: absolute; inset: 0 auto 0 0; background: #5ec4d6; }
+      #card { position: fixed; left: 0; right: 0; bottom: 0; max-height: 60vh; overflow-y: auto; z-index: 3; margin: 0; border-width: 2px 0 0; box-shadow: 0 -4px 12px #000; }
+      #close { float: right; }
+      .twin { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .twin h3 { margin-top: 4px; }
+      .variant { border: 2px solid #ff8ae6; padding: 4px 6px; margin: 4px 0 8px; }
+      .act { border-color: var(--gold); color: var(--gold); margin-top: 6px; }
+      .why { color: #ff9a80; margin-top: 6px; }
+      .you, .letter { margin-top: 6px; }
+      .row { display: block; width: 100%; margin-bottom: 3px; }
+      .row small { display: block; }
+      .scroll { overflow-x: auto; }
+      .cov { border-collapse: collapse; font-size: 16px; }
+      .cov th, .cov td { padding: 0 4px; text-align: center; border: 1px solid #3a3023; }
+      .cov th:first-child { text-align: left; white-space: nowrap; color: var(--dim); font-weight: normal; }
+      .cov td.empty { background: #6b1f14; }
+      .cov td.thin { background: #6b5214; }
+      details { margin-top: 12px; }
+      details label { display: block; margin: 4px 0; }
+      details input[type=range] { width: 160px; vertical-align: middle; }
+      .line { padding: 1px 0; }
+      @media (min-width: 860px) { body { padding-right: 440px; padding-bottom: 8px; } #card { left: auto; top: 0; width: 420px; max-height: none; border-width: 0 0 0 2px; } }
+    </style>
+  </head>
+  <body>
+    <div id="top">
+      <button id="goal"></button>
+      <div class="head"><span id="heir"></span><span class="dim" id="gen"></span></div>
+      <div class="grp"><button data-tab="board">Board</button><button data-tab="roster">Roster</button><a href="./" style="margin-left: 8px">all toys</a></div>
+    </div>
+    <div id="main"></div>
+    <div class="panel" id="newsBox"><h2>News</h2><div id="news"></div></div>
+    <details class="panel">
+      <summary>Dev panel</summary>
+      <div id="dials"></div>
+      <label>Line you main <select id="main-clade"></select></label>
+      <div class="grp"><button id="skip12">Skip 12</button><button id="skip120">Skip 120</button><button id="force">Force a variant</button><button id="reset">Reset</button></div>
+      <label><input type="checkbox" id="nextDoor" /> Colonist bars next door too</label>
+      <label>Seed <input type="number" id="seed" min="0" style="width: 80px" /></label>
+    </details>
+    <div class="panel" id="card" hidden><button id="close">Close</button><div id="cardBody"></div></div>
+    <script type="module" src="./wide.ts"></script>
+  </body>
+</html>
