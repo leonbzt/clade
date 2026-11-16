@@ -10,7 +10,7 @@ import { HOME, START, TOY } from '../../src/data/roster/toy';
 import { adopt, coming, destination, founder, live, nameOf, newBoard, nextGoal, options, reach, siteOf, step } from '../../src/model/board';
 import { fitness, has } from '../../src/model/laws';
 import type { Build } from '../../src/model/types';
-import { bigger, builtC, cellOf, copy, follow, invariants, keysOf, KING, mine, oneStepApart, SEED, settled, steps, stepsTo, valueIn } from './board-help';
+import { asked, bigger, builtC, cellOf, copy, follow, invariants, keysOf, KING, mine, oneStepApart, SEED, settled, steps, stepsTo, valueIn } from './board-help';
 
 describe.skipIf(!builtC)('the board, part C: populations radiate', () => {
   it('starts young: one line, its start build, no card, producers only, the first Life at home', () => {
@@ -295,10 +295,10 @@ describe.skipIf(!builtC)('the board, part C: populations radiate', () => {
         if (!newKey) for (const x of held) if (x.c !== c && destination(b, x.p.id, x.c.job) === dest) expect(stepsTo(x.c.holder!.build, dest!), 'only the population nearest the card is asked for').toBeGreaterThanOrEqual(stepsTo(h, dest!));
       }
       if (g.kind === 'take' || g.kind === 'race') expect(opts.some((o) => o.act === 'take' && o.place === g.place && o.job === g.job)).toBe(true);
-      if (g.kind === 'beat' || g.kind === 'improve') expect(opts.some((o) => o.act === g.kind && o.place === g.place && o.job === g.job)).toBe(true);
+      if (g.kind === 'beat' || g.kind === 'improve') expect(asked(b).some((o) => o.act === g.kind && o.place === g.place && o.job === g.job), g.text).toBe(true);
       if (opts.some((o) => o.act === 'take')) expect(['hold', 'adopt', 'race', 'take']).toContain(g.kind);
       if (g.kind === 'race') expect(coming(b, g.place!, g.job!)).not.toBeNull();
-      if (g.kind === 'wait') { expect(g.place).toBeNull(); expect(opts.length).toBe(0); }
+      if (g.kind === 'wait') { expect(g.place).toBeNull(); for (const l of b.lines) expect(asked(b, l).length, 'no line of yours has a Life the goal would name').toBe(0); }
       follow(b);
     }
     expect(adopts, 'Adopt is no longer every other goal').toBeLessThan(20);

@@ -48,8 +48,9 @@ interfaces of `clade/src/model/board.ts`.
 - `laws.test.ts` (passing): one test a law, directions only.
 - `data.test.ts` (passing): sign change for every dial; no dead; no best; known links ≥ 85%; coverage with three
   ratchet lists (`EMPTY`, `THIN`, `BARE`) that may only shrink; a chain of three in sea and shore; transfer; realm.
-- `board.test.ts` (19 tests, **skipped until part C**) and `board-lines.test.ts` (5, **skipped until part D**), with
-  `board-help.ts`: the rules of round two below. They replace part A's 15 tests (rewritten 16 Nov).
+- `board.test.ts` (19 tests, passing since part C) and `board-lines.test.ts` (5; **3 tests fail until part D is
+  finished**: the C7 goal test, Hold, and the line goal), with `board-help.ts`: the rules of round two below. The
+  architect ran all of them against a scratch build of the rules (16 Nov, seed 7): 57 pass, the model tests in 4 s.
 - `data.test.ts`, added 16 Nov (passing): `FLAT_MOST` (dials whose best step moves no cell by a tenth: 43 of 54),
   `UNDER` (species a sister outreads everywhere), both ratchets; the toy's lines start unnamed and grow in its sea.
 
@@ -154,7 +155,7 @@ far; Adopt is only for what would not happen by itself; the heir goes and each c
     (rule 3) counts the cells of all your lines. Colonists (rule 7) are never of a clade in `lines`.
   - **C1 Founder** (`founder(board, place, job, line = main)`). Of the line's holders in this place or next to it,
     and `starts[line]`: the build with the highest value in this cell. Null if that reads F.
-  - **C2 Options** (`options(board, line = main)`). For each cell in reach: `from` is its founder, `fit` the
+  - **C2 Options** (`options(board, line = main)`; part D adds a rule, below). For each cell in reach: `from` is its founder, `fit` the
     founder's fitness. No option without a founder. Open: `take`. Wild holder: `beat` if `fit.value` is higher.
     Holder of this line: `improve` if higher and `from` has every key mutation the holder has. Holder of another
     line of yours: none. A line may hold any number of cells in a place. A Life (rule 5) founds a copy of `from`.
@@ -169,7 +170,7 @@ far; Adopt is only for what would not happen by itself; the heir goes and each c
   - **C5 Adopt.** The variant becomes that cell's holder (yours, `fade` kept). Nothing else changes; no time passes.
   - **C6 Cards.** At the end of a step, each holder of yours that `nameOf` names and whose id is not in `cards` adds
     it, with one news line (the species' common name and the place).
-  - **C7 The goal**, first that applies: `hold` (part D; never before) · `adopt` · `race` · `take` · `beat` ·
+  - **C7 The goal** (part D changes which Improve it names, below), first that applies: `hold` (part D; never before) · `adopt` · `race` · `take` · `beat` ·
     `improve` · `line` (part D) · `wait`. Adopt only for a variant that (a) carries a key mutation no holder of
     its line has, or (b) is nearer its cell's destination than the holder, that card is not won, its value is not
     higher than the holder's, and no other cell of the line with the same destination is nearer. `line` is null
@@ -180,45 +181,61 @@ far; Adopt is only for what would not happen by itself; the heir goes and each c
   "four cells or more", "Adopt is no longer every other goal" and the rare-variant test); a rule and a test
   disagree; you need a field or a number this brief does not name.
 
-### Part D: rivals and lines
-- **Touch / don't touch:** as part C. Numbers: `TOY.challenge`, `TOY.rivalBar` and `LINES` in `data/roster/toy.ts`
-  (read, not changed).
-- **Rules:**
-  - **D1 Rivals.** `rivalOf` is null unless the cell is held, is not `light`, and lies in a sea place where bars run
-    (rule 7). Else take the first of `candidates(job, siteOf(place), SPECIES)` that is not of a clade in `lines`,
-    does not read F and is not the holder's own build: it is the rival if its value is at least `TOY.challenge`
-    times the holder's. `gens` is `TOY.rivalBar` less the cell's running bar for that species. A step runs: `gen`,
-    colonists, **rivals**, variants, grams and fading, cells, cards, lines. Rivals, a place: a cell whose `rival`
-    is not the species `rivalOf` names loses it (so does a cell that opens); if no cell has one, the first cell in
-    order that `rivalOf` names one for starts at 0; the place's one bar goes up 1; at `TOY.rivalBar` the rival holds
-    the cell as a wild holder (variant and `rival` gone) and the news gives the place, both names and both letters.
-  - **D2 Hold.** For a cell of yours with a rival where one tap helps: its variant reads higher there than its
-    holder (Adopt), or `improve` is an option there. The fewest generations left first; the sentence names the
-    rival and the generations.
-  - **D3 Lines.** `nextLine` is the first row of `LINES` whose clade is not in `lines`. At the end of a step, while
-    `cards.length` reaches its `cards`: the clade joins `lines` with its `start` in `starts`, one news line with
-    the clade's name. `setMain` switches among `lines`; no time passes. The `line` goal fires when the line you
-    main has no option and another line of yours has one: it names that line and its best option's cell.
-- **Done:** both board test files run with 0 skipped and pass; one commit "W1 part D: rivals and lines".
-- **Stop and ask if:** "somebody is challenged in 60 goals" or "wins a card and opens a line" fail on the data;
-  board.ts cannot stay under 400 lines by splitting; anything part C lists.
+### Part D: rivals and lines (D1–D3 are built, uncommitted; it stopped on the data 16 Nov; this finishes it)
+**Your call (16 Nov): the quiet sea, and a line that lives on rock comes second.** Done by the architect, in data
+and the laws (a builder changes neither): `TOY.barsNextDoor` is false, so wild species arrive only in a place where
+you hold a cell; `LINES` runs periwinkles, urchins, shore crabs, octopuses, lugworms; `candidates` skips the species
+that could never do the job (the same boards, a step 2.4× faster).
+
+**Measured** (the built part D, then a scratch build of the rules below; the goal followed): before, the board
+stopped at goal 26 (8 cells, 1 card in 200 goals) because every cell in reach was full, and the goal looped (Adopt a
+step toward a card, then Improve undid it: 136 of 200 goals). After, on eight seeds in 150 goals: two lines live by
+goal 25 to 28, 4 to 7 of the 9 cards, all five lines open by goal 65 to 97; no goal names one cell more than 6 times.
+
+- **Touch:** `clade/src/model/board.ts`, `board-goal.ts`, `board-*.ts` (each under 400 lines).
+- **Don't touch:** `laws.ts`, `types.ts`, everything in `data/roster/`, every test and `board-help.ts`, `toys/`.
+- **Keep what is built** (D1 `rivalOf` and the rivals phase, D3 `nextLine`, `setMain`, lines opening). The builder's
+  three calls stand: a rival also comes for a wild holder's cell; an arriving rival holds the species' own build
+  object (as colonists do: `candidates` tells species apart by it); the line goal takes the first line in the order
+  they opened.
+- **Rules to build** (each is held by a test; `asked` and `keepsWalk` in `board-help.ts` write two of them out):
+  - **C2, added: no line hunts itself.** No option on `hunt` or `hunt2` in a place where a population of the same
+    line holds the other of the two.
+  - **C7, changed: what the goal names.** `options` is unchanged and still lists every Improve. The goal *names* an
+    Improve only if (a) the founder's letter there is higher than the holder's, and (b) it keeps the walk: it is not
+    the case that the cell's `destination` is a card you lack and the holder is fewer dial steps from it than the
+    founder. The `improve` goal is the widest margin among the named ones. `wait` comes only when no line of yours
+    has a Take, a Beat or a named Improve.
+  - **D2 Hold, replaced.** A cell of yours with a rival where one tap *ends the challenge*: its variant reads higher
+    than its holder and the rival's value there is under `TOY.challenge` × the variant's (Adopt); or an Improve
+    there keeps the walk (b; no letter needed) and the rival's value is under `TOY.challenge` × the founder's. The
+    fewest generations left first; the sentence names the rival, the generations and the tap.
+  - **D3 the line goal, changed.** It fires when the line you main has no Take, Beat or named Improve and another
+    line of yours has one: the first such line in the order they opened, and the cell of its best-reading one.
+  - **Speed.** In the rivals phase find the places where bars run once a step, not once a cell.
+- **Done:** both board test files run with 0 skipped and pass; `rules.test.ts` passes; `npm run check` (about 10 s:
+  the model tests take 4 s of it; if it is over, say so in status and do not chase it); one commit "W1 part D:
+  rivals and lines" with the architect's uncommitted files in it (`laws.ts`, `toy.ts`, the tests, the docs).
+- **Stop and ask if:** a board test fails on the data after the rules above are in (the architect's scratch build
+  passed all of them, so first check the rule against this text); board.ts cannot stay under 400 lines by
+  splitting; you need a field, an export or a number this brief does not name.
 
 ### Part E: the page
 - **Touch:** `toys/wide.html`, `toys/wide*.ts`. **Don't touch:** everything under `clade/`. The page holds no rule.
 - **Behaviour** (changes to part B):
   1. **Top:** the goal (a `line` goal's tap calls `setMain`); your open lines as chips (tap to main one), the next
-     line as "lugworms at 2 cards"; your cards as named chips. No heir line.
+     line as "sea urchins at 2 cards" (`nextLine`); your cards as named chips. No heir line.
   2. **A cell of yours** shows its population's name, or "3 steps to King ragworm" (`destination`); a won card is
      marked. A held cell with a running rival shows who comes and in how many generations, in red if it is yours.
   3. **Its card:** the population's build; "Founded from here: letter" for the line you main with Take, Beat,
      Improve or why not (out of reach · the first reason it reads F · "your population here reads higher" ·
-     "another line of yours holds it"). The rival, with its letter against yours.
+     "another line of yours holds it" · "this line already hunts here"). The rival, with its letter against yours.
   4. **A variant:** the two builds' three reasons side by side, the changed lines marked; one value bar with the
      letter marks and both values on it; the variant's own mutations with what each does (`MUTATION[m].does`);
      "takes the cell by itself in N generations" or "leaves in N unless you adopt"; Adopt.
   5. **Words:** thrift reads "thrift (from size)"; mutations never read "none" for a build that has one.
   6. **Dev panel:** the dial sliders go (there is no heir). Keep: the first line (any clade, a new board), skips,
-     force a variant, the seed, reset. Add: force the rival bars one short. Use `reach`; delete `reachOf`.
+     force a variant, the seed, reset, and the `barsNextDoor` switch (off: the quiet sea; on: the sea you played). Add: force the rival bars one short. Use `reach`; delete `reachOf`.
 - **Done:** `/toys/wide.html` plays from a fresh board to a card and a second line with no console error; one look
   run at phone width; `npm run check` unchanged; one commit "W1 part E: the page".
 - **Stop and ask if:** the page needs a judgement `board.ts` or `laws.ts` does not export.
@@ -239,7 +256,7 @@ far; Adopt is only for what would not happen by itself; the heir goes and each c
   mutations a clade. A fifth dial axis or a seventh stat is your call.
 - Fits its sessions? Part A is the larger (about 300 lines against 15 tests). Part B is a page.
 
-## Open questions (none blocks part C)
+## Open questions (none blocks part D)
 1. **Hunting reads light.** A hunter here costs a 3 g worm about a tenth of its value, so guard matters less than
    size and ground. Doubling `LAWS.hunt.pressure` empties two more hunt cells. Lean: play first, then tune.
 2. **Gaps the roster leaves** (the ratchets in `data.test.ts`): the lee reef has no hunter at its climax, nothing
@@ -253,4 +270,9 @@ far; Adopt is only for what would not happen by itself; the heir goes and each c
    of the laws as its own architect pass, with W3's rows; round two makes steps add up to a species meanwhile.
 5. **`TOY.challenge` is 1.25, not a full letter.** At ×1.5 two of about 30 held cells had a rival; at ×1.2 four to
    eleven. Lean: 1.25 and tune by feel.
-6. **A card can cost value**: the Common ragworm's steps read worse, so only Adopt wins it. Lean: fine for the toy.
+6. **A card can cost value**: the Common ragworm's steps read worse, so only Adopt wins it, one step every two
+   Lives. The goal no longer undoes that walk (16 Nov). Lean: fine for the toy; the laws' second cut is the cure.
+7. **Half the goals are Wait** (53 to 116 of 150, measured): the walks above, and from goal 70 to 110 on the toy's
+   nine cards are won and nothing is left. Lean: expected of a toy this small; say if it is dull before that.
+8. **A near relative has nowhere to live** (lugworms beside ragworms: the same food on the same ground, measured).
+   The tree as the unlock map opens near relatives first. Lean: W5's question (direction §11.5), not the toy's.

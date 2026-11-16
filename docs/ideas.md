@@ -236,3 +236,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - (AI) A data test "at home somewhere": every named species is the best of its clade in some cell (today a bigger sister wins everywhere).
 - (AI) A mutation variant prefers a mutation its destination species has, so cards that need one are reached sooner.
 - (AI) Rivals for cells on the shore and the land, once animals arrive there (W4).
+
+## From the W1 part D architect session (16 Nov)
+- *The user's wish:* a TierZoo meta you have to find your place in; balance patches as eras and events that change it; you discover and build life yourself; maybe your earlier Lives stay on as the meta and the other inhabitants.
+- (AI) A line opens where its plan differs from the lines you hold (ground or food), not by nearness on the tree (direction §11.5, W5).
+- (AI) Wait is half of the toy's goals: a card walk could run without a tap between steps, or the goal could name the next thing worth watching.

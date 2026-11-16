@@ -1,14 +1,15 @@
 // W1 contract: the board rules of the wide toy, round two (16 Nov), part D. Skipped until `setMain` is built; the
 // same terms as board.test.ts: a builder never edits this file, and a test that seems wrong is a question.
+// Rewritten 16 Nov after part D stopped: the architect ran these against a scratch build of the rules (seed 7).
 import { describe, expect, it } from 'vitest';
 import { CLADE } from '../../src/data/roster/clades';
 import { SPECIES } from '../../src/data/roster/species';
 import { HOME, LINES, START, TOY } from '../../src/data/roster/toy';
 import { coming, live, newBoard, nextGoal, nextLine, options, rivalOf, setMain, siteOf, step } from '../../src/model/board';
 import type { Board, Cell, Place } from '../../src/model/board';
-import { candidates } from '../../src/model/laws';
+import { candidates, fitness } from '../../src/model/laws';
 import type { JobId, Named } from '../../src/model/types';
-import { builtD, cellOf, copy, follow, invariants, KING, mine, SEED, settled, valueIn } from './board-help';
+import { asked, builtD, cellOf, copy, follow, invariants, keepsWalk, KING, mine, SEED, settled, valueIn } from './board-help';
 
 describe.skipIf(!builtD)('the board, part D: rivals and lines', () => {
   /** Rule D1's judgement, written out: the best wild candidate that reads TOY.challenge times the holder or better. */
@@ -21,11 +22,14 @@ describe.skipIf(!builtD)('the board, part D: rivals and lines', () => {
     return best && best.fit.value >= floor ? best.named : null;
   }
   const cells = (b: Board) => b.places.flatMap((p) => p.cells.map((c) => ({ p, c })));
+  /** The most often one goal may name one cell in 100 goals (measured 16 Nov: 5 on this seed, 6 over eight seeds; a
+   *  walk to a card is at most that many Adopts). The loops this catches ran to 24 and more. May only shrink. */
+  const MOST = 8;
 
   it('rivals (D1): who comes for a held cell is the best wild species that reads TOY.challenge times its holder', () => {
     const b = newBoard(SEED);
     let seen = 0;
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 40; i++) {
       follow(b);
       invariants(b);
       for (const { p, c } of cells(b)) {
@@ -34,7 +38,7 @@ describe.skipIf(!builtD)('the board, part D: rivals and lines', () => {
         if (got) { seen++; expect(got.gens).toBe(TOY.rivalBar - (c.rival?.id === got.named.id ? c.rival.bar : 0)); }
       }
     }
-    expect(seen, 'somebody is challenged in 60 goals').toBeGreaterThan(0);
+    expect(seen, 'somebody is challenged in 40 goals').toBeGreaterThan(0);
   });
 
   it('a rival arrives when its bar fills and takes the cell as a wild holder; one that no longer reads better gives up', () => {
@@ -66,16 +70,28 @@ describe.skipIf(!builtD)('the board, part D: rivals and lines', () => {
     expect(p2.cells.includes(c2)).toBe(true);
   });
 
-  it('hold (D2): the first goal when a cell of yours is challenged and one tap helps', () => {
+  it('hold (D2): the first goal when a cell of yours is challenged and one tap ends the challenge', () => {
     const b = newBoard(SEED);
-    for (let i = 0; i < 120; i++) {
+    let holds = 0;
+    for (let i = 0; i < 60; i++) {
       const g = nextGoal(b);
-      const helped = mine(b).filter(({ p, c }) => rivalOf(b, p.id, c.job)
-        && ((c.variant && valueIn(c.variant.build, c, p) > valueIn(c.holder!.build, c, p)) || options(b).some((o) => o.act === 'improve' && o.place === p.id && o.job === c.job)));
-      expect(g.kind === 'hold').toBe(helped.length > 0);
-      if (g.kind === 'hold') expect(helped.some(({ p, c }) => p.id === g.place && c.job === g.job)).toBe(true);
+      const helped = mine(b).filter(({ p, c }) => {
+        const who = rivalOf(b, p.id, c.job);
+        if (!who) return false;
+        const ends = (value: number) => fitness(who.named.build, c.job, siteOf(p)).value < TOY.challenge * value;
+        const v = c.variant ? valueIn(c.variant.build, c, p) : 0;
+        if (c.variant && v > valueIn(c.holder!.build, c, p) && ends(v)) return true;
+        return options(b).some((o) => o.act === 'improve' && o.place === p.id && o.job === c.job && keepsWalk(b, o) && ends(o.fit.value));
+      });
+      expect(g.kind === 'hold', g.text).toBe(helped.length > 0);
+      if (g.kind === 'hold') {
+        holds++;
+        expect(helped.some(({ p, c }) => p.id === g.place && c.job === g.job)).toBe(true);
+        expect(g.text.toLowerCase()).toContain(rivalOf(b, g.place!, g.job!)!.named.common.toLowerCase());
+      }
       follow(b);
     }
+    expect(holds, 'you are asked to hold a cell in 60 goals').toBeGreaterThan(0);
   });
 
   it('lines (D3): a card opens the next line; you main it, and it founds from its own start build', () => {
@@ -107,21 +123,29 @@ describe.skipIf(!builtD)('the board, part D: rivals and lines', () => {
     expect(setMain(b, 'no-such-line')).toBe(false);
   });
 
-  it('following the goal wins a card and opens a line; a line goal names an open line that has a Life to live', () => {
-    const b = newBoard(SEED);
-    for (let i = 0; i < 200; i++) {
+  it('following the goal wins a card and opens a line you play; no goal comes back for ever', () => {
+    const b = newBoard(SEED), times: Record<string, number> = {};
+    let lineGoals = 0;
+    for (let i = 0; i < 100; i++) {
       const g = nextGoal(b);
       if (g.kind === 'line') {
+        lineGoals++;
         expect(b.lines).toContain(g.line);
         expect(g.line).not.toBe(b.main);
-        expect(options(b).length, 'the line you main has nothing to do').toBe(0);
-        expect(options(b, g.line!).some((o) => o.place === g.place && o.job === g.job)).toBe(true);
+        expect(asked(b).length, 'the line you main has no Life the goal would name').toBe(0);
+        expect(asked(b, g.line!).some((o) => o.place === g.place && o.job === g.job), g.text).toBe(true);
+      } else if (g.kind !== 'wait') {
+        const key = `${g.kind} ${b.places[g.place!].name} ${g.job}`;
+        times[key] = (times[key] ?? 0) + 1;
       }
       follow(b);
+      if (g.kind === 'line') expect(nextGoal(b).kind, 'the line you were sent to has something to do').not.toBe('line');
       invariants(b);
+      if (i === 39) expect(new Set(mine(b).map(({ c }) => c.holder!.build.clade)).size, 'two lines of yours live on the board by goal 40').toBeGreaterThanOrEqual(2);
     }
-    expect(b.cards.length).toBeGreaterThanOrEqual(1);
-    expect(b.lines.length).toBeGreaterThanOrEqual(2);
-    expect(new Set(mine(b).map(({ c }) => c.holder!.build.clade)).size, 'two lines of yours live on the board').toBeGreaterThanOrEqual(2);
+    expect(lineGoals).toBeGreaterThan(0);
+    expect(b.cards.length, 'three cards in 100 goals').toBeGreaterThanOrEqual(3);
+    expect(b.lines.length).toBeGreaterThanOrEqual(3);
+    for (const [key, n] of Object.entries(times)) expect(n, `"${key}" was the goal ${n} times: a loop`).toBeLessThanOrEqual(MOST);
   });
 });

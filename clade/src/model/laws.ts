@@ -147,10 +147,25 @@ export function fitness(build: Build, job: JobId, site: Site): Fitness {
 }
 
 export interface Candidate { named: Named; fit: Fitness }
+const ABLE = new WeakMap<Named[], WeakMap<HabitatKind, Map<JobId, Named[]>>>();
+/** The pool's species that could ever do this job in this kind (the diet and law 7), kept per pool and kind: rows
+ *  do not change while the game runs. It only spares `candidates` the species that would read 0 (16 Nov: 2.4× a step). */
+function able(job: JobId, kind: HabitatKind, pool: Named[]): Named[] {
+  let kinds = ABLE.get(pool);
+  if (!kinds) ABLE.set(pool, kinds = new WeakMap());
+  let jobs = kinds.get(kind);
+  if (!jobs) kinds.set(kind, jobs = new Map());
+  let out = jobs.get(job);
+  if (!out) {
+    const diet = job === 'light' ? 'light' : isFood(job) ? job : 'prey';
+    jobs.set(job, out = pool.filter((n) => CLADE[n.build.clade].diet.includes(diet) && lives(n.build, kind)));
+  }
+  return out;
+}
 /** The pool's species that could do this job here, best first. One species holds one job in a site. */
 export function candidates(job: JobId, site: Site, pool: Named[]): Candidate[] {
   const here = new Set(site.pops.filter((p) => p.job !== job).map((p) => p.build));
-  return pool.filter((n) => !here.has(n.build)).map((named) => ({ named, fit: fitness(named.build, job, site) }))
+  return able(job, site.kind, pool).filter((n) => !here.has(n.build)).map((named) => ({ named, fit: fitness(named.build, job, site) }))
     .filter((c) => c.fit.value > 0).sort((a, b) => b.fit.value - a.fit.value || (a.named.id < b.named.id ? -1 : 1));
 }
 

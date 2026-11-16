@@ -1,11 +1,12 @@
-// The board's helpers that read and say: the seed's hash, the name of a build (rule 11), the next goal (C7).
+// The board's helpers that read and say: the seed's hash, the name of a build (rule 11), the next goal (C7, D2, D3).
 // Nothing here may name a clade, a species or a mutation.
 import type { Board, Goal, Option } from './board';
-import type { Build, JobId, Named } from './types';
+import type { Build, Id, JobId, Named } from './types';
 import { CLADE } from '../data/roster/clades';
 import { DIAL_STEP } from '../data/roster/laws';
 import { MUTATION } from '../data/roster/mutations';
 import { SPECIES } from '../data/roster/species';
+import { TOY } from '../data/roster/toy';
 import { fitness, jobName } from './laws';
 import { siteOf } from './board';
 
@@ -40,9 +41,36 @@ export const callOf = (build: Build) => nameOf(build)?.common.toLowerCase() ?? C
 export const stepsTo = (build: Build, n: Named) => (CLADE[build.clade]?.dials ?? []).reduce((sum, d) => sum + Math.abs((build.dials[d.id] ?? 0) - (n.build.dials[d.id] ?? 0)) / DIAL_STEP[d.id], 0);
 
 const verb = (job: JobId) => jobName(job).toLowerCase();
-const goal = (kind: Goal['kind'], place: number | null, job: JobId | null, text: string): Goal => ({ kind, place, job, line: null, text });
+const goal = (kind: Goal['kind'], place: number | null, job: JobId | null, text: string, line: Id | null = null): Goal => ({ kind, place, job, line, text });
 const widest = (opts: Option[]) => opts.reduce<Option | null>((w, o) => (!w || o.fit.value - o.holder!.value > w.fit.value - w.holder!.value ? o : w), null);
 type Lookup<T> = (place: number, job: JobId) => T;
+type Coming = { named: Named; gens: number } | null;
+/** What the goal reads of the board beyond the main line's options. */
+export interface Looks { coming: Lookup<Coming>; dest: Lookup<Named | null>; rival: Lookup<Coming> }
+
+/** C7: an Improve never undoes the holder's walk toward a card you lack. */
+function keepsWalk(b: Board, o: Option, dest: Lookup<Named | null>): boolean {
+  const d = dest(o.place, o.job), h = b.places[o.place].cells.find((c) => c.job === o.job)!.holder!.build;
+  return !d || b.cards.includes(d.id) || stepsTo(h, d) >= stepsTo(o.from, d);
+}
+
+/** D2: a cell of yours with a rival where one tap ends the challenge; fewest generations first. */
+function holdGoal(b: Board, opts: Option[], look: Looks): Goal | null {
+  let best: { g: Goal; gens: number } | null = null;
+  for (const p of b.places) for (const c of p.cells) {
+    if (!c.holder?.mine) continue;
+    const who = look.rival(p.id, c.job);
+    if (!who || (best && best.gens <= who.gens)) continue;
+    const site = siteOf(p), rivalValue = fitness(who.named.build, c.job, site).value;
+    const v = c.variant ? fitness(c.variant.build, c.job, site).value : 0;
+    const adopt = !!c.variant && v > fitness(c.holder.build, c.job, site).value && rivalValue < TOY.challenge * v;
+    if (!adopt && !opts.some((o) => o.act === 'improve' && o.place === p.id && o.job === c.job
+      && keepsWalk(b, o, look.dest) && rivalValue < TOY.challenge * o.fit.value)) continue;
+    const n = who.gens, how = adopt ? `adopt the variant (${c.variant!.what})` : 'improve it';
+    best = { gens: n, g: goal('hold', p.id, c.job, `Hold ${verb(c.job)} in ${p.name}: the ${who.named.common.toLowerCase()} comes for it in ${n} generation${n === 1 ? '' : 's'}; ${how}.`) };
+  }
+  return best?.g ?? null;
+}
 
 /** C7's Adopt, only for what would not happen by itself: (a) a key no population of its line has, first; (b) a step
  *  nearer a card you lack that does not read higher than its holder, in the line's population nearest that card. */
@@ -65,8 +93,13 @@ function adoptGoal(b: Board, dest: Lookup<Named | null>): Goal | null {
   return card;
 }
 
-/** C7: hold (part D), adopt, race, take, beat, improve, line (part D), wait; the first that applies. */
-export function goalOf(b: Board, opts: Option[], coming: Lookup<{ named: Named; gens: number } | null>, dest: Lookup<Named | null>): Goal {
+/** C7: hold, adopt, race, take, beat, improve, line, wait; the first that applies. `others` are your other lines'
+ *  options, in the order the lines opened. */
+export function goalOf(b: Board, opts: Option[], look: Looks, others: { line: Id; opts: Option[] }[]): Goal {
+  const { coming, dest } = look;
+  const named = (os: Option[]) => os.filter((o) => o.act !== 'improve' || (o.fit.letter !== o.holder!.letter && keepsWalk(b, o, dest)));
+  const hold = holdGoal(b, opts, look);
+  if (hold) return hold;
   const adopt = adoptGoal(b, dest);
   if (adopt) return adopt;
 
@@ -86,7 +119,12 @@ export function goalOf(b: Board, opts: Option[], coming: Lookup<{ named: Named; 
     const holder = b.places[beat.place].cells.find((c) => c.job === beat.job)!.holder!;
     return goal('beat', beat.place, beat.job, `Beat the ${callOf(holder.build)} at ${verb(beat.job)} in ${name(beat.place)}: your line reads ${beat.fit.letter} against its ${beat.holder!.letter}.`);
   }
-  const improve = widest(opts.filter((o) => o.act === 'improve'));
+  const improve = widest(named(opts).filter((o) => o.act === 'improve'));
   if (improve) return goal('improve', improve.place, improve.job, `Improve your population at ${verb(improve.job)} in ${name(improve.place)}: a new founder reads ${improve.fit.letter} against ${improve.holder!.letter}.`);
+  const other = others.map((x) => ({ line: x.line, opts: named(x.opts) })).find((x) => x.opts.length > 0);
+  if (other) {
+    const o = other.opts[0], name2 = CLADE[other.line].name.toLowerCase();
+    return goal('line', o.place, o.job, `Play your ${name2}: your line has nothing to do, and they can ${o.act} ${verb(o.job)} in ${name(o.place)}.`, other.line);
+  }
   return goal('wait', null, null, 'Wait a Life: nothing in reach is open to your line yet.');
 }

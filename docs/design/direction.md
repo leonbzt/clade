@@ -48,6 +48,13 @@ the user says so. A build session reads its step spec, not this page; the spec c
 - **Progression is radiate, then a new line; species cards are collected.** Your wish, not yet a call: each line as
   its own skill bar on a steep curve, so many low lines are cheap and the top of one is long and specialised (W5).
 
+**Fifth round, 16 Nov (the toy's part D stopped: a new line found no cell):**
+- **The quiet sea, and a rock line second.** Wild species arrive only in a place where you hold a cell, so the far
+  sea stays open for your next line; the second line is one that lives where the first cannot (periwinkles on rock).
+- Your wish, not yet a call: the TierZoo feeling of **a meta you have to find your place in**, which balance patches
+  (eras, events) change, together with the feeling that you discover and build life yourself; and maybe your earlier
+  Lives stay on as the meta and the other inhabitants.
+
 ## 2. Findings: why the frame had to move
 *Measured in `clade/src` on 15 Nov.*
 - **The sim's world is written as types, not data:** 5 clades, 2 foods, 3 roles, 3 defence kinds and 27 named parts
@@ -251,3 +258,9 @@ sea, the next goal), Q2 (zoom), Q3 and Q4 (grammar and drawing). Everything else
    inside a clade bigger wins everywhere. Sweeps of the numbers did not change it; the formulas are smooth between
    a few thresholds. *Lean:* its own architect pass with W3's rows (each dial gets a threshold where it flips, and
    size gets a cost that bites). The ratchets `FLAT_MOST` and `UNDER` in `data.test.ts` hold the line until then.
+5. **Where does a near relative live?** (16 Nov, measured in the toy.) Lugworms opened beside ragworms and never
+   found a cell: the same food on the same ground, and their start reads lower than every holder. "The tree as the
+   unlock map" (W5) opens near relatives first, which is exactly that case. *Proposal, lean:* a line opens where its
+   plan differs from the lines you hold (another ground or another food), or a new line starts with a cell of its
+   own. Handing a cell from one of your lines to another was tried in a scratch build: two lines swapped one cell
+   for ever. For the W5 spec.

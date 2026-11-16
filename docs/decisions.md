@@ -905,3 +905,16 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   second line go into W1 round two; the skill-bar curve is a wish for W5 (lines), not a call yet.
 - **Not decided:** the rules of round two (founder, destination, when Adopt is asked, the rival's threshold of
   ×1.25, which lines open at how many cards). They are the architect's proposals in the W1 spec.
+
+## 16 Nov (the W1 architect session on part D; one question)
+- **Where a new line finds room:** "lean quite sea rock line 2nd as recommended". Wild species arrive only in a place
+  where you hold a cell (`TOY.barsNextDoor` off), and the lines open in the order periwinkles, urchins, shore crabs,
+  octopuses, lugworms. (The other options: a new line may take a cell from an older line of yours; a new line
+  starts with a cell given to it.)
+- **A note with it, a wish and not a call:** "I want the tierzoo feeling of there beeing a meta that you have to find
+  your place, and the devs release balance patches that change the meta (eras, events) along with the feeling that
+  you discover and build life yourself. also maybe that your previous lifes remain to form the meta and other
+  inhabitants". Parked in `ideas.md`; named in direction §1.
+- **Not decided:** the goal rules that came with it (the goal names an Improve only a letter higher and never
+  against a walk to a card; Hold only when one tap ends the challenge; no line hunts itself). They are the
+  architect's proposals in the W1 spec, part D.

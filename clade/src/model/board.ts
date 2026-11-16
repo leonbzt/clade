@@ -1,12 +1,13 @@
 // The wide toy's board rules (W1): cells, a Life as one tap, colonists and variants on bars, the next goal.
 // The signatures and shapes are the contract (docs/slices/w1-the-wide-toy.md); the bodies are the builders' work.
-// Round two (16 Nov): part C (populations radiate) is built; `rivalOf`, `nextLine` and `setMain` throw until part D.
+// Round two (16 Nov): part C (populations radiate) and part D (rivals and lines) are built.
 // Numbers come from data/roster/toy.ts; every judgement comes from model/laws.ts. No dice: the same seed and the
 // same taps give the same board. Nothing here may name a clade, a species or a mutation.
 import type { Build, Fitness, HabitatKind, Id, JobId, Named, Site } from './types';
 import { KIND } from '../data/roster/kinds';
-import { SPECIES } from '../data/roster/species';
-import { HOME, PLACES, START, TOY } from '../data/roster/toy';
+import { NAMED, SPECIES } from '../data/roster/species';
+import { CLADE } from '../data/roster/clades';
+import { HOME, LINES, PLACES, START, TOY } from '../data/roster/toy';
 import { candidates, fitness, jobName, jobsAt, type Candidate } from './laws';
 import { callOf, goalOf, hash, nameOf as nameOfBuild } from './board-goal';
 import { cellAt, copyBuild, destinationOf, founderOf, keysOf, say, variants } from './board-pop';
@@ -118,7 +119,7 @@ function grams(b: Board): void {
     h.grams = f.grams;
     h.fade = f.letter === 'F' ? h.fade + 1 : 0;
     if (h.fade >= TOY.fade) {
-      cell.holder = null; cell.variant = null; cell.bar = 0; cell.variantBar = 0;
+      cell.holder = null; cell.variant = null; cell.rival = null; cell.bar = 0; cell.variantBar = 0;
       say(b, `${place.name}: the ${h.mine ? 'population of yours' : callOf(h.build)} dies out at ${jobName(cell.job).toLowerCase()}: ${firstReason(f).replace(/\.$/, '').toLowerCase()}.`);
     }
   }
@@ -134,14 +135,50 @@ function cards(b: Board): void {
   }
 }
 
-/** One generation: colonist bars, variant bars, grams and fading, cells that appear and go, cards. */
+/** D1, a place: a rival rivalOf no longer names gives up; else the first cell it names one for starts; the place's
+ *  one bar goes up 1; at `TOY.rivalBar` the rival holds the cell as a wild holder. */
+function rivals(b: Board): void {
+  const run = barPlaces(b);
+  for (const place of b.places) {
+    if (!run.has(place.id)) { for (const c of place.cells) c.rival = null; continue; }
+    for (const c of place.cells) if (c.rival && rivalIn(b, place, c)?.named.id !== c.rival.id) c.rival = null;
+    let cell = place.cells.find((c) => c.rival);
+    if (!cell) {
+      for (const c of place.cells) {
+        const who = rivalIn(b, place, c);
+        if (who) { c.rival = { id: who.named.id, bar: 0 }; cell = c; break; }
+      }
+    }
+    if (!cell) continue;
+    cell.rival!.bar += 1;
+    if (cell.rival!.bar < TOY.rivalBar) continue;
+    const who = NAMED[cell.rival!.id], was = cell.holder!, site = siteOf(place);
+    const before = fitness(was.build, cell.job, site), f = fitness(who.build, cell.job, site);
+    cell.holder = { build: who.build, mine: false, grams: f.grams, fade: 0 };
+    cell.variant = null; cell.rival = null;
+    say(b, `${place.name}: the ${who.common.toLowerCase()} (${f.letter}) drives out ${was.mine ? 'your population' : `the ${callOf(was.build)}`} (${before.letter}) at ${jobName(cell.job).toLowerCase()}.`);
+  }
+}
+
+/** D3: while your cards reach the next line's count, that line opens with its start build. */
+function lines(b: Board): void {
+  for (let n = nextLine(b); n && b.cards.length >= n.cards; n = nextLine(b)) {
+    b.lines.push(n.clade);
+    b.starts[n.clade] = copyBuild(LINES.find((r) => r.clade === n!.clade)!.start);
+    say(b, `A new line opens: the ${CLADE[n.clade].name.toLowerCase()}.`);
+  }
+}
+
+/** One generation: colonist bars, rival bars, variant bars, grams and fading, cells that appear and go, cards, lines. */
 export function step(board: Board): void {
   board.gen += 1;
   colonists(board);
+  rivals(board);
   variants(board);
   grams(board);
   for (const place of board.places) syncCells(board, place);
   cards(board);
+  lines(board);
 }
 
 /** C2: every Life the line could live now (the line you main if none is given), best value first. */
@@ -150,6 +187,8 @@ export function options(board: Board, line: Id = board.main): Option[] {
   for (const id of [...reach(board)].sort((x, y) => x - y)) {
     const place = board.places[id], site = siteOf(place);
     for (const cell of place.cells) {
+      const otherHunt = cell.job === 'hunt' ? 'hunt2' : cell.job === 'hunt2' ? 'hunt' : null;
+      if (otherHunt && place.cells.some((c) => c.job === otherHunt && c.holder?.build.clade === line)) continue;
       const from = founderOf(board, id, cell.job, line);
       if (!from) continue;
       const fit = fitness(from, cell.job, site), h = cell.holder;
@@ -205,7 +244,10 @@ export function nameOf(build: Build): Named | null { return nameOfBuild(build); 
 
 /** The one next goal. */
 export function nextGoal(board: Board): Goal {
-  return goalOf(board, options(board), (p, j) => coming(board, p, j), (p, j) => destination(board, p, j));
+  const others = board.lines.filter((l) => l !== board.main).map((l) => ({ line: l, opts: options(board, l) }));
+  return goalOf(board, options(board), {
+    coming: (p, j) => coming(board, p, j), dest: (p, j) => destination(board, p, j), rival: (p, j) => rivalOf(board, p, j),
+  }, others);
 }
 
 /** Part C, rule C1: the build a Life of the main line would found in this cell: the best-reading of the line's
@@ -214,11 +256,29 @@ export function founder(board: Board, place: number, job: JobId, line: Id = boar
 /** Part C, rule C4: the real species a cell of yours is heading for; null if the cell is not yours or none grows. */
 export function destination(board: Board, place: number, job: JobId): Named | null { return destinationOf(board, place, job); }
 
-// Part D. The bodies are part D's (docs/slices/w1-the-wide-toy.md); the signatures are the contract.
-const later = (part: string): never => { throw new Error(`W1 part ${part} is not built`); };
 /** Part D, rule D1: who is coming for a held cell and in how many generations; null if nobody is. */
-export function rivalOf(_board: Board, _place: number, _job: JobId): { named: Named; gens: number } | null { return later('D'); }
+export function rivalOf(board: Board, place: number, job: JobId): { named: Named; gens: number } | null {
+  const p = board.places[place], cell = cellAt(board, place, job);
+  return p && cell && barPlaces(board).has(place) ? rivalIn(board, p, cell) : null;
+}
+/** D1's judgement in a place where bars run; the rivals phase finds those places once per step. */
+function rivalIn(board: Board, p: Place, cell: Cell): { named: Named; gens: number } | null {
+  const h = cell.holder, job = cell.job;
+  if (!h || job === 'light') return null;
+  const site = siteOf(p), own = JSON.stringify(h.build);
+  const best = candidates(job, site, SPECIES).find((c) => !board.lines.includes(c.named.build.clade) && c.fit.letter !== 'F'
+    && JSON.stringify(c.named.build) !== own);
+  if (!best || best.fit.value < TOY.challenge * fitness(h.build, job, site).value) return null;
+  return { named: best.named, gens: TOY.rivalBar - (cell.rival?.id === best.named.id ? cell.rival.bar : 0) };
+}
 /** Part D, rule D3: the next line to open and the cards it takes; null when every line of the toy is open. */
-export function nextLine(_board: Board): { clade: Id; cards: number } | null { return later('D'); }
+export function nextLine(board: Board): { clade: Id; cards: number } | null {
+  const row = LINES.find((r) => !board.lines.includes(r.clade));
+  return row ? { clade: row.clade, cards: row.cards } : null;
+}
 /** Part D, rule D3: play another open line. False (and nothing changes) if it is not open. No time passes. */
-export function setMain(_board: Board, _clade: Id): boolean { return later('D'); }
+export function setMain(board: Board, clade: Id): boolean {
+  if (!board.lines.includes(clade)) return false;
+  board.main = clade;
+  return true;
+}

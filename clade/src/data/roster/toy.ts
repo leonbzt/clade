@@ -26,7 +26,9 @@ export const HOME = 0;
 export const TOY = {
   lifeGens: 12, // generations a Life takes, as in the game
   colonistBar: 36, // generations an open cell waits for a colonist: about three Lives
-  barsNextDoor: true, // bars also run in places next to one you live in (the toy has a switch for it)
+  // The quiet sea (*decided 16 Nov*): wild species arrive only in a place where you hold a cell, so the far sea stays
+  // open for your next line. With `true` every cell in reach was full by the first card (the toy keeps the switch).
+  barsNextDoor: false,
   pick: 3, // a colonist is one of the best `pick` candidates, chosen by the seed and the cell
   variantBar: 24, // generations between variants in a held cell
   variantStay: 12, // generations a variant stays beside the holder before it wins or goes
@@ -40,13 +42,14 @@ export const TOY = {
 
 /** The lines that open after the first, in order: each when you hold `cards` cards in all. `start` is the line's
  *  first build: no named species, and it reads D or better somewhere in the toy's sea (tests/model/data.test.ts).
- *  A stand-in for the tree as the unlock map (W5); the rising cost is the user's wish of 16 Nov. */
+ *  A stand-in for the tree as the unlock map (W5); the rising cost is the user's wish of 16 Nov.
+ *  The order (*decided 16 Nov*): a line that lives on rock comes second, because the first line cannot hold rock and
+ *  leaves it open. Lugworms eat what ragworms eat on the same ground and never found a cell: they come last. */
 const grams = (g: number) => Math.log10(g);
 export const LINES: { clade: string; cards: number; start: Build }[] = [
-  { clade: 'lugworms', cards: 1, start: { clade: 'lugworms', dials: { size: grams(1.5), guard: 0 }, mutations: [] } },
-  { clade: 'periwinkles', cards: 2, start: { clade: 'periwinkles', dials: { size: grams(0.5), guard: 0, brood: 0 }, mutations: [] } },
-  { clade: 'urchins', cards: 3, start: { clade: 'urchins', dials: { size: grams(15), guard: 0 }, mutations: [] } },
-  { clade: 'shore-crabs', cards: 4, start: { clade: 'shore-crabs', dials: { size: grams(8), bite: 0, guard: 0 }, mutations: [] } },
-  { clade: 'octopuses', cards: 6, start: { clade: 'octopuses', dials: { size: grams(150), bite: 0, speed: 0 }, mutations: [] } },
+  { clade: 'periwinkles', cards: 1, start: { clade: 'periwinkles', dials: { size: grams(0.5), guard: 0, brood: 0 }, mutations: [] } },
+  { clade: 'urchins', cards: 2, start: { clade: 'urchins', dials: { size: grams(15), guard: 0 }, mutations: [] } },
+  { clade: 'shore-crabs', cards: 3, start: { clade: 'shore-crabs', dials: { size: grams(8), bite: 0, guard: 0 }, mutations: [] } },
+  { clade: 'octopuses', cards: 4, start: { clade: 'octopuses', dials: { size: grams(150), bite: 0, speed: 0 }, mutations: [] } },
+  { clade: 'lugworms', cards: 6, start: { clade: 'lugworms', dials: { size: grams(1.5), guard: 0 }, mutations: [] } },
 ];
-
