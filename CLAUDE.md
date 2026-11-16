@@ -22,7 +22,8 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 - `docs/tastes.md`: the user's tastes, wishes and lessons. `docs/decisions.md`: the dated log of their calls.
 - `docs/proposals.md`: open AI proposals (three at most). `docs/ideas.md`: the parking lot.
 - `docs/slices/`: one spec per slice (`_template.md`); `docs/playtests/`: the user's notes after playing.
-- Code: `clade/src/sim` (rules, no DOM; never imports view or ui), `clade/src/data` (numbers and content),
+- Code: `clade/src/sim` (rules, no DOM; never imports view or ui), `clade/src/model` (the organism model from W1: laws
+  and board over `data/roster`; imports nothing else), `clade/src/data` (numbers and content),
   `clade/src/view` (Pixi), `clade/src/ui` (DOM and Svelte), `clade/tests/`. `game/` has the same layout. `toys/` and
   `spikes/` hold throwaway prototypes.
 - `npm run dev` (then `/clade/`; the old game at `/game/`) · `npm run check` (types and tests, prints only failures;

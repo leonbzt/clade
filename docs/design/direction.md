@@ -31,6 +31,15 @@ the user says so. A build session reads its step spec, not this page; the spec c
 - **Variant hunting:** "the hunting for variants with differing genomes and mutations was very fun, so I would like to
   include it if feasible, to make looking at the map its own core gameplay loop."
 
+**Third round, the same day (the W1 architect session; each was the option taken as put):**
+- **The model is a real module:** W1 writes it, tested, in `clade/src/model/`; the toy is a thin page over it; W2
+  shrinks to wiring it into the sea, the Life and the screens and deleting the old records.
+- **Dials are shared axes under each clade's own words:** the rules know five (size, bite, guard, speed, brood),
+  each with one law where it pays and an upkeep cost; a clade shows size and at most two more, named its own way.
+- **In the toy the shore opens and the land stays shut:** a rare "breathes air" variant shows in a population of
+  yours at the tide line; adopting it opens shore cells. The land shows its plants only. This uses the lean of
+  §11.2 for the toy and does not decide it for W4.
+
 ## 2. Findings: why the frame had to move
 *Measured in `clade/src` on 15 Nov.*
 - **The sim's world is written as types, not data:** 5 clades, 2 foods, 3 roles, 3 defence kinds and 27 named parts
@@ -56,21 +65,19 @@ species: you get its card. Finished lines open their nearest relatives on the re
 animals until a line of yours gains what it takes to live there (walking, breathing air); then it radiates into it.
 Real island life is adaptive radiation (one colonist, many niches); that is the game.
 
-## 4. The organism model: balance laws, not species (*proposal*; the contract sketch for step W1)
+## 4. The organism model: balance laws, not species (*proposal*; the contract is code since 16 Nov)
 **A build is a point in its clade's dial space. A real species is a named point.** One record serves both, so wild
 species stay "other players' builds".
-```ts
-interface Clade  { id; ott: number; parent: Id | null; plan: PlanId; life: 'forage' | 'hunt' | 'dig' | null; // null = board piece
-                   feed: FeedMode; diet: FoodId[]; adaptations: AdaptationId[]; guard: GuardKind | null; beats: GuardKind[];
-                   mechanic: Id; dials: [DialId, min, max][] /* at most 3; size is always one */; mutations: MutationId[] }
-interface Build  { clade: Id; dials: Record<DialId, number>; mutations: MutationId[] }     // the genome: this, and no more
-interface Named  { id; ott: number; name; common; build: Build; src: Record<Trait, Grade> }
-stats(build)  → the same six (bite, thrift, defence, speed, senses, brood)        // derived, never stored
-eats(a, b, habitat) → boolean                                                     // derived, never authored
-fitness(build, slot, habitat, world) → { intake, upkeep, survival, value, letter, reasons }   // unchanged shape
-```
+**The shapes are `clade/src/model/types.ts`** (they win over this page): `Clade` (plan, life, diet, ground,
+adaptations, guard, beats, base stats, dials, mutations; a producer also `makes` stocks), `Build` (clade, dials,
+mutations: the genome, and no more), `Named` (a build with a name, a real home and a grade per trait), `Site` (a
+habitat as the laws read it). The functions are `clade/src/model/laws.ts`: `stats(build)` (the same six, derived),
+`eats(a, b, kind)` (derived, never authored), `fitness(build, job, site)` (intake, upkeep, survival, value, letter,
+grams, three reasons), `climax(kind, area, pool)` (the reference web). Against the sketch of 15 Nov: no feed mode
+(the diet says it), a `hunt2` job for whoever eats the hunter, a `salt` adaptation, and open water as a ground.
 **The laws** (numbers by feel in one data file; directions are biology and must hold):
-1. *Size:* upkeep per animal rises as mass^0.75 and breeding slows as mass^0.25. Big is thrifty per gram and slow.
+1. *Size:* upkeep per gram falls with mass and losses weigh more on a big body (exponents 0.15 and 0.2 today, flatter
+   than Kleiber's so the letters stay readable). Big is thrifty per gram and slow.
 2. *Food:* a job is a food and a way of eating it. At most 4 food stocks in any one habitat; the list of foods across
    the island is longer (mats, plankton, detritus; leaf, seed, litter).
 3. *Hunt:* a hunter takes prey inside a size window below its own mass. Above the window is safety by size.
@@ -87,6 +94,8 @@ fitness(build, slot, habitat, world) → { intake, upkeep, survival, value, lett
 - *Known links:* a small file of documented feeding links and non-links; `eats` must reproduce most of them. The
   real web is the check, never the input.
 - *Coverage:* every job in every habitat kind has at least two candidates; every realm has a chain three long.
+  (Measured 16 Nov on 43 drafted species: 3 sea and shore cells have none and 16 of 76 have one; the land has no
+  animals yet. The tests hold these as lists that may only shrink.)
 - *No names in rules:* `sim/` holds no clade or species id (today it does; the swap removes them).
 
 **One mechanic per clade keeps species from feeling like numbers** (moult, shell, dash, burrow: whole-game §5). It is
@@ -168,7 +177,7 @@ The Life is proven ("the basics seem fun and as imagined", 5 Nov) and is ported,
 | --- | --- | --- | --- |
 | 12 | N4 fix: play it ten minutes, merge | does the quiet board hold? (it carries over) | you |
 | **W1** | The wide toy: about 40 real species as rows (drafted), sea, shore and land cells on the slot board (shore and land locked behind their adaptations), the laws, the derived web, the next goal, variants on a bar to compare and adopt | is a derived web of real species a board I want to climb and look through, and can I tell species apart? | 2 |
-| **W2** | The model swap in `clade/`: records to clades, dials and mutations, fitness and hunt on the laws, the data tests; the first line plays as the worm did | does the game still play, with no names in the rules? | 2 |
+| **W2** | The model swap in `clade/` (*15 Nov, third round:* W1's module wired into the sea, the Life and the screens; the old records, fitness and hunt deleted); the first line plays as the worm did | does the game still play, with no names in the rules? | 2 |
 | **N5** | The board (the maths pass's cut): jobs as a grid, the one next goal, Take, Beat, Hold, Adopt; variants drawn and marked on the map, the compare card | do I know what is mine and what is next, and is the map worth looking at? | 2 |
 | | **Closed test:** an unlisted itch build, sea and shore, about 30 species, one or two lines | does a stranger? | |
 | **W3** | The pipeline and the roster to 60: the source check, `tree.json`, grades, the roster sheet, researcher batches | are the rows right? | 1, plus batches |

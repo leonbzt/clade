@@ -1,30 +1,30 @@
 # Status
 
-- **Milestone:** M2. Step 12, **the N4 fix and the quiet sea** ([spec](slices/n4-fix-quiet-sea.md)): built 15 Nov,
-  not played. Branch `n4-who-eats-whom`, not merged; all committed (code at `10fcbfb`, then "docs: the direction page").
-- **Done (15 Nov, an architect session, docs only):**
-  - [design/direction.md](design/direction.md): the one design page that wins. A present-day island of real species;
-    a lineage is a real clade with dials; laws balance, rows are data; the trait pipeline; the plan; the roles.
-  - The roadmap from step 13 re-cut and **adopted**: W1 the wide toy, W2 the model swap, N5 the board, the closed
-    test, W3 the pipeline, W4 the land, W5 lines, L1, A.
-  - Roles and commands: `/architect` and `/build` (`.claude/commands/`), a spec template with a Contract and a Build
-    brief (`slices/_template.md`), "For the architect" in this file. Pointers updated in `CLAUDE.md`, `AGENTS.md`,
-    `workflow.md`, `README.md`, `/spec`, `/handoff`, the `researcher` agent.
-  - P52 parked; P53, P54 and P55 closed. No proposal is open.
-- **Decided (15 Nov):** 1c a lineage is a real clade with a fixed plan and 2–3 dials, named real species are the
-  leaves; 2b a present-day island, the tree is the unlock map; 3a movers only are playable, plants and sessile life
-  are board pieces; traits get hand authoring and researcher batches over time; Fable architects, weaker agents build.
-  "Adopt" (the roadmap); a young island with colonists; a recognisable mix as the roster; the first line is a marine
-  worm; animals come to land only as lines gain key adaptations; variant hunting makes the map its own loop.
-- **Verified:** docs only; links checked. `npm run check` not re-run (no code changed; 7.8 s, 173 tests at `10fcbfb`).
+- **Milestone:** M2. Step 13, **W1 the wide toy** ([spec](slices/w1-the-wide-toy.md)): contract written 16 Nov,
+  nothing built. Step 12 (the N4 fix) is still built and not played. Branch `n4-who-eats-whom`; **nothing of this
+  session is committed.**
+- **Done (15–16 Nov, an architect session):**
+  - The organism model in `clade/src/model/`: `types.ts` (the contract), `laws.ts` (the seven laws as pure
+    functions, 172 lines), `board.ts` (signatures only; bodies are part A).
+  - Rows in `clade/src/data/roster/`: 38 clades, 43 named species, 10 mutations, 24 habitat kinds, 29 known links,
+    the law numbers, the toy's 14 places and clocks. **Every trait is drafted from memory**; `ott` is 0, no tree.
+  - Tests in `clade/tests/model/`: `rules`, `laws`, `data` (30 passing), `board` (15, skipped until part A).
+  - `direction.md` §1 (third round), §4 (the shapes are the code) and §8 (W2 shrinks); `ROADMAP.md` steps 13, 14;
+    `decisions.md`; `ideas.md`; `CLAUDE.md` (the model folder); `clade/tests/fitness.test.ts` (the letters grep
+    lets `model/laws.ts` make letters).
+- **Decided (15 Nov, third round):** the model is a real tested module in `clade/src/model/`, the toy a thin page,
+  W2 shrinks to wiring; dials are five shared axes under each clade's own words; in the toy the shore opens by a
+  rare "breathes air" variant and the land stays shut (direction §11.2 stays open for W4).
+- **Not as the role says:** the architect wrote `laws.ts` itself. The data tests cannot be shown to be passable
+  without the law functions, so they are part of the contract here. Say so if builders should own them instead.
+- **Verified:** the 30 model tests pass in 0.5 s; types clean. `npm run check`: 201 pass, 2 fail, 14 s. Both
+  failures are timing tests in files this session did not touch (`ground.test.ts` 54 ms against 45,
+  `hunt.test.ts` 146 ms against 100); they fail the same way with this session's changes stashed, on a machine at
+  load 5–7. Not re-run on a quiet machine. Not verified: any species fact; that the board tests can all pass
+  (above all "you end up holding three places or more"); the toy, which does not exist yet.
 - **Next:**
-  1. You: play the N4 fix ten minutes (five Lives from *first worm*, then Midgame), notes to
-     `docs/playtests/n4-fix-quiet-sea.md`; merge the branch into `main`; tick step 12.
-  2. A fresh session at high effort: `/architect W1 the wide toy` (the spec with its contract: the row schema, the
-     laws, the data tests, about 40 drafted species, variants on a bar). Parts go to `/build W1 A` at medium effort.
-- **Open:**
-  1. Direction §11: who else comes ashore after you (W4), how a key adaptation is won (W4, W5), the genome budget
-     (W2). None blocks W1.
-  2. The budget "4 stocks per habitat, 3 dials per line, 6 mutations per clade" is a proposal (`CLAUDE.md` rule 6).
-  3. The tree and trait sources in direction §6 are from background knowledge, unverified; W3 starts with that check.
-  4. The N4 fix's open points (calm or dead map, the Dig cell without a cousin, untuned numbers) wait for your play.
+  1. A builder at medium effort: `/build W1 A` (the board rules), then `/build W1 B` (the page).
+  2. You: commit this session's files once looked at; play the toy ten minutes, notes to
+     `docs/playtests/w1-the-wide-toy.md`. Still owed: the N4 fix play and the merge (step 12).
+- **Open** (the spec's three): hunting reads light; the roster leaves gaps (no hunter on the lee reef, 16 of 76
+  cells with one candidate: W3 fills them); `nextGoal` puts Adopt first. Also direction §11.

@@ -880,3 +880,15 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   include it if feasible, to make looking at the map its own core gameplay loop." It is feasible (a variant is a
   `Build` with other numbers); how it works (dials plus named mutations, the bar, adopt) is a proposal in direction §5.
 - **Not decided:** who else comes ashore after you, how a key adaptation is won, the genome budget (direction §11).
+
+## 15 Nov, the third round (the W1 architect session; three questions, each answered with the option as put)
+- **Where W1's model lives:** "Real module in clade/". W1 writes the model, tested, in `clade/src/model/`; the toy is
+  a thin throwaway page over it; W2 shrinks to wiring it into the sea, the Life and the screens and deleting the old
+  records. (The other options: a one-file toy that W2 rewrites; the swap first with no toy.)
+- **What a dial is:** "Shared axes, own words". The rules know five axes (size, bite, guard, speed, brood), each with
+  one law where it pays and an upkeep cost; a clade shows size and at most two more under its own name.
+- **Shore and land in the toy:** "Shore opens, land stays shut". A rare "breathes air" variant shows in a population
+  of yours at the tide line; adopting it opens shore cells; the land is visible, plants only. Direction §11.2 stays
+  open for W4.
+- **Not decided:** every number, the law formulas, the board rules of the toy and the roster's rows. They are the
+  architect's proposals in `docs/slices/w1-the-wide-toy.md` and `clade/src/data/roster/`.

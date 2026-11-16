@@ -225,3 +225,8 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Known feeding links as a check file the derived web must reproduce (AI, 15 Nov; direction §4). W1 or W3.
 - Tidy the repo root: the plant game (`src/`, `tests/`, `index.html`) and the frozen `game/` into an archive folder once `clade/` passes its play test; old design docs into `docs/design/history/` with a link check (AI, 15 Nov). One builder session, on your word.
 
+
+## From the W1 architect session (16 Nov, all AI)
+- Wild species vary and spread on their own (in W1 only your line varies). · Push variants show more often where a hunter holds a cell.
+- A producer's letter from more than the grams it makes (a lichen reads weak only because it makes little).
+- A roster gap finder: the coverage table proposes the kind of species a thin cell needs (W3's researcher batches).

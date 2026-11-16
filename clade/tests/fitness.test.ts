@@ -22,7 +22,8 @@ describe('fitness contracts', () => {
     const source = new URL('../src', import.meta.url);
     const files = readdirSync(source, { recursive: true }).map(String).filter((p) => /\.(ts|svelte)$/.test(p));
     for (const file of files) {
-      if (file.startsWith('data/') || file === 'sim/fitness.ts') continue;
+      // model/laws.ts is the organism model's fitness (W1); it replaces sim/fitness.ts in W2.
+      if (file.startsWith('data/') || file === 'sim/fitness.ts' || file === 'model/laws.ts') continue;
       const text = readFileSync(join(source.pathname, file), 'utf8');
       expect(text, file).not.toMatch(/LETTER_THRESHOLDS|TERM_THRESHOLDS/);
       expect(text, file).not.toMatch(/(?:return\s+|(?:letter|tier)\s*[:=]\s*)['"][SABCDF]['"]/);

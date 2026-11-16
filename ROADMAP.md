@@ -41,8 +41,8 @@ lines gain key adaptations; variant hunting makes the map its own loop. **Adopte
 replace the 12 Nov order (N5, N6, N7, L1, the closed test, R5, A, R7–R11); N6 and N7 are gone, N5 and L1 stay. Each
 step's cut is a proposal until its spec.
 
-13. [ ] **W1** The wide toy: about 40 real species as data rows, sea, shore and land cells on the slot board, the laws, the derived food web, the one next goal, variants to compare and adopt ("is this a board I want to climb and look through, and can I tell species apart?") · 2
-14. [ ] **W2** The model swap in `clade/`: records become clades, dials and mutations, `fitness` and the hunt run on the laws, the data tests; the first line plays as the worm did · 2
+13. [ ] **W1** ([spec](docs/slices/w1-the-wide-toy.md)) The wide toy: about 40 real species as data rows, sea, shore and land cells on the slot board, the laws, the derived food web, the one next goal, variants to compare and adopt ("is this a board I want to climb and look through, and can I tell species apart?") · 2
+14. [ ] **W2** The model swap in `clade/`: W1's tested module (`clade/src/model/`) wired into the sea, the Life and the screens; the old records, `fitness` and hunt deleted; the first line plays as the worm did (*15 Nov, third round*) · 2
 15. [ ] **N5** The board: the map's holders as a grid of jobs; the one next goal; letters against the meta; Take, Beat, Hold, Adopt; variants drawn and marked on the map · 2
 16. [ ] **The closed test:** an unlisted itch page for 3–5 Discord players (sea and shore, about 30 species, one or two lines)
 17. [ ] **W3** The trait pipeline and the roster to 60: the source check, the generated tree, grades per trait, the roster sheet, researcher batches · 1, plus batches
