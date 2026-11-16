@@ -35,6 +35,7 @@ export function growthOrder(build: Build): Place[] {
 }
 
 export function activePlaces(body: LifeBody): Place[] {
+  if (body.tree) return body.tree.grown.filter((place) => !body.lost.includes(place));
   const order = growthOrder(body.build).filter((place) => place !== body.mutation?.place);
   const active = body.size >= RULE.maxSize ? order : order.slice(0, body.size);
   // Keep activation order for starvation: growth after the pick is newer than the mutation.

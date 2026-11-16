@@ -20,6 +20,7 @@ export function mutationWeight(life: Life, part: PartId): number {
 
 /** Mark the event even when no place is empty, so it can never roll again this Life. */
 export function offerMutation(life: Life): boolean {
+  if (life.tree) return false;
   if (life.phase !== 'play' || life.size !== MUTATION.size || life.mutationOffer !== null) return false;
   const pool = Object.values(PARTS).filter((p) => p.plans.includes(life.build.clade) && !p.rare
     && life.build.parts[p.place] === undefined).map((p) => ({ part: p.id, weight: mutationWeight(life, p.id) }));
