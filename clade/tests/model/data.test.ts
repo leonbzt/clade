@@ -3,11 +3,12 @@
 // species, and never an edit of this file by a builder.
 import { describe, expect, it } from 'vitest';
 import { CLADE } from '../../src/data/roster/clades';
-import { KINDS } from '../../src/data/roster/kinds';
+import { KIND, KINDS } from '../../src/data/roster/kinds';
 import { DIAL_STEP } from '../../src/data/roster/laws';
 import { LINKS, LINKS_MOST } from '../../src/data/roster/links';
 import { NAMED, SPECIES } from '../../src/data/roster/species';
-import { START } from '../../src/data/roster/toy';
+import { LINES, PLACES, START } from '../../src/data/roster/toy';
+import { nameOf } from '../../src/model/board';
 import { candidates, climax, eats, fitness, jobsAt, lives } from '../../src/model/laws';
 import type { Build, DialId, JobId, Named, Site } from '../../src/model/types';
 
@@ -93,6 +94,53 @@ describe('the data tests', () => {
     }
   });
 
+  // Round two (16 Nov): what the first play showed, held as numbers that may only fall.
+  it('dials matter: the clade dials whose best step moves no cell by a tenth stay few (a ratchet)', () => {
+    const flat: string[] = [];
+    for (const c of Object.values(CLADE).filter((x) => x.life)) for (const d of c.dials) {
+      const builds = [...SPECIES.filter((n) => n.build.clade === c.id).map((n) => n.build), ...[START, ...LINES.map((l) => l.start)].filter((b) => b.clade === c.id)];
+      let most = 1;
+      for (const b of builds) for (const dir of [1, -1]) {
+        const v = (b.dials[d.id] ?? 0) + dir * DIAL_STEP[d.id];
+        if (v < d.min - 1e-9 || v > d.max + 1e-9) continue;
+        const moved: Build = { ...b, dials: { ...b.dials, [d.id]: v } };
+        for (const { site, job } of cells) {
+          const from = fitness(b, job, site), to = fitness(moved, job, site);
+          if (from.letter !== 'F' && to.value > 0) most = Math.max(most, to.value / from.value);
+        }
+      }
+      if (most < 1.1) flat.push(`${c.id}.${d.id}`);
+    }
+    expect(flat.length, `flat dials: ${flat.join(' ')}`).toBeLessThanOrEqual(FLAT_MOST);
+  });
+
+  it('no sister wins everywhere: the species a sister of its clade outreads in every cell are the listed ones (a ratchet)', () => {
+    const under: string[] = [];
+    for (const n of SPECIES.filter((s) => CLADE[s.build.clade].life)) {
+      const sisters = SPECIES.filter((s) => s !== n && s.build.clade === n.build.clade);
+      const mine = cells.filter(({ site, job }) => grows(n.build, job, site));
+      if (sisters.some((s) => mine.length > 0 && mine.every(({ site, job }) => fitness(s.build, job, site).value > fitness(n.build, job, site).value))) under.push(n.id);
+    }
+    expect(under.filter((id) => !UNDER.includes(id))).toEqual([]);
+  });
+
+  it('the toy\'s lines: each opens at more cards than the last, and starts as no named species that grows in the toy\'s sea', () => {
+    const sea = PLACES.filter((p) => KIND[p.kind].realm === 'sea').map((p) => climax(KIND[p.kind], p.area, SPECIES));
+    let cards = 0, toWin = SPECIES.filter((n) => n.build.clade === START.clade).length;
+    for (const line of LINES) {
+      const c = CLADE[line.clade];
+      expect(c.life, line.clade).not.toBeNull();
+      expect(line.start.clade).toBe(line.clade);
+      expect(nameOf(line.start), `${line.clade} starts unnamed`).toBeNull();
+      for (const d of c.dials) { expect(line.start.dials[d.id]!).toBeGreaterThanOrEqual(d.min - 1e-9); expect(line.start.dials[d.id]!).toBeLessThanOrEqual(d.max + 1e-9); }
+      expect(sea.some((site) => jobsAt(site).some((job) => grows(line.start, job, site))), `${line.clade} grows somewhere`).toBe(true);
+      expect(line.cards).toBeGreaterThan(cards);
+      expect(line.cards, `${line.clade}: the cards must be there to win before it opens`).toBeLessThanOrEqual(toWin);
+      cards = line.cards;
+      toWin += SPECIES.filter((n) => n.build.clade === line.clade).length;
+    }
+  });
+
   it('law 7, realm: the first line lives in the sea, reaches the shore only with air, and never the land', () => {
     const air: Build = { ...START, mutations: [...START.mutations, 'air-breathing'] };
     for (const k of KINDS) {
@@ -107,5 +155,10 @@ describe('the data tests', () => {
 const EMPTY = ['shallows-rock-lee:hunt', 'shore-mud:mats', 'shore-mud:hunt'];
 /** The share of sea and shore cells with fewer than two candidates (measured 16 Nov: 16 of 76). */
 const THIN = 0.25;
+/** Mover clade dials whose best single step changes no cell's value by a tenth (measured 16 Nov: 43 of 54). The
+ *  laws are smooth between a few thresholds; the laws' second cut brings this down. Nothing may raise it. */
+const FLAT_MOST = 43;
+/** Named species a sister outreads in every cell: bigger wins inside a clade today. May only shrink. */
+const UNDER = ['common-ragworm'];
 /** Lit kinds no producer in the roster grows on: tide flats of sand and mud carry mats only. */
 const BARE = ['flat-sand-lee', 'flat-sand-open', 'flat-mud-lee', 'flat-mud-open'];

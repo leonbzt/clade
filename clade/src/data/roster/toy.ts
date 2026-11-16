@@ -33,4 +33,20 @@ export const TOY = {
   rare: 4, // every `rare`-th variant of a cell carries a mutation instead of a dial step
   fade: 24, // generations a holder may read F before its cell opens
   news: 30, // news lines kept
+  // Round two (16 Nov).
+  challenge: 1.25, // a rival comes for a held cell when it reads this many times the holder's value (half a letter)
+  rivalBar: 48, // generations a rival takes to arrive: four Lives to answer it
 };
+
+/** The lines that open after the first, in order: each when you hold `cards` cards in all. `start` is the line's
+ *  first build: no named species, and it reads D or better somewhere in the toy's sea (tests/model/data.test.ts).
+ *  A stand-in for the tree as the unlock map (W5); the rising cost is the user's wish of 16 Nov. */
+const grams = (g: number) => Math.log10(g);
+export const LINES: { clade: string; cards: number; start: Build }[] = [
+  { clade: 'lugworms', cards: 1, start: { clade: 'lugworms', dials: { size: grams(1.5), guard: 0 }, mutations: [] } },
+  { clade: 'periwinkles', cards: 2, start: { clade: 'periwinkles', dials: { size: grams(0.5), guard: 0, brood: 0 }, mutations: [] } },
+  { clade: 'urchins', cards: 3, start: { clade: 'urchins', dials: { size: grams(15), guard: 0 }, mutations: [] } },
+  { clade: 'shore-crabs', cards: 4, start: { clade: 'shore-crabs', dials: { size: grams(8), bite: 0, guard: 0 }, mutations: [] } },
+  { clade: 'octopuses', cards: 6, start: { clade: 'octopuses', dials: { size: grams(150), bite: 0, speed: 0 }, mutations: [] } },
+];
+
