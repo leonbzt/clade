@@ -2,8 +2,10 @@
 import { PREY_FOOD, RULE, TURNS, VERBS } from '../../data/life';
 import { ENFORCE_EFFECT, ENFORCE_HEADROOM } from '../../data/economy';
 import { PARTS } from '../../data/parts';
+import { BRANCHES, type Branch } from '../../data/tree';
 import * as E from '../../sim/economy';
 import * as L from '../../sim/life';
+import * as T from '../../sim/tree';
 import { activeParts, mature } from '../../sim/life-body';
 import { preyBeside, verbNote } from '../../sim/verbs';
 import type { PartId, VerbId } from '../../sim/records';
@@ -53,7 +55,8 @@ export class Hud {
   private bannerT = 0;
   private timers = new Set<ReturnType<typeof setTimeout>>();
 
-  constructor(private on: { wait: () => void; grow: () => void; lay: () => void; verb: (v: VerbId) => void; enforce: (p: PartId) => void }) {
+  constructor(private on: { wait: () => void; grow: () => void; lay: () => void; verb: (v: VerbId) => void; enforce: (p: PartId) => void;
+    spend: (p: PartId) => void; point: () => void }) {
     $('wait').onclick = on.wait; $('grow').onclick = on.grow; $('lay').onclick = on.lay;
   }
   tick(dt: number) { this.food.tick(dt); this.oxy.tick(dt); this.hp.tick(dt); }
@@ -84,7 +87,27 @@ export class Hud {
       b.disabled = !play || !L.ready(l, v) || (v === 'dash' && l.dash);
       b.title = VERBS[v].does; b.onclick = () => this.on.verb(v); verbs.appendChild(b);
     }
+    $('enforceHeading').textContent = l.tree ? `Build · ${l.tree.points} points` : 'Enforce';
     const list = $('enforce'); list.replaceChildren();
+    if (l.tree) {
+      const cost = T.pointCost(l), point = document.createElement('button');
+      point.textContent = cost === null ? 'Point · all bought' : `Point · ${cost} food`;
+      point.disabled = !play || !T.canBuyPoint(l); point.onclick = this.on.point; list.appendChild(point);
+      let branch: Branch | undefined;
+      for (const node of T.treeOf(l)) {
+        if (branch !== node.branch) {
+          branch = node.branch;
+          const heading = document.createElement('h3'); heading.textContent = BRANCHES[branch].name; list.appendChild(heading);
+        }
+        const part = PARTS[node.part], state = T.nodeState(l, node.part), effect = ENFORCE_EFFECT[node.part]!;
+        const label = `${part.name}${state.k === 'grown' && state.rank ? ` · rank ${state.rank}` : ''}`;
+        const effectText = effect.kind === 'meal' ? `+${effect.amount} food per ${effect.meals.replace(/mats$/, 'mat').replace(/meals$/, 'meal')}` : effect.text;
+        const b = this.button(label, state.k === 'open' ? part.does : state.k === 'shut' ? state.why : effectText);
+        b.classList.toggle('grown', state.k === 'grown');
+        b.disabled = !play || !T.canSpend(l, node.part); b.onclick = () => this.on.spend(node.part); list.appendChild(b);
+      }
+      return;
+    }
     for (const part of activeParts(l)) {
       const effect = ENFORCE_EFFECT[part]; if (!effect) continue;
       const rank = l.enforced[part] ?? 0, cap = ENFORCE_HEADROOM + Math.max(0, l.ranks[part] ?? 0), cost = E.enforceCost(l);

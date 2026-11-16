@@ -23,7 +23,7 @@
   });
 </script>
 
-<div class="life-screen" data-revision={revision}>
+<div class="life-screen" class:tree-mode={!!life.tree} data-revision={revision}>
   <header class="life-head">
     <h1>{purpose}</h1>
     <div class="life-counts"><span id="turn"></span><span id="eggs"></span><span id="body"></span><span id="mutant" class="mutant"></span></div>
@@ -43,10 +43,15 @@
     <p id="info" aria-live="polite"></p>
     <div class="life-actions"><button id="grow">Grow</button><button id="lay">Lay</button><button id="wait">Wait</button></div>
     <div id="verbs"></div>
-    <h2>Enforce</h2><div id="enforce"></div>
+    <h2 id="enforceHeading">Enforce</h2><div id="enforce"></div>
     <div class="life-dev" aria-label="Life dev controls">
       <span>Dev</span><button disabled={devBusy || offer.length > 0 || life.phase !== 'play'} onclick={() => stage.addFood()}>+10 food</button>
       <button disabled={devBusy || offer.length > 0 || life.phase !== 'play'} onclick={() => stage.endSeason()}>End the season</button>
     </div>
   </aside>
 </div>
+
+<style>
+  .tree-mode :global(#enforce h3) { font-size: 16px; margin: 8px 0 0; }
+  .tree-mode :global(#enforce .grown) { border-color: var(--gold); }
+</style>

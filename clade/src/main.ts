@@ -3,6 +3,8 @@ import 'pixi.js/unsafe-eval'; // works where the page's host forbids eval
 import { mount } from 'svelte';
 import { css, P } from './data/palette';
 import App from './ui/App.svelte';
+import BuildToy from './ui/toy/BuildToy.svelte';
 
 for (const [name, i] of Object.entries(P)) document.documentElement.style.setProperty(`--${name}`, css(i));
-mount(App, { target: document.getElementById('app')! });
+mount(new URLSearchParams(location.search).get('toy') === 'build' ? BuildToy : App,
+  { target: document.getElementById('app')! });

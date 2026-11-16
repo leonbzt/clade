@@ -4,6 +4,7 @@ import { AlphaFilter, Application, Container, Graphics } from 'pixi.js';
 import { NODES, TURNS } from '../data/life';
 import * as E from '../sim/economy';
 import * as L from '../sim/life';
+import * as T from '../sim/tree';
 import { pickMutation } from '../sim/mutation';
 import { edible, huntHint, useVerb } from '../sim/verbs';
 import type { Build, PartId, VerbId } from '../sim/records';
@@ -57,12 +58,13 @@ export class LifeStage {
     shadowLayer.addChild(shadows); shadowLayer.filters = [new AlphaFilter({ alpha: 0.3 })];
     world.addChild(floor.root, fx.under, shadowLayer, marks.g, bodies, above, fx.over); app.stage.addChild(world);
     const hud = new Hud({ wait: () => void this.act(() => L.stay(this.life)), grow: () => void this.act(() => E.grow(this.life)),
-      lay: () => void this.act(() => E.lay(this.life)), verb: (v) => void this.verb(v), enforce: (p) => void this.enforce(p) });
+      lay: () => void this.act(() => E.lay(this.life)), verb: (v) => void this.verb(v), enforce: (p) => void this.enforce(p),
+      spend: (p) => void this.act(() => T.spend(this.life, p)), point: () => void this.act(() => T.buyPoint(this.life)) });
     const cam = new Camera(world, app.canvas, (x, y) => this.tap(x, y), (x, y) => { marks.hover = S.busy ? -1 : this.tileAt(x, y); });
     cam.shakeAmt = feel.shake; cam.zoomSpeed = feel.zoomSpeed;
     const you = new Body(this.life), hunter = new Hunter();
     // Residents are drawn grown, with a board plan: a swimmer or cell shows as a worm.
-    const resident = (build: Build, ramp: Ramp) => new Body({ ...this.life, build: { ...build, clade: build.clade === 'arthropod' || build.clade === 'trilobite' ? build.clade : 'worm' }, size: 5, lost: [], mutation: null }, ramp);
+    const resident = (build: Build, ramp: Ramp) => new Body({ ...this.life, build: { ...build, clade: build.clade === 'arthropod' || build.clade === 'trilobite' ? build.clade : 'worm' }, size: 5, lost: [], mutation: null, tree: undefined }, ramp);
     const rivals = this.life.rivals.map((r) => {
       const b = resident(r.build, PAL.rival), c = centre(L.at(r.x, r.y)); b.place(c.x, c.y, -Math.PI / 2); return b;
     });
@@ -94,6 +96,7 @@ export class LifeStage {
       get life() { return S.life; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)),
       move: (i: number) => this.act(() => L.move(this.life, i)), wait: () => this.act(() => L.stay(this.life)),
       grow: () => this.act(() => E.grow(this.life)), enforce: (p: PartId) => this.enforce(p),
+      spend: (p: PartId) => this.act(() => T.spend(this.life, p)), point: () => this.act(() => T.buyPoint(this.life)),
       mutate: (p: PartId | null) => this.mutate(p),
       lay: () => this.act(() => E.lay(this.life)), verb: (v: VerbId) => this.verb(v),
       get destinations() { return [...L.dests(S.life).keys()]; }, fps: () => app.ticker.FPS,
