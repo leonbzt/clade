@@ -5,9 +5,10 @@ import { ENFORCE_EFFECT } from '../data/economy';
 import { GUARDS, NODES, PLANS, RULE, STRUCK, type NodeId } from '../data/life';
 import { MUTATION } from '../data/mutation';
 import { PARTS, PLACES } from '../data/parts';
+import type { TreeState } from '../data/tree';
 import { partUpkeep, reach } from './fitness';
 import type { Mutation } from './mutation';
-import type { Build, Food, Part, PartId, Place, Ranks, VerbId } from './records';
+import type { Build, DefenceKind, Food, Part, PartId, Place, Ranks, VerbId } from './records';
 
 export type LifePlan = keyof typeof PLANS;
 export type LifeBuild = Build & { clade: LifePlan };
@@ -19,6 +20,8 @@ export interface LifeBody {
   enforced: Ranks;
   spentGuards: Ranks;
   mutation: Mutation | null;
+  /** Tree mode (B0): set by `startTree`. Undefined: the Life plays as before. */
+  tree?: TreeState;
 }
 
 const FAMILIES: Part['family'][] = ['feed', 'move', 'sense', 'guard', 'brood'];
@@ -94,7 +97,8 @@ export function lockOf(body: LifeBody, node: NodeId, substrate: Substrate, crack
 }
 
 export type Side = 'front' | 'right' | 'back' | 'left';
-export interface StrikeCtx { buried?: boolean; dug?: boolean; stayed?: boolean; braced?: boolean; soft?: boolean }
+/** `beats`: the defences the sea's hunter ignores (N4 D); the shadow beats none. */
+export interface StrikeCtx { buried?: boolean; dug?: boolean; stayed?: boolean; braced?: boolean; soft?: boolean; beats?: DefenceKind[] }
 export interface Hit {
   kind: 'buried' | 'enrolled' | 'blocked' | 'hit'; part: PartId | null; tear: Place | null;
   damage: number; rest: number; enforced?: true;
@@ -103,20 +107,22 @@ export interface Hit {
 const SIDES: Side[] = ['front', 'right', 'back', 'left'];
 export const sideOf = (dir: number, facing: number): Side => SIDES[(dir - facing + 4) % 4];
 
-/** Mud, Dig, enrolment and Brace resolve before a guard or a tear. */
+/** Mud, Dig, enrolment and Brace resolve before a guard or a tear; a hunter that beats armour gets past Brace (12 Nov). */
 export function strikeOn(body: LifeBody, side: Side, ctx: StrikeCtx = {}): Hit {
   const safe = { part: null, tear: null, damage: 0, rest: RULE.restAfterStrike };
-  if (ctx.buried || ctx.dug) return { ...safe, kind: 'buried' };
-  if (ctx.stayed && (body.build.clade === 'trilobite' || has(body, 'enrol')))
+  const beaten = (kind?: DefenceKind) => !!kind && !!ctx.beats?.includes(kind);
+  const holds = (part: PartId) => !beaten(PARTS[part].defence);
+  if ((ctx.buried || ctx.dug) && !beaten('burrow')) return { ...safe, kind: 'buried' };
+  if (ctx.stayed && !beaten('armour') && (body.build.clade === 'trilobite' || has(body, 'enrol')))
     return { ...safe, kind: 'enrolled', part: has(body, 'enrol') ? 'enrol' : null };
-  if (ctx.braced) return { ...safe, kind: 'blocked', rest: RULE.restAfterSpine };
+  if (ctx.braced && !beaten('armour')) return { ...safe, kind: 'blocked', rest: RULE.restAfterSpine };
   const target = side === 'left' || side === 'right' ? 'flank' : side;
   const active = activePlaces(body);
   const struck = PLACES.filter((place) => active.includes(place)
     && (place === 'back' && body.build.parts.back === 'shield' ? 'front' : STRUCK[place]) === target);
-  const guard = struck.map((place) => body.build.parts[place]!).find((part) => GUARDS.includes(part));
+  const guard = struck.map((place) => body.build.parts[place]!).find((part) => GUARDS.includes(part) && holds(part));
   if (guard) return { ...safe, kind: 'blocked', part: guard, rest: guard === 'spine' ? RULE.restAfterSpine : RULE.restAfterStrike };
-  const enforced = activeParts(body).find((part) => ENFORCE_EFFECT[part]?.kind === 'block'
+  const enforced = activeParts(body).find((part) => ENFORCE_EFFECT[part]?.kind === 'block' && holds(part)
     && enforcedBonus(body, part) > (body.spentGuards[part] ?? 0));
   if (enforced) return { ...safe, kind: 'blocked', part: enforced, enforced: true };
   const tear = struck.at(-1) ?? null;

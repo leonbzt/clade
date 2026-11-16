@@ -5,8 +5,8 @@ description: Write the session's state to docs/status.md so the next session can
 Wrap up this session so it can be cleared without losing anything.
 
 1. **Log the user's calls.** Append to `docs/decisions.md`, dated, only what the user **explicitly** decided this
-   session, in their words where possible. Update the matching lines in `docs/design/whole-game-build.md`
-   (the rebuild) or `docs/tastes.md` (tastes and lessons) so they stay current (no history there). Never record an AI proposal as a
+   session, in their words where possible. Update the matching lines in `docs/design/direction.md`
+   (the direction) or `docs/tastes.md` (tastes and lessons) so they stay current (no history there). Never record an AI proposal as a
    decision.
 2. **Park and prune.** New AI ideas, and ideas the user floated without deciding, get one line each in
    `docs/ideas.md`. Remove decided or stale proposals from `docs/proposals.md` (three open at most).
@@ -20,4 +20,5 @@ Wrap up this session so it can be cleared without losing anything.
    - **Decided:** only what the user explicitly decided
    - **Next:** 1–3 concrete steps
    - **Open:** open questions
+   - **For the architect:** design questions a build session met and did not decide (leave out when empty)
 7. Tell the user: "Ready for /clear, then /kickoff <topic>." List the files you changed.

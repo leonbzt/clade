@@ -29,6 +29,7 @@
 .life-controls h2 { font-size: 16px; margin: 8px 0 4px; }
 .life-controls button { text-align: left; }
 .life-controls button:disabled { opacity: 0.55; cursor: default; }
+.life-controls button.lit { border-color: var(--gold); color: var(--gold); animation: lit 0.9s ease-in-out infinite; }
 .life-controls small { display: block; font: inherit; color: var(--dim); margin-top: 2px; }
 .life-actions, #verbs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 #enforce { display: grid; gap: 4px; }
@@ -37,6 +38,7 @@
 .board-error { padding: 16px; }
 @keyframes float-up { from { opacity: 1; transform: translate(-50%, 0); } to { opacity: 0; transform: translate(-50%, -40px); } }
 @keyframes pip-pop { 50% { transform: scaleY(1.6); } }
+@keyframes lit { 50% { background: var(--line); } }
 @media (min-width: 800px) {
   .life-screen { display: grid; grid-template-columns: minmax(0, 1fr) 340px; grid-template-rows: auto minmax(0, 1fr); }
   .life-head { grid-column: 1 / -1; }

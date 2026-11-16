@@ -2,13 +2,13 @@
 import { CLADES } from '../data/clades';
 import { PARTS } from '../data/parts';
 import { ACCENT } from '../data/palette';
-import { BASE_UPKEEP, FOODS, LETTER_THRESHOLDS, MASS_BY_SIZE, PART_EFFECT, SEA, TERM_THRESHOLDS, YIELDS } from '../data/sea';
+import { BASE_UPKEEP, FOODS, LETTER_THRESHOLDS, PART_EFFECT, SEA, TERM_THRESHOLDS, YIELDS } from '../data/sea';
+import { biteOf, huntsWith, partsOf, sizeOf } from './build';
 import type { Habitat } from './habitats';
-import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, Stats, World } from './records';
+import { kitOf, preyIn, spare, takeTotal, threat, type Kit } from './hunt';
+import type { Build, Fitness, Food, Letter, PartId, Ranks, Slot, SlotId, Stats, World } from './records';
 
-const partsOf = (b: Build): PartId[] => Object.values(b.parts).filter((p): p is PartId => p !== undefined);
-const sizeOf = (b: Build) => Math.max(1, Math.min(MASS_BY_SIZE.length - 1, Math.round(b.genes.size)));
-export const bodyMass = (b: Build): number => MASS_BY_SIZE[sizeOf(b)];
+export { bodyMass } from './build';
 export const partUpkeep = (part: PartId, ranks: Ranks) => Math.max(0, PARTS[part].upkeep - Math.max(0, ranks[part] ?? 0));
 export const ceiling = (h: Habitat, food: Food) => YIELDS[food][h.kind.depth][h.kind.substrate] * h.area;
 /** Food per tile against the reference density: the one food term of intake, read by `fitness` and the sea's eating. */
@@ -20,13 +20,22 @@ export function stats(build: Build, ranks: Ranks): Stats {
   return deriveStats(build, ranks, partsOf(build));
 }
 
+/** A build read once: its parts and derived stats. The sea prepares one per species per generation (law 6). */
+export interface Body { build: Build; ids: PartId[]; traits: Stats; hunts: boolean; kit: Kit; upkeep: number; opens: Food[] }
+export function bodyOf(build: Build, ranks: Ranks, kit?: Kit): Body {
+  const ids = partsOf(build), traits = deriveStats(build, ranks, ids);
+  kit ??= kitOf(build, ids);
+  let upkeep = BASE_UPKEEP[sizeOf(build)] - traits.thrift;
+  for (const p of ids) upkeep += PARTS[p].upkeep;
+  return { build, ids, traits, hunts: kit.hunts, kit, upkeep, opens: ids.flatMap((p) => PARTS[p].opens ?? []) };
+}
+
 function deriveStats(build: Build, ranks: Ranks, ids: PartId[]): Stats {
   const c = CLADES[build.clade];
-  let bite = Math.max(0, build.genes.gut), thrift = 0, defence = 0, speed = c.speed, senses = c.senses, brood = 1;
+  let bite = biteOf(build, ids), thrift = 0, defence = 0, speed = c.speed, senses = c.senses, brood = 1;
   for (const p of ids) {
     thrift += PARTS[p].upkeep - partUpkeep(p, ranks);
     if (PARTS[p].defence) defence++;
-    if (p === 'gut') bite += PART_EFFECT.gutFood;
     if (p === 'leg') speed += PART_EFFECT.legSpeed;
     if (p === 'flap') speed += PART_EFFECT.flapSpeed;
     if (p === 'chaetae') speed += PART_EFFECT.bristleSpeed;
@@ -37,27 +46,38 @@ function deriveStats(build: Build, ranks: Ranks, ids: PartId[]): Stats {
   return { bite, thrift, defence, speed, senses, brood };
 }
 
-export function slots(habitat: Habitat, _world: World): Slot[] {
-  return FOODS.flatMap((food): Slot[] => {
+/** Food slots read ceilings; the hunt slot reads today's prey: its capacity is the grams above the refuge (N4 fix C). */
+export function slots(habitat: Habitat, world: World): Slot[] {
+  const out = FOODS.flatMap((food): Slot[] => {
     const capacity = ceiling(habitat, food);
     if (capacity < SEA.slotFloor) return [];
     const role = food === 'mats' ? 'grazer' : 'burrower';
     return [{ id: food, foods: [food], name: food === 'mats' ? 'Graze mats' : 'Dig detritus', role, accent: ACCENT[role], capacity }];
   });
+  const prey = preyIn(habitat, world), capacity = spare(habitat, prey);
+  if (capacity > 0) out.push({ id: 'prey', foods: [], name: 'Hunt prey', role: 'hunter', accent: ACCENT.hunter, capacity, prey });
+  return out;
 }
+
+/** A slot with something in it to eat today. */
+/** A newcomer grows where appetite × value beats deaths at today's food. */
+export const grows = (value: number) => SEA.appetite * value > SEA.deaths;
+/** A cell is one slot in one habitat. */
+export const cellKey = (habitat: number, slot: SlotId) => `${habitat}:${slot}`;
+export const stocked = (slot: Slot, h: Habitat) => slot.prey ? slot.capacity > 0 : slot.foods.some((food) => h.stocks[food] > 0);
 
 /** The same reach feeds both the intake prediction and the sea's proportional food requests. */
 type FeedingGround = { kind: Pick<Habitat['kind'], 'substrate'> };
 
-export function reach(build: Build, ranks: Ranks, food: Food, habitat: FeedingGround): number {
-  const ids = partsOf(build);
-  return foodReach(build, ids, deriveStats(build, ranks, ids), food, habitat);
+export function reach(build: Build, ranks: Ranks, food: Food, habitat: FeedingGround, body = bodyOf(build, ranks)): number {
+  return foodReach(body, food, habitat);
 }
 
-function foodReach(build: Build, ids: PartId[], traits: Stats, food: Food, h: FeedingGround): number {
+function foodReach({ build, ids, traits, hunts, opens }: Body, food: Food, h: FeedingGround): number {
+  if (hunts) return 0; // a hunting tool commits the build to prey
   const clade = CLADES[build.clade];
   const mouth = clade.mouth[food] ?? 0;
-  const opened = ids.some((p) => PARTS[p].opens?.includes(food)) ? SEA.openedReach : 0;
+  const opened = opens.includes(food) ? SEA.openedReach : 0;
   // Bristles add tunnel distance only in mud; speed is relative to the clade's own base movement.
   const speed = traits.speed - (h.kind.substrate !== 'mud' && ids.includes('chaetae') ? PART_EFFECT.bristleSpeed : 0);
   return Math.max(mouth, opened) * traits.bite * clade.substrate[h.kind.substrate] * speed / Math.max(1, clade.speed);
@@ -68,25 +88,39 @@ function letterFor(value: number, thresholds: readonly (readonly [Letter, number
   return thresholds[thresholds.length - 1][0];
 }
 
+/** A term's letter (intake, inverse upkeep, survival): the tier talk of reasons and news. */
+export const termLetter = (value: number) => letterFor(value, TERM_THRESHOLDS);
+
 /** The curve's numbers and letter without the reasons: the sea's hot loop. `fitness` adds the three sentences.
- *  `value` reads today's food (the growth rate the sea uses); the letter ranks the build at full food. */
-export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat): Omit<Fitness, 'reasons'> {
-  const ids = partsOf(build), traits = deriveStats(build, ranks, ids);
-  let intake = 0, full = 0, upkeep = BASE_UPKEEP[sizeOf(build)] - traits.thrift;
+ *  `value` reads today's food (the growth rate the sea uses); the letter ranks the build at full food. Prey has no
+ *  ceiling, so a hunt slot's full food is today's prey. `survival` comes from `threat` (the hunters here). */
+export function score(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, survival = 1, body = bodyOf(build, ranks)): Omit<Fitness, 'reasons'> {
+  const { traits, upkeep } = body;
+  let intake = 0, full = 0;
   for (const food of slot.foods) {
-    const r = foodReach(build, ids, traits, food, habitat);
+    const r = foodReach(body, food, habitat);
     intake += r * density(habitat, food);
     full += r * fullDensity(habitat, food);
   }
-  for (const p of ids) upkeep += PARTS[p].upkeep;
-  const survival = SEA.survival, per = survival * traits.brood / upkeep;
+  if (slot.prey) intake = full = takeTotal(body.kit, slot.prey, habitat);
+  const per = survival * traits.brood / upkeep;
   return { intake, full, upkeep, survival, value: intake * per, letter: letterFor(full * per, LETTER_THRESHOLDS[slot.id]) };
 }
 
-export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, _world: World): Fitness {
-  const fit = score(build, ranks, slot, habitat);
-  const grazes = reach(build, ranks, 'mats', habitat) > 0, digs = reach(build, ranks, 'detritus', habitat) > 0;
-  const foodLeft = slot.foods.map((food) => {
+/** The sea's hot loop: `score`'s value for a prepared body, with no letter, reasons or allocation. */
+export function valueIn(body: Body, slot: Slot, h: Habitat, survival: number): number {
+  let intake = 0;
+  if (slot.prey) intake = takeTotal(body.kit, slot.prey, h);
+  else if (!body.hunts) for (const food of slot.foods) intake += foodReach(body, food, h) * density(h, food);
+  return intake * survival * body.traits.brood / body.upkeep;
+}
+
+export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat, world: World): Fitness {
+  const danger = threat(build, habitat, world);
+  const fit = score(build, ranks, slot, habitat, danger.survival);
+  const hunter = huntsWith(build), grazes = reach(build, ranks, 'mats', habitat) > 0, digs = reach(build, ranks, 'detritus', habitat) > 0;
+  const prey = slot.prey ? `${slot.prey.length} prey kind${slot.prey.length === 1 ? '' : 's'} here, ${Math.round(slot.capacity)} g in reach` : '';
+  const foodLeft = slot.prey ? prey : slot.foods.map((food) => {
     const max = ceiling(habitat, food);
     return `${slot.foods.length > 1 ? `${food} ` : ''}food at ${Math.round(max > 0 ? 100 * habitat.stocks[food] / max : 0)}%`;
   }).join(', ');
@@ -94,9 +128,9 @@ export function fitness(build: Build, ranks: Ranks, slot: Slot, habitat: Habitat
   return {
     ...fit,
     reasons: [
-      `Intake ${letterFor(fit.full, TERM_THRESHOLDS)}: ${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}; ${foodLeft}.`,
+      `Intake ${letterFor(fit.full, TERM_THRESHOLDS)}: ${hunter ? 'hunts prey, eats no mats or detritus' : `${grazes ? 'grazes mats' : "can't graze"}, ${digs ? 'digs detritus' : "can't dig"}`}; ${foodLeft}.`,
       `Upkeep ${letterFor(1 / fit.upkeep, TERM_THRESHOLDS)}: ${costs.length ? costs.join(', ') : 'no costly parts'}; ${build.parts.eyes ? 'eyes' : 'no eyes'}, ${build.parts.limbs ? 'limbs' : 'no legs'}.`,
-      `Survival ${letterFor(fit.survival, TERM_THRESHOLDS)}: nothing hunts it here.`,
+      `Survival ${letterFor(fit.survival, TERM_THRESHOLDS)}: ${danger.by ? `${danger.by.name} hunts it here` : 'nothing hunts it here'}.`,
     ],
   };
 }

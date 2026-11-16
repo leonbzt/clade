@@ -3,7 +3,7 @@ import { CELL, NODES, PLANS, RULE, STAGES, TURNS, type NodeId, type Terrain } fr
 import { PARTS } from '../data/parts';
 import * as B from './life-body';
 import type { Hit as BodyHit, LifeBody, LifeBuild, Side } from './life-body';
-import type { Build, Id, PartId, Place, Ranks, VerbId } from './records';
+import type { Build, DefenceKind, Id, PartId, Place, Ranks, VerbId } from './records';
 import { predatorStep } from './threat';
 
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
@@ -12,13 +12,15 @@ export { hitOn } from './threat';
 export type { Side } from './life-body';
 
 export interface Rival { at: [number, number]; species: Id; name: string; eats: NodeId | null; build: Build }
+/** A hunter from the sea that can eat you (N4 D): it comes in place of the shadow, and its `beats` ignore your guards. */
+export interface SeaHunter { species: Id; name: string; build: Build; beats: DefenceKind[] }
 export interface BoardEvent {
   from: number; to: number; where: 'all' | Terrain; rows?: [number, number]; cols?: [number, number];
   name: string; text: string; look: 'murk' | 'dry' | 'haze';
 }
 export interface Board {
   substrate: Terrain; map: readonly string[]; start: [number, number]; entry: [number, number];
-  predatorAt: number | null; rivals: Rival[]; event: BoardEvent | null;
+  predatorAt: number | null; predator?: SeaHunter | null; rivals: Rival[]; event: BoardEvent | null;
 }
 
 export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number } }
@@ -43,6 +45,7 @@ export type Ev =
   | { k: 'hurt'; why: string; health: number }
   | { k: 'oxygen'; oxygen: number }
   | { k: 'rival'; idx: number; from: number; to: number; ate: boolean }
+  | { k: 'prey'; idx: number; at: number; gain: number; food: number }
   | { k: 'pred_arrive'; at: number }
   | { k: 'pred_move'; from: number; to: number }
   | { k: 'marks'; marks: number[]; dir: Dir }
@@ -55,7 +58,7 @@ export type Ev =
 export interface Life extends LifeBody {
   board: Board;
   seed: number; mutationOffer: PartId[] | null; eggsAfter: number;
-  tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Rival & { x: number; y: number })[];
+  tiles: Tile[]; x: number; y: number; facing: Dir; rivals: (Rival & { x: number; y: number; caught?: boolean })[];
   turn: number; food: number; oxygen: number; health: number; eggs: number; lays: number;
   phase: 'play' | 'over'; cause: 'season' | 'died' | null;
   grew: boolean; soft: boolean; moved: boolean;
@@ -68,6 +71,8 @@ export const has = (l: Life, part: PartId) => B.has(l, part);
 export const tile = (l: Life, x = l.x, y = l.y) => l.tiles[at(x, y)];
 export const onMud = (l: Life) => tile(l).t === 'mud';
 export const buriedAt = (l: Life, x: number, y: number) => l.build.clade === 'worm' && tile(l, x, y).t === 'mud';
+/** The board's hunter, in a sentence: the sea's hunter by name, else the shadow. */
+export const hunterName = (l: Life) => l.board.predator?.name ?? 'The shadow';
 export const eventOn = (l: Life) => !!l.board.event && l.turn >= l.board.event.from && l.turn <= l.board.event.to;
 /** Whether the board's event covers (x, y), by terrain, rows and columns. */
 export function eventArea(l: Life, x: number, y: number) {
@@ -208,7 +213,7 @@ export function stay(l: Life, dir: Dir = l.facing) {
 
 function rivalStep(l: Life, idx: number) {
   const v = l.rivals[idx], from = at(v.x, v.y);
-  if (!v.eats) return;
+  if (!v.eats || v.caught) return;
   let best = -1, bd = 1e9;
   l.tiles.forEach((t, i) => { if (t.node === v.eats) { const d = dist(v.x, v.y, ...xy(i)); if (d < bd) { bd = d; best = i; } } });
   if (best < 0) return;
@@ -270,7 +275,8 @@ export function world(l: Life) {
   });
   if (l.turn === l.board.predatorAt) {
     l.pred = { x: l.board.entry[0], y: l.board.entry[1], state: 'hunt', rest: 0, marks: [], dir: 1, lx: l.x, ly: l.y };
-    say(l, 'A shadow from deep water arrives.'); emit(l, { k: 'pred_arrive', at: at(l.pred.x, l.pred.y) });
+    say(l, l.board.predator ? `${l.board.predator.name} comes hunting.` : 'A shadow from deep water arrives.');
+    emit(l, { k: 'pred_arrive', at: at(l.pred.x, l.pred.y) });
   }
   if (ev?.name && l.turn === ev.from) { say(l, `${ev.name}: ${ev.text}.`); emit(l, { k: 'event', name: ev.name, text: ev.text }); }
   if (l.turn > TURNS) {

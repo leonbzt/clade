@@ -1,6 +1,7 @@
 <!-- N3 E: after a Life. The eggs lie face down; tap to open, tap again to pick; hatch the pick or keep the parent.
      Then the line's XP bar fills and Back to the map. Adapted from game/src/ui/Hatch.svelte. -->
 <script lang="ts">
+  import { ADOPT_EGGS } from '../data/economy';
   import { PARTS } from '../data/parts';
   import type { Card } from '../sim/clutch';
   import { levelOf } from '../sim/line';
@@ -58,6 +59,7 @@
         <button onclick={() => settle(null)}>Keep the parent</button>
       </div>
     {:else}
+      {#if session.adopt}<p class="heir">{session.adopted ? `${session.species.name} joins your line` : `${clutch.eggs} egg${clutch.eggs === 1 ? '' : 's'}: too few to adopt (${ADOPT_EGGS} needed). They hatch wild.`}</p>{/if}
       {#if heir}<p class="heir">{heir.id === session.species.id ? `${heir.name}: the parent form stays` : `${heir.name} hatches`}</p>{/if}
       <p>{report.text}</p>
       {#if report.fit}<ul>{#each report.fit.reasons as reason}<li>{reason}</li>{/each}</ul>{/if}

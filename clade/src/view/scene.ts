@@ -13,7 +13,7 @@ import type { Body } from './body';
 
 export const S = {} as {
   app: Application; floor: Floor; fx: Fx; marks: Marks; cam: Camera; hud: Hud; hunter: Hunter;
-  you: Body; rivals: Body[]; life: Life; busy: boolean;
+  you: Body; rivals: Body[]; caught: Set<number>; life: Life; busy: boolean;
 };
 
 export const NODE_RAMP: Record<NodeId, Ramp> = { mat: PAL.leaf, buried: PAL.amber, shell: PAL.shell, carcass: PAL.flesh };

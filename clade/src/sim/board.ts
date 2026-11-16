@@ -4,11 +4,14 @@
 import { BOARD, EVENTS, EVENT_AT, GROUNDS } from '../data/boards';
 import { DEPTHS, GROUND } from '../data/ground';
 import { COLS, ROWS } from '../data/life';
+import { HUNT } from '../data/sea';
 import { bodyMass, density } from './fitness';
+import { huntsWith, sizeOf } from './build';
+import { preyFor, speciesKit } from './hunt';
 import { DX, DY, at, dist, inB, xy } from './grid';
 import type { Habitat } from './habitats';
-import type { Board, BoardEvent, Rival } from './life';
-import type { Food, World } from './records';
+import type { Board, BoardEvent, Rival, SeaHunter } from './life';
+import type { Build, Food, Species, World } from './records';
 import { seeded, type Rng } from './rng';
 import { bestSlot, ranksOf } from './sea';
 
@@ -83,7 +86,28 @@ function place(grid: string[], f: Float64Array, node: string, home: string, coun
 const nodesFor = (h: Habitat, food: Food) =>
   Math.min(Math.round(BOARD.nodes * density(h, food)), Math.floor(BOARD.nodes * BOARD.maxShare));
 
-export function boardFor(habitat: Habitat, world: World, seed: number): Board {
+/** The heaviest hunter here with `rivalAt` heads that could eat you: no bigger prey than itself, and never a hunter. */
+export function seaHunter(habitat: Habitat, world: World, you: Build): Species | null {
+  if (huntsWith(you)) return null;
+  let best: Species | null = null, most = 0;
+  for (const s of world.species) {
+    const grams = habitat.pops[s.id] ?? 0, kit = speciesKit(s);
+    if (!kit.hunts || kit.size < sizeOf(you) || grams / bodyMass(s.build) < BOARD.rivalAt || grams <= most) continue;
+    best = s; most = grams;
+  }
+  return best;
+}
+
+/** The prey on a hunter's board, heaviest first; a species takes a further place for every `HUNT.preyHeads` heads. */
+function preyPlaces(you: Build, habitat: Habitat, world: World): Species[] {
+  const out: Species[] = [], prey = preyFor(you, habitat, world);
+  for (let round = 1; round <= BOARD.prey && out.length < BOARD.prey; round++)
+    for (const s of prey) if (habitat.pops[s.id] / bodyMass(s.build) >= round * HUNT.preyHeads) out.push(s);
+  return out;
+}
+
+/** `you`: the build that plays this board; only a sea hunter here that can eat it hunts you (N4 D; no shadow, 12 Nov). */
+export function boardFor(habitat: Habitat, world: World, seed: number, you?: Build): Board {
   const { substrate, depth } = habitat.kind, ground = GROUNDS[substrate];
   const rng = seeded(seed ^ Math.imul(habitat.id + 1, 0x9e3779b1));
   const deep = deepEdge(habitat, world), shore = OPPOSITE[deep];
@@ -113,15 +137,22 @@ export function boardFor(habitat: Habitat, world: World, seed: number): Board {
   place(grid, fields.buried, 'b', '~', nodesFor(habitat, 'detritus'), taken);
   place(grid, fields.mat, 'm', '.', nodesFor(habitat, 'mats'), taken);
 
-  // Rivals: the heaviest residents by heads, each on a spot well away from the start.
+  // The hunter: one from the sea that can eat you (the shadow only behind `BOARD.shadow`). Rivals: the heaviest other
+  // residents by grams, each on a spot well away from the start.
+  const hunter = you ? seaHunter(habitat, world, you) : null;
+  const predator: SeaHunter | null = hunter && { species: hunter.id, name: hunter.name, build: structuredClone(hunter.build), beats: speciesKit(hunter).beats };
   const [sx, sy] = xy(start);
   const spots = CELLS.filter((i) => grid[i] !== '#' && !taken.has(i) && dist(sx, sy, ...xy(i)) >= BOARD.rivalGap);
-  const residents = world.species.map((species) => ({ species, grams: habitat.pops[species.id] ?? 0 }))
-    .filter(({ species, grams }) => grams / bodyMass(species.build) >= BOARD.rivalAt)
-    .sort((a, b) => b.grams - a.grams);
+  // A hunter's board holds its prey instead (N4 fix B): up to `BOARD.prey` places, a species again for every
+  // `preyHeads` heads it has.
+  const hunting = !!you && huntsWith(you), most = hunting ? BOARD.prey : BOARD.rivals;
+  const residents = hunting ? preyPlaces(you!, habitat, world) : world.species
+    .map((species) => ({ species, grams: habitat.pops[species.id] ?? 0 }))
+    .filter(({ species, grams }) => species !== hunter && grams / bodyMass(species.build) >= BOARD.rivalAt)
+    .sort((a, b) => b.grams - a.grams).map(({ species }) => species);
   const rivals: Rival[] = [];
-  for (const { species } of residents) {
-    if (rivals.length === BOARD.rivals || !spots.length) break;
+  for (const species of residents) {
+    if (rivals.length === most || !spots.length) break;
     const spot = spots.splice(Math.floor(rng() * spots.length), 1)[0];
     const choice = bestSlot(species.build, ranksOf(world, species.lineage), habitat, world);
     const food = choice && choice.fit.intake > 0 ? choice.slot.id : null;
@@ -134,7 +165,7 @@ export function boardFor(habitat: Habitat, world: World, seed: number): Board {
   const { band: side, ...event } = EVENTS[EVENT_AT[depth][substrate]];
   return {
     substrate, map: [...Array(ROWS).keys()].map((y) => grid.slice(y * COLS, (y + 1) * COLS).join('')),
-    start: xy(start), entry: xy(entry), predatorAt: BOARD.shadow ? ground.shadowTurn : null, rivals,
+    start: xy(start), entry: xy(entry), predatorAt: BOARD.shadow || predator ? ground.shadowTurn : null, predator, rivals,
     event: { ...event, ...(side ? band(side === 'deep' ? deep : shore, BOARD.band) : {}) },
   };
 }

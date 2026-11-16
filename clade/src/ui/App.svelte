@@ -10,11 +10,17 @@
   import { PRESETS } from '../data/presets';
   import { bestFit, heldSlots, ranksOf } from '../view/tiers';
   import { MapView, type Camera } from '../view/map';
+  import { capsuleCounts } from '../view/living';
   import { VIEWS, type MapMode } from '../view/paint';
   import HabitatCard from './HabitatCard.svelte';
   import { remember } from './history';
   import { place } from './placement';
   import { applyPreset, skip } from './scenarios';
+  import { runLife, type SeaRun } from './sea-run';
+  import { replay, type Shout } from './replay';
+  import Notes from './Notes.svelte';
+  import { nearestBar } from '../sim/news';
+  import { REPLAY } from '../data/sea';
   import LifeScreen from './life/Life.svelte';
   import Hatch from './Hatch.svelte';
   import type { Card } from '../sim/clutch';
@@ -65,9 +71,9 @@
   let active = $state.raw<Colonisation | null>(null);
   let lifeCount = 0;
   const colonisePicked = () => !!picked && send(picked);
-  function send(species: Species) {
+  function send(species: Species, adopting = false) {
     if (active) return false;
-    const next = launch(world, selected, species, lifeCount + 1);
+    const next = launch(world, selected, species, lifeCount + 1, adopting);
     if (!next) return false;
     lifeCount++; active = next; return true;
   }
@@ -82,10 +88,24 @@
     if (!active || active.report || !finish(world, active, card)) return;
     world = { ...world }; past = remember(past, world); active = { ...active };
   }
+  let seaRun = $state.raw<SeaRun | null>(null);
+  let replaying = $state(false);
+  let notesOpen = $state(false);
+  let shouts = $state<(Shout & { id: number })[]>([]);
+  let skipReplay: (() => void) | null = null, shoutId = 0;
+  // Back to the map: the sea ran while you lived. Its generations replay on the map, then the notes open.
   function backToMap() {
     if (!active?.report) return;
-    selected = active.habitat; active = null; clutch = null;
+    const ran = runLife(world, past);
+    past = ran.history; seaRun = ran.run; replaying = true; notesOpen = false; world = { ...world };
+    selected = -1; active = null; clutch = null;
+    skipReplay = replay(view, world, ran.run, (s) => {
+      const id = ++shoutId;
+      shouts = [...shouts, { ...s, id }];
+      setTimeout(() => (shouts = shouts.filter((x) => x.id !== id)), REPLAY.shout * 1000);
+    }, () => { replaying = false; skipReplay = null; shouts = []; notesOpen = true; });
   }
+  const lookAt = (habitat: number) => { notesOpen = false; selected = habitat; };
 
   function spendPart(part: PartId) {
     const l = world.lineages.find((x) => x.id === lineOpen);
@@ -136,9 +156,9 @@
     view.init(host).then(() => (ready = true));
     // For the look script: drive the map without taps.
     Object.assign(window, { __clade: { setSeed, select, pick, setPreset, skip: advance, place: placePicked, colonise: colonisePicked, back: backToMap, toggleDev: () => (dev = !dev), openLine: (id = YOUR_LINE) => (lineOpen = id), openTree: () => (treeOpen = true), get tree() { return treeOpen; }, spend: spendPart, get dev() { return dev; },
-      send: (id: string) => { const s = world.species.find((x) => x.id === id); return !!s && send(s); },
-      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; },
-      get session() { return active; }, get lifeCount() { return lifeCount; },
+      send: (id: string, adopting = false) => { const s = world.species.find((x) => x.id === id); return !!s && send(s, adopting); },
+      hatch: (i: number) => settle(i < 0 ? null : clutch?.offers[i]?.card ?? null), get clutch() { return clutch; }, get news() { return seaRun?.news.map((l) => l.text) ?? []; }, get nextCousin() { return nearestBar(world)?.text ?? null; },
+      get session() { return active; }, get lifeCount() { return lifeCount; }, get replaying() { return replaying; }, skipReplay: () => skipReplay?.(), get notesOpen() { return notesOpen; },
       setMode: (m: MapMode) => (mode = m), fit: () => view.fit(), look: (x: number, y: number, z: number) => view.look(x, y, z),
       get world() { return world; }, get ground() { return ground; }, get history() { return past; } } });
   });
@@ -148,12 +168,15 @@
     view.show(ground.g, ground.hab, mode, selected);
     if (fitted !== ground.g.seed) { fitted = ground.g.seed; home(); }
   });
+  // Living paint follows the populations (view only).
+  $effect(() => { if (ready && ground && !replaying) view.living.sync(capsuleCounts(world)); });
 </script>
 
 <div class="shell" inert={active !== null || lineOpen !== null || treeOpen}>
   <header class="bar">
     {#if line}<button class="line" onclick={() => (lineOpen = YOUR_LINE)}>Worm line · level {levelOf(line.xp)}{#if pointsOf(line) > 0} · {pointsOf(line)} point{pointsOf(line) === 1 ? '' : 's'}{/if}</button>{/if}
     <span class="gap"></span>
+    {#if seaRun}<button class="notes" onclick={() => { skipReplay?.(); notesOpen = true; }}>notes</button>{/if}
     <button class="tree" onclick={() => (treeOpen = true)}>tree</button>
     <button onclick={home}>home</button>
     <button class="dev" class:on={dev} onclick={() => (dev = !dev)}>dev</button>
@@ -206,9 +229,15 @@
         {/if}
       {/each}
     </div>
-    {#if selected >= 0 && world.habitats[selected]}
+    {#each shouts as s (s.id)}
+      <span class="shout" style:left="{cam.x + (world.habitats[s.habitat].centre.x + 0.5) * cam.z}px" style:top="{cam.y + (world.habitats[s.habitat].centre.y - 3) * cam.z}px">{s.text}</span>
+    {/each}
+    {#if replaying}<button class="skip" onclick={() => skipReplay?.()}><span>The sea while you lived · tap to skip</span></button>{/if}
+    {#if notesOpen && seaRun}
+      <Notes news={seaRun.news} next={nearestBar(world)} look={lookAt} close={() => (notesOpen = false)} />
+    {:else if selected >= 0 && world.habitats[selected]}
       {#key `${selected}:${pickedId}`}
-        <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} picked={dev ? picked : undefined} {ranks} place={placePicked} colonise={colonisePicked} {send} />
+        <HabitatCard hab={world.habitats[selected]} {world} history={past} {select} picked={dev ? picked : undefined} {ranks} place={placePicked} colonise={colonisePicked} {send} adopt={(s) => send(s, true)} />
       {/key}
     {/if}
   </div>
@@ -242,4 +271,9 @@
   .label.yours::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 4px; background: var(--gold); }
   .label.yours .big { color: var(--gold); }
   .line { color: var(--gold); }
+  .shout { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; color: var(--paper);
+    text-shadow: 1px 0 var(--ink), -1px 0 var(--ink), 0 1px var(--ink), 0 -1px var(--ink); animation: rise 1.6s ease-out forwards; }
+  @keyframes rise { from { opacity: 0; translate: 0 6px; } 15% { opacity: 1; translate: 0 0; } 75% { opacity: 1; } to { opacity: 0; translate: 0 -10px; } }
+  .skip { position: absolute; inset: 0; background: none; border: 0; padding: 0 0 16px; display: flex; align-items: flex-end; justify-content: center; }
+  .skip span { background: var(--panel); border: 2px solid var(--line); padding: 4px 10px; color: var(--dim); }
 </style>

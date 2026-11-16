@@ -796,3 +796,185 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   evolution tree, maybe with verbs, special abilities or part upgrades possible" (parked in `ideas.md`).
 - **Codex builds N3**, "but the limit is very low, set it up so there is a lot of breakpoints so you can pick up if its
   over": one commit and one status line per part, A to I.
+
+## 12 Nov, the N3 play and the N4 spec
+- **N3 played:** "everything is looking solid and ui is nice", "nothing major is wrong"; but "the runs themselves are a
+  little boring" and "I don't feel a lot of decisions in the runs, and in between yet"; still missing "the equipment
+  and rpg character, and more animals"; "more action going on on the habitat map". N2 and N3 merged to `main`, ticked.
+- **N4 adds living paint and a return replay on the map** ("1 yes"): three sessions instead of two.
+  [Spec](slices/n4-who-eats-whom.md).
+- **Fable after the N4 play test, as the brief plans** ("3 after n4, write the brief"): a maths pass on the living sea
+  (and the land later), a fresh take on a tile sim, organism generation and drawing, genetics, skill and evolution
+  trees and their balance, minigames from maths toys, zoom levels. [Brief](design/fable-brief-3.md).
+- **Hunters don't graze, for now** (12 Nov, after N4 A: "hunters not grazing is fine for now, later maybe dual builds
+  could exist"). A hunting tool commits the build to prey.
+- **No shadow from the deep any more** (12 Nov, after N4 E: "there should only be hunters now if there are hunters in
+  the habitat"; asked, "hunters only"). A board has a predator only when a sea hunter that can eat you lives there;
+  boards without one have none. `BOARD.shadow` keeps the old shadow behind a flag, off.
+- **Brace doesn't stop a hunter that gets past armour** ("brace shouldn't block a hunter who can get past armour").
+- **Adopt stays until the play test** ("I don't like adopt i think but I'll wait for the playtest").
+
+## 12 Nov, the N4 play (short)
+- **Verdict:** "core there but no game" fits. Notes in [playtests/n4-who-eats-whom.md](playtests/n4-who-eats-whom.md).
+- **No direction fixed before the Fable pass:** "don't fix these decisions until the fable session". The Fable pass
+  (brief 3) now also judges the N4 notes, P51 (one line, one ladder) and the other open proposals, and "has freedom to
+  think a little outside the box and find what would actually fit best".
+
+## 12 Nov, the maths pass (Fable; [design/maths-pass.md](design/maths-pass.md))
+- **The frame is a slot board:** the map's holders become a grid of jobs per habitat ("Slot board"; "slot board
+  important anyways"). Also: "i also like seas as runs or eras, also xp should be important, or feeling like improving
+  the line and gaining evolutionary points or improving the current build."
+- **You first, the sea later** (the sea's pace). The concrete rules (claimed-cell spread, bars, the leash) are a proposal
+  in the maths pass, built in the N4 fix.
+- **Lines:** "i lean one active, rest live on, i like the finishing on reaching a named species, but it should also
+  always go on somehow"; "full parallel also sounds cool, and retiring and releasing also sounds good, full parallel
+  could also come lateron."
+- **Letters rank a build against the meta:** this build ÷ the best build known for that job in that habitat (unlocked
+  by you, or alive there). Replaces "at full food" in the 11 Nov call; `fitness` stays the only source of letters and a
+  higher letter still always wins its slot.
+- **Levels: a ladder, then a small tree.** Levels 1–3 unlock fixed things; from level 4 each level gives a point for a
+  tree of about 13 nodes (Feed, Guard, Brood); level 10 describes the line as its named species and opens the next line;
+  a per-line log goes on after that.
+- **The order:** "fix board line look, also the other planned species would be nice to add soon". So: N4 fix and the
+  quiet sea, N5 The board, N6 The line, N7 The other lines, L1 The look, then the closed test and R5. (N7 before L1 is
+  the AI's reading of "soon"; swap on your word.)
+- **P51 closed:** judged in the maths pass (Q0); its ladder and goal live on inside the slot board.
+- **Adopt stays** (liked in the N4 play): the second way to win a wild cousin's cell, and later the way to get a rare.
+- **The cousin's bar runs only in habitats you live in** (12 Nov, at the N4 fix kickoff: "go" on that lean). Widen it to
+  the habitats next door after play if the map is too still.
+- **The N4 fix spec's two leans stand** (12 Nov: "build", with both open questions shown): a wild cousin may carry any
+  part a clutch could offer your line today, and a hunter's board holds up to three prey.
+
+## 15 Nov, the direction after the maths pass ([design/direction.md](design/direction.md))
+- **The aim widens:** "I want a full game, with many different species, preferably many real recent ones, alongside
+  land life and plants." "Most important is fun and a hooking core, second is a full ecosystem/slots board and food
+  chains." "The current version still feels pretty barebones."
+- **On the maths pass:** "too much focus on fixing the current system instead of finding the overall best approach";
+  it "feels a lot like only thinking about the worm builds"; not "a good idea to rebuild and rebalance everything in
+  small steps" if a wide roster means "going through this again".
+- **1c:** a lineage is a real clade with a fixed plan and 2–3 dials; named real species are the leaves you reach.
+  Replaces parts on places as the build (10 Nov).
+- **2b:** a present-day island; the tree is the unlock map and ancestors are nodes you pass through. Replaces the
+  Cambrian start at the worm (10 Nov).
+- **3a:** movers only are playable at release (forage, hunt, dig); plants and sessile life are board pieces that hold
+  slots.
+- **Traits:** "a real bottleneck, and will have to be done well, and could be fleshed out over time with some hand
+  authoring and researcher agents."
+- **The findings** (species as data rows, laws do the balancing, the tree sources give no gameplay traits, the model
+  swap inside `clade/`, wide and shallow first): "I agree mainly, it sounds like good inputs. Include all of your
+  findings." Their details stay proposals in the direction page.
+- **Process:** Fable for "advice and deeper architecture that I can follow through with weaker agents"; "make sure
+  there won't be a lot of drift". Set up as the architect, builder and researcher roles (workflow.md).
+- **Not decided:** the re-cut roadmap (P54), who lives on the island before you, which real island sets the roster,
+  the first line (direction §11).
+
+## 15 Nov, the second round (P54, P55)
+- **"Adopt":** the roadmap from step 13 follows direction §8 (W1, W2, N5, the closed test, W3, W4, W5, L1, A).
+- **A young island (1a):** real species arrive as colonists on a bar; your lines radiate into what is open. Replaces
+  "only opened lineages live in the sea" (10 Nov) and the cousin on the leash as the only newcomer (12 Nov).
+- **The roster (2c):** a mix chosen for recognisability, not one real island.
+- **The first line (3a):** a present-day marine worm; the tuned worm Life ports as it is.
+- **Land by evolution:** "life should come to land as the lines evolve in that way, as it could have happened in real
+  life. Key adaptations should allow it, like walking or breathing." Life ashore moves from "After" into the release (W4).
+- **Variant hunting:** "the hunting for variants with differing genomes and mutations was very fun, so I would like to
+  include it if feasible, to make looking at the map its own core gameplay loop." It is feasible (a variant is a
+  `Build` with other numbers); how it works (dials plus named mutations, the bar, adopt) is a proposal in direction §5.
+- **Not decided:** who else comes ashore after you, how a key adaptation is won, the genome budget (direction §11).
+
+## 15 Nov, the third round (the W1 architect session; three questions, each answered with the option as put)
+- **Where W1's model lives:** "Real module in clade/". W1 writes the model, tested, in `clade/src/model/`; the toy is
+  a thin throwaway page over it; W2 shrinks to wiring it into the sea, the Life and the screens and deleting the old
+  records. (The other options: a one-file toy that W2 rewrites; the swap first with no toy.)
+- **What a dial is:** "Shared axes, own words". The rules know five axes (size, bite, guard, speed, brood), each with
+  one law where it pays and an upkeep cost; a clade shows size and at most two more under its own name.
+- **Shore and land in the toy:** "Shore opens, land stays shut". A rare "breathes air" variant shows in a population
+  of yours at the tide line; adopting it opens shore cells; the land is visible, plants only. Direction §11.2 stays
+  open for W4.
+- **Not decided:** every number, the law formulas, the board rules of the toy and the roster's rows. They are the
+  architect's proposals in `docs/slices/w1-the-wide-toy.md` and `clade/src/data/roster/`.
+
+## 16 Nov (the W1 architect session after the first play; three questions)
+- **The next step:** "W1 round two". The toy's gaps are fixed in the toy before W2. (The other options: W2 now and
+  fix in the game; the laws first.)
+- **Opposition:** "Yes, on a visible bar". A better-reading wild species comes for a held cell, yours included, on a
+  bar you can watch, one challenge a place at a time; you get a Hold goal. This changes the 12 Nov call that a wild
+  holder never beats you.
+- **Progression:** "radiate then a new line as described, i like collecting the cards. each lineage or clade could
+  also be its own progress or skill bar in a way that has an osrs progression curve. so you can start many low level
+  lineages but to get to the top of one takes a long time and a lot of specialization." Radiation, cards and a
+  second line go into W1 round two; the skill-bar curve is a wish for W5 (lines), not a call yet.
+- **Not decided:** the rules of round two (founder, destination, when Adopt is asked, the rival's threshold of
+  ×1.25, which lines open at how many cards). They are the architect's proposals in the W1 spec.
+
+## 16 Nov (the W1 architect session on part D; one question)
+- **Where a new line finds room:** "lean quite sea rock line 2nd as recommended". Wild species arrive only in a place
+  where you hold a cell (`TOY.barsNextDoor` off), and the lines open in the order periwinkles, urchins, shore crabs,
+  octopuses, lugworms. (The other options: a new line may take a cell from an older line of yours; a new line
+  starts with a cell given to it.)
+- **A note with it, a wish and not a call:** "I want the tierzoo feeling of there beeing a meta that you have to find
+  your place, and the devs release balance patches that change the meta (eras, events) along with the feeling that
+  you discover and build life yourself. also maybe that your previous lifes remain to form the meta and other
+  inhabitants". Parked in `ideas.md`; named in direction §1.
+- **Not decided:** the goal rules that came with it (the goal names an Improve only a letter higher and never
+  against a walk to a card; Hold only when one tap ends the challenge; no line hunts itself). They are the
+  architect's proposals in the W1 spec, part D.
+
+## 16 Nov (build W1 part D)
+- **Codex may build a part.** Asked "can i built it using codex?", the user chose "Codex builds, I verify": Claude
+  hands the part to `codex exec` with a short brief, then reads the diff against the spec, runs the check and commits.
+
+## 16 Nov (the W1 round-two play; the architect session after it; no question asked)
+- **The verdict on round two:** "I like it a lot better now and everything is moving closer to how i imagined it."
+  Variants with a different gene, the population-against-variant cards, the steps toward a species, collecting cards
+  and several lineages open all pulled. Notes: `docs/playtests/w1-round-two.md`.
+- **What is missing, named as core:** "the only thing i'm still missing in the overall version are skill/ability/
+  evolution trees with points to allocate and make builds that way. this is a core aspect of my vision, but i also
+  really like the random mutation and that way moving closer to species."
+- **A sketch, not a call:** "maybe it could stay similar to the current system on the board and the evolution
+  tree/skill tree allocation is only for a specific run."
+- **Open for the user:** "the actual games, like a current life, how to give them identity and the feeling of
+  building your own build, similar to the equipping parts in the body slots and speccing an skill tree and using
+  abilities."
+- **The next session is a big design pass, not W2:** "a big fable session to set up everything for the future of
+  the build": structure, the roadmap and the docs, token saving, mechanics and Life minigames, kingdoms,
+  interactions, symbioses, art and identity, to the itch release and the full first release. Its brief:
+  `docs/design/fable-brief-4.md`.
+- **Not decided:** where the build lives, the Life's kit, the order after W1. They are that session's questions.
+
+## 16 Nov (the whole-road session, round 1; three questions; brief: `docs/design/fable-brief-4.md`)
+- **Where the build lives (P56):** "I lean option 1 (C, both split) and like the idea of having the life revolving
+  about growing, and spending points among the open nodes, and having each life making a build, it goes along
+  really well with my vision." A line's levels open nodes of its tree for good; each Life earns points by growing,
+  spends them among the open nodes, and resets. (The other options: a tree for one Life only; a permanent tree a
+  line; the tree as the genome, which "sounds very good as well but probably too complicated".)
+- **A note with it, to be answered in round 2:** "it goes a little bit against my intuition that the build you
+  formed doesn't go onto the board, and doesn't really influence the board. could be secondary though as an outcome
+  from the life."
+- **The Life (P57):** "lean for one engine intuitivley", with advice asked on what is feasible and where the pull
+  is. "of course i would like one minigame per kind and a strong identity, but want to get first feedback first";
+  "an auto battler approach would also work, as it puts more emphasis on strategizing and making the builds." The
+  architect's advice was one engine now, an auto-run and a second kind of Life as later doors (P59's table).
+- **The progression map (P58):** "Map yes, meta as voice". The table is the map: food and points last one Life;
+  eggs give the cell and line XP; levels open nodes and verb slots; variants move the species; cards open lines.
+  The meta is voice and the rivals' bar in the alpha; eras and events come after it.
+- **Asked of the session:** "advice me on wether the project and ideas are actually worth building and wether its
+  feasible to make an actually compelling and fun game out of this."
+- **Not decided:** every number, the node lists, the budget of 9 nodes a clade, 12 effect kinds and 8 verbs. They
+  are the architect's proposals.
+
+## 16 Nov (the whole-road session, round 2; three questions, each option taken as put)
+- **The build on the board (P59):** "A: branches are dials". A clade's tree has one branch a dial it shows; a
+  Life's clutch is a variant one step along the branch you spent most in, on the usual compare card. No new law.
+  The laws' second cut shrinks to the dials of lines you can play and moves before the closed test (step LC).
+  (The other options: also a rare push mutation from a finished branch, now an idea; eggs only.)
+- **The look (P60):** "A: split L1". L1a before the closed test (the two test lines' plans, node stamps on the
+  body, silhouettes on cards); L1b after W5. Code draws what moves and what is yours; PhyloPic silhouettes stand on
+  the cards of wild and unfound species; generated art (Retro Diffusion) draws no creature.
+- **The road and the workshop (P61):** "Adopt, build toy first". The road: B0 the build toy, W2, B1, N5, LC, L1a,
+  the closed test, then W3, W5, W4, L1b, A. Step 12's play is dropped (W2 replaces its rules). The workshop: old
+  design docs, `docs/planning/` and the specs and playtests from before N0 move to `_archive/2026-11-16/`; the W1
+  branch merges into `main`, then one branch a step; no design pass before the closed test.
+- **Not decided:** the doors table (symbiosis, parasitism, pollination, other kinds of Life: no objection raised,
+  still a *proposal*); the one-sentence pitch; every number and node list; the B0 spec's rules.
+- **The advice given, for the record:** worth building as a hobby game on the condition that a stranger plays it
+  within about ten sessions; the risk is the process and the scope, not the idea; one engine is the robust core.

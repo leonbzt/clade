@@ -1,4 +1,5 @@
 // The hatching screen's numbers: a finished Life's clutch, and for each card its heir's letter here and upkeep.
+import { ADOPT_EGGS } from '../../data/economy';
 import { PARTS } from '../../data/parts';
 import { heirBuild, rollClutch, type Card } from '../../sim/clutch';
 import { resultOf } from '../../sim/economy';
@@ -16,7 +17,9 @@ export function clutchOf(world: World, session: Colonisation) {
   if (!result || !hab) return null;
   const parent = session.species, ranks = ranksOf(world, parent.lineage);
   const played = coloniseJudgement(world, hab, parent, result.eggs);
-  const offers: Offer[] = rollClutch(result, parent, session.life.seed).map((card) => {
+  // A wild species that won't join your line has no form to pass on.
+  const wild = session.adopt && result.eggs < ADOPT_EGGS;
+  const offers: Offer[] = (wild ? [] : rollClutch(result, parent, session.life.seed)).map((card) => {
     const heir = { ...parent, build: heirBuild(parent.build, card) };
     const old = card.kind === 'swap' ? parent.build.parts[card.place] ?? null : null;
     const upkeep = card.kind === 'lose' ? -partUpkeep(card.part, ranks)

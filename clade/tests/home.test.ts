@@ -9,7 +9,7 @@ const hab = (id: number, neighbours: number[]): Habitat => ({
   id, name: `H${id}`, kind: { depth: 'shallows', substrate: 'mud', exposure: 'open' }, tiles: [], area: 100,
   centre: { x: 0, y: 0 }, neighbours, borders: neighbours.map(() => 1), perimeter: 40, stocks: { mats: 3000, detritus: 3000 }, pops: {},
 });
-const world = (): World => ({ seed: 1, generation: 0, habitats: [hab(0, [1]), hab(1, [0, 2]), hab(2, [1])],
+const world = (): World => ({ seed: 1, generation: 0, claimed: [], bars: {}, habitats: [hab(0, [1]), hab(1, [0, 2]), hab(2, [1])],
   lineages: [{ id: 'worm-line', clade: 'worm', xp: 0, ranks: {}, job: 'worm' }],
   species: [{ id: 'w', lineage: 'worm-line', parent: null, name: 'Worm', born: 0, build: { clade: 'worm', parts: { front: 'tentacles' }, genes: { size: 1, gut: 1 } } }] });
 
@@ -21,7 +21,7 @@ it('marks your habitats, lights only neighbours Colonise allows, and fogs the re
   if (target.kind === 'target') expect(target.reason).toMatch(/here|needs/);
   expect(homeLabel(w, w.habitats[2])).toEqual({ kind: 'fog' });
   expect(senders(w, w.habitats[1]).map((s) => [s.species.id, s.from.id])).toEqual([['w', 0]]);
-  w.species[0].lineage = 'other';
+  w.species[0].lineage = null; // wild: only a null lineage is not yours (N4 fix)
   expect(homeLabel(w, w.habitats[0])).toEqual({ kind: 'fog' });
 });
 

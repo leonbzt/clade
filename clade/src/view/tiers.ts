@@ -1,5 +1,6 @@
 // Read-only views of fitness. A resident eats in its best stocked slot, just as in the sea step.
-import { fitness, slots } from '../sim/fitness';
+import { huntsWith } from '../sim/build';
+import { fitness, slots, stocked } from '../sim/fitness';
 import type { Habitat } from '../sim/habitats';
 import type { Build, Ranks, World } from '../sim/records';
 
@@ -11,7 +12,8 @@ export function predictions(build: Build, ranks: Ranks, hab: Habitat, world: Wor
 }
 
 export function bestFit(build: Build, ranks: Ranks, hab: Habitat, world: World) {
-  return predictions(build, ranks, hab, world).filter(({ slot }) => slot.foods.some((food) => hab.stocks[food] > 0))
+  const hunts = huntsWith(build); // the diet rule, as the sea chooses: a hunter eats only prey
+  return predictions(build, ranks, hab, world).filter(({ slot }) => stocked(slot, hab) && !!slot.prey === hunts)
     .reduce<ReturnType<typeof predictions>[number] | undefined>((best, p) => !best || p.fit.value > best.fit.value ? p : best, undefined);
 }
 

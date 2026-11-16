@@ -1,6 +1,7 @@
 // The verbs (slice 10): each comes from a part. A free verb (Dash, Sense) doesn't end the turn; the others are your
 // action for the turn and then the world moves. Recharge counts down one a turn.
-import { NODES, VERBS } from '../data/life';
+import { NODES, PREY_FOOD, VERBS } from '../data/life';
+import { huntsWith, sizeOf } from './build';
 import type { VerbId } from './records';
 import { DX, DY, at, eat, emit, inB, ready, say, world, xy, type Life } from './life';
 
@@ -18,11 +19,31 @@ export function verbNote(l: Life, v: VerbId): string {
   if (!(l.recharge[v]! > 0)) {
     if (v === 'graze') { const n = around(l, true).filter((i) => l.tiles[i].node === 'mat').length; return n ? `${n} mat${n > 1 ? 's' : ''}` : 'no mats near'; }
     if (v === 'dig') { const n = [at(l.x, l.y), ...around(l, false)].filter((i) => l.tiles[i].node === 'buried').length; return n ? `${n} buried` : 'hides you'; }
-    if (v === 'brace') return l.pred?.state === 'strike' ? 'strike marked!' : 'no strike yet';
-    if (v === 'crush') { const i = crushTarget(l); return i < 0 ? 'nothing to crack' : NODES[l.tiles[i].node!].name.toLowerCase(); }
+    if (v === 'brace') return l.board.predator?.beats.includes('armour') ? "won't hold" : l.pred?.state === 'strike' ? 'strike marked!' : 'no strike yet';
+    if (v === 'crush') {
+      const r = preyBeside(l);
+      if (r >= 0) return `catch ${l.rivals[r].name}`;
+      const i = crushTarget(l); return i >= 0 ? NODES[l.tiles[i].node!].name.toLowerCase() : edible(l).length ? 'stand beside prey' : 'nothing to crack';
+    }
     return VERBS[v].free ? 'free' : 'ready';
   }
   return `ready in ${l.recharge[v]}`;
+}
+
+/** The rivals you could eat (N4 D), by index: you hunt, they don't, and they are no bigger than you. */
+export function edible(l: Life): number[] {
+  if (!huntsWith(l.build)) return [];
+  return l.rivals.flatMap((r, i) => (!r.caught && !huntsWith(r.build) && sizeOf(r.build) <= sizeOf(l.build) ? [i] : []));
+}
+/** One of them beside you, or -1: Crush catches it. */
+export function preyBeside(l: Life) {
+  const beside = around(l, false);
+  return edible(l).find((i) => beside.includes(at(l.rivals[i].x, l.rivals[i].y))) ?? -1;
+}
+/** A hunter's first line (N4 fix B), or null when there is nothing to hunt. */
+export function huntHint(l: Life): string | null {
+  const [first] = edible(l);
+  return first === undefined ? null : `You hunt: stand beside ${l.rivals[first].name} and Crush.`;
 }
 
 function crushTarget(l: Life) {
@@ -64,6 +85,12 @@ export function useVerb(l: Life, v: VerbId): boolean {
     l.braced = true; l.moved = false;
     say(l, 'You brace: strikes from any side will glance off.');
     emit(l, { k: 'verb', verb: v, tiles });
+  } else if (v === 'crush' && preyBeside(l) >= 0) {
+    const idx = preyBeside(l), r = l.rivals[idx], i = at(r.x, r.y);
+    r.caught = true; l.food += PREY_FOOD; tiles = [i];
+    emit(l, { k: 'verb', verb: v, tiles });
+    say(l, `You catch ${r.name}: +${PREY_FOOD} food.`);
+    emit(l, { k: 'prey', idx, at: i, gain: PREY_FOOD, food: l.food });
   } else if (v === 'crush') {
     const i = crushTarget(l);
     if (i < 0) { say(l, 'Nothing beside you to crack open.'); return false; }

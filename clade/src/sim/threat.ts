@@ -3,7 +3,7 @@ import { RULE } from '../data/life';
 import { PARTS } from '../data/parts';
 import { sideOf, strikeOn } from './life-body';
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
-import { buriedAt, emit, loseAt, say, tile, type Hit, type Life, type Predator } from './life';
+import { buriedAt, emit, hunterName, loseAt, say, tile, type Hit, type Life, type Predator } from './life';
 
 const DIR_NAMES = ['north', 'east', 'south', 'west'];
 
@@ -11,7 +11,7 @@ const DIR_NAMES = ['north', 'east', 'south', 'west'];
 export function hitOn(l: Life, dir: Dir, facing: Dir, x: number, y: number): Hit {
   const side = sideOf(dir, facing);
   return { side, ...strikeOn(l, side, {
-    buried: buriedAt(l, x, y), dug: l.dug, stayed: !l.moved, braced: l.braced, soft: l.soft,
+    buried: buriedAt(l, x, y), dug: l.dug, stayed: !l.moved, braced: l.braced, soft: l.soft, beats: l.board.predator?.beats,
   }) };
 }
 
@@ -75,6 +75,6 @@ export function predatorStep(l: Life) {
   p.marks = [[0, 0], [DX[across], DY[across]], [-DX[across], -DY[across]]]
     .map(([ox, oy]) => [l.x + ox, l.y + oy]).filter(([x, y]) => inB(x, y) && tile(l, x, y).t !== 'rock').map(([x, y]) => at(x, y));
   p.state = 'strike';
-  say(l, `The shadow marks a strike from the ${DIR_NAMES[p.dir]}.`);
+  say(l, `${hunterName(l)} marks a strike from the ${DIR_NAMES[p.dir]}.`);
   emit(l, { k: 'marks', marks: p.marks, dir: p.dir });
 }

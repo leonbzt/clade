@@ -5,8 +5,8 @@ import { NODES, TURNS } from '../data/life';
 import * as E from '../sim/economy';
 import * as L from '../sim/life';
 import { pickMutation } from '../sim/mutation';
-import { useVerb } from '../sim/verbs';
-import type { PartId, VerbId } from '../sim/records';
+import { edible, huntHint, useVerb } from '../sim/verbs';
+import type { Build, PartId, VerbId } from '../sim/records';
 import { Hud } from '../ui/life/hud';
 import { feel } from '../ui/life/feel';
 import { Body } from './body';
@@ -17,7 +17,7 @@ import { Hunter } from './hunter';
 import { Marks } from './marks';
 import { play } from './playback';
 import { S, centre, dirAngle, dress, screen } from './scene';
-import { C, PAL } from './shade';
+import { C, PAL, type Ramp } from './shade';
 import { startTweens } from './tween';
 
 export class LifeStage {
@@ -61,11 +61,13 @@ export class LifeStage {
     const cam = new Camera(world, app.canvas, (x, y) => this.tap(x, y), (x, y) => { marks.hover = S.busy ? -1 : this.tileAt(x, y); });
     cam.shakeAmt = feel.shake; cam.zoomSpeed = feel.zoomSpeed;
     const you = new Body(this.life), hunter = new Hunter();
+    // Residents are drawn grown, with a board plan: a swimmer or cell shows as a worm.
+    const resident = (build: Build, ramp: Ramp) => new Body({ ...this.life, build: { ...build, clade: build.clade === 'arthropod' || build.clade === 'trilobite' ? build.clade : 'worm' }, size: 5, lost: [], mutation: null }, ramp);
     const rivals = this.life.rivals.map((r) => {
-      const b = new Body({ ...this.life, build: { ...r.build, clade: r.build.clade === 'arthropod' || r.build.clade === 'trilobite' ? r.build.clade : 'worm' }, size: 5, lost: [], mutation: null }, PAL.rival);
-      const c = centre(L.at(r.x, r.y)); b.place(c.x, c.y, -Math.PI / 2); return b;
+      const b = resident(r.build, PAL.rival), c = centre(L.at(r.x, r.y)); b.place(c.x, c.y, -Math.PI / 2); return b;
     });
-    Object.assign(S, { app, floor, fx, marks, cam, hud, hunter, you, rivals, life: this.life, busy: false });
+    if (this.life.board.predator) hunter.stand = resident(this.life.board.predator.build, PAL.hunter);
+    Object.assign(S, { app, floor, fx, marks, cam, hud, hunter, you, rivals, caught: new Set<number>(), life: this.life, busy: false });
     this.sceneReady = true;
     floor.set(this.life);
     const start = centre(L.at(this.life.x, this.life.y)); you.place(start.x, start.y, dirAngle(this.life.facing));
@@ -84,9 +86,9 @@ export class LifeStage {
       you.update(dt); rivals.forEach((r) => r.update(dt)); hunter.update(dt);
       floor.tick(dt); marks.tick(dt); fx.tick(dt); cam.tick(dt); hud.tick(dt);
       shadows.clear(); bodies.clear(); above.clear();
-      rivals.forEach((r) => r.draw(bodies, shadows)); you.draw(bodies, shadows, inMud); hunter.draw(above, shadows);
+      rivals.forEach((r, k) => { if (!S.caught.has(k)) r.draw(bodies, shadows); }); you.draw(bodies, shadows, inMud); hunter.draw(above, shadows);
     });
-    this.sync(true); hud.info('Tap a lit tile to move. Drag to pan; pinch or wheel to zoom.');
+    this.sync(true); hud.info(`${huntHint(this.life) ?? ''} Tap a lit tile to move. Drag to pan; pinch or wheel to zoom.`.trim());
     window.addEventListener('keydown', this.key);
     Object.assign(window, { __game: {
       get life() { return S.life; }, get busy() { return S.busy; }, tile: (i: number) => screen(centre(i)),
@@ -105,10 +107,11 @@ export class LifeStage {
     S.marks.entry = !l.pred && l.phase === 'play' && l.board.predatorAt !== null ? L.at(...l.board.entry) : -1;
     const wait = S.busy || this.offering;
     S.marks.dests = wait ? new Map() : L.dests(l); S.hud.refresh(l, instant, wait); this.changed();
+    S.marks.prey = wait || l.phase !== 'play' ? [] : edible(l).map((i) => L.at(l.rivals[i].x, l.rivals[i].y));
   }
   async act(action: () => unknown, offer = false) {
     if (this.disposed || !this.initialized || S.busy || this.life.phase !== 'play' || this.offering !== offer) return;
-    S.busy = true; S.marks.dests.clear(); S.marks.hover = -1;
+    S.busy = true; S.marks.dests.clear(); S.marks.prey = []; S.marks.hover = -1;
     this.life.events = []; action();
     S.hud.refresh(this.life, false, true); this.changed();
     try { await play(this.life.events.slice()); }

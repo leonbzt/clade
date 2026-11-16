@@ -1,0 +1,152 @@
+// Who eats whom (N4 A). One function, `hunted`, gives the grams each hunter takes from each prey in a habitat: the sea
+// removes exactly that and fitness reads it as survival. Pure: it reads populations and changes nothing.
+import { PARTS } from '../data/parts';
+import { GUARD, HUNT, SEA } from '../data/sea';
+import { biteOf, bodyMass, buildKey, huntsWith, partsOf, sizeOf } from './build';
+import type { Habitat } from './habitats';
+import type { Build, DefenceKind, Id, Prey, Species, World } from './records';
+
+export interface Newcomer { id: Id; build: Build; grams: number }
+export interface Take { hunter: Id; prey: Id; grams: number }
+export interface Threat { survival: number; by: Species | null }
+
+/** What the hunt reads of a build, once. */
+export interface Kit { build: Build; key: string; hunts: boolean; size: number; guards: DefenceKind[]; beats: DefenceKind[]; bite: number }
+export function kitOf(build: Build, ids = partsOf(build)): Kit {
+  const guards: DefenceKind[] = [], beats: DefenceKind[] = [];
+  for (const p of ids) {
+    const d = PARTS[p].defence;
+    if (d && !guards.includes(d)) guards.push(d);
+    for (const b of PARTS[p].beats ?? []) if (!beats.includes(b)) beats.push(b);
+  }
+  return { build, key: buildKey(build), hunts: huntsWith(build, ids), size: sizeOf(build), guards, beats, bite: biteOf(build, ids) };
+}
+// Species builds are replaced, never edited in place (clutch heirs and the Life's builds are copies), so a kit stays
+// valid while the species holds the same build object. Speed only (law 6): the sea reads every species each generation.
+const kits = new WeakMap<Species, Kit>();
+export function speciesKit(s: Species): Kit {
+  let kit = kits.get(s);
+  if (!kit || kit.build !== s.build) kits.set(s, kit = kitOf(s.build));
+  return kit;
+}
+
+/** The populations here a hunter could eat: alive and carrying no hunting part. */
+export function preyIn(h: Habitat, world: World, extra?: Newcomer): Prey[] {
+  const out: Prey[] = [];
+  for (const s of world.species) {
+    const grams = h.pops[s.id] ?? 0;
+    if (grams <= 0) continue;
+    const kit = speciesKit(s);
+    if (!kit.hunts) out.push({ id: s.id, grams, size: kit.size, guards: kit.guards });
+  }
+  const kit = extra && extra.grams > 0 ? kitOf(extra.build) : null;
+  if (extra && kit && !kit.hunts) out.push({ id: extra.id, grams: extra.grams, size: kit.size, guards: kit.guards });
+  return out;
+}
+
+/** The species here a hunting build could eat (no hunting part, no bigger than it) with at least `heads` heads, heaviest
+ *  first. A hunter's Life needs one: its board's prey (N4 fix B). */
+export function preyFor(build: Build, h: Habitat, world: World, heads = HUNT.preyHeads): Species[] {
+  if (!huntsWith(build)) return [];
+  const size = sizeOf(build), grams = (s: Species) => h.pops[s.id] ?? 0;
+  return world.species.filter((s) => {
+    const kit = speciesKit(s);
+    return !kit.hunts && kit.size <= size && grams(s) / bodyMass(s.build) >= heads;
+  }).sort((a, b) => grams(b) - grams(a));
+}
+
+/** The share of the prey here that hunters can reach: everything above the refuge, a few grams a tile by bottom
+ *  type (N4 fix C). 0 when the prey stand at or under it. */
+export function openShare(h: Habitat, prey: Prey[]): number {
+  let total = 0;
+  for (const p of prey) total += p.grams;
+  return total > 0 ? Math.max(0, 1 - HUNT.refuge[h.kind.substrate] * h.area / total) : 0;
+}
+/** The grams of prey above the refuge: the hunt slot's capacity, and what a hunter needs `HUNT.from` of to arrive. */
+export const spare = (h: Habitat, prey: Prey[]) => openShare(h, prey) * prey.reduce((sum, p) => sum + p.grams, 0);
+
+/** The type II level: grams per gram of hunter per generation over the prey it can eat and reach, before guards. */
+function level(hunter: Kit, prey: Prey[], h: Habitat, open: number): { level: number; squares: number } {
+  let grams = 0, squares = 0;
+  for (const p of prey) if (p.size <= hunter.size) { grams += p.grams; squares += p.grams * p.grams; }
+  const density = grams * open / Math.max(1, h.area) / HUNT.referenceDensity;
+  return { level: grams > 0 ? HUNT.reach * hunter.bite * density / (1 + density / HUNT.saturation) : 0, squares };
+}
+/** The share of the level that falls on this prey: its share of grams squared, cut by each guard the hunter can't beat. */
+function share(hunter: Kit, p: Prey, squares: number): number {
+  if (p.size > hunter.size) return 0;
+  let cut = p.grams * p.grams / squares;
+  for (const g of p.guards) if (!hunter.beats.includes(g)) cut *= GUARD;
+  return cut;
+}
+
+/** Grams of each prey per gram of this hunter per generation, before appetite and the cap; all 0 without a hunting
+ *  part. Prey must be no bigger than the hunter. Type II: the total levels off as prey grows. It falls on the commonest
+ *  prey most (share of grams squared), so rare prey has a refuge. Each prey defence the hunter can't beat cuts it. */
+export function takeRates(hunter: Kit, prey: Prey[], h: Habitat, open = openShare(h, prey)): Float64Array {
+  const rates = new Float64Array(prey.length);
+  if (!hunter.hunts || open <= 0) return rates;
+  const l = level(hunter, prey, h, open);
+  if (l.level > 0) prey.forEach((p, i) => (rates[i] = l.level * share(hunter, p, l.squares)));
+  return rates;
+}
+/** The sum of `takeRates`, without the array: a hunter's intake term in the sea's hot loop. */
+export function takeTotal(hunter: Kit, prey: Prey[], h: Habitat): number {
+  if (!hunter.hunts) return 0;
+  const open = openShare(h, prey);
+  if (open <= 0) return 0;
+  const l = level(hunter, prey, h, open);
+  if (l.level <= 0) return 0;
+  let sum = 0;
+  for (const p of prey) sum += share(hunter, p, l.squares);
+  return l.level * sum;
+}
+
+/** The grams each hunter here takes from each prey this generation. Nothing above the refuge, no take. Hunters
+ *  together take at most `maxTake` of each prey's share of the spare, so hunting never empties the refuge.
+ *  `prey` defaults to `preyIn`; the sea passes its hunt slot's. */
+export function hunted(h: Habitat, world: World, extra?: Newcomer, prey = preyIn(h, world, extra)): Take[] {
+  const open = openShare(h, prey);
+  if (open <= 0) return [];
+  const takes: Take[] = [], at: number[] = [], wanted = new Float64Array(prey.length);
+  for (const s of world.species) {
+    const pop = h.pops[s.id] ?? 0;
+    if (pop <= 0) continue;
+    const kit = speciesKit(s);
+    if (!kit.hunts) continue;
+    const rates = takeRates(kit, prey, h, open);
+    for (let i = 0; i < prey.length; i++) {
+      if (rates[i] <= 0) continue;
+      const grams = pop * SEA.appetite * rates[i];
+      takes.push({ hunter: s.id, prey: prey[i].id, grams });
+      at.push(i);
+      wanted[i] += grams;
+    }
+  }
+  for (let k = 0; k < takes.length; k++) {
+    const i = at[k], cap = HUNT.maxTake * prey[i].grams * open;
+    if (wanted[i] > cap) takes[k].grams *= cap / wanted[i];
+  }
+  return takes;
+}
+
+/** Survival here: 1 − the share of this build's grams the hunters take, and the hunter taking most. A build that is
+ *  not here yet is met as `probe` grams of newcomer. A hunter is never prey. */
+export function threat(build: Build, h: Habitat, world: World): Threat {
+  if (huntsWith(build) || !world.species.some((s) => (h.pops[s.id] ?? 0) > 0 && speciesKit(s).hunts)) return { survival: 1, by: null };
+  const key = buildKey(build);
+  const mine = world.species.filter((s) => (h.pops[s.id] ?? 0) > 0 && speciesKit(s).key === key).map((s) => s.id);
+  const extra = mine.length ? undefined : { id: '\u0000newcomer', build, grams: HUNT.probe };
+  const ids = new Set(mine.length ? mine : [extra!.id]);
+  const grams = mine.length ? mine.reduce((sum, id) => sum + h.pops[id], 0) : HUNT.probe;
+  const byHunter = new Map<Id, number>();
+  let lost = 0;
+  for (const t of hunted(h, world, extra)) {
+    if (!ids.has(t.prey)) continue;
+    lost += t.grams;
+    byHunter.set(t.hunter, (byHunter.get(t.hunter) ?? 0) + t.grams);
+  }
+  let by: Species | null = null, most = 0;
+  for (const [id, g] of byHunter) if (g > most) { most = g; by = world.species.find((s) => s.id === id) ?? null; }
+  return { survival: Math.max(0, 1 - lost / grams), by };
+}

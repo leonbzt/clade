@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Body grammar toy</title>
+<!-- A toy for docs/design/maths-pass.md (Q3, Q4). One file, no build step. It asks: can ONE grammar grow worms,
+     arthropods and modular things (an alga, a sponge, a fungus), read apart at three sizes, and prove it with numbers?
+     The grammar: a body is an AXIS of modules; a module has a width and may carry laterals; a lateral is a stamp
+     (a leg, a flap) or another axis (a branch). Animals: fixed module count, mirrored laterals, head right, seen from
+     above. Modular things: module count grows with age, alternate laterals that are axes, seen from the side. -->
+<style>
+:root{--ink:#15110d;--panel:#2a241c;--dim:#a89c8a;--paper:#ede4cb;--gold:#ffd34a;--red:#e5462c}
+*{box-sizing:border-box}body{margin:0;background:var(--ink);color:var(--paper);font:14px/1.35 system-ui,sans-serif}
+main{max-width:430px;margin:0 auto;padding:10px 12px 30px}h1{font-size:16px;margin:0 0 2px}h2{font-size:13px;margin:14px 0 4px}
+.dim{color:var(--dim);font-size:12px}canvas{image-rendering:pixelated;display:block;margin:2px 0;border-radius:4px}
+table{border-collapse:collapse;font-size:11px;width:100%}td,th{padding:2px 3px;text-align:right;border-bottom:1px solid var(--panel)}
+td:first-child,th:first-child{text-align:left}.bad{color:var(--red);font-weight:700}label{font-size:12px;color:var(--dim);margin-right:10px}
+</style></head><body><main>
+<h1>Body grammar toy</h1>
+<p class="dim">One grammar, seven lines. Per line: three builds (animals) or three ages (modular). Per cell: the portrait (the board sprite × 3), then the board sprite and its silhouette (× 2), then the map icon, its silhouette (× 2) and the icon at true size.</p>
+<label><input type="checkbox" id="gait"> Gaits</label><label><input type="checkbox" id="yours"> Yours (gold tag)</label>
+<div id="sheet"></div>
+<h2>Size is a gene: 12, 16, 20, 24 px</h2>
+<p class="dim">The head grows slower than the body (head share ∝ length<sup>−0.25</sup>), so a big animal reads as big even at the same zoom.</p>
+<canvas id="sizes"></canvas>
+<h2>Check 1: no two lines share a silhouette</h2>
+<p class="dim">Overlap (shared ÷ joined pixels) of the two closest builds, best alignment. Board size above the diagonal, map icon below. Red: over <span id="lim"></span>.</p>
+<div id="overlap"></div>
+<h2>Check 2: every part changes pixels</h2>
+<p class="dim">Pixels that differ when the part is added to a bare body. Board / icon. Red: under 4 on the board or under 1 on the icon.</p>
+<div id="parts"></div>
+</main><script>
+// ---- Palette: UI and accents from clade/src/data/palette.ts; the line ramps (dark, mid, light) are NEW ----
+const COL = { ink: '#15110d', paper: '#ede4cb', white: '#fffbe8', green: '#7cc43f', brown: '#a0682f', red: '#e5462c', blue: '#4f9be0', gold: '#ffd34a', dim: '#a89c8a', sea: '#32555f', black: '#000' };
+const RAMP = { worm: ['#8f4a52', '#cf7a72', '#f0ab98'], arthropod: ['#7a5424', '#ba8a3c', '#e4c070'], trilobite: ['#37445c', '#62748f', '#9db0c6'],
+  swimmer: ['#55386c', '#8a5fa6', '#bd97d4'], alga: ['#3c5220', '#64862c', '#9cba48'], sponge: ['#86703a', '#c8ae66', '#efe0a4'], fungus: ['#6a5a52', '#a8968a', '#ddd0c4'] };
+// Cell codes: 0 empty · 1–3 the line's tones · 4 ink · then named colours
+const CODE = { k: 4, a: 5, w: 6, g: 7, p: 8, d: 9 }, ACCENT = { grazer: 'green', burrower: 'brown', hunter: 'red', filterer: 'blue' };
+
+// ---- Stamps: hand-made glyphs, head to the right. a = accent, w = eye white, k = ink, 1-3 = line tones ----
+// Each front part has a board glyph and an icon glyph; the socket is the glyph's left-middle pixel.
+const FRONT = {
+  tentacles: { role: 'grazer', board: ['.a.a', 'a.a.', 'aa..', 'a.a.', '.a.a'], icon: ['.a', 'a.', '.a'] },
+  proboscis: { role: 'hunter', board: ['.a...', 'aaaaa', '.a...'], icon: ['aa'] },
+  claw: { role: 'hunter', board: ['.aaa', 'a...', '....', 'a...', '.aaa'], icon: ['.a', '..', '.a'] },
+  shovel: { role: 'burrower', board: ['aa.', 'aaa', 'aaa', 'aa.'], icon: ['a', 'a'] },
+};
+const BUILDS = {
+  worm: [{ front: 'tentacles' }, { front: 'shovel', back: 'sclerites', sides: 'bristles', tail: 'bulb' }, { front: 'proboscis', eyes: 1, tail: 'fan' }],
+  arthropod: [{ front: 'tentacles' }, { front: 'shovel', back: 'sclerites', sides: 'bristles', tail: 'bulb' }, { front: 'claw', eyes: 1, tail: 'fan' }],
+  trilobite: [{ front: 'tentacles' }, { front: 'shovel', back: 'sclerites', sides: 'bristles', tail: 'bulb' }, { front: 'claw', eyes: 1, tail: 'fan' }],
+  swimmer: [{ front: 'tentacles' }, { front: 'shovel', back: 'sclerites', sides: 'bristles', tail: 'bulb' }, { front: 'claw', eyes: 1, tail: 'fan' }],
+};
+const BUILD_NAME = ['grazer', 'burrower, armoured', 'hunter, eyes, tail fan'];
+
+// ---- Plans: the map from position along the axis (t: 0 tail, 1 head) to what grows there ----
+// hw = half-width in pixels; head = share of the length that is head at 16 px; lateral = what a trunk segment carries.
+const PLANS = {
+  worm: { gait: 'wave', head: 0.22, seg: 2, hw: (t, L) => L / 14 + (t > 0.72 ? L / 40 : 0) - (t < 0.08 ? L / 28 : 0), lateral: () => null },
+  arthropod: { gait: 'legs', head: 0.28, seg: 3, tail: 'spike', hw: (t, L, h) => t > 1 - h ? L * 0.17 : L * (0.05 + 0.07 * t / (1 - h)), lateral: (i, n, L) => ({ kind: 'leg', len: Math.max(1, Math.round(L * 0.13)) }) },
+  trilobite: { gait: 'legs', head: 0.36, seg: 2, len: 0.8, lobe: 1, genal: 1, feelers: 1, hw: (t, L, h) => L * 0.42 * Math.sqrt(Math.max(0.04, 1 - (2 * t - 1) ** 2)), lateral: () => null },
+  swimmer: { gait: 'flaps', head: 0.26, seg: 2, stalk: 1, tail: 'fan', hw: (t, L, h) => L * (0.04 + 0.07 * Math.min(1, t / (1 - h))), lateral: (i, n, L) => ({ kind: 'flap', len: Math.max(1, Math.round(L * (0.06 + 0.26 * Math.sin(Math.PI * Math.min(1, (i + 1) / n) ** 1.6)))) }) },
+};
+const MODULAR = {   // n = modules in the main axis at age a; a lateral here is another axis
+  alga: { n: (a) => 5 + 4 * a, w: () => 1, every: 3, branch: (a) => ({ n: 2 + a, w: (i, n) => (i === 0 || i === n - 1 ? 1 : 2) }), sway: 1.5, base: 'holdfast' },
+  sponge: { n: (a) => 4 + 3 * a, w: () => 3, every: 4, branch: (a) => ({ n: 2 + 2 * a, w: () => 3, tip: 'osculum' }), tip: 'osculum', sway: 0, role: 'filterer' },
+  fungus: { n: (a) => 2 + 2 * a, w: (i, n, a) => (a > 1 ? 2 : 1), every: 99, tip: 'cap', sway: 0, clump: 1 },
+};
+const LINES = [...Object.keys(PLANS), ...Object.keys(MODULAR)], SIZES = [12, 16, 20, 24];
+
+// ---- Grid ----
+const grid = (w, h) => ({ w, h, c: new Uint8Array(w * h) });
+const put = (g, x, y, v) => { x = Math.round(x); y = Math.round(y); if (x >= 0 && y >= 0 && x < g.w && y < g.h) g.c[y * g.w + x] = v; };
+const at = (g, x, y) => (x >= 0 && y >= 0 && x < g.w && y < g.h ? g.c[y * g.w + x] : 0);
+function stamp(g, glyph, x, y, accent) {      // x = left column, y = the glyph's middle row
+  const top = y - (glyph.length >> 1);
+  glyph.forEach((row, j) => [...row].forEach((ch, i) => { if (ch !== '.') put(g, x + i, top + j, ch === 'a' ? accent : CODE[ch] ?? +ch); }));
+}
+function outline(g) { const o = g.c.slice(); for (let y = 0; y < g.h; y++) for (let x = 0; x < g.w; x++) if (!at(g, x, y) && (at(g, x - 1, y) || at(g, x + 1, y) || at(g, x, y - 1) || at(g, x, y + 1))) o[y * g.w + x] = 4; g.c = o; return g; }
+
+// ---- Animals: one axis, head right, mirrored laterals ----
+function animal(line, build, size, o = {}) {
+  const icon = !!o.icon, g = grid(icon ? 16 : size + 14, icon ? 14 : 24), p = PLANS[line], L = Math.round(size * (p.len || 1)), cy = g.h >> 1, phase = o.phase || 0;
+  const head = p.head * (L / 16) ** -0.25, x0 = Math.round((g.w - L) / 2) - (icon ? 0 : 1), seg = icon ? 2 : p.seg, n = Math.floor(L * (1 - head) / seg);
+  const acc = build.front ? (COL_INDEX[ACCENT[FRONT[build.front].role]]) : 2;
+  const bend = (x) => (p.gait === 'wave' ? Math.round((icon ? 0.8 : 1.5) * Math.sin(2 * Math.PI * (1.2 * x / L - phase))) : 0);
+  const span = (x) => { const wd = Math.max(1, Math.round(2 * p.hw(x / (L - 1), L, head))), top = cy + bend(x) - (wd >> 1); return [top, wd]; };
+  const tail = build.tail || p.tail, big = build.tail === 'fan' && p.tail === 'fan' ? 1 : 0;   // a fan on a fan-tailed line grows it
+  if (tail === 'spike') for (let j = 1; j <= (icon ? 2 : 4); j++) put(g, x0 - j, cy, 1);
+  if (tail === 'fan') for (let j = 1; j <= (icon ? 1 : 3) + big; j++) for (let y = -j; y <= j; y++) if (j < 3 || y) put(g, x0 - j, cy + bend(0) + y, y < 0 ? 3 : 2);
+  if (tail === 'bulb') for (let j = 1; j <= (icon ? 1 : 3); j++) for (let y = -1; y <= 1; y++) if (!icon && (j !== 3 || !y) || icon && !y) put(g, x0 - j, cy + bend(0) + y, COL_INDEX.brown);
+  for (let i = 0; i < n; i++) {                                        // laterals first, so the body overlaps their roots
+    const x = Math.round((i + 0.5) * seg), [top, wd] = span(x), lat = p.lateral(i, n, L); if (!lat) continue;
+    if (lat.kind === 'leg') for (const s of [-1, 1]) { const sw = Math.round(Math.sin(2 * Math.PI * phase + i * 1.3 + (s > 0 ? Math.PI : 0)) * (phase ? 1 : 0));
+      for (let j = 1; j <= lat.len; j++) put(g, x0 + x + (j === lat.len ? sw - 1 : 0), s < 0 ? top - j : top + wd - 1 + j, 2); }
+    if (lat.kind === 'flap') { const len = lat.len + Math.round(0.9 * Math.sin(2 * Math.PI * phase - i * 0.9) * (phase ? 1 : 0));
+      for (let k = 0; k < seg; k++) for (let j = 1; j <= len - k; j++) { put(g, x0 + x - k, top - j, 3); put(g, x0 + x - k, top + wd - 1 + j, 1); } }
+  }
+  for (let x = 0; x < L; x++) {                                        // the axis: one column per pixel of length
+    const [top, wd] = span(x), isHead = x >= L * (1 - head), line2 = !icon && !isHead && x % seg === seg - 1;
+    for (let r = 0; r < wd; r++) { let tone = wd < 3 ? (r ? 1 : 2) : r < wd / 3 ? 3 : r >= wd - wd / 3 ? 1 : 2;
+      if (p.lobe && wd >= 5 && r >= wd / 3 && r < wd - wd / 3) tone = 3;         // the trilobite's raised middle lobe
+      if (line2) tone = Math.max(1, tone - 1);
+      if (isHead && !icon && tone === 2 && x === Math.floor(L * (1 - head))) tone = 1;   // the neck line
+      put(g, x0 + x, top + r, tone); }
+    if (build.back === 'sclerites' && !isHead && (x + (icon ? 0 : 1)) % 2 === 0) { put(g, x0 + x, top + (wd >> 1), 8); if (!icon && wd > 3) { put(g, x0 + x + 1, top + (wd >> 1) - 1, 8); put(g, x0 + x + 1, top + (wd >> 1) + 1, 8); } }
+    if (build.sides === 'bristles' && !isHead && x % (icon ? 3 : 2) === 0 && x > 1) { put(g, x0 + x, top - 1, 9); put(g, x0 + x, top + wd, 9); if (!icon && x % 4 === 0) { put(g, x0 + x - 1, top - 2, 9); put(g, x0 + x - 1, top + wd + 1, 9); } }
+  }
+  const hx = L - 1, [ht, hwd] = span(hx), hm = ht + (hwd >> 1), hb = L - 1 - Math.floor(L * head);
+  if (p.genal) { const [t2, w2] = span(hb); for (let j = 0; j < (icon ? 1 : 3); j++) { put(g, x0 + hb - 1 - j, t2 - 1 + (j > 1 ? 1 : 0), 3); put(g, x0 + hb - 1 - j, t2 + w2 - (j > 1 ? 1 : 0), 1); } }
+  if (p.feelers && !icon) for (let j = 1; j <= 3; j++) { put(g, x0 + hx + j, hm - 1 - j, 1); put(g, x0 + hx + j, hm + 1 + j, 1); }
+  if (build.front) stamp(g, FRONT[build.front][icon ? 'icon' : 'board'], x0 + L, hm, acc);
+  if (build.eyes || p.stalk) { const ex = Math.round(L - 1 - L * head / 2), [et, ew] = span(ex), out = p.stalk ? 1 : 0;
+    if (build.eyes || !icon) { put(g, x0 + ex, et - out, build.eyes ? 6 : 1); put(g, x0 + ex, et + ew - 1 + out, build.eyes ? 6 : 1); if (build.eyes && !icon) { put(g, x0 + ex - 1, et - out, 4); put(g, x0 + ex - 1, et + ew - 1 + out, 4); } } }
+  outline(g); if (o.yours) put(g, x0 + (L >> 1), span(L >> 1)[0] - 2, 7);
+  return g;
+}
+
+// ---- Modular things: the same axis, but a lateral is an axis and the count grows with age ----
+function axis(g, x, y, dx, n, w, o, depth) {
+  for (let i = 0; i < n; i++) { const wd = w(i, n, o.age), cx = x + dx * i + (depth ? 0 : Math.round(o.sway * (i / n) ** 2 * Math.sin(2 * Math.PI * o.phase))), top = y - i;
+    for (let r = 0; r < wd; r++) put(g, cx - (wd >> 1) + r, top, wd === 1 ? 2 : r === 0 ? 3 : r === wd - 1 ? 1 : 2);
+    if (!depth && o.plan.branch && i > 1 && i % o.plan.every === 2 && i < n - 1) { const b = o.plan.branch(o.age), s = (i / o.plan.every | 0) % 2 ? 1 : -1, bn = Math.max(2, Math.round(b.n * o.k));
+      axis(g, cx + s * ((wd >> 1) + 1), top - 1, s, bn, b.w, { ...o, plan: { tip: b.tip } }, 1); } }
+  const tx = x + dx * (n - 1) + (depth ? 0 : Math.round(o.sway * ((n - 1) / n) ** 2 * Math.sin(2 * Math.PI * o.phase))), ty = y - n + 1, tip = o.plan.tip;
+  if (tip === 'osculum') { put(g, tx, ty, 4); put(g, tx - 1, ty - 1, COL_INDEX.blue); put(g, tx + 1, ty - 1, COL_INDEX.blue); }
+  if (tip === 'cap') { const r = o.icon ? 2 : 2 + o.age; for (let j = 0; j <= (r > 3 ? 2 : 1); j++) for (let i = -r + j; i <= r - j; i++) put(g, tx + i, ty - 1 - j, j === 0 && Math.abs(i) < r - 1 ? 1 : i < 0 ? 3 : 2); }
+}
+function modular(line, age, o = {}) {
+  const icon = !!o.icon, g = grid(icon ? 16 : 30, icon ? 14 : 24), plan = MODULAR[line], k = icon ? 0.5 : 1, n = Math.max(3, Math.round(plan.n(age) * k));
+  const w = icon ? (i, m, a) => Math.max(1, plan.w(i, m, a) - (plan.w(i, m, a) > 2 ? 1 : 0)) : plan.w, opt = { plan, age, k, icon, phase: o.phase || 0, sway: plan.sway * k };
+  const bx = g.w >> 1, by = g.h - 2;
+  if (plan.base === 'holdfast') for (let i = -1; i <= 1; i++) put(g, bx + i, by, 1);
+  if (plan.clump && age > 1) axis(g, bx - (icon ? 3 : 5), by, 0, Math.max(2, n - 2), w, { ...opt, age: age - 1 }, 0);
+  if (plan.clump && age > 2) axis(g, bx + (icon ? 3 : 6), by, 0, Math.max(2, n - 3), w, { ...opt, age: 1 }, 0);
+  axis(g, bx, by, 0, n, w, opt, 0); outline(g); if (o.yours) put(g, bx, by - n - 3, 7);
+  return g;
+}
+const COL_INDEX = { green: 10, brown: 11, red: 12, blue: 13 };
+const render = (line, col, o = {}) => PLANS[line] ? animal(line, BUILDS[line][col], o.L ?? (o.icon ? 10 : 16), o) : modular(line, col + 1, o);
+
+// ---- Checks ----
+const filled = (g) => g.c.map((v) => (v ? 1 : 0));
+function overlap(a, b) {                       // shared ÷ joined pixels at the best shift within ±3
+  let best = 0; const A = filled(a), B = filled(b);
+  for (let sy = -3; sy <= 3; sy++) for (let sx = -3; sx <= 3; sx++) { let and = 0, or = 0;
+    for (let y = 0; y < a.h; y++) for (let x = 0; x < a.w; x++) { const p = A[y * a.w + x], q = x + sx >= 0 && x + sx < b.w && y + sy >= 0 && y + sy < b.h ? B[(y + sy) * b.w + x + sx] : 0; and += p & q; or += p | q; }
+    best = Math.max(best, and / or); }
+  return best;
+}
+const pairMax = (l1, l2, icon) => { let m = 0; for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) m = Math.max(m, overlap(render(l1, i, { icon }), render(l2, j, { icon }))); return m; };
+const diff = (a, b) => a.c.reduce((s, v, i) => s + (v !== b.c[i] ? 1 : 0), 0);
+const PART_TESTS = [['tentacles', { front: 'tentacles' }], ['proboscis', { front: 'proboscis' }], ['claw', { front: 'claw' }], ['shovel', { front: 'shovel' }], ['eyes', { eyes: 1 }], ['bristles', { sides: 'bristles' }], ['sclerites', { back: 'sclerites' }], ['tail fan', { tail: 'fan' }], ['bulb', { tail: 'bulb' }]];
+const partPixels = (line, build, icon) => diff(animal(line, {}, icon ? 10 : 16, { icon }), animal(line, build, icon ? 10 : 16, { icon }));
+const LIMIT = { board: 0.7, icon: 0.75 };
+
+// ---- Screen ----
+if (typeof document !== 'undefined') {
+  const $ = (id) => document.getElementById(id); let phase = 0;
+  const OTHER = [COL.ink, null, COL.white, COL.gold, COL.paper, COL.dim, COL.green, COL.brown, COL.red, COL.blue];
+  function blit(x, g, px, py, s, ramp, sil) {
+    for (let y = 0; y < g.h; y++) for (let i = 0; i < g.w; i++) { const v = g.c[y * g.w + i]; if (!v) continue;
+      x.fillStyle = sil ? COL.black : v <= 3 ? ramp[v - 1] : OTHER[v - 4]; x.fillRect(px + i * s, py + y * s, s, s); }
+  }
+  const canvases = {};
+  function sheet() {
+    const yours = $('yours').checked;
+    for (const line of LINES) {
+      const cv = canvases[line], x = cv.getContext('2d'); x.fillStyle = COL.sea; x.fillRect(0, 0, cv.width, cv.height);
+      for (let c = 0; c < 3; c++) { const px = c * 122, o = { phase, yours }, b = render(line, c, o), ic = render(line, c, { ...o, icon: true });
+        blit(x, b, px + 16, 0, 3, RAMP[line]);                                   // portrait: the board sprite x 3
+        blit(x, b, px + 1, 74, 2, RAMP[line]); blit(x, b, px + 61, 74, 2, RAMP[line], true);   // board sprite and its silhouette
+        blit(x, ic, px + 9, 124, 2, RAMP[line]); blit(x, ic, px + 45, 124, 2, RAMP[line], true); blit(x, ic, px + 85, 131, 1, RAMP[line]); }   // icon, silhouette, true size
+    }
+  }
+  for (const line of LINES) { const cv = canvases[line] = document.createElement('canvas'); cv.width = 366; cv.height = 154; cv.style.width = '366px';
+    $('sheet').insertAdjacentHTML('beforeend', `<h2>${line} <span class="dim">· ${PLANS[line] ? BUILD_NAME.join(' · ') : 'age 1 · age 2 · age 3'}</span></h2>`); $('sheet').appendChild(cv); }
+  const sz = $('sizes'), sx = sz.getContext('2d'); sz.width = 366; sz.height = 4 * 50; sz.style.width = '366px'; sx.fillStyle = COL.sea; sx.fillRect(0, 0, 366, 200);
+  Object.keys(PLANS).forEach((line, r) => { let px = 2; SIZES.forEach((L) => { blit(sx, animal(line, BUILDS[line][2], L), px, r * 50 + 1, 2, RAMP[line]); px += (L + 14) * 2 + 6; }); });
+  const short = LINES.map((l) => l.slice(0, 4)), cell = (v, lim) => `<td class="${v > lim ? 'bad' : ''}">${v.toFixed(2)}</td>`;
+  $('lim').textContent = `${LIMIT.board} on the board, ${LIMIT.icon} on the icon`;
+  $('overlap').innerHTML = `<table><tr><th></th>${short.map((n) => `<th>${n}</th>`).join('')}</tr>${LINES.map((a, i) => `<tr><td>${a}</td>${LINES.map((b, j) => i === j ? '<td>·</td>' : cell(pairMax(a, b, j < i), j < i ? LIMIT.icon : LIMIT.board)).join('')}</tr>`).join('')}</table>`;
+  $('parts').innerHTML = `<table><tr><th>part</th>${Object.keys(PLANS).map((n) => `<th>${n}</th>`).join('')}</tr>${PART_TESTS.map(([name, build]) => `<tr><td>${name}</td>${Object.keys(PLANS).map((l) => { const b = partPixels(l, build, false), i = partPixels(l, build, true); return `<td class="${b < 4 || i < 1 ? 'bad' : ''}">${b} / ${i}</td>`; }).join('')}</tr>`).join('')}</table>`;
+  let timer = null;
+  $('gait').onchange = () => { clearInterval(timer); phase = 0; if ($('gait').checked) timer = setInterval(() => { phase += 0.07; sheet(); }, 110); sheet(); };
+  $('yours').onchange = sheet; sheet(); window.__toy = { render, pairMax, partPixels };
+} else module.exports = { render, animal, modular, overlap, pairMax, partPixels, PART_TESTS, LINES, PLANS, BUILDS, SIZES, LIMIT };
+</script></body></html>

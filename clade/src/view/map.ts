@@ -1,9 +1,10 @@
 // The bare map: the ground painted one pixel per tile, scaled by whole numbers. Drag to pan; wheel or pinch to zoom
 // in integer steps; a tap reports the tile. Labels and cards live in the Svelte shell, which follows `onCamera`.
-import { Application, Sprite, Texture } from 'pixi.js';
+import { Application, Graphics, Sprite, Texture } from 'pixi.js';
 import { P, rgb } from '../data/palette';
 import type { Ground } from '../sim/ground';
 import type { Habitats } from '../sim/habitats';
+import { LivingPaint } from './living';
 import { paintIndices, toRGBA, type MapMode } from './paint';
 
 export interface Camera { x: number; y: number; z: number } // the map's top-left on screen, and px per tile
@@ -16,14 +17,18 @@ export class MapView {
   private app = new Application();
   private canvas = document.createElement('canvas');
   private sprite = new Sprite();
+  private layer = new Graphics();
+  living = new LivingPaint(this.layer); // capsules over the ground, in screen pixels
   private tex: Texture | null = null;
   private w = 0;
   private h = 0;
+  private ground: Habitats | null = null;
 
   async init(host: HTMLElement) {
     await this.app.init({ resizeTo: host, background: rgb(P.open), antialias: false, roundPixels: true, autoDensity: true, resolution: devicePixelRatio || 1 });
     host.appendChild(this.app.canvas);
-    this.app.stage.addChild(this.sprite);
+    this.app.stage.addChild(this.sprite, this.layer);
+    this.app.ticker.add((t) => this.living.tick(t.deltaMS / 1000, this.camera));
     this.input(this.app.canvas); // the canvas, not the host: the card above it keeps its own taps
   }
 
@@ -34,6 +39,10 @@ export class MapView {
       this.tex = Texture.from(this.canvas);
       this.tex.source.scaleMode = 'nearest';
       this.sprite.texture = this.tex;
+    }
+    if (this.ground !== hab) {
+      this.ground = hab;
+      this.living.setGround(hab, g.w);
     }
     this.canvas.getContext('2d')!.putImageData(new ImageData(toRGBA(paintIndices(g, hab, mode, selected)), g.w, g.h), 0, 0);
     this.tex!.source.update();

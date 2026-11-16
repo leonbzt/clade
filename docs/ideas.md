@@ -203,3 +203,55 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - Home map targets' one reason could name a rival or a missing part ("Bulb worm holds it", "a bulb opens it"), not only the richest food (AI, 12 Nov, after N3 G). N4 with rivals.
 - Equipment and an RPG character: parts read as gear on a character sheet; more animals (you, 12 Nov, N3 play). R5–R6, R8.
 - Zoom levels: soil, patch, habitat, island, continent; which ones earn a decision of their own (you, 12 Nov). The Fable math pass.
+- Dual builds: a hunter that also grazes (an omnivore), after N4's hunters-only diet (you, 12 Nov). R5 with the gut gene.
+- A wild bud's name comes from its one change, so a hunter can be called "Wild brood pouch worm"; name hunters by their hunting part (AI, 12 Nov, N4 G look). L1 or R5.
+- Seas as runs: a sea ends when the board runs dry (about 25–30 Lives a line), with a score, and the next era starts from your lines as old life (you, 12 Nov; maths pass Q0). M4.
+- "Drifting larvae" as a tree node: your species also take open cells next door; the map filling by itself as a reward (AI, 12 Nov; maths pass Q0). N6.
+- Mats painted from a fixed threshold map per habitat (a frozen reaction–diffusion pattern): cover follows the stock at no sim cost (AI, 12 Nov; maths pass Q1). L1 or R7.
+- Discoveries from state: carcass bloom, shell bed, ash fall, each with one cause line (AI, 12 Nov; maths pass Q1). R7.
+- Land hazards as hunters without a body (drying against a cuticle, like a claw against armour) on the same engine (AI, 12 Nov; maths pass Q1). R9.
+- Six minigames from maths toys (boids, reaction–diffusion, L-systems, colony automata, slime-mould networks; Lenia as paint only): the table in maths pass Q7 (AI, 12 Nov). M3.
+- Variant names: a population a full gene pip from its founder gets an adjective ("dwarf", "long-gut") (AI, 12 Nov; maths pass Q5). R5.
+- Retro Diffusion only for fixed art: named-species cards, ground textures, title art, stamp reference sheets; untested (AI, 12 Nov; maths pass Q4). L1, R10.
+- Bars also in the habitats next to yours, if the still map reads as dead (AI, 12 Nov, N4 fix spec; your call was to wait). After the N4 fix play.
+- A wild cousin can be a twin of one of your species (same build): skip twins on the leash, or name them as such (AI, 15 Nov, N4 fix E). N5.
+- Where no digger reads B or lower (mud), the first cousin is a hunter, about generation 42: a longer bar for the Hunt cell, or food cells first (AI, 15 Nov, N4 fix look). After the N4 fix play.
+- A waste loop for detritus: the dead and mat slough feed it and most sinks one band down; cap brood ÷ upkeep at 1.25 (AI, 12 Nov, was P52; maths pass Q1). Re-judge on the wide island, W4.
+- The Cambrian sea as an era with its own roster (trilobite, swimmer, radiodont; the worm with a past), after the present-day island ships (AI, 15 Nov; your 10 Nov start, replaced by 2b). M4.
+- Flying and rafting colonists on land after your first line is ashore (birds, lizards on driftwood) (AI, 15 Nov; direction §11). W4.
+- A plant Life (grow and spread as a playable verb); at release plants are board pieces (you chose 3a, 15 Nov). M3.
+- PhyloPic silhouettes for undiscovered tree nodes and as the card fallback if the body grammar fails on vertebrates (AI, 15 Nov; direction §6). L1.
+- The cost of opening a clade grows with its distance on the real tree, so relatives come first (AI, 15 Nov; direction §5). W5.
+- Known feeding links as a check file the derived web must reproduce (AI, 15 Nov; direction §4). W1 or W3.
+- Tidy the repo root: the plant game (`src/`, `tests/`, `index.html`) and the frozen `game/` into an archive folder once `clade/` passes its play test; old design docs into `docs/design/history/` with a link check (AI, 15 Nov). One builder session, on your word.
+
+
+## From the W1 architect session (16 Nov, all AI)
+- Wild species vary and spread on their own (in W1 only your line varies). · Push variants show more often where a hunter holds a cell.
+- A producer's letter from more than the grams it makes (a lichen reads weak only because it makes little).
+- A roster gap finder: the coverage table proposes the kind of species a thin cell needs (W3's researcher batches).
+
+## From the W1 round-two session (16 Nov)
+- *The user's wish, for W5:* each line is its own skill bar on an OSRS-like curve: many low lines are cheap, the top of one takes long and much specialisation.
+- (AI) A data test "at home somewhere": every named species is the best of its clade in some cell (today a bigger sister wins everywhere).
+- (AI) A mutation variant prefers a mutation its destination species has, so cards that need one are reached sooner.
+- (AI) Rivals for cells on the shore and the land, once animals arrive there (W4).
+
+## From the W1 part D architect session (16 Nov)
+- *The user's wish:* a TierZoo meta you have to find your place in; balance patches as eras and events that change it; you discover and build life yourself; maybe your earlier Lives stay on as the meta and the other inhabitants.
+- (AI) A line opens where its plan differs from the lines you hold (ground or food), not by nearness on the tree (direction §11.5, W5).
+- (AI) Wait is half of the toy's goals: a card walk could run without a tap between steps, or the goal could name the next thing worth watching.
+
+## From the W1 round-two architect session (16 Nov)
+- (AI) Symbiosis as a derived link like `eats` (a partner relation from traits), so it is a rule and rows later, not a rebuild. Q5.
+- (AI) The check: move the toy board's three goal-walk tests (5.9 s together) out of the default run when the toy is retired; make the "under 100 ms" laws independent of the runner's load. Q7.
+
+## From the whole-road session (16 Nov)
+- (AI) A branch you finish can rarely throw that dial's push mutation, so a build can become inherited (P59 B). After B1 is played.
+- (AI) The auto-run: a cell you already won is re-lived by itself with a simple policy on the same engine; the idle half. After the closed test.
+- (AI) A minigame a kind of Life (a chase for hunters, hidden-info digging) behind the Life's small contract. After the alpha.
+- (AI) Partner links derived like `eats` (`gives`, `takes`, one law); parasitism as a hunt whose prey survives; pollination. After the alpha, and after the release.
+- (AI) The verb bar's cap of three, with slots two and three from line levels (P56). B1 or W5; the build toy shows every verb.
+- (AI) One event kind as a "patch" (a food stock shifts, a wave of colonists); eras. After the alpha (P58).
+- (AI) Retro Diffusion for still pictures that are nobody's build (a habitat picture on a card, the itch banner). Not before the alpha (P60).
+- *The user:* "the tree beeing the genome sounds very good as well but probably too complicated" (nodes in the laws, the dials gone). Parked; judge again after the closed test.

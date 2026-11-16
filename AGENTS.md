@@ -42,9 +42,10 @@ adding features or rewriting architecture.
 Start with docs/status.md and the active slice spec.
 Read only relevant scripts, dependencies and docs/ sections.
 Do not load the entire documentation tree or repeat a completed audit.
-The rebuild in clade/ follows docs/design/whole-game-build.md (how) and
-whole-game.md (why); they win over full-version.md. Workflow details
-are in docs/workflow.md.
+docs/design/direction.md (15 Nov) is the one design page that wins; its
+§9 names what still holds in older docs. A build session reads its
+step spec and what the spec names. Workflow details are in
+docs/workflow.md.
 
 ## Sessions and traceability
 - Use a fresh session for a new task. Save decisions and a short
@@ -61,15 +62,20 @@ are in docs/workflow.md.
 - Use one agent by default. Subagents require an explicit request
   and a genuinely independent task.
 
-## Claude and Codex (9 Nov)
-Claude plans and reviews; Codex builds (docs/workflow.md, Delegation).
-- "kickoff", "spec", "handoff": follow `.claude/commands/<name>.md`
-  (`$ARGUMENTS` is the rest of the user's message).
-- A build session implements the "Build brief" at the end of the
-  active slice spec, in its order, and nothing else. A design
-  question goes back to the user (or Claude), never decided here.
+## Architect and builders (9 Nov, widened 15 Nov)
+The strongest model is the architect; weaker models and Codex build
+(docs/workflow.md, Roles).
+- "kickoff", "architect", "build", "spec", "handoff": follow
+  `.claude/commands/<name>.md` (`$ARGUMENTS` is the rest of the
+  user's message).
+- A build session implements one part of the "Build brief" in the
+  active step spec, in its order, and nothing else. It keeps to the
+  part's "Touch" and "Don't touch" lists and never edits a contract
+  test to make it pass.
+- A design question is never decided in a build session: write it
+  under "For the architect" in docs/status.md and stop there.
 - End with `npm run check` passing, one commit per brief part,
-  and a handoff in docs/status.md naming what Claude should review.
+  and a handoff in docs/status.md.
 
 ## Scope
 Do not expand the release scope without approval.

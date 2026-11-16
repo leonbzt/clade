@@ -1,20 +1,30 @@
 # Status
 
-- **Milestone:** M2, step 10, **N3 The screens**: all parts A–I built on `n3-the-screens` (last commit `N3 I: the tree of life with its faded trunk`; N2's merge to `main` still pending). [Spec](slices/n3-the-screens.md).
-- **Done this session (12 Nov):** F, the mutation offer as cards over the board (`ui/life/Mutation.svelte`, modal via `LifeStage.offering`, HUD "Mutation: X"); G, the home map (`view/home.ts`, `MapView.frame`, App/HabitatCard: opens on *first worm* framed on your habitats, dev behind **dev**, gold yours, targets with letter + reason, light fog, no label overlap, **Colonise from a neighbour**); H, the line view (`ui/Line.svelte`, `view/line.ts`); I, the tree (`ui/Tree.svelte`, `view/tree.ts`, `OLD_LIFE` in `data/clades.ts`). Tests in `tests/home.test.ts`; look scripts `scripts/look/n3-f…i.json`; notes in `playtests/n3-the-screens.md`.
-- **Verified:** `npm run check` passes (7.4 s, under 10 s); one phone run per part plus E/F rerun after G–I, all assertions pass, shots inspected.
-- **Decided:** nothing new by you this session (commits per part follow the spec's build brief).
-- **Choices made in the build (yours to overrule):** colliding labels keep yours and targets before area (spec: smaller hides); the map opens zoomed on your habitats, **home** recentres; tree gate hints sit one part per line; line view shortens 3+ homes to "N habitats · best X in Y".
-- **Next:** 1) you play the three-Life question (`npm run dev`, `/clade/`, no dev bar) and note it in `playtests/n3-the-screens.md`; 2) fixes from your notes; 3) merge N2/N3 to `main`, tick N2 and N3 in `ROADMAP.md`, then N4's spec.
-- **Open:** does a bare worm's only target ("B · needs digging") give enough reason to pick an heir? The play will tell.
-
-## N3 progress
-- A done: original XP curve, derived points, carried-part spending capped at rank 3, job text, funded midgame preset; checks and phone look pass; next: B.
-- B done: one seeded size-3 offer, weighted common parts for empty places, free pick/pass, immediate activation and upkeep, mutation/eggsAfter snapshots; checks and phone look pass; next: C.
-- C done: seeded gain/swap/lose clutch, equal gain/lose kind weights, per-rank Enforce family weights, mutation first within the 2/3-card total, independent heir builds; checks and phone look pass; next: D.
-- D done: `hatch` keeps the parent or founds a child (reused if the line has the build, named part + clade), awards XP at the played letter; `finish` settles through it once; checks and phone look pass; next: E.
-- E done: hatching screen replaces the result card: eggs face down, tap to open (kind, place, part, effect, signed upkeep, heir's letter here), Hatch this one or Keep the parent, then the XP bar and points; checks and phone look pass; next: F.
-- F done: at size 3 three cards over the board (part, place, effect, upkeep) and Pass; the board, keys and dev buttons wait while it's open; picking costs no turn; the HUD shows "Mutation: X" in gold and marks it in Enforce; checks and phone look pass; next: G.
-- G done: the game opens on *first worm*, framed on your habitats (**home** recentres); the dev bar sits behind **dev**; your habitats are gold with letters, neighbours Colonise allows show your best letter and one reason, the rest name only; labels never overlap (yours, then targets, then area); the card lists yours here and **Colonise from a neighbour** per sender; checks and phone look pass; next: H.
-- H done: the map bar's line button (level, points) opens the line view: level, XP bar, points, job; the family tree (parent → child, where each lives or "gone", best letter); carried parts with rank, upkeep and **+1 rank** while a point is left; checks and phone look pass; next: I.
-- I done: the map bar's **tree** opens the tree of life (SVG): a faded trunk to *First cell* with Mats, Algae, Sponges, Jellies as faded branches (names in `data/clades.ts`), the worm lit with its level, arthropod, trilobite and swimmer as silhouettes with their gate parts and "n of 2 carried"; tap a lit node for its line view; checks and phone look pass. **N3's parts are all built; the three-Life play question is next (yours).**
+- **Milestone:** M2. Step 14, **B0 the build toy**, is specified and waits for its builder. Steps 12 and 13 are
+  ticked. Branch `b0-the-build-toy`, cut from `main` after the merge of `n4-who-eats-whom`; both local, not pushed.
+- **Done (16 Nov, architect: the whole-road session, three rounds):**
+  - `docs/design/direction.md`: a seventh round in §1; §3, §4, §5, §7 (the progression map), §8 (the plan), §9 and
+    §11 current. `ROADMAP.md` re-cut from step 12. `docs/README.md`, `CLAUDE.md`: who reads what, the new budget line.
+  - The spec `docs/slices/b0-the-build-toy.md`, and its contract as code: `clade/src/data/tree.ts` (the worm's nine
+    nodes, the numbers), `data/toy-boards.ts` (three boards), `sim/tree.ts` (signatures; the bodies throw),
+    `LifeBody.tree?` in `sim/life-body.ts`, `clade/tests/tree.test.ts` (2 tests pass, 12 skipped until part A).
+  - Archived to `_archive/2026-11-16/`: 21 design docs with the four briefs, `docs/planning/`, the specs and
+    playtests from before N0. The roadmap's old links point there.
+  - `proposals.md`: none open. `ideas.md`: two decided ideas cut, eight parked.
+- **Decided (16 Nov, yours):** the build lives in the Life (line levels open nodes; a Life earns points by growing,
+  spends them, resets); one Life engine; the progression map, the meta as voice; a tree's branches are the dials and
+  the clutch is a variant along the branch you built; the look split (L1a before the closed test); the road with the
+  build toy first; the archive, the merge, one branch a step; no design pass before the closed test.
+- **Not decided** (*proposal*): every number and node list; the budget of 9 nodes, 12 effect kinds, 8 verbs; the
+  doors table (auto-run, partner links, other kinds of Life); the one-sentence pitch.
+- **Checks:** `npm run check` passes in 13.5 s (budget 10 s; the fix is a W2 part). Not run: `check:game`.
+- **Not verified:** the twelve skipped tests were never run (no bodies yet). The three boards and the prices were
+  never played. Which of the 43 flat dials belong to lines you can play is not measured (step LC).
+- **Next:** `/build B0 A` (tree mode in the sim), then `/build B0 B` (the toy page; one session may do both).
+  Then you play `/clade/?toy=build` and write `docs/playtests/b0-the-build-toy.md`; W2's spec waits for that.
+- **Open:**
+  - The N4 fix play (step 12): answered, none; W2 replaces its rules.
+  - Rivals and Hold in the wide toy: you did not say whether they read. It can wait for N5's spec.
+  - The spec's three questions (the tree is shallow; nothing was played; branch to dial for B1).
+  - Said wrongly in round 2: "a bar of three verbs" is not in B0. A worm has four verbs at most, and the cap needs
+    slot levels, so it waits for B1 or W5 (`ideas.md`).

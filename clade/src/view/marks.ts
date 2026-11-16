@@ -17,6 +17,7 @@ export class Marks {
   burrows = new Set<number>(); // where a worm has dug in
   aim = -1; // the tile you aimed at (compound eyes)
   preview: { from: number; to: number; hide: boolean }[] = []; // where each prey will go
+  prey: number[] = []; // a hunter's Life: the tiles of the rivals you could catch (N4 fix B)
   private t = 0;
 
   tick(dt: number) {
@@ -39,6 +40,11 @@ export class Marks {
     for (const i of this.burrows) { // ripples over a dug-in worm
       const [x, y] = xy(i), r = 3 + ((this.t * 5) % 6);
       g.circle(x * C + C / 2, y * C + C / 2, r).stroke({ width: 1, color: PAL.mudSeen[4], alpha: 0.7 * (1 - (r - 3) / 6) });
+    }
+    for (const i of this.prey) { // a ring in the hunter's colour: stand beside it and Crush
+      const [x, y] = xy(i), cx = x * C + C / 2, cy = y * C + C / 2, r = C / 2 - 1 - glow;
+      g.circle(cx, cy, r).stroke({ width: 1.5, color: PAL.hunter[3], alpha: 0.95 });
+      for (const d of [0, 1, 2, 3]) g.rect(cx + DX[d] * r - 1, cy + DY[d] * r - 1, 2, 2).fill(PAL.hunter[4]);
     }
     for (const p of this.preview) { // the prey's next step, as an arrow
       const [fx, fy] = xy(p.from), [tx, ty] = xy(p.to), ax = fx * C + C / 2, ay = fy * C + C / 2, bx = tx * C + C / 2, by = ty * C + C / 2;

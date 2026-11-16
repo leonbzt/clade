@@ -15,14 +15,15 @@ const habitat = (): Habitat => ({
   tiles: [], area: 100, centre: { x: 0, y: 0 }, neighbours: [], borders: [], perimeter: 40,
   stocks: { mats: 3000, detritus: 1000 }, pops: {},
 });
-const world: World = { seed: 1, generation: 0, habitats: [], species: [], lineages: [] };
+const world: World = { seed: 1, generation: 0, claimed: [], bars: {}, habitats: [], species: [], lineages: [] };
 
 describe('fitness contracts', () => {
   it('law 1: only fitness makes letters or reads the letter thresholds (source grep)', () => {
     const source = new URL('../src', import.meta.url);
     const files = readdirSync(source, { recursive: true }).map(String).filter((p) => /\.(ts|svelte)$/.test(p));
     for (const file of files) {
-      if (file.startsWith('data/') || file === 'sim/fitness.ts') continue;
+      // model/laws.ts is the organism model's fitness (W1); it replaces sim/fitness.ts in W2.
+      if (file.startsWith('data/') || file === 'sim/fitness.ts' || file === 'model/laws.ts') continue;
       const text = readFileSync(join(source.pathname, file), 'utf8');
       expect(text, file).not.toMatch(/LETTER_THRESHOLDS|TERM_THRESHOLDS/);
       expect(text, file).not.toMatch(/(?:return\s+|(?:letter|tier)\s*[:=]\s*)['"][SABCDF]['"]/);

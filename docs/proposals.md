@@ -14,3 +14,17 @@ P38's garden question closed 5 Nov: M1 built the self-limit, and the living sea 
 
 P46, P47 and P48 were decided 9 Nov at the 21C review (P48: C; P46 and P47 closed): see decisions.md.
 P49 (use steers the body) and P50 (sea features) were decided 9 Nov: see decisions.md. None open.
+
+P51 (one line, one ladder) closed 12 Nov: judged in the maths pass (Q0) and replaced by your calls there (slot board,
+letters against the meta, ladder then tree, the order): see decisions.md.
+
+P52 (the waste loop) is parked in ideas.md and P53 (parts with no decision) is closed, both 15 Nov: the direction
+page replaces parts with dials, and P53's sign-change rule lives on there as a data test (direction §4).
+
+P54 (the roadmap re-cut) and P55 (the island and its roster) were decided 15 Nov: see decisions.md. None open; the
+direction page's three open questions (§11) become proposals when W2 and W4 need them.
+
+P56 (where the build lives: C, both, split by job), P57 (the Life: one engine) and P58 (the progression map; the
+meta as voice) were decided 16 Nov in the whole-road session: see decisions.md.
+P59 (the build on the board: branches are dials), P60 (the look: L1 split) and P61 (the road, the build toy first;
+the workshop) were decided 16 Nov in the same session: see decisions.md. None open.

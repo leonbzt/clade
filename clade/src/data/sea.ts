@@ -1,6 +1,6 @@
 // Starting N1 numbers, tuned by feel. All biomass is grams; yields are grams per tile (×10 after the N1 review, 11 Nov).
 import type { Depth, Substrate } from './ground';
-import type { Food, Letter } from '../sim/records';
+import type { Food, Letter, SlotId } from '../sim/records';
 
 export const FOODS: Food[] = ['mats', 'detritus'];
 export const YIELDS: Record<Food, Record<Depth, Record<Substrate, number>>> = {
@@ -27,8 +27,43 @@ export const SEA = {
   slotFloor: 100, // slots: minimum food ceiling, in grams
   referenceDensity: 20, // intake: food grams per tile representing one share of stock
   openedReach: 1, // intake / eat: reach supplied by a food-opening part
-  survival: 1, // survival: nothing hunts or harms populations until N4
 };
+// Who eats whom (N4 A): a build with a hunting part eats only prey, the populations here no bigger than it with no
+// hunting part. The take per gram of hunter is type II (levels off as prey grows) and split by share of grams squared.
+// Hunters reach only the prey above the habitat's refuge, so a trough has a floor that scales with area.
+export const HUNT = {
+  reach: 1, // hunt intake: prey reach per bite, like a food-opening part's reach
+  referenceDensity: 1, // hunt intake: prey grams per tile representing one share (prey stand far thinner than mats)
+  saturation: 2, // hunt intake, type II: the take per gram of hunter levels off at reach × saturation
+  maxTake: 0.8, // hunt: hunters together take at most this share of the prey they can reach, per generation
+  refuge: { sand: 0.15, mud: 0.3, rock: 0.45 }, // hunt: grams of prey per tile that hunters cannot reach; rock hides more (N4 fix C)
+  from: 500, // hunt: grams of prey above the refuge before a hunter arrives, by spread or as a wild cousin
+  probe: 20, // survival preview: grams of a newcomer that is not here yet, as hunters would meet it
+  preyHeads: 6, // a hunter's Life: heads of a prey species per place it takes on the board; none, no Life as a hunter here
+};
+// Wild cousins (N4 fix E): an open cell in a habitat you live in waits `bar` generations, then a build within two
+// legal changes of a species living there takes it.
+export const WILD = {
+  bar: 36, // cousin: generations an open cell waits, about three Lives
+  founders: 20, // cousin: grams the wild species starts with in that habitat
+};
+export const LIFE_GENS = 12; // the sea's generations per Life: they run on the way back to the map after hatching
+/** Living paint on the map (N4 F, view only): capsules per species and habitat, their speeds in tiles a second. */
+export const LIVING = {
+  most: 8, total: 150, // capsules: clamp(round(log2 heads), 1, most) each; at most `total` on the map
+  wander: 0.9, chase: 1.7, flee: 2.1, // speeds
+  sight: 7, fear: 4, // tiles: a hunter chases prey this near; prey veer from a hunter this near
+  turn: 5, // radians a second
+  edge: 0.8, // seconds a capsule walks back inside after touching its habitat's border, before it chases or flees again
+  fade: 2.5, // alpha a second, in and out
+};
+/** The return replay (N4 G): the Life's generations over `seconds`, after a short `lead` to look at the start. */
+export const REPLAY = { seconds: 4, lead: 0.6, shout: 1.6 };
+export const NEWS = {
+  change: 0.3, // news: a population change bigger than this share is told
+  most: 8, // news: lines kept after a Life, yours first
+};
+export const GUARD = 0.5; // hunt: each prey defence the hunter's beats lack multiplies its take by this
 export const MASS_BY_SIZE = [0, 1, 2, 4, 8, 16] as const; // body mass: grams per head at sizes 1–5 (index 0 unused)
 export const BASE_UPKEEP = [0, 1, 1.15, 1.3, 1.45, 1.6] as const; // upkeep: base(size), before parts and lean ranks
 export const PART_EFFECT = {
@@ -44,7 +79,7 @@ const EVEN = SEA.deaths / SEA.appetite; // break-even: value where a population 
 const LADDER: readonly (readonly [Letter, number])[] = [
   ['S', EVEN * 1.5 ** 4], ['A', EVEN * 1.5 ** 3], ['B', EVEN * 1.5 ** 2], ['C', EVEN * 1.5], ['D', EVEN], ['F', 0],
 ];
-export const LETTER_THRESHOLDS: Record<Food, readonly (readonly [Letter, number])[]> = { mats: LADDER, detritus: LADDER };
+export const LETTER_THRESHOLDS: Record<SlotId, readonly (readonly [Letter, number])[]> = { mats: LADDER, detritus: LADDER, prey: LADDER };
 export const TERM_THRESHOLDS: readonly (readonly [Letter, number])[] = [
   ['S', 1], ['A', 0.8], ['B', 0.6], ['C', 0.4], ['D', 0.2], ['F', 0], // term letters: intake, inverse upkeep, survival
 ];

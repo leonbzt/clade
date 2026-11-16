@@ -1,11 +1,11 @@
 // Ported pip bars and feedback; controls read the Life's economy directly.
-import { RULE, TURNS, VERBS } from '../../data/life';
+import { PREY_FOOD, RULE, TURNS, VERBS } from '../../data/life';
 import { ENFORCE_EFFECT, ENFORCE_HEADROOM } from '../../data/economy';
 import { PARTS } from '../../data/parts';
 import * as E from '../../sim/economy';
 import * as L from '../../sim/life';
 import { activeParts, mature } from '../../sim/life-body';
-import { verbNote } from '../../sim/verbs';
+import { preyBeside, verbNote } from '../../sim/verbs';
 import type { PartId, VerbId } from '../../sim/records';
 
 import { FEEDBACK } from '../../view/shade';
@@ -66,7 +66,7 @@ export class Hud {
     $('body').textContent = `Size ${l.size} · ${L.stage(l)} · upkeep ${L.upkeep(l)}${l.soft ? ' · soft' : ''}`;
     $('mutant').textContent = l.mutation ? `Mutation: ${PARTS[l.mutation.part].name}` : '';
     const ev = l.board.event;
-    $('forecast').textContent = `${ev ? `${ev.name} · turns ${ev.from}–${ev.to}` : 'Quiet water'}${l.board.predatorAt !== null ? ` · shadow at ${l.board.predatorAt}` : ''}`;
+    $('forecast').textContent = `${ev ? `${ev.name} · turns ${ev.from}–${ev.to}` : 'Quiet water'}${l.board.predatorAt !== null ? ` · ${l.board.predator?.name ?? 'shadow'} at ${l.board.predatorAt}` : ''}`;
     const play = l.phase === 'play' && !busy;
     $<HTMLButtonElement>('wait').disabled = !play;
     const grow = $<HTMLButtonElement>('grow');
@@ -77,7 +77,10 @@ export class Hud {
     lay.disabled = !play || !E.canLay(l);
     const verbs = $('verbs'); verbs.replaceChildren();
     for (const v of L.verbs(l)) {
-      const b = this.button(VERBS[v].name, v === 'dash' && l.dash ? 'next move ×2' : verbNote(l, v));
+      const catching = v === 'crush' && L.ready(l, v) ? preyBeside(l) : -1; // a hunter beside its prey (N4 fix B)
+      const b = catching >= 0 ? this.button(`Catch ${l.rivals[catching].name}`, `+${PREY_FOOD} food`)
+        : this.button(VERBS[v].name, v === 'dash' && l.dash ? 'next move ×2' : verbNote(l, v));
+      b.classList.toggle('lit', catching >= 0 && play);
       b.disabled = !play || !L.ready(l, v) || (v === 'dash' && l.dash);
       b.title = VERBS[v].does; b.onclick = () => this.on.verb(v); verbs.appendChild(b);
     }

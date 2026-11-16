@@ -133,7 +133,7 @@ describe('hatching', () => {
       expect(line.xp).toBe(55 + 20 * weight);
       expect(pointsOf(line)).toBe(levelOf(line.xp) - 2);
       expect(Object.keys(line).sort()).toEqual(['clade', 'id', 'job', 'ranks', 'xp']);
-      expect(Object.keys(world).sort()).toEqual(['generation', 'habitats', 'lineages', 'seed', 'species']);
+      expect(Object.keys(world).sort()).toEqual(['bars', 'claimed', 'generation', 'habitats', 'lineages', 'seed', 'species']);
       expect(JSON.stringify(world)).not.toMatch(/"(?:points?|level|letters?|tiers?|slots?|cards?|eggs|mutation)":/);
     }
   });
