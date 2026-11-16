@@ -1,30 +1,31 @@
 # Status
 
-- **Milestone:** M2. Step 13, **W1 the wide toy** ([spec](slices/w1-the-wide-toy.md)): contract written 16 Nov,
-  nothing built. Step 12 (the N4 fix) is still built and not played. Branch `n4-who-eats-whom`; **nothing of this
-  session is committed.**
-- **Done (15–16 Nov, an architect session):**
-  - The organism model in `clade/src/model/`: `types.ts` (the contract), `laws.ts` (the seven laws as pure
-    functions, 172 lines), `board.ts` (signatures only; bodies are part A).
-  - Rows in `clade/src/data/roster/`: 38 clades, 43 named species, 10 mutations, 24 habitat kinds, 29 known links,
-    the law numbers, the toy's 14 places and clocks. **Every trait is drafted from memory**; `ott` is 0, no tree.
-  - Tests in `clade/tests/model/`: `rules`, `laws`, `data` (30 passing), `board` (15, skipped until part A).
-  - `direction.md` §1 (third round), §4 (the shapes are the code) and §8 (W2 shrinks); `ROADMAP.md` steps 13, 14;
-    `decisions.md`; `ideas.md`; `CLAUDE.md` (the model folder); `clade/tests/fitness.test.ts` (the letters grep
-    lets `model/laws.ts` make letters).
-- **Decided (15 Nov, third round):** the model is a real tested module in `clade/src/model/`, the toy a thin page,
-  W2 shrinks to wiring; dials are five shared axes under each clade's own words; in the toy the shore opens by a
-  rare "breathes air" variant and the land stays shut (direction §11.2 stays open for W4).
-- **Not as the role says:** the architect wrote `laws.ts` itself. The data tests cannot be shown to be passable
-  without the law functions, so they are part of the contract here. Say so if builders should own them instead.
-- **Verified:** the 30 model tests pass in 0.5 s; types clean. `npm run check`: 201 pass, 2 fail, 14 s. Both
-  failures are timing tests in files this session did not touch (`ground.test.ts` 54 ms against 45,
-  `hunt.test.ts` 146 ms against 100); they fail the same way with this session's changes stashed, on a machine at
-  load 5–7. Not re-run on a quiet machine. Not verified: any species fact; that the board tests can all pass
-  (above all "you end up holding three places or more"); the toy, which does not exist yet.
+- **Milestone:** M2. Step 13, **W1 the wide toy** ([spec](slices/w1-the-wide-toy.md)): part A built 16 Nov, part B
+  next. Step 12 (the N4 fix) is still built and not played. Branch `n4-who-eats-whom`; commits `a245a57` (the
+  contract) and `bdec94c` (part A).
+- **Done (16 Nov, a build session):** `clade/src/model/board.ts` (240 lines) and `board-goal.ts` (81: the hash,
+  `nameOf`, `nextGoal`). The exported shapes are unchanged.
+- **Where the brief was silent, the builder chose** (change any of them in a line):
+  - A colonist bar outside the bar places, or with no candidate, drops to 0 (it does not pause). `hunt2` runs a bar
+    like `hunt`.
+  - `what` in plain words: "bigger", "smaller", "more <word>", "less <word>" (e.g. "more spawn"), and a mutation's
+    name ("breathes air"). The brief's "burrows deeper" would need a word per direction in the rows.
+  - With several variants to adopt, the goal picks the widest value margin.
+- **Verified:** the board tests run: 45 model tests pass, 0 skipped. Types are clean. `npm run check`: 217 pass,
+  1 fail (`hunt.test.ts` timing, 102 ms against 100, the old flake; it passes alone), 10.8 s at load 2–3.
+  - A 40-goal run with seed 7, read by eye: four cells in 48 generations; colonists arrive and are named; the air
+    variant shows at generation 168 on the Lee mud flats.
+  - Not verified: the page (part B), and how it feels.
+- **For the architect** (doesn't block part B): following the goal makes the heir churn and can **drop the air
+  key**. Adopt comes first, and each cell's variant was made from the heir at the time. In the seed 7 run, the
+  heir adopted "breathes air" and two goals later adopted a Sand deeps variant made before that, so it lost air and
+  never reached the shore. Adopt also fires on margins too small to change the letter ("A against A"), as does
+  Improve.
+  - Options: make variants from the cell's holder rather than the heir; have adopt keep the heir's mutations; or
+    only adopt when the letter changes. This is open question 3 in practice.
 - **Next:**
-  1. A builder at medium effort: `/build W1 A` (the board rules), then `/build W1 B` (the page).
-  2. You: commit this session's files once looked at; play the toy ten minutes, notes to
-     `docs/playtests/w1-the-wide-toy.md`. Still owed: the N4 fix play and the merge (step 12).
-- **Open** (the spec's three): hunting reads light; the roster leaves gaps (no hunter on the lee reef, 16 of 76
-  cells with one candidate: W3 fills them); `nextGoal` puts Adopt first. Also direction §11.
+  1. `/build W1 B` (the page).
+  2. You: play the toy ten minutes and put your notes in `docs/playtests/w1-the-wide-toy.md`. Still owed: the N4
+     fix play and the merge (step 12).
+- **Open:** the spec's three questions (hunting reads light; gaps in the roster; `nextGoal` puts Adopt first),
+  plus the key loss above. Also direction §11.
