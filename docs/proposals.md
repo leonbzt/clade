@@ -23,3 +23,8 @@ page replaces parts with dials, and P53's sign-change rule lives on there as a d
 
 P54 (the roadmap re-cut) and P55 (the island and its roster) were decided 15 Nov: see decisions.md. None open; the
 direction page's three open questions (§11) become proposals when W2 and W4 need them.
+
+P56 (where the build lives: C, both, split by job), P57 (the Life: one engine) and P58 (the progression map; the
+meta as voice) were decided 16 Nov in the whole-road session: see decisions.md.
+P59 (the build on the board: branches are dials), P60 (the look: L1 split) and P61 (the road, the build toy first;
+the workshop) were decided 16 Nov in the same session: see decisions.md. None open.

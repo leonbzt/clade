@@ -922,3 +922,59 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
 ## 16 Nov (build W1 part D)
 - **Codex may build a part.** Asked "can i built it using codex?", the user chose "Codex builds, I verify": Claude
   hands the part to `codex exec` with a short brief, then reads the diff against the spec, runs the check and commits.
+
+## 16 Nov (the W1 round-two play; the architect session after it; no question asked)
+- **The verdict on round two:** "I like it a lot better now and everything is moving closer to how i imagined it."
+  Variants with a different gene, the population-against-variant cards, the steps toward a species, collecting cards
+  and several lineages open all pulled. Notes: `docs/playtests/w1-round-two.md`.
+- **What is missing, named as core:** "the only thing i'm still missing in the overall version are skill/ability/
+  evolution trees with points to allocate and make builds that way. this is a core aspect of my vision, but i also
+  really like the random mutation and that way moving closer to species."
+- **A sketch, not a call:** "maybe it could stay similar to the current system on the board and the evolution
+  tree/skill tree allocation is only for a specific run."
+- **Open for the user:** "the actual games, like a current life, how to give them identity and the feeling of
+  building your own build, similar to the equipping parts in the body slots and speccing an skill tree and using
+  abilities."
+- **The next session is a big design pass, not W2:** "a big fable session to set up everything for the future of
+  the build": structure, the roadmap and the docs, token saving, mechanics and Life minigames, kingdoms,
+  interactions, symbioses, art and identity, to the itch release and the full first release. Its brief:
+  `docs/design/fable-brief-4.md`.
+- **Not decided:** where the build lives, the Life's kit, the order after W1. They are that session's questions.
+
+## 16 Nov (the whole-road session, round 1; three questions; brief: `docs/design/fable-brief-4.md`)
+- **Where the build lives (P56):** "I lean option 1 (C, both split) and like the idea of having the life revolving
+  about growing, and spending points among the open nodes, and having each life making a build, it goes along
+  really well with my vision." A line's levels open nodes of its tree for good; each Life earns points by growing,
+  spends them among the open nodes, and resets. (The other options: a tree for one Life only; a permanent tree a
+  line; the tree as the genome, which "sounds very good as well but probably too complicated".)
+- **A note with it, to be answered in round 2:** "it goes a little bit against my intuition that the build you
+  formed doesn't go onto the board, and doesn't really influence the board. could be secondary though as an outcome
+  from the life."
+- **The Life (P57):** "lean for one engine intuitivley", with advice asked on what is feasible and where the pull
+  is. "of course i would like one minigame per kind and a strong identity, but want to get first feedback first";
+  "an auto battler approach would also work, as it puts more emphasis on strategizing and making the builds." The
+  architect's advice was one engine now, an auto-run and a second kind of Life as later doors (P59's table).
+- **The progression map (P58):** "Map yes, meta as voice". The table is the map: food and points last one Life;
+  eggs give the cell and line XP; levels open nodes and verb slots; variants move the species; cards open lines.
+  The meta is voice and the rivals' bar in the alpha; eras and events come after it.
+- **Asked of the session:** "advice me on wether the project and ideas are actually worth building and wether its
+  feasible to make an actually compelling and fun game out of this."
+- **Not decided:** every number, the node lists, the budget of 9 nodes a clade, 12 effect kinds and 8 verbs. They
+  are the architect's proposals.
+
+## 16 Nov (the whole-road session, round 2; three questions, each option taken as put)
+- **The build on the board (P59):** "A: branches are dials". A clade's tree has one branch a dial it shows; a
+  Life's clutch is a variant one step along the branch you spent most in, on the usual compare card. No new law.
+  The laws' second cut shrinks to the dials of lines you can play and moves before the closed test (step LC).
+  (The other options: also a rare push mutation from a finished branch, now an idea; eggs only.)
+- **The look (P60):** "A: split L1". L1a before the closed test (the two test lines' plans, node stamps on the
+  body, silhouettes on cards); L1b after W5. Code draws what moves and what is yours; PhyloPic silhouettes stand on
+  the cards of wild and unfound species; generated art (Retro Diffusion) draws no creature.
+- **The road and the workshop (P61):** "Adopt, build toy first". The road: B0 the build toy, W2, B1, N5, LC, L1a,
+  the closed test, then W3, W5, W4, L1b, A. Step 12's play is dropped (W2 replaces its rules). The workshop: old
+  design docs, `docs/planning/` and the specs and playtests from before N0 move to `_archive/2026-11-16/`; the W1
+  branch merges into `main`, then one branch a step; no design pass before the closed test.
+- **Not decided:** the doors table (symbiosis, parasitism, pollination, other kinds of Life: no objection raised,
+  still a *proposal*); the one-sentence pitch; every number and node list; the B0 spec's rules.
+- **The advice given, for the record:** worth building as a hobby game on the condition that a stranger plays it
+  within about ten sessions; the risk is the process and the scope, not the idea; one engine is the robust core.

@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Adopted 5 Nov** from the planning session ("adopt the roadmap"). The plan: [docs/planning/plan.md](docs/planning/plan.md).
+> **Adopted 5 Nov** from the planning session ("adopt the roadmap"). The plan: [docs/planning/plan.md](_archive/2026-11-16/planning/plan.md).
 > The plant M1 and M0 are history in git (`v2` branch). This file changes only on your call; AI may propose edits.
 
 We build only for the current milestone; everything else waits in [docs/ideas.md](docs/ideas.md).
@@ -9,17 +9,17 @@ We build only for the current milestone; everything else waits in [docs/ideas.md
 **Goal:** "a clean freshly put together full version that i can release to get feedback and ideas": the Life and the living sea as one game (*decided 6 Nov*: "sounds good, order good").
 **Done when:** *proposal, yours to change:* you'd send it to strangers: "I played this run, I advanced my lineage, I can see it on the map, and I know what run I pick next"; 6–10 lineages
 look and play differently, and you recognise your own; a line reaches the shore.
-Design: [docs/design/full-version.md](docs/design/full-version.md). **Staying on the road:** every slice names a step below; anything else goes to `docs/ideas.md`.
+Design: [docs/design/full-version.md](_archive/2026-11-16/design/full-version.md). **Staying on the road:** every slice names a step below; anything else goes to `docs/ideas.md`.
 
-1. [x] [16 Quick wins](docs/slices/16-quick-wins.md): the toy's resource bars and "next board" line, a new font, clipped labels
-2. [x] [17 The sea toy](docs/slices/17-sea-toy.md): patches with real populations and crashes, seen on a map ("does the map feel alive?")
-3. [ ] [18 The body toy](docs/slices/18-body-toy.md): one general body, parts on slots, recipes ("is the one I built the one I see?")
+1. [x] [16 Quick wins](_archive/2026-11-16/slices/16-quick-wins.md): the toy's resource bars and "next board" line, a new font, clipped labels
+2. [x] [17 The sea toy](_archive/2026-11-16/slices/17-sea-toy.md): patches with real populations and crashes, seen on a map ("does the map feel alive?")
+3. [ ] [18 The body toy](_archive/2026-11-16/slices/18-body-toy.md): one general body, parts on slots, recipes ("is the one I built the one I see?")
 4. [x] Join the sea: it replaces the garden; the map is home, with run hooks; boards come from patches; the few named rules and "what changed"
-5. [x] [20 Join the bodies](docs/slices/20-join-the-bodies.md), last part [20D slots](docs/slices/20d-slots.md): the general body in the game, lineages as data; the body screen, verbs from parts, a role guess settled by body and diet
-6. [ ] [21 The climb](docs/slices/21-the-climb.md), after a Life: hatching, family tree, watch it spread; lineage XP; one tree screen and a close-up; recipes; systems arriving one at a time; then [22 The larva](docs/slices/22-the-larva.md): a body you keep growing (P48 A)
+5. [x] [20 Join the bodies](_archive/2026-11-16/slices/20-join-the-bodies.md), last part [20D slots](_archive/2026-11-16/slices/20d-slots.md): the general body in the game, lineages as data; the body screen, verbs from parts, a role guess settled by body and diet
+6. [ ] [21 The climb](_archive/2026-11-16/slices/21-the-climb.md), after a Life: hatching, family tree, watch it spread; lineage XP; one tree screen and a close-up; recipes; systems arriving one at a time; then [22 The larva](_archive/2026-11-16/slices/22-the-larva.md): a body you keep growing (P48 A)
 
 **From step 7 the core is rebuilt in a fresh folder, `clade/`** (*decided 10 Nov*; the route approved 10 Nov). How:
-[whole-game-build.md](docs/design/whole-game-build.md) §8; why: [whole-game.md](docs/design/whole-game.md). `game/`
+[whole-game-build.md](docs/design/whole-game-build.md) §8; why: [whole-game.md](_archive/2026-11-16/design/whole-game.md). `game/`
 stays playable until the new game passes the play test after N4. Slice 23 is re-cut: its parts land in N4, R5, R7, R8.
 
 7. [x] **N0** [The ground](docs/slices/n0-the-ground.md): terrain kinds, the habitat finder, names, a bare zoomable map, the palette file · 1 session
@@ -28,32 +28,41 @@ stays playable until the new game passes the play test after N4. Slice 23 is re-
 10. [x] **N3** [The screens](docs/slices/n3-the-screens.md): home map, hatching, the line view, the tree with its trunk · 2
 11. [x] **N4** [Who eats whom](docs/slices/n4-who-eats-whom.md): who eats whom; wild branches; displace and adopt; patch notes with a cause; living paint and a return replay on the map (*decided 12 Nov*) · 3. Played 12 Nov: "core there but no game".
 
-**From step 12 the order follows the maths pass** (*decided 12 Nov*: "fix board line look, also the other planned species
-would be nice to add soon"; [docs/design/maths-pass.md](docs/design/maths-pass.md) Q0). Each step's cut is a proposal until its spec.
+**Step 12 followed the maths pass** (*decided 12 Nov*; [docs/design/maths-pass.md](docs/design/maths-pass.md) Q0).
 
-12. [ ] **N4 fix and** [the quiet sea](docs/slices/n4-fix-quiet-sea.md)**:** stuck capsules, the crush hint, no hunter build without prey; your species spread only into cells you won; wild cousins on a bar, on a leash; a refuge per tile · 1
+12. [x] **N4 fix and** [the quiet sea](docs/slices/n4-fix-quiet-sea.md)**:** built 15 Nov; no play of its own (*16 Nov*): W2 replaces the rules it fixed, and its Life fixes are played there
 
 **From step 13 the order follows the direction page** ([docs/design/direction.md](docs/design/direction.md), 15 Nov).
 *Decided 15 Nov:* a present-day island of real species, sea, shore and land (2b); a lineage is a real clade with a
 fixed plan and 2–3 dials, and named real species are its leaves (1c); movers only are playable, plants and sessile
 life are board pieces (3a); the island is young and real species arrive as colonists; animals come to land only as
-lines gain key adaptations; variant hunting makes the map its own loop. **Adopted 15 Nov** ("adopt"). The steps
-replace the 12 Nov order (N5, N6, N7, L1, the closed test, R5, A, R7–R11); N6 and N7 are gone, N5 and L1 stay. Each
-step's cut is a proposal until its spec.
+lines gain key adaptations; variant hunting makes the map its own loop. **Adopted 15 Nov** ("adopt").
 
-13. [ ] **W1** ([spec](docs/slices/w1-the-wide-toy.md)) The wide toy: about 40 real species as data rows, sea, shore and land cells on the slot board, the laws, the derived food web, the one next goal, variants to compare and adopt ("is this a board I want to climb and look through, and can I tell species apart?") · 2; **round two** (*16 Nov, your call after the first play*): populations radiate into named species (cards), rivals on a bar, a second line · 3 more
-14. [ ] **W2** The model swap in `clade/`: W1's tested module (`clade/src/model/`) wired into the sea, the Life and the screens; the old records, `fitness` and hunt deleted; the first line plays as the worm did (*15 Nov, third round*) · 2
-15. [ ] **N5** The board: the map's holders as a grid of jobs; the one next goal; letters against the meta; Take, Beat, Hold, Adopt; variants drawn and marked on the map · 2
-16. [ ] **The closed test:** an unlisted itch page for 3–5 Discord players (sea and shore, about 30 species, one or two lines)
-17. [ ] **W3** The trait pipeline and the roster to 60: the source check, the generated tree, grades per trait, the roster sheet, researcher batches · 1, plus batches
-18. [ ] **W4** The land: ground kinds, producers as board pieces colonising on a bar, a habitat names the adaptations it needs, the first line to come ashore by a key adaptation · 2
-19. [ ] **W5** Lines: XP from eggs and held cells, levels, dial steps and mutations in the clutch, named species, the tree as the unlock map · 2
-20. [ ] **L1** The look contract in code: a plan per clade from the body grammar, stamps, the contact sheet and its two checks · 2
-21. [ ] **A** The alpha pass: the first fifteen minutes, saving, a light UI pass; **the public alpha** on itch (roster 100–150) · 2–3
-22. [ ] **After the alpha**, each a public update: sea and land features, engineering, more lines and species, art and UI polish, the release (M1's leftovers, a clean repo, Discord)
+13. [x] **W1** ([spec](docs/slices/w1-the-wide-toy.md)) The wide toy (played 16 Nov, both rounds: "moving closer to how i imagined it"; the build is missing): about 40 real species as data rows, the slot board, the laws, the derived food web, the next goal, variants, cards, rivals, a second line
+
+**From step 14 the road is re-cut** (*adopted 16 Nov*, "Adopt, build toy first"; direction §1 seventh round, §8).
+*Decided 16 Nov:* the build lives in the Life (a line's levels open nodes of its clade's tree; a Life spends points
+among them and resets); one Life engine; one progression map; the build reaches the board through the clutch; the
+look is split. Each step's cut is a proposal until its spec. **No design pass before the closed test.**
+
+14. [ ] **B0** ([spec](docs/slices/b0-the-build-toy.md)) The build toy, in today's Life: each moult is a point, you pick the node that grows, food buys more ("does a Life feel like making a build?") · 1
+15. [ ] **W2** The model swap in `clade/`: W1's module (`clade/src/model/`) wired into the sea and the screens; the Life on a kit with its tree; the old records, `fitness` and hunt deleted; the check back under 10 s ("does the game still play, with no names in the rules?") · 3
+16. [ ] **B1** The bridges: the genome sets the kit (a mutation is a node grown at birth), the clutch is a variant along the branch you built, line levels open nodes ("does the build show on the board, and the board in the Life?") · 1
+17. [ ] **N5** The board in the game (W1's page becomes it): jobs as a grid; the one next goal; Take, Beat, Hold, Adopt; the compare card; cards · 2
+18. [ ] **LC** The laws' cut for the lines you can play: each of their dials flips somewhere (direction §11.4) · 1
+19. [ ] **L1a** The first look: the two test lines' plans, node stamps on the body, silhouettes on cards · 1
+20. [ ] **The closed test:** an unlisted itch page for 3–5 Discord players (sea and shore, about 30 species, two lines)
+21. [ ] **W3** The trait pipeline and the roster to 60: the source check, the generated tree, grades per trait, the roster sheet, researcher batches · 1, plus batches
+22. [ ] **W5** Lines: the steep curve, the tree of life as the unlock map, lines three to six, a hunter line · 2
+23. [ ] **W4** The land: ground kinds, producers as board pieces colonising on a bar, a habitat names the adaptations it needs, the first line to come ashore by a key adaptation · 2
+24. [ ] **L1b** The look, whole: a plan per clade from the body grammar, stamps, the contact sheet and its two checks · 2
+25. [ ] **A** The alpha pass: the first fifteen minutes, saving, a light UI pass; **the public alpha** on itch (roster 100–150) · 2–3
+26. [ ] **After the alpha**, each a public update: the auto-run for held cells, partner links, eras and events, a second kind of Life, more lines and species, art and UI polish, the release (M1's leftovers, a clean repo, Discord)
+
+About 10 sessions to the closed test, about 20 to the public alpha.
 
 ## Built: M1, the first playable sea (5 Nov; "the basics seem fun and as imagined"; its release moved into M2, step 17)
-1. [x] [08 The stack test](docs/slices/08-stack-test.md): Godot or PixiJS → **PixiJS** (5 Nov)
+1. [x] [08 The stack test](_archive/2026-11-16/slices/08-stack-test.md): Godot or PixiJS → **PixiJS** (5 Nov)
 2. [x] 09 The Life, for real: three boards, worm and arthropod, feel and phone layout
 3. [x] 10 Verb slots: parts give verbs, 1–3 picked; grazer styles
 4. [x] 11 The predator Life: the swimmer, readable prey, ground and armour, ambush and frenzy
@@ -70,4 +79,4 @@ step's cut is a proposal until its spec.
 | After | Generated habitats, more body kinds, playable algae and plants, life ashore, phones | Set later |
 
 ## Budgets
-8 h catch-up about 5 s, up to 10 (5 Nov; the garden step is whatever fits that, about 30 ms a generation) · tests < 10 s. The toy's budgets (stocks, natives) are a start, not limits; the algae layer's 3–5 kinds may pass the 4 stocks (your pick, 6 Nov).
+8 h catch-up about 5 s, up to 10 (5 Nov; the garden step is whatever fits that, about 30 ms a generation) · tests < 10 s · 3 dials a line, 6 mutations and 9 nodes a clade, 12 effect kinds and 8 verbs in the game (*proposal 16 Nov*). The toy's budgets (stocks, natives) are a start, not limits; the algae layer's 3–5 kinds may pass the 4 stocks (your pick, 6 Nov).

@@ -55,6 +55,27 @@ the user says so. A build session reads its step spec, not this page; the spec c
   (eras, events) change, together with the feeling that you discover and build life yourself; and maybe your earlier
   Lives stay on as the meta and the other inhabitants.
 
+**Sixth round, 16 Nov (after the play of W1 round two; nothing called yet):**
+- The board, the variants, the cards and several lines pull ("moving closer to how i imagined it").
+- Your wish, named as core and not yet a call: **skill, ability or evolution trees with points to allocate**, and
+  the feeling of building your own build (parts on slots, a tree, abilities you use). Your sketch: the board stays
+  as it is and the tree is "only for a specific run". This reopens the second half of 1c ("a build is its dials")
+  for the Life. The session that settled it is the seventh round.
+
+**Seventh round, 16 Nov (the whole-road session; your words are in `decisions.md`):**
+- **The build lives in two places, split by job.** A line's levels *open* nodes of its clade's tree for good; each
+  Life earns points by growing, *spends* them among the open nodes, and resets. This replaces the second half of 1c
+  for the Life only: the genome is still dials and mutations, and the board reads nothing else.
+- **The build reaches the board through the genome:** a tree's branches are the clade's dials, and a Life's clutch
+  is a variant one step along the branch you spent most in, on the same compare card as any variant.
+- **One Life engine:** the grid board. Forage, dig and hunt are node sets on it. A second kind of Life and an
+  auto-run are doors (§5), not plans.
+- **One progression map** (§7). The meta is voice and the rivals' bar in the alpha; eras and events come after it.
+- **The look is split:** L1a before the closed test, L1b after W5. Code draws what moves and what is yours (a stamp
+  a node); silhouettes stand on the cards of wild and unfound species; generated art draws no creature.
+- **The road is re-cut** (§8), the build toy first. **No design pass before the closed test:** a new idea gets one
+  line in `ideas.md` until strangers have played.
+
 ## 2. Findings: why the frame had to move
 *Measured in `clade/src` on 15 Nov.*
 - **The sim's world is written as types, not data:** 5 clades, 2 foods, 3 roles, 3 defence kinds and 27 named parts
@@ -73,8 +94,9 @@ the user says so. A build session reads its step spec, not this page; the spec c
 ## 3. The game in one paragraph (*proposal*)
 A young volcanic island today, with a sea, a shore and bare land. Every habitat is a board of jobs (a food and a way
 of eating it). Real species arrive and hold the jobs, and who eats whom follows from their traits. You main a line: a
-real clade with its own body plan, starting as a marine worm. A Life is one match as one creature of that line; its
-eggs move the line's dials and take or hold a job. Between Lives the map is its own game: populations throw variants
+real clade with its own body plan, starting as a marine worm. A Life is one match as one creature of that line: it
+grows, each moult is a point for the line's tree, and the build lasts that Life (*16 Nov*). Its eggs take or hold a
+job, and its clutch is a variant along the branch it built. Between Lives the map is its own game: populations throw variants
 with different genomes, and you find, compare and adopt them. A line that fits a real species' numbers *is* that
 species: you get its card. Finished lines open their nearest relatives on the real tree. The land stays empty of
 animals until a line of yours gains what it takes to live there (walking, breathing air); then it radiates into it.
@@ -85,7 +107,7 @@ Real island life is adaptive radiation (one colonist, many niches); that is the 
 species stay "other players' builds".
 **The shapes are `clade/src/model/types.ts`** (they win over this page): `Clade` (plan, life, diet, ground,
 adaptations, guard, beats, base stats, dials, mutations; a producer also `makes` stocks), `Build` (clade, dials,
-mutations: the genome, and no more), `Named` (a build with a name, a real home and a grade per trait), `Site` (a
+mutations: the genome, and no more; the tree is not in it, and no node enters `fitness`, *decided 16 Nov*), `Named` (a build with a name, a real home and a grade per trait), `Site` (a
 habitat as the laws read it). The functions are `clade/src/model/laws.ts`: `stats(build)` (the same six, derived),
 `eats(a, b, kind)` (derived, never authored), `fitness(build, job, site)` (intake, upkeep, survival, value, letter,
 grams, three reasons), `climax(kind, area, pool)` (the reference web). Against the sketch of 15 Nov: no feed mode
@@ -129,9 +151,14 @@ data on the clade and a rule in the Life, not a new system.
 - **The tree as the unlock map (2b):** the tree is the real one, cut down to the roster (§6). Leaves are named
   species; inner nodes are ancestors, each with its defining trait, passed on the way. *Proposal:* a finished line
   opens other clades at a cost that grows with distance on the tree, so relatives come first.
-- **Lines (1c):** the plan and the fixed traits belong to the clade. A clutch offers dial steps; how you lived steers
-  which (P49, 9 Nov). The ladder and the small tree (12 Nov) stay as the line's levels; what a level gives is re-cut
-  in the lines step (dial range, thrift, the mechanic's strength), since parts are gone.
+- **Lines and the tree (1c; the tree *decided 16 Nov*, its numbers a *proposal*):** the plan, the fixed traits and
+  the tree belong to the clade. A tree is about 9 nodes: one branch a dial the clade shows (three at most) and its
+  one mechanic. A node is the clade's real feature under its own name, with one effect from a shared list and
+  sometimes a verb; it is the old part record plus what it needs. A line's levels open nodes, and verb slots two
+  and three. A Life spends points among the open nodes: a moult gives one, food buys more at a rising price.
+- **The two bridges (*decided 16 Nov*):** *down*, the population's dials set the Life's starting numbers and a
+  mutation is a node grown at birth, so a variant you hunted changes your next Life; *up*, the eggs, and the clutch
+  as a variant one step along the branch you spent most in (P49, 9 Nov, made a rule you can see).
 - **The genome and the variants (*decided 15 Nov* to include; the shape is a *proposal*):** a genome is the dials (at
   most 3, they drive the rules) plus named **mutations** (discrete, rare, a short list per clade as data). A mutation
   is one of three kinds: a look (a colour morph: yours to collect), a push (a dial beyond its normal range, at a
@@ -146,9 +173,14 @@ data on the clade and a rule in the Life, not a new system.
   genome and letter with your line's, and **adopt** it (it becomes that cell's population; *16 Nov*, before: your line's heir), leave it, or watch it
   win or lose its cell by itself. Coming back after hours means new variants to look through. Rare ones are worth
   hunting; where they appear follows a rule you can learn (the edge, a crash, a new rival).
-- **Lives (3a):** three kinds, the verbs that exist: forage, dig, hunt. Every mover clade names one. Swimming, walking
-  and flying are board rules (speed, which tiles), not new minigames. A board piece has no Life; at release it is
-  wild only.
+- **Lives (3a; one engine *decided 16 Nov*):** three kinds, the verbs that exist: forage, dig, hunt, all on the one
+  grid board. Every mover clade names one. Swimming, walking and flying are board rules (speed, which tiles), not new
+  minigames. A board piece has no Life; at release it is wild only.
+- **Doors, not plans (*proposal 16 Nov*; nothing is built before its step):** the Life meets the game through one
+  small contract (a board and a kit in; eggs, what you spent, what you ate and how it ended out), so an auto-run for
+  held cells (after the closed test), a chase (after the alpha) and playable plants (after the release) are each a
+  module. A partner link (symbiosis) is derived as `eats` is, from two optional clade fields and one law (a public
+  update after the alpha). Parasitism and pollination: after the release.
 
 ## 6. The trait pipeline (the bottleneck)
 **What the tree sources give, and don't** (from background knowledge, *not verified this session*; step W3's first
@@ -189,23 +221,39 @@ Three pulls, to be judged in play and not in a doc:
 3. **The web answering you**, with one cause line each time.
 4. **Hunting variants on the map** (§5). Proven fun before ("very fun", 15 Nov; "the way ... variants popped up was
    very cool", 10 Nov), so it goes into the first toy.
+5. **Making a build in a Life** (*16 Nov*; "a core aspect of my vision"). The build toy (B0) tests it first.
 The Life is proven ("the basics seem fun and as imagined", 5 Nov) and is ported, not rebalanced.
 
-## 8. The plan (*adopted 15 Nov*; `ROADMAP.md` carries it)
+**The progression map (*decided 16 Nov*).** Each permanent thing has one source; points never leave a Life.
+
+| You do | You get | It buys | Lasts |
+| --- | --- | --- | --- |
+| Eat in a Life | food | Grow, points, Lay | one Life |
+| Grow, or pay food | points | nodes of the tree, among those open | one Life |
+| Lay | eggs | the cell (take, beat, hold) and line XP (eggs × the letter) | the cell: until beaten |
+| Line XP | levels, on a steep curve | open nodes; verb slots two and three | for good |
+| Live somewhere, and time | variants | dial steps and mutations: the walk to a species | until the next variant |
+| Become a real species | its card | cards open the next line | for good |
+
+## 8. The plan (*adopted 15 Nov, re-cut 16 Nov*; `ROADMAP.md` carries it)
 | Step | What | Question it answers | Sessions |
 | --- | --- | --- | --- |
-| 12 | N4 fix: play it ten minutes, merge | does the quiet board hold? (it carries over) | you |
-| **W1** | The wide toy: about 40 real species as rows (drafted), sea, shore and land cells on the slot board (shore and land locked behind their adaptations), the laws, the derived web, the next goal, variants on a bar to compare and adopt | is a derived web of real species a board I want to climb and look through, and can I tell species apart? | 2 |
-| **W2** | The model swap in `clade/` (*15 Nov, third round:* W1's module wired into the sea, the Life and the screens; the old records, fitness and hunt deleted); the first line plays as the worm did | does the game still play, with no names in the rules? | 2 |
-| **N5** | The board (the maths pass's cut): jobs as a grid, the one next goal, Take, Beat, Hold, Adopt; variants drawn and marked on the map, the compare card | do I know what is mine and what is next, and is the map worth looking at? | 2 |
-| | **Closed test:** an unlisted itch build, sea and shore, about 30 species, one or two lines | does a stranger? | |
+| 12, W1 | Done: the N4 fix has no play of its own (W2 replaces its rules); the wide toy is played | | |
+| **B0** | The build toy, in today's Life: each moult is a point, you pick the node that grows, food buys more | does a Life feel like making a build? | 1 |
+| **W2** | The model swap in `clade/`: W1's module wired into the sea and the screens; the Life on a kit with its tree; the old records, fitness and hunt deleted; the check under 10 s | does the game still play, with no names in the rules? | 3 |
+| **B1** | The bridges: the genome sets the kit, the clutch is a variant along your branch, line levels open nodes | does the build show on the board, and the board in the Life? | 1 |
+| **N5** | The board in the game (W1's page becomes it): jobs as a grid, the one next goal, Take, Beat, Hold, Adopt, the compare card, cards | do I know what is mine and what is next? | 2 |
+| **LC** | The laws' cut for the lines you can play (§11.4) | does a dial step show on the board? | 1 |
+| **L1a** | The first look: the two test lines' plans, node stamps on the body, silhouettes on cards | is the one I built the one I see? | 1 |
+| | **Closed test:** an unlisted itch build, sea and shore, about 30 species, two lines | does a stranger? | |
 | **W3** | The pipeline and the roster to 60: the source check, `tree.json`, grades, the roster sheet, researcher batches | are the rows right? | 1, plus batches |
+| **W5** | Lines: the steep curve, the tree of life as the unlock map, lines three to six, a hunter line | does a line feel like mine, and the tree like a map? | 2 |
 | **W4** | The land: ground kinds, producers as board pieces colonising on a bar, the realm law, the first line to cross by a key adaptation | does coming ashore feel earned, and the island like one ecosystem? | 2 |
-| **W5** | Lines: XP, levels, dial steps and mutations in the clutch, named species, the tree as the unlock map | does a line feel like mine, and the tree like a map? | 2 |
-| **L1** | The look: a plan per clade from the body grammar, the contact sheet | do I recognise them? | 2 |
+| **L1b** | The look, whole: a plan per clade from the body grammar, the contact sheet | do I recognise them? | 2 |
 | **A** | The alpha pass: the first fifteen minutes, saving, a light UI pass. **The public alpha** | | 2–3 |
+| After | Public updates: the auto-run, partner links, eras and events, a second kind of Life, more lines; the release | | |
 
-About 6 sessions to the closed test and 15–17 to the public alpha. Researcher batches run alongside from W2.
+About 10 sessions to the closed test and about 20 to the public alpha. Researcher batches run alongside from W3.
 
 **Risks, blunt:**
 - *The laws flatten species into a mass and a diet.* W1 tests exactly this; the clade mechanic is the guard.
@@ -223,14 +271,14 @@ About 6 sessions to the closed test and 15–17 to the public alpha. Researcher 
 | Earlier | Now |
 | --- | --- |
 | Start at the worm in the Cambrian sea; chapters (10 Nov) | **Replaced by 2b.** The Cambrian roster (trilobite, swimmer, radiodont) leaves the release; parked as an era. The worm Life's tuned numbers go to the first line |
-| Parts on six places, 27 parts, recipes, Enforce picks a family (10 Nov) | **Replaced by 1c.** The plan is the clade's; a build is its dials. *Proposal:* Enforce steers which dial the clutch offers; a recipe is a named species' dials |
+| Parts on six places, 27 parts, recipes, Enforce picks a family (10 Nov) | **Replaced by 1c.** The plan is the clade's; the genome is its dials. *16 Nov:* parts return as the nodes of the clade's tree, in the Life only; the branch you spent most in steers the clutch; a recipe is a named species' dials |
 | Only opened lineages live in the sea; wild cousins of your own species fill open cells (10, 12 Nov) | **Replaced** (15 Nov): real species arrive as colonists on a bar. Cousins live on as variants of any population (§5) |
 | Genes as dials and variants, banked clutches (R5); drift toward the cell's optimum (maths pass Q5) | **Kept and moved up:** the genome is dials and mutations; variants are on the map from N5 |
 | Life ashore "later" (the roadmap's After row) | **In the release, by evolution** (15 Nov): W4 |
 | The slot board, the quiet sea, letters against the meta, one active line, ladder then tree, Adopt (12 Nov) | **Kept** |
 | N6 The line, N7 The other lines; P53 | **Replaced** by W5, the roster and the sign-change test. P52 (the waste loop) is parked |
 | The look contract, the body grammar (build brief §5; maths pass Q3, Q4) | **Kept**; one plan per clade |
-| Budgets: 4 stocks, 6 stats, 10 genes | 4 stocks *per habitat*, 6 stats, **3 dials per line and at most 6 mutations per clade** (*proposal*) |
+| Budgets: 4 stocks, 6 stats, 10 genes | 4 stocks *per habitat*, 6 stats, **3 dials per line and at most 6 mutations per clade**; 9 nodes a clade, 12 effect kinds and 8 verbs in the game (all *proposal*) |
 | M2's "done when" (6–10 lineages that look and play differently; a line reaches the shore) | Still fits; the shore is in from the start |
 
 **Still in force where this page is silent:** the build brief (`whole-game-build.md`) §3 the ground's layers, §4 the
@@ -253,11 +301,14 @@ sea, the next goal), Q2 (zoom), Q3 and Q4 (grammar and drawing). Everything else
    land faster). For the W4 spec.
 2. **How is a key adaptation won?** (a) *Lean:* as a rare variant you find on the map or in a clutch, in a population
    living at the edge; (b) as a level on the line's ladder; (c) both: the ladder raises the chance. For W4 and W5.
-3. **The budget:** 3 dials per line and at most 6 mutations per clade, replacing "10 genes per kingdom"? For W2.
+3. **The budget:** 3 dials per line and at most 6 mutations per clade, replacing "10 genes per kingdom"; and 9 nodes
+   a clade, 12 effect kinds, 8 verbs (16 Nov)? For W2.
 4. **The laws' second cut** (16 Nov). 43 of 54 clade dials are flat: their best step moves no cell by a tenth, and
    inside a clade bigger wins everywhere. Sweeps of the numbers did not change it; the formulas are smooth between
    a few thresholds. *Lean:* its own architect pass with W3's rows (each dial gets a threshold where it flips, and
    size gets a cost that bites). The ratchets `FLAT_MOST` and `UNDER` in `data.test.ts` hold the line until then.
+   *16 Nov:* the cut shrinks and moves up (step LC). Wild species do not vary, so only the dials of lines you can
+   play must flip: at most 18 of the 54, and 6 for the closed test. Which of the 43 are theirs is not measured.
 5. **Where does a near relative live?** (16 Nov, measured in the toy.) Lugworms opened beside ragworms and never
    found a cell: the same food on the same ground, and their start reads lower than every holder. "The tree as the
    unlock map" (W5) opens near relatives first, which is exactly that case. *Proposal, lean:* a line opens where its

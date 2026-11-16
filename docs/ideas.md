@@ -241,3 +241,17 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - *The user's wish:* a TierZoo meta you have to find your place in; balance patches as eras and events that change it; you discover and build life yourself; maybe your earlier Lives stay on as the meta and the other inhabitants.
 - (AI) A line opens where its plan differs from the lines you hold (ground or food), not by nearness on the tree (direction §11.5, W5).
 - (AI) Wait is half of the toy's goals: a card walk could run without a tap between steps, or the goal could name the next thing worth watching.
+
+## From the W1 round-two architect session (16 Nov)
+- (AI) Symbiosis as a derived link like `eats` (a partner relation from traits), so it is a rule and rows later, not a rebuild. Q5.
+- (AI) The check: move the toy board's three goal-walk tests (5.9 s together) out of the default run when the toy is retired; make the "under 100 ms" laws independent of the runner's load. Q7.
+
+## From the whole-road session (16 Nov)
+- (AI) A branch you finish can rarely throw that dial's push mutation, so a build can become inherited (P59 B). After B1 is played.
+- (AI) The auto-run: a cell you already won is re-lived by itself with a simple policy on the same engine; the idle half. After the closed test.
+- (AI) A minigame a kind of Life (a chase for hunters, hidden-info digging) behind the Life's small contract. After the alpha.
+- (AI) Partner links derived like `eats` (`gives`, `takes`, one law); parasitism as a hunt whose prey survives; pollination. After the alpha, and after the release.
+- (AI) The verb bar's cap of three, with slots two and three from line levels (P56). B1 or W5; the build toy shows every verb.
+- (AI) One event kind as a "patch" (a food stock shifts, a wave of colonists); eras. After the alpha (P58).
+- (AI) Retro Diffusion for still pictures that are nobody's build (a habitat picture on a card, the itch banner). Not before the alpha (P60).
+- *The user:* "the tree beeing the genome sounds very good as well but probably too complicated" (nodes in the laws, the dials gone). Parked; judge again after the closed test.

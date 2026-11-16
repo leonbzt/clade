@@ -243,11 +243,11 @@ goal 25 to 28, 4 to 7 of the 9 cards, all five lines open by goal 65 to 97; no g
 ## Done when
 - [x] Round one played (16 Nov): the board, the cards and the goal read well; variants, the one cell a place and
       the missing progression did not. Notes in `docs/playtests/w1-the-wide-toy.md`.
-- [ ] Round two, in play: your populations spread over a place and grow into named species you collect; you see a
+- [x] Round two, in play (16 Nov: liked; rivals and Hold not reported; notes in `docs/playtests/w1-round-two.md`): your populations spread over a place and grow into named species you collect; you see a
       rival come for a cell and hold it or lose it; a card opens a second line and you play both. You can say what
       a variant changed.
 - [ ] `npm run check` passes with no skipped board test.
-- [ ] Your notes on round two are added to the playtest file.
+- [x] Your notes on round two are in `docs/playtests/w1-round-two.md`.
 
 ## Size check
 - New systems (one at most): the organism model. It replaces records, fitness and hunt in W2; nothing is added
