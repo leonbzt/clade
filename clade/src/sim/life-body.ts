@@ -5,6 +5,7 @@ import { ENFORCE_EFFECT } from '../data/economy';
 import { GUARDS, NODES, PLANS, RULE, STRUCK, type NodeId } from '../data/life';
 import { MUTATION } from '../data/mutation';
 import { PARTS, PLACES } from '../data/parts';
+import type { TreeState } from '../data/tree';
 import { partUpkeep, reach } from './fitness';
 import type { Mutation } from './mutation';
 import type { Build, DefenceKind, Food, Part, PartId, Place, Ranks, VerbId } from './records';
@@ -19,6 +20,8 @@ export interface LifeBody {
   enforced: Ranks;
   spentGuards: Ranks;
   mutation: Mutation | null;
+  /** Tree mode (B0): set by `startTree`. Undefined: the Life plays as before. */
+  tree?: TreeState;
 }
 
 const FAMILIES: Part['family'][] = ['feed', 'move', 'sense', 'guard', 'brood'];
