@@ -21,6 +21,7 @@
 - **Not verified:** the twelve skipped tests were never run (no bodies yet). The three boards and the prices were
   never played. Which of the 43 flat dials belong to lines you can play is not measured (step LC).
 - **Next:** `/build B0 A` (tree mode in the sim), then `/build B0 B` (the toy page; one session may do both).
+  The reasoning, the traps and the acceptance checks for both: `docs/handoff-b0.md` (read it once, before part A).
   Then you play `/clade/?toy=build` and write `docs/playtests/b0-the-build-toy.md`; W2's spec waits for that.
 - **Open:**
   - The N4 fix play (step 12): answered, none; W2 replaces its rules.

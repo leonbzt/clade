@@ -19,6 +19,7 @@ wins (and the code is the truth for what's built).
 | [design/maths-pass.md](design/maths-pass.md) | The maths pass (12 Nov). In force only where direction §9 says: Q0 the board and the next goal, Q2 zoom, Q3 and Q4 the body grammar | You (AI drafts) |
 | [../ROADMAP.md](../ROADMAP.md) | Milestones, the current steps, the budgets | You (AI drafts) |
 | [status.md](status.md) | The last handoff: done, decided, next, open | AI at `/handoff` |
+| [handoff-b0.md](handoff-b0.md) | The long handoff of 16 Nov: why B0 is shaped as it is, tasks with acceptance checks, traps. Deleted when B0 is played | AI |
 | [slices/](slices/) | One spec per step, from N0 on ([_template.md](slices/_template.md)) | AI drafts, you approve |
 | [playtests/](playtests/) | Your notes after playing each step, from N0 on | You |
 | [tastes.md](tastes.md) | Your tastes, wishes and lessons, in your words | You (AI records) |

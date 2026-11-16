@@ -76,7 +76,8 @@ spec, `docs/status.md` and the files its part names.
      the part's `does` when open, the rank's effect when grown (the text Enforce shows today) and `why` when shut.
      Disabled unless `canSpend`; a grown node carries the class `grown`. A tap runs `spend` through `stage.act`.
      A Life outside tree mode shows the Enforce list exactly as today.
-  4. `window.__game` gains `spend(part)` and `point()`.
+  4. `window.__game` gains `spend(part)` and `point()`. `resident()` in `life-stage.ts` passes `tree: undefined`, so
+     a rival's or hunter's body never copies your tree.
   5. When the Life is over, a card over the board: the eggs, how it ended, the nodes grown with their ranks, and
      `BRANCHES[branchOf(life)].life` ("A bare Life" for null). Two buttons: "Again" (the same board, `run` +1) and
      "Boards" (the start card).
