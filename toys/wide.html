@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Toy: The wide toy</title>
+    <link rel="icon" href="data:," />
     <style>
       @font-face { font-family: 'Clade Text'; src: url('../game/src/ui/fonts/CladeText-Plain.woff2') format('woff2'); }
       @font-face { font-family: 'Clade Text'; font-weight: bold; src: url('../game/src/ui/fonts/CladeText-Bold.woff2') format('woff2'); }
@@ -22,6 +23,9 @@
       #top { position: sticky; top: 0; z-index: 2; background: #14110c; padding-bottom: 4px; }
       #goal { width: 100%; border-color: var(--gold); color: var(--gold); padding: 4px 8px; }
       .head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; margin: 4px 0; }
+      .collection { margin: 4px 0; }
+      .rival { color: #d0d0d0; }
+      .rival.danger { color: #ff9a80; }
       .place { border-left: 3px solid var(--edge); padding: 2px 0 6px 6px; margin-bottom: 4px; }
       .place.farp .pname { color: var(--dim); }
       .cells { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
@@ -38,8 +42,18 @@
       .bar i { position: absolute; inset: 0 auto 0 0; background: #5ec4d6; }
       #card { position: fixed; left: 0; right: 0; bottom: 0; max-height: 60vh; overflow-y: auto; z-index: 3; margin: 0; border-width: 2px 0 0; box-shadow: 0 -4px 12px #000; }
       #close { float: right; }
-      .twin { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+      .twin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+      .twin > div { min-width: 0; overflow-wrap: anywhere; }
       .twin h3 { margin-top: 4px; }
+      .changed { color: var(--gold); font-weight: bold; }
+      .reason { margin: 4px 0; }
+      .value-scale { position: relative; height: 72px; margin: 4px 10px; }
+      .value-scale::before { content: ''; position: absolute; top: 28px; width: 100%; height: 12px; background: var(--ink); border: 1px solid var(--edge); }
+      .value-tick, .value-point { position: absolute; transform: translateX(-50%); }
+      .value-tick { top: 0; }
+      .value-tick::after { content: ''; display: block; height: 16px; border-left: 1px solid var(--dim); }
+      .value-point { top: 22px; color: var(--gold); }
+      .value-point.variant-point { top: 40px; color: #ff8ae6; }
       .variant { border: 2px solid #ff8ae6; padding: 4px 6px; margin: 4px 0 8px; }
       .act { border-color: var(--gold); color: var(--gold); margin-top: 6px; }
       .why { color: #ff9a80; margin-top: 6px; }
@@ -54,7 +68,6 @@
       .cov td.thin { background: #6b5214; }
       details { margin-top: 12px; }
       details label { display: block; margin: 4px 0; }
-      details input[type=range] { width: 160px; vertical-align: middle; }
       .line { padding: 1px 0; }
       @media (min-width: 860px) { body { padding-right: 440px; padding-bottom: 8px; } #card { left: auto; top: 0; width: 420px; max-height: none; border-width: 0 0 0 2px; } }
     </style>
@@ -62,17 +75,18 @@
   <body>
     <div id="top">
       <button id="goal"></button>
-      <div class="head"><span id="heir"></span><span class="dim" id="gen"></span></div>
+      <div class="head"><span class="dim" id="gen"></span></div>
+      <div class="collection"><span class="dim">Your lines</span> <div class="grp" id="lines"></div> <span class="dim" id="nextLine"></span></div>
+      <div class="collection"><span class="dim">Cards</span> <div class="grp" id="cards"></div></div>
       <div class="grp"><button data-tab="board">Board</button><button data-tab="roster">Roster</button><a href="./" style="margin-left: 8px">all toys</a></div>
     </div>
     <div id="main"></div>
     <div class="panel" id="newsBox"><h2>News</h2><div id="news"></div></div>
     <details class="panel">
       <summary>Dev panel</summary>
-      <div id="dials"></div>
-      <label>Line you main <select id="main-clade"></select></label>
-      <div class="grp"><button id="skip12">Skip 12</button><button id="skip120">Skip 120</button><button id="force">Force a variant</button><button id="reset">Reset</button></div>
-      <label><input type="checkbox" id="nextDoor" /> Colonist bars next door too</label>
+      <label>First line (new board) <select id="main-clade"></select></label>
+      <div class="grp"><button id="skip12">Skip 12</button><button id="skip120">Skip 120</button><button id="force">Force a variant</button><button id="force-rivals">Force rival bars one short</button><button id="reset">Reset</button></div>
+      <label><input type="checkbox" id="nextDoor" /> Bars next door: off for the quiet sea, on for the sea you played</label>
       <label>Seed <input type="number" id="seed" min="0" style="width: 80px" /></label>
     </details>
     <div class="panel" id="card" hidden><button id="close">Close</button><div id="cardBody"></div></div>

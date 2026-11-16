@@ -8,6 +8,7 @@ import { nameOf } from '../clade/src/model/board';
 import { dialOf, eats, massOf, stats } from '../clade/src/model/laws';
 
 export const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+export const generations = (n: number) => `${n} generation${n === 1 ? '' : 's'}`;
 
 /** "Ragworms" → "ragworm", "Anchovies" → "anchovy", "Parrotfishes" → "parrotfish". */
 export function singular(name: string): string {
@@ -38,7 +39,7 @@ export const mutationWords = (b: Build) => (b.mutations.length ? b.mutations.map
 /** The six stats as bars (0–6 points across). */
 export function statBars(b: Build): string {
   const s = stats(b);
-  const rows: [string, number][] = [['bite', s.bite], ['thrift', s.thrift], ['defence', s.defence], ['speed', s.speed], ['senses', s.senses], ['brood', s.brood]];
+  const rows: [string, number][] = [['bite', s.bite], ['thrift (from size)', s.thrift], ['defence', s.defence], ['speed', s.speed], ['senses', s.senses], ['brood', s.brood]];
   return `<div class="bars">${rows.map(([k, v]) => `<span>${k}</span><div class="bar"><i style="width:${Math.min(100, Math.max(0, v / 6) * 100).toFixed(0)}%"></i></div><small>${+v.toFixed(1)}</small>`).join('')}</div>`;
 }
 
