@@ -5,6 +5,7 @@ import { ENFORCE_EFFECT } from '../data/economy';
 import { GUARDS, NODES, PLANS, RULE, STRUCK, type NodeId } from '../data/life';
 import { MUTATION } from '../data/mutation';
 import { PARTS, PLACES } from '../data/parts';
+import type { KitState } from '../data/kit';
 import type { TreeState } from '../data/tree';
 import { partUpkeep, reach } from './fitness';
 import type { Mutation } from './mutation';
@@ -22,6 +23,8 @@ export interface LifeBody {
   mutation: Mutation | null;
   /** Tree mode (B0): set by `startTree`. Undefined: the Life plays as before. */
   tree?: TreeState;
+  /** Kit mode (B0 round two): set by `startKit`. The body's numbers come from its stats, never from a part's name. */
+  kit?: KitState;
 }
 
 const FAMILIES: Part['family'][] = ['feed', 'move', 'sense', 'guard', 'brood'];
@@ -35,6 +38,7 @@ export function growthOrder(build: Build): Place[] {
 }
 
 export function activePlaces(body: LifeBody): Place[] {
+  if (body.kit) return body.kit.grown.filter((place) => !body.lost.includes(place));
   if (body.tree) return body.tree.grown.filter((place) => !body.lost.includes(place));
   const order = growthOrder(body.build).filter((place) => place !== body.mutation?.place);
   const active = body.size >= RULE.maxSize ? order : order.slice(0, body.size);

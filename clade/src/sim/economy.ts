@@ -3,6 +3,8 @@ import { ENFORCE_COSTS, ENFORCE_EFFECT, ENFORCE_HEADROOM, GROW_SHARE, LAY_COST, 
 import { PLANS, RULE, TURNS } from '../data/life';
 import { PARTS } from '../data/parts';
 import { TREE } from '../data/tree';
+import { KIT } from '../data/kit';
+import { rollOffer } from './kit';
 import { activePlaces, clutch, has, mature } from './life-body';
 import { emit, onMud, reveal, say, world, type Life } from './life';
 import { offerMutation } from './mutation';
@@ -18,6 +20,10 @@ export function grow(life: Life): boolean {
   life.food -= growCost(life);
   life.size++;
   if (life.tree) life.tree.points += TREE.moultPoints;
+  if (life.kit) {
+    life.kit.points += KIT.moultPoints;
+    rollOffer(life);
+  }
   life.grew = true;
   life.soft = PLANS[life.build.clade].soft;
   if (life.size === RULE.adultSize) say(life, 'You are an adult: you can lay eggs now.');
@@ -35,7 +41,7 @@ export function grow(life: Life): boolean {
 }
 
 export function enforceCost(life: Life): number | null {
-  if (life.tree) return null;
+  if (life.tree || life.kit) return null;
   const bought = Object.values(life.enforced).reduce((total, rank) => total + rank, 0);
   return ENFORCE_COSTS[bought] ?? null;
 }
