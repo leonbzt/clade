@@ -5,7 +5,7 @@
   import Mutation from './Mutation.svelte';
   import './life.css';
 
-  let { life, purpose, complete }: { life: Life; purpose: string; complete: () => void } = $props();
+  let { life, purpose, complete, clock = false }: { life: Life; purpose: string; complete: () => void; clock?: boolean } = $props();
   let host: HTMLDivElement;
   let revision = $state(0);
   let error = $state('');
@@ -17,13 +17,13 @@
     return !devBusy && stage?.offering ? [...(life.mutationOffer ?? [])] : [];
   });
   onMount(() => {
-    stage = new LifeStage(life, complete, () => { revision++; devBusy = stage.busy; });
+    stage = new LifeStage(life, complete, () => { revision++; devBusy = stage.busy; }, () => clock);
     stage.init(host).catch((e) => { error = `The board could not open: ${e.message}`; });
     return () => stage.destroy();
   });
 </script>
 
-<div class="life-screen" class:tree-mode={!!life.tree} data-revision={revision}>
+<div class="life-screen" class:tree-mode={!!life.kit || !!life.tree} data-revision={revision}>
   <header class="life-head">
     <h1>{purpose}</h1>
     <div class="life-counts"><span id="turn"></span><span id="eggs"></span><span id="body"></span><span id="mutant" class="mutant"></span></div>

@@ -9,6 +9,8 @@ import * as T from '../../sim/tree';
 import { activeParts, mature } from '../../sim/life-body';
 import { preyBeside, verbNote } from '../../sim/verbs';
 import type { PartId, VerbId } from '../../sim/records';
+import type { KitId } from '../../data/kit';
+import { kitHud } from './kit-hud';
 
 import { FEEDBACK } from '../../view/shade';
 
@@ -56,14 +58,14 @@ export class Hud {
   private timers = new Set<ReturnType<typeof setTimeout>>();
 
   constructor(private on: { wait: () => void; grow: () => void; lay: () => void; verb: (v: VerbId) => void; enforce: (p: PartId) => void;
-    spend: (p: PartId) => void; point: () => void }) {
+    spend: (p: KitId) => void; point: () => void }) {
     $('wait').onclick = on.wait; $('grow').onclick = on.grow; $('lay').onclick = on.lay;
   }
   tick(dt: number) { this.food.tick(dt); this.oxy.tick(dt); this.hp.tick(dt); }
   destroy() { clearTimeout(this.bannerT); this.timers.forEach(clearTimeout); }
 
   refresh(l: L.Life, instant = false, busy = false) {
-    $('turn').textContent = `Turn ${l.turn}/${TURNS}`;
+    $('turn').textContent = l.kit ? `Turn ${l.turn}/${L.season(l)}` : `Turn ${l.turn}/${TURNS}`;
     this.setEggs(l.eggs);
     this.food.set(l.food, 0, instant); this.oxy.set(l.oxygen, L.oxygenMax(l), instant); this.hp.set(l.health, RULE.health, instant);
     $('body').textContent = `Size ${l.size} · ${L.stage(l)} · upkeep ${L.upkeep(l)}${l.soft ? ' · soft' : ''}`;
@@ -87,6 +89,7 @@ export class Hud {
       b.disabled = !play || !L.ready(l, v) || (v === 'dash' && l.dash);
       b.title = VERBS[v].does; b.onclick = () => this.on.verb(v); verbs.appendChild(b);
     }
+    if (l.kit) { kitHud(l, play, this.on); return; }
     $('enforceHeading').textContent = l.tree ? `Build · ${l.tree.points} points` : 'Enforce';
     const list = $('enforce'); list.replaceChildren();
     if (l.tree) {

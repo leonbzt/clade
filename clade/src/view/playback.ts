@@ -2,6 +2,7 @@
 // already ran; this only shows them in order.
 import { VERBS } from '../data/life';
 import { PARTS } from '../data/parts';
+import { nodeOf } from '../sim/kit';
 import type { VerbId } from '../sim/records';
 import * as L from '../sim/life';
 import { CYAN, GOLD, NODE_RAMP, RED, S, centre, dirAngle, dress, screen, turnTo } from './scene';
@@ -48,6 +49,11 @@ export async function play(evs: L.Ev[]) {
   for (const e of evs) {
     switch (e.k) {
       case 'move': if (e.grab) await lunge(e.dir); else await glide(e.path); break;
+      case 'work': {
+        const s = screen(centre(e.i)); hud.floater(s.x, s.y, `${e.work}/${e.of}`, GOLD);
+        await bounce(g); break;
+      }
+      case 'rung': hud.banner(nodeOf(e.id)!.rungs[e.rung - 1].name, GOLD); break;
       case 'eat': {
         floor.ghosts.delete(e.i); floor.redrawNodes();
         const c = centre(e.i), s = screen(c);

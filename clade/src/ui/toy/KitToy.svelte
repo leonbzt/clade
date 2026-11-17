@@ -17,6 +17,7 @@
   let life = $state.raw<Life | null>(null);
   let over = $state(false);
   let resetting = $state(false);
+  let clock = $state(false);
   const level = $derived(levelOf(progress.eggs));
   const branch = $derived(over && life ? branchOf(life) : null);
   const solved = $derived(board && bestOn(before, board.id) < board.goal
@@ -72,11 +73,12 @@
   {#if life && board}
     <header class="kit-header">
       <span>{board.name}</span>
+      <label><input id="kit-clock" type="checkbox" role="switch" bind:checked={clock} /> Clock</label>
       <button id="kit-restart" onclick={() => start(board!)}>Restart</button>
     </header>
     <div class="kit-life">
       {#key run}
-        <LifeScreen {life} purpose={board.name} complete={finish} />
+        <LifeScreen {life} {clock} purpose={board.name} complete={finish} />
       {/key}
     </div>
     {#if over}
