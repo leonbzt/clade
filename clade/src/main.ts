@@ -4,7 +4,9 @@ import { mount } from 'svelte';
 import { css, P } from './data/palette';
 import App from './ui/App.svelte';
 import BuildToy from './ui/toy/BuildToy.svelte';
+import KitToy from './ui/toy/KitToy.svelte';
 
 for (const [name, i] of Object.entries(P)) document.documentElement.style.setProperty(`--${name}`, css(i));
-mount(new URLSearchParams(location.search).get('toy') === 'build' ? BuildToy : App,
+const toy = new URLSearchParams(location.search).get('toy');
+mount(toy === 'kit' ? KitToy : toy === 'build' ? BuildToy : App,
   { target: document.getElementById('app')! });
