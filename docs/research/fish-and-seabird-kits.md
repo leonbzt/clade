@@ -60,7 +60,7 @@ and `back` are where traits must stand in for parts.
 
 ### Yellowfin tuna (*Thunnus albacares*), tunas
 - **front:** conical small teeth; ram ventilation (must swim to breathe).
-- **eyes:** large eyes; warm eyes and brain? (that is bluefin and swordfish; yellowfin is only partly warm, keep out).
+- **eyes:** large eyes. (Warm eyes and brain belong to swordfish and bluefin, not yellowfin; keep it off this card.)
 - **limbs:** pectorals fold into **grooves** for streamlining.
 - **back:** long yellow second dorsal and anal fins (sickle-shaped in big adults); **finlets** along back and belly.
 - **sides:** **red muscle** core with counter-current heat exchanger (rete mirabile) keeping the swimming muscle
