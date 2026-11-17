@@ -4,11 +4,9 @@
 // A Life without `kit` plays exactly as before.
 import { KIT, WORM_KIT, type Branch, type KitId, type KitNode, type KitProgress } from '../data/kit';
 import { PARTS } from '../data/parts';
-import { emit, reveal, say, type Life } from './life';
+import { at, dests, dist, eat, emit, lockOf, move, reveal, say, world, xy, type Life } from './life';
 import type { PartId } from './records';
 import { seeded } from './rng';
-
-const todo = (part: 'A' | 'B'): never => { throw new Error(`B0 round two, part ${part}: not built`); };
 
 /** `open`: a point grows it now. `grown`: a point climbs while `rung < cap`. `wait`: growable, but not on offer.
  *  `locked`: the line opens it at `level`. `shut`: `why`, for the player. */
@@ -158,9 +156,44 @@ export function afterLife(progress: KitProgress, board: string, eggs: number): K
 
 // ---- part B: work and tasks ----
 /** Work the food under you: one action, then the world's turn. False (and no turn) with nothing to work. */
-export function work(_life: Life): boolean { return todo('B'); }
+export function work(life: Life): boolean {
+  if (!life.kit || life.phase !== 'play' || !life.tiles[at(life.x, life.y)].node) return false;
+  life.events = []; life.moved = false;
+  eat(life, at(life.x, life.y));
+  world(life);
+  return true;
+}
 /** Set the tile to walk to or work; null drops the task. No turn. False off the board, on rock, outside kit mode or
  *  when the Life is over. */
-export function setTask(_life: Life, _i: number | null): boolean { return todo('B'); }
+export function setTask(life: Life, i: number | null): boolean {
+  if (!life.kit || life.phase !== 'play') return false;
+  if (i !== null && (!life.tiles[i] || life.tiles[i].t === 'rock')) return false;
+  life.kit.task = i;
+  return true;
+}
 /** One action toward the task. False (and no turn) when there is no task left to act on. */
-export function stepTask(_life: Life): boolean { return todo('B'); }
+export function stepTask(life: Life): boolean {
+  const kit = life.kit;
+  if (!kit || kit.task === null || life.phase !== 'play') return false;
+  const striking = () => life.pred?.state === 'strike';
+  if (striking()) { kit.task = null; return false; }
+  const i = kit.task, t = life.tiles[i], health = life.health, lost = life.lost.length;
+  if (at(life.x, life.y) === i) {
+    if (!t.node || lockOf(life, t.node)) { kit.task = null; return false; }
+    work(life);
+  } else {
+    const [x, y] = xy(i);
+    let nearest = dist(life.x, life.y, x, y), next: number | null = null;
+    for (const d of dests(life).values()) {
+      if (d.grab) continue;
+      const distance = dist(...xy(d.i), x, y);
+      if (distance < nearest) { nearest = distance; next = d.i; }
+    }
+    if (next === null) { kit.task = null; return false; }
+    move(life, next);
+  }
+  if ((at(life.x, life.y) === i && (!t.node || lockOf(life, t.node)))
+    || life.health < health || life.lost.length > lost || striking() || life.phase !== 'play')
+    kit.task = null;
+  return true;
+}

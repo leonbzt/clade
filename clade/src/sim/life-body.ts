@@ -5,9 +5,10 @@ import { ENFORCE_EFFECT } from '../data/economy';
 import { GUARDS, NODES, PLANS, RULE, STRUCK, type NodeId } from '../data/life';
 import { MUTATION } from '../data/mutation';
 import { PARTS, PLACES } from '../data/parts';
-import type { KitState } from '../data/kit';
+import { GATES, KIT, type KitState } from '../data/kit';
 import type { TreeState } from '../data/tree';
 import { partUpkeep, reach } from './fitness';
+import { kitStats } from './kit-stats';
 import type { Mutation } from './mutation';
 import type { Build, DefenceKind, Food, Part, PartId, Place, Ranks, VerbId } from './records';
 
@@ -52,17 +53,33 @@ export const has = (body: LifeBody, part: PartId) => activeParts(body).includes(
 export const newest = (body: LifeBody) => activePlaces(body).at(-1);
 export const verbs = (body: LifeBody): VerbId[] => activeParts(body).flatMap((part) => PARTS[part].verb ?? []);
 
-export const upkeep = (body: LifeBody, onMud = false) => has(body, 'deep') && onMud ? 0
-  : RULE.baseUpkeep + activeParts(body).reduce((total, part) => total + partUpkeep(part, body.ranks), 0);
-export const range = (body: LifeBody) => Math.min(RULE.maxRange, PLANS[body.build.clade].range
-  + (has(body, 'leg') ? 1 + enforcedBonus(body, 'leg') : 0) + enforcedBonus(body, 'flap'));
-export const tunnel = (body: LifeBody) => RULE.tunnel
-  + (has(body, 'chaetae') ? RULE.bristleTunnel + enforcedBonus(body, 'chaetae') : 0);
-export const sense = (body: LifeBody) => PLANS[body.build.clade].sense
-  + (has(body, 'eye') ? RULE.eyeSense + enforcedBonus(body, 'eye') : 0)
-  + (has(body, 'compound') ? RULE.compoundSense : 0);
-export const oxygenMax = (body: LifeBody) => RULE.oxygen + (has(body, 'gill') ? RULE.gillOxygen + enforcedBonus(body, 'gill') : 0);
+export const upkeep = (body: LifeBody, onMud = false) => {
+  if (body.kit) return RULE.baseUpkeep;
+  return has(body, 'deep') && onMud ? 0
+    : RULE.baseUpkeep + activeParts(body).reduce((total, part) => total + partUpkeep(part, body.ranks), 0);
+};
+export const range = (body: LifeBody) => {
+  if (body.kit) return Math.min(RULE.maxRange, kitStats(body.kit, body.lost).speed);
+  return Math.min(RULE.maxRange, PLANS[body.build.clade].range
+    + (has(body, 'leg') ? 1 + enforcedBonus(body, 'leg') : 0) + enforcedBonus(body, 'flap'));
+};
+export const tunnel = (body: LifeBody) => {
+  if (body.kit) return RULE.tunnel + kitStats(body.kit, body.lost).speed - 1;
+  return RULE.tunnel
+    + (has(body, 'chaetae') ? RULE.bristleTunnel + enforcedBonus(body, 'chaetae') : 0);
+};
+export const sense = (body: LifeBody) => {
+  if (body.kit) return kitStats(body.kit, body.lost).senses;
+  return PLANS[body.build.clade].sense
+    + (has(body, 'eye') ? RULE.eyeSense + enforcedBonus(body, 'eye') : 0)
+    + (has(body, 'compound') ? RULE.compoundSense : 0);
+};
+export const oxygenMax = (body: LifeBody) => {
+  if (body.kit) return RULE.oxygen;
+  return RULE.oxygen + (has(body, 'gill') ? RULE.gillOxygen + enforcedBonus(body, 'gill') : 0);
+};
 export function foodOf(body: LifeBody, node: NodeId): number {
+  if (body.kit) return NODES[node].food + kitStats(body.kit, body.lost).thrift;
   let food = NODES[node].food;
   for (const part of activeParts(body)) {
     if (part === 'gut') food += RULE.gutFood;
@@ -72,10 +89,19 @@ export function foodOf(body: LifeBody, node: NodeId): number {
   }
   return food;
 }
-export const clutch = (body: LifeBody, onMud = false) => (has(body, 'pouch') ? 2 * body.size + enforcedBonus(body, 'pouch') : body.size)
-  + (has(body, 'deep') && onMud ? 1 : 0);
-export const canGrab = (body: LifeBody) => has(body, 'claw') || has(body, 'proboscis') || has(body, 'hook');
-export const mature = (body: LifeBody) => body.size >= RULE.adultSize || has(body, 'progenesis');
+export const clutch = (body: LifeBody, onMud = false) => {
+  if (body.kit) return body.size + kitStats(body.kit, body.lost).brood;
+  return (has(body, 'pouch') ? 2 * body.size + enforcedBonus(body, 'pouch') : body.size)
+    + (has(body, 'deep') && onMud ? 1 : 0);
+};
+export const canGrab = (body: LifeBody) => {
+  if (body.kit) return false;
+  return has(body, 'claw') || has(body, 'proboscis') || has(body, 'hook');
+};
+export const mature = (body: LifeBody) => {
+  if (body.kit) return body.size >= RULE.adultSize;
+  return body.size >= RULE.adultSize || has(body, 'progenesis');
+};
 
 function enforcedBonus(body: LifeBody, part: PartId): number {
   const rank = body.enforced[part] ?? 0;
@@ -85,6 +111,10 @@ function enforcedBonus(body: LifeBody, part: PartId): number {
 const SEA_FOOD: Partial<Record<NodeId, Food>> = { mat: 'mats', buried: 'detritus' };
 
 export function lockOf(body: LifeBody, node: NodeId, substrate: Substrate, cracked = false): string | null {
+  if (body.kit) {
+    const g = GATES[node], have = kitStats(body.kit, body.lost)[g.stat] + (cracked ? KIT.crushBite : 0);
+    return have >= g.min ? null : `needs ${g.stat} ${g.min}, you have ${have}`;
+  }
   const food = SEA_FOOD[node];
   if (food) {
     const parts: Build['parts'] = {};
@@ -116,6 +146,15 @@ export const sideOf = (dir: number, facing: number): Side => SIDES[(dir - facing
 export function strikeOn(body: LifeBody, side: Side, ctx: StrikeCtx = {}): Hit {
   const safe = { part: null, tear: null, damage: 0, rest: RULE.restAfterStrike };
   const beaten = (kind?: DefenceKind) => !!kind && !!ctx.beats?.includes(kind);
+  if (body.kit) {
+    if ((ctx.buried || ctx.dug) && !beaten('burrow')) return { ...safe, kind: 'buried' };
+    if (ctx.braced && !beaten('armour')) return { ...safe, kind: 'blocked', rest: RULE.restAfterSpine };
+    if (kitStats(body.kit, body.lost).defence >= KIT.strike) return { ...safe, kind: 'blocked' };
+    const target = side === 'left' || side === 'right' ? 'flank' : side;
+    const active = activePlaces(body), struck = PLACES.filter((place) => active.includes(place) && STRUCK[place] === target);
+    const tear = struck.at(-1) ?? null;
+    return { kind: 'hit', part: tear ? body.build.parts[tear]! : null, tear, damage: ctx.soft ? 2 : 1, rest: RULE.restAfterStrike };
+  }
   const holds = (part: PartId) => !beaten(PARTS[part].defence);
   if ((ctx.buried || ctx.dug) && !beaten('burrow')) return { ...safe, kind: 'buried' };
   if (ctx.stayed && !beaten('armour') && (body.build.clade === 'trilobite' || has(body, 'enrol')))

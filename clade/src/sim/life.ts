@@ -1,10 +1,11 @@
 // Movement, feeding and the board's turn. Each action records events for playback.
-import { KIT, type KitId } from '../data/kit';
+import { GATES, KIT, type KitId } from '../data/kit';
 import { CELL, NODES, PLANS, RULE, STAGES, TURNS, type NodeId, type Terrain } from '../data/life';
 import { PARTS } from '../data/parts';
 import * as B from './life-body';
 import type { Hit as BodyHit, LifeBody, LifeBuild, Side } from './life-body';
 import type { Build, DefenceKind, Id, PartId, Place, Ranks, VerbId } from './records';
+import { kitStats } from './kit-stats';
 import { predatorStep } from './threat';
 
 import { DX, DY, at, dist, inB, xy, type Dir } from './grid';
@@ -99,6 +100,11 @@ export const known = (t: Tile) => t.t !== 'mud' || t.seen;
 
 /** A tile's food is gone; mats grow back after a while. */
 export function cleared(l: Life, t: Tile) {
+  if (l.kit) {
+    if (t.node === 'mat') t.grow = { node: t.node, at: l.turn + KIT.regrow };
+    t.node = null; t.work = undefined;
+    return;
+  }
   if (t.node === 'mat') t.grow = { node: t.node, at: l.turn + RULE.regrow };
   t.node = null;
 }
@@ -162,7 +168,7 @@ export function dests(l: Life): Map<number, Dest> {
   const worm = l.build.clade === 'worm', predAt = l.pred ? at(l.pred.x, l.pred.y) : -1;
   for (let d = 0 as Dir; d < 4; d = (d + 1) as Dir) {
     const path: number[] = [];
-    let x = l.x, y = l.y, budget = worm ? 1 : range(l);
+    let x = l.x, y = l.y, budget = l.kit ? range(l) : worm ? 1 : range(l);
     while (budget > 0) {
       x += DX[d]; y += DY[d];
       if (!inB(x, y)) break;
@@ -191,7 +197,16 @@ export function eat(l: Life, i: number, cracked = false, bonus = 0) {
   if (!t.node) return;
   const lock = lockOf(l, t.node, cracked);
   if (lock) { say(l, `${NODES[t.node].name} ${lock}.`); emit(l, { k: 'locked', i, node: t.node, why: lock }); return; }
-  const f = foodOf(l, t.node) + bonus;
+  if (l.kit) {
+    const g = GATES[t.node], have = kitStats(l.kit, l.lost)[g.stat] + (cracked ? KIT.crushBite : 0);
+    t.work = (t.work ?? 0) + have;
+    if (t.work < g.work) {
+      say(l, `${NODES[t.node].name}: ${t.work}/${g.work}.`);
+      emit(l, { k: 'work', i, node: t.node, work: t.work, of: g.work });
+      return;
+    }
+  }
+  const f = l.kit ? foodOf(l, t.node) : foodOf(l, t.node) + bonus;
   say(l, `${NODES[t.node].name}: +${f} food.`);
   l.food += f; l.ate[t.node] = (l.ate[t.node] ?? 0) + f;
   emit(l, { k: 'eat', i, node: t.node, gain: f, food: l.food });
@@ -256,8 +271,15 @@ function hurtOrShed(l: Life, why: string) {
 export function world(l: Life) {
   if (l.phase !== 'play') return;
   for (const v of Object.keys(l.recharge) as VerbId[]) if (l.recharge[v]! > 0) l.recharge[v]!--;
-  l.food -= upkeep(l);
-  if (l.food < 0) { l.food = 0; hurtOrShed(l, 'Starving'); }
+  if (l.kit) {
+    if (l.turn % KIT.upkeepEvery === 0) {
+      l.food -= upkeep(l);
+      if (l.food < 0) { l.food = 0; hurtOrShed(l, 'Starving'); }
+    }
+  } else {
+    l.food -= upkeep(l);
+    if (l.food < 0) { l.food = 0; hurtOrShed(l, 'Starving'); }
+  }
   emit(l, { k: 'upkeep', food: l.food });
   const ev = l.board.event;
   if (airless(l)) {
@@ -285,8 +307,8 @@ export function world(l: Life) {
     emit(l, { k: 'pred_arrive', at: at(l.pred.x, l.pred.y) });
   }
   if (ev?.name && l.turn === ev.from) { say(l, `${ev.name}: ${ev.text}.`); emit(l, { k: 'event', name: ev.name, text: ev.text }); }
-  if (l.turn > TURNS) {
-    l.turn = TURNS; l.phase = 'over'; l.cause = 'season';
+  if (l.turn > season(l)) {
+    l.turn = season(l); l.phase = 'over'; l.cause = 'season';
     say(l, 'The season ends.'); emit(l, { k: 'over', cause: 'season' });
   }
 }
