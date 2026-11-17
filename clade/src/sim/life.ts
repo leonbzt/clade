@@ -1,4 +1,5 @@
 // Movement, feeding and the board's turn. Each action records events for playback.
+import { KIT, type KitId } from '../data/kit';
 import { CELL, NODES, PLANS, RULE, STAGES, TURNS, type NodeId, type Terrain } from '../data/life';
 import { PARTS } from '../data/parts';
 import * as B from './life-body';
@@ -23,7 +24,8 @@ export interface Board {
   predatorAt: number | null; predator?: SeaHunter | null; rivals: Rival[]; event: BoardEvent | null;
 }
 
-export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number } }
+/** `work`: kit mode only, the work done on this tile's food so far. */
+export interface Tile { t: Terrain; node: NodeId | null; seen: boolean; grow?: { node: NodeId; at: number }; work?: number }
 export interface Predator {
   x: number; y: number; state: 'hunt' | 'strike' | 'rest'; rest: number; marks: number[]; dir: Dir; lx: number; ly: number;
 }
@@ -40,6 +42,8 @@ export type Ev =
   | { k: 'moult'; size: number; food: number }
   | { k: 'part'; place: Place; part: PartId }
   | { k: 'enforce'; part: PartId; rank: number; food: number }
+  | { k: 'work'; i: number; node: NodeId; work: number; of: number } // kit mode: worked, not yet eaten
+  | { k: 'rung'; id: KitId; rung: number } // kit mode: a node grown (rung 1) or climbed
   | { k: 'upkeep'; food: number }
   | { k: 'shed'; place: Place; part: PartId }
   | { k: 'hurt'; why: string; health: number }
@@ -89,6 +93,8 @@ export const verbs = (l: Life) => B.verbs(l);
 export const ready = (l: Life, v: VerbId) => l.phase === 'play' && verbs(l).includes(v) && !(l.recharge[v]! > 0);
 export const sense = (l: Life) => B.sense(l);
 export const stage = (l: Life) => STAGES[l.size - 1];
+/** The turns of this Life's season. */
+export const season = (l: Life) => (l.kit ? KIT.season : TURNS);
 export const known = (t: Tile) => t.t !== 'mud' || t.seen;
 
 /** A tile's food is gone; mats grow back after a while. */

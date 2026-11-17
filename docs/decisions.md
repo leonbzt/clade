@@ -978,3 +978,27 @@ From Claude's [review](design/m2-review-8-nov.md) and the [TierZoo concepts](des
   still a *proposal*); the one-sentence pitch; every number and node list; the B0 spec's rules.
 - **The advice given, for the record:** worth building as a hobby game on the condition that a stranger plays it
   within about ten sessions; the risk is the process and the scope, not the idea; one engine is the robust core.
+
+## 17 Nov (the B0 playtest session; notes in `playtests/b0-playtest.md`, research in `research/hooks-and-loops.md`)
+- **What matters most:** "visible progress towards are goal is number one important"; "feeling competent and in
+  control is important".
+- **What carries between Lives (P62):** "for p62 m sounds good"; "mixed persistance sounds good". The mix: a small
+  kit planned before the Life and kept, the rest of the body from offers at each moult. (The other options:
+  nothing carries; the full plan carries.)
+- **Offers:** "offers sound really good but have to be done well. there should maybe be also rarer or better
+  offers sometimes."
+- **The clock (P63):** "p63 i lean a tht sounds good with the improvements"; "steady beat is good i think". Turns
+  stay; food takes work; a tap sets a task that runs by itself on a steady beat; the toy gets a clock switch.
+  (The other options: a tick spike first; ticks now.)
+- **The next step (P64):** "p64 i lean a". B0 round two, the kit toy, before W2; W2 drops to two sessions.
+- **The budget:** "the skill trees i imagined could be more complex outside the game and scale of xp and the
+  proposed budget could then only use the unlocked things." *AI reading:* the cap (6 places, 12 parts, 3 rungs a
+  part, 2 trait ladders a clade) is on what a Life uses and replaces "9 nodes a clade"; the line's tree outside
+  the Life may be larger and grow with XP (W5).
+- **Solved:** "solved feeling could be good if you have the option to move on and having the solved feeling be
+  like a milestone or a completed chapter for a while."
+- **The three details:** "the three details sounds good" (the beat stops when the hunter marks a strike; more bite
+  works faster; a one-tap restart). "luck rolls in some places could also be good and give unexpected outcomes"
+  (one line in `ideas.md`).
+- **Not decided:** every node and number of the kit; whether defence is all or nothing; how stats are shown; the
+  branch-to-dial table for B1; a second clade's kit (P64 a named a draft: not written, see `status.md`).

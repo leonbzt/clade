@@ -3,8 +3,8 @@
 Open only what the task needs. Top to bottom is the order of authority: when two docs disagree, the higher one
 wins (and the code is the truth for what's built).
 
-**Current task:** M2 step 14, **B0 the build toy** ([spec](slices/b0-the-build-toy.md)). The road from here is in
-`ROADMAP.md` (re-cut 16 Nov). No design pass before the closed test: a new idea gets one line in `ideas.md`.
+**Current task:** M2 step 14, **B0 round two, the kit toy** ([spec](slices/b0r2-the-kit-toy.md)). The road from here is
+in `ROADMAP.md` (re-cut 16 Nov, round two added 17 Nov). No design pass before the closed test: a new idea gets one line in `ideas.md`.
 
 **Who reads what** (*decided 16 Nov*):
 - **A build session:** [status.md](status.md), its part of the step's spec, and the files that part names.

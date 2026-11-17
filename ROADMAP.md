@@ -45,8 +45,8 @@ lines gain key adaptations; variant hunting makes the map its own loop. **Adopte
 among them and resets); one Life engine; one progression map; the build reaches the board through the clutch; the
 look is split. Each step's cut is a proposal until its spec. **No design pass before the closed test.**
 
-14. [ ] **B0** ([spec](docs/slices/b0-the-build-toy.md)) The build toy, in today's Life: each moult is a point, you pick the node that grows, food buys more ("does a Life feel like making a build?") · 1
-15. [ ] **W2** The model swap in `clade/`: W1's module (`clade/src/model/`) wired into the sea and the screens; the Life on a kit with its tree; the old records, `fitness` and hunt deleted; the check back under 10 s ("does the game still play, with no names in the rules?") · 3
+14. [ ] **B0** ([spec](docs/slices/b0-the-build-toy.md)) The build toy, in today's Life: each moult is a point, you pick the node that grows, food buys more ("does a Life feel like making a build?") · 1 · played 17 Nov ([notes](docs/playtests/b0-playtest.md): "a good direction", solved after a few Lives). **Round two, the kit toy** ([spec](docs/slices/b0r2-the-kit-toy.md), *17 Nov*): stats, rung ladders, a planned kit plus offers, work on a steady beat, levels ("do they make a Life a build you want to try again?") · 2–3
+15. [ ] **W2** The model swap in `clade/`: W1's module (`clade/src/model/`) wired into the sea and the screens; the Life on the kit from B0 round two; the old records, `fitness`, hunt and tree mode deleted; the check back under 10 s ("does the game still play, with no names in the rules?") · 2 (*17 Nov*; before: 3)
 16. [ ] **B1** The bridges: the genome sets the kit (a mutation is a node grown at birth), the clutch is a variant along the branch you built, line levels open nodes ("does the build show on the board, and the board in the Life?") · 1
 17. [ ] **N5** The board in the game (W1's page becomes it): jobs as a grid; the one next goal; Take, Beat, Hold, Adopt; the compare card; cards · 2
 18. [ ] **LC** The laws' cut for the lines you can play: each of their dials flips somewhere (direction §11.4) · 1
@@ -79,4 +79,4 @@ About 10 sessions to the closed test, about 20 to the public alpha.
 | After | Generated habitats, more body kinds, playable algae and plants, life ashore, phones | Set later |
 
 ## Budgets
-8 h catch-up about 5 s, up to 10 (5 Nov; the garden step is whatever fits that, about 30 ms a generation) · tests < 10 s · 3 dials a line, 6 mutations and 9 nodes a clade, 12 effect kinds and 8 verbs in the game (*proposal 16 Nov*). The toy's budgets (stocks, natives) are a start, not limits; the algae layer's 3–5 kinds may pass the 4 stocks (your pick, 6 Nov).
+8 h catch-up about 5 s, up to 10 (5 Nov; the garden step is whatever fits that, about 30 ms a generation) · tests < 10 s · 3 dials a line, 6 mutations a clade, 12 effect kinds and 8 verbs in the game (*proposal 16 Nov*) · a Life's kit: at most 6 places, 12 parts, 3 rungs a part and 2 traits a clade (*decided 17 Nov*; before: 9 nodes). The toy's budgets (stocks, natives) are a start, not limits; the algae layer's 3–5 kinds may pass the 4 stocks (your pick, 6 Nov).

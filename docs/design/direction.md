@@ -76,6 +76,18 @@ the user says so. A build session reads its step spec, not this page; the spec c
 - **The road is re-cut** (§8), the build toy first. **No design pass before the closed test:** a new idea gets one
   line in `ideas.md` until strangers have played.
 
+**Eighth round, 17 Nov (after the B0 play; your words are in `decisions.md`, the evidence in
+`research/hooks-and-loops.md`):**
+- **What the Life must give first:** visible progress toward a goal, then feeling competent and in control.
+- **The mix:** a small kit of parts is planned before the Life and kept between Lives; the rest of the body comes
+  from offers at each moult, a rare one sometimes. This refines the seventh round's "spends among the open nodes".
+- **Turns stay, with work on a steady beat:** a food or a threat asks for a stat; food takes several actions; a tap
+  sets a task that runs by itself and stops when the hunter marks a strike.
+- **Solved is a chapter:** a board has a goal, and reaching it is a milestone you can move on from.
+- **The budget is for what a Life uses** (6 places, 12 parts, 3 rungs a part, 2 trait ladders a clade); the line's
+  tree outside the Life may be larger and grow with XP.
+- **B0 round two, the kit toy, comes before W2** (§8).
+
 ## 2. Findings: why the frame had to move
 *Measured in `clade/src` on 15 Nov.*
 - **The sim's world is written as types, not data:** 5 clades, 2 foods, 3 roles, 3 defence kinds and 27 named parts
@@ -156,6 +168,10 @@ data on the clade and a rule in the Life, not a new system.
   one mechanic. A node is the clade's real feature under its own name, with one effect from a shared list and
   sometimes a verb; it is the old part record plus what it needs. A line's levels open nodes, and verb slots two
   and three. A Life spends points among the open nodes: a moult gives one, food buys more at a rising price.
+  *17 Nov (decided: the mix, stats as gates, the budget; the rows and numbers a proposal):* a node adds stats and
+  nothing else, so no rule reads a node's name. A part sits on a place and has up to three rungs; a trait has no
+  place and is a ladder; an ability is the verb a part carries. A kit is at most 6 places, 12 parts and 2 traits.
+  A Life plans one to three parts and is offered the rest. The contract is `clade/src/data/kit.ts`.
 - **The two bridges (*decided 16 Nov*):** *down*, the population's dials set the Life's starting numbers and a
   mutation is a node grown at birth, so a variant you hunted changes your next Life; *up*, the eggs, and the clutch
   as a variant one step along the branch you spent most in (P49, 9 Nov, made a rule you can see).
@@ -240,7 +256,8 @@ The Life is proven ("the basics seem fun and as imagined", 5 Nov) and is ported,
 | --- | --- | --- | --- |
 | 12, W1 | Done: the N4 fix has no play of its own (W2 replaces its rules); the wide toy is played | | |
 | **B0** | The build toy, in today's Life: each moult is a point, you pick the node that grows, food buys more | does a Life feel like making a build? | 1 |
-| **W2** | The model swap in `clade/`: W1's module wired into the sea and the screens; the Life on a kit with its tree; the old records, fitness and hunt deleted; the check under 10 s | does the game still play, with no names in the rules? | 3 |
+| **B0 round two** | The kit toy (*17 Nov*): stats, rung ladders, a planned kit plus offers, work on a beat, levels | do they make a Life a build you want to try again? | 2–3 |
+| **W2** | The model swap in `clade/`: W1's module wired into the sea and the screens; the Life on the kit from B0 round two; the old records, fitness, hunt and tree mode deleted; the check under 10 s | does the game still play, with no names in the rules? | 2 |
 | **B1** | The bridges: the genome sets the kit, the clutch is a variant along your branch, line levels open nodes | does the build show on the board, and the board in the Life? | 1 |
 | **N5** | The board in the game (W1's page becomes it): jobs as a grid, the one next goal, Take, Beat, Hold, Adopt, the compare card, cards | do I know what is mine and what is next? | 2 |
 | **LC** | The laws' cut for the lines you can play (§11.4) | does a dial step show on the board? | 1 |
@@ -278,7 +295,7 @@ About 10 sessions to the closed test and about 20 to the public alpha. Researche
 | The slot board, the quiet sea, letters against the meta, one active line, ladder then tree, Adopt (12 Nov) | **Kept** |
 | N6 The line, N7 The other lines; P53 | **Replaced** by W5, the roster and the sign-change test. P52 (the waste loop) is parked |
 | The look contract, the body grammar (build brief §5; maths pass Q3, Q4) | **Kept**; one plan per clade |
-| Budgets: 4 stocks, 6 stats, 10 genes | 4 stocks *per habitat*, 6 stats, **3 dials per line and at most 6 mutations per clade**; 9 nodes a clade, 12 effect kinds and 8 verbs in the game (all *proposal*) |
+| Budgets: 4 stocks, 6 stats, 10 genes | 4 stocks *per habitat*, 6 stats, **3 dials per line and at most 6 mutations per clade**; 12 effect kinds and 8 verbs in the game (*proposal*); a Life's kit at most 6 places, 12 parts, 3 rungs a part and 2 traits a clade (*decided 17 Nov*; before: 9 nodes) |
 | M2's "done when" (6–10 lineages that look and play differently; a line reaches the shore) | Still fits; the shore is in from the start |
 
 **Still in force where this page is silent:** the build brief (`whole-game-build.md`) §3 the ground's layers, §4 the

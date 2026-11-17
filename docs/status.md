@@ -1,32 +1,30 @@
 # Status
 
-- **Milestone:** M2. Step 14, **B0 the build toy**: built, waits for your play. Part A tree mode (`987312c`), part B
-  the toy page (`9070dc3`); both written by Codex, diffs reviewed, within Touch. Look run (390 px, no page errors):
-  `.shots/b0-start.png`, `b0-life.png`, `b0-grown.png` (Build · points, node list scrolls in the controls, grown
-  node gold), `b0-card.png` ("A feeder's Life", Again and Boards both work).
-  Branch `b0-the-build-toy`, cut from `main` after the merge of `n4-who-eats-whom`; both local, not pushed.
-- **Done (16 Nov, architect: the whole-road session, three rounds):**
-  - `docs/design/direction.md`: a seventh round in §1; §3, §4, §5, §7 (the progression map), §8 (the plan), §9 and
-    §11 current. `ROADMAP.md` re-cut from step 12. `docs/README.md`, `CLAUDE.md`: who reads what, the new budget line.
-  - The spec `docs/slices/b0-the-build-toy.md`, and its contract as code: `clade/src/data/tree.ts` (the worm's nine
-    nodes, the numbers), `data/toy-boards.ts` (three boards), `sim/tree.ts` (signatures; the bodies throw),
-    `LifeBody.tree?` in `sim/life-body.ts`, `clade/tests/tree.test.ts` (2 tests pass, 12 skipped until part A).
-  - Archived to `_archive/2026-11-16/`: 21 design docs with the four briefs, `docs/planning/`, the specs and
-    playtests from before N0. The roadmap's old links point there.
-  - `proposals.md`: none open. `ideas.md`: two decided ideas cut, eight parked.
-- **Decided (16 Nov, yours):** the build lives in the Life (line levels open nodes; a Life earns points by growing,
-  spends them, resets); one Life engine; the progression map, the meta as voice; a tree's branches are the dials and
-  the clutch is a variant along the branch you built; the look split (L1a before the closed test); the road with the
-  build toy first; the archive, the merge, one branch a step; no design pass before the closed test.
-- **Not decided** (*proposal*): every number and node list; the budget of 9 nodes, 12 effect kinds, 8 verbs; the
-  doors table (auto-run, partner links, other kinds of Life); the one-sentence pitch.
-- **Checks:** `npm run check` passes in 13.2 s (budget 10 s; the fix is a W2 part). Not run: `check:game`.
-- **Not verified:** nobody has played a whole Life in tree mode; the look run only spent the birth point, grew once
-  and ended the season. The three boards and the prices were never played. Which of the 43 flat dials belong to lines you can play is not measured (step LC).
-- **Next:** you play `npm run dev`, then `/clade/?toy=build` (all three boards; the four things to look for are in
-  the spec's "Done when") and write `docs/playtests/b0-the-build-toy.md`; W2's spec waits for that.
-- **Open:**
-  - Rivals and Hold in the wide toy: you did not say whether they read; it waits for N5's spec. (The N4 fix play: none.)
-  - The spec's three questions (the tree is shallow; nothing was played; branch to dial for B1).
-  - Said wrongly in round 2: "a bar of three verbs" is not in B0. A worm has four verbs at most, and the cap needs
-    slot levels, so it waits for B1 or W5 (`ideas.md`).
+- **Milestone:** M2. Step 14, **B0 round two, the kit toy** ([spec](slices/b0r2-the-kit-toy.md)): specced, the
+  contract is code, nothing is built. Round one (the build toy) was played 17 Nov (`playtests/b0-playtest.md`).
+  Branch `b0-the-build-toy`, local, not pushed. **Nothing of this session is committed.**
+- **Done (17 Nov, architect):**
+  - Measured why round one solved: nine nodes make at most 12 full bodies for 3 fixed boards. The sim reads a
+    part's name in 30 places, 20 in `sim/life-body.ts`. `docs/research/hooks-and-loops.md`: what pulls, with sources.
+  - The spec, four builder parts (A the kit, B the Life reads stats, C the toy page, D the Life's side).
+  - The contract: `clade/src/data/kit.ts` (the worm's 12 parts and 2 traits with rungs, the gates, every number),
+    `data/kit-boards.ts`, `sim/kit.ts` and `sim/kit-stats.ts` (signatures; the bodies throw), `LifeBody.kit?`,
+    `Tile.work`, the events `work` and `rung`, `season(l)`; `tests/kit.test.ts` (3 pass, 14 skipped until part A)
+    and `tests/kit-rules.test.ts` (17 skipped until part B).
+  - Logged: `decisions.md` (17 Nov), `direction.md` (eighth round, §5, §8, §9), `ROADMAP.md` (step 14 round two,
+    W2 at 2 sessions, the kit budget), `tastes.md`, `ideas.md` (nine lines), `proposals.md` (none open).
+- **Decided (17 Nov, yours):** the mix (a small planned kit that carries, offers for the rest, a rare one
+  sometimes); turns with work on a steady beat and a clock switch; the kit toy before W2; the budget is for what a
+  Life uses (6 places, 12 parts, 3 rungs, 2 traits a clade); solved as a chapter; visible progress first.
+- **Not decided** (*proposal*): every node, name and number of the kit; defence as all or nothing; small stat
+  numbers; the branch-to-dial table for B1; 12 effect kinds and 8 verbs; the doors table; the pitch.
+- **Checks:** `npm run check` passes in 13.6 s (budget 10 s; the fix is W2's). Not run: `check:game`.
+- **Not verified:** the 31 skipped tests were never run (no bodies); no number was played (a rough sum: 10 to 15
+  eggs for a bare first Life, several times that for a good build, so goals and levels may be far off); whether
+  one step's playback fits the 600 ms beat (part D reports it); the kit's names are from memory, not researched.
+- **Not done:** the draft of a second clade's kit that P64 a named. It needs new part records and sourced names;
+  it is one line in `ideas.md`, for a researcher batch after round two is played.
+- **Next:** `/build b0r2 A`, then B, C, D in order (A and B may share a session). Then your play; five things to
+  look for are in the spec's "Done when".
+- **Open:** rivals and Hold in the wide toy (you did not say whether they read; N5's spec). The verb bar's cap of
+  three waits for B1 or W5 (`ideas.md`). Round one's page `?toy=build` stays until W2.

@@ -255,3 +255,14 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - (AI) One event kind as a "patch" (a food stock shifts, a wave of colonists); eras. After the alpha (P58).
 - (AI) Retro Diffusion for still pictures that are nobody's build (a habitat picture on a card, the itch banner). Not before the alpha (P60).
 - *The user:* "the tree beeing the genome sounds very good as well but probably too complicated" (nodes in the laws, the dials gone). Parked; judge again after the closed test.
+
+## From the B0 playtest session (17 Nov)
+- (AI) Hunters of different force, named on the board, so defence is a ladder and not one threshold. After round two is played.
+- *The user:* "luck rolls in some places could also be good and give unexpected outcomes" (a work action that counts double, an offer that upgrades). After round two is played.
+- (AI) Harder steps for a board you solved (a stronger hunter, less food) and a daily board on a fixed seed. After the closed test.
+- (AI) A part with several homes (it can sit on two places). Round two gives each part one place. W2 or later.
+- *The user:* deeper trait ladders with side upgrades (venom: damage, cytotoxic, haemorrhagic, tissue-dissolving), "no priority". W5.
+- (AI) The line's tree outside the Life, larger than a Life's kit and growing with XP (your budget call, 17 Nov). W5.
+- (AI) Stats shown ×10 ("bite 30") if small numbers read flat. After round two is played.
+- (AI) A drawn creature on the body screen (port `game/`'s equip stage, 61 lines). W2.
+- *The user:* author parts and skills for more species early "to get a better feeling for the strategy". A second clade's kit as a researcher batch: after round two is played, before W2's spec.

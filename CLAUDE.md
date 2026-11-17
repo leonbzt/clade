@@ -4,7 +4,7 @@ An idle / incremental evolution game. Web: TypeScript, PixiJS (the board), Svelt
 lay eggs. The eggs join a living garden of habitats in the shallow sea around a volcanic island, where your species climbs a tier list per niche. What the
 garden becomes is the next board you walk on.
 
-**Start here: `docs/status.md` and its active step spec. `docs/design/direction.md` (15 Nov, seventh round 16 Nov) is
+**Start here: `docs/status.md` and its active step spec. `docs/design/direction.md` (15 Nov, eighth round 17 Nov) is
 the one design page that wins: a present-day island of real species, lineages as real clades with dials, movers
 playable, and each Life makes a build from its clade's tree. Its §9 names the sections of the two older docs still in
 force. `ROADMAP.md` when needed. No design pass before the closed test (*decided 16 Nov*): a new idea gets one line in
@@ -45,7 +45,7 @@ They were written for one toy. If one blocks a better idea, say so and propose c
 5. **One slice = one question.** Write a spec from the template before code. One or two sessions each. Play it
    before calling it done.
 6. **Budgets** (in the roadmap): 8 h catch-up about 5 s (up to 10), `npm run check` < 10 s; at most 4
-   stocks per habitat, 6 stats, 3 dials per line and 6 mutations per clade (*proposal 15 Nov*; before: 10 genes per kingdom); 9 nodes per clade's tree, 12 effect kinds and 8 verbs in the game (*proposal 16 Nov*). Adding one means removing one, or the user's call. No long headless sim
+   stocks per habitat, 6 stats, 3 dials per line and 6 mutations per clade (*proposal 15 Nov*; before: 10 genes per kingdom); 12 effect kinds and 8 verbs in the game (*proposal 16 Nov*); a Life's kit at most 6 places, 12 parts, 3 rungs a part and 2 traits per clade (*decided 17 Nov*). Adding one means removing one, or the user's call. No long headless sim
    runs: model tests run hours of garden in under a second.
 7. **Code:** files under ~400 lines; data separate from logic. Balance by feel, a simple curve model and the dev
    panel; no balance bot.

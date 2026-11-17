@@ -179,6 +179,16 @@ has to fit.
   about performance. but the way new species a founded and variants popped up was very cool."
 - **The project (1–2 Nov):** AI iteration made it convoluted; long sessions from sim runs and tests; the vision
   drifted; parts were half-baked.
+- **The build toy (17 Nov):** "a good direction" and "still fun", but "by now i already know the best build for each
+  map so there isn't really any decision left". It should be "more of an unlockable ladder, where better or more
+  specialized parts or traits are deeper in the tree"; "traits as well as parts as well as abilities". "The most fun
+  version of all the lifes was still one of the earliest versions when i had limited slots" and "could see them in
+  the equipment screen". "Stat blocked foods instead of on/off switches"; "more stats on the items". "Forcing me to
+  switch my strategy was fun." After a bad play "i just want to restart".
+- **Hooks (17 Nov):** "visible progress towards are goal is number one important"; "feeling competent and in control
+  is important". Offers "have to be done well", with "rarer or better offers sometimes". A steady beat is good.
+  Solved is fine as "a milestone or a completed chapter" with "the option to move on". "Luck rolls in some places
+  could also be good."
 
 ## Audience and production
 - **A hobby with about 100 nerds on Discord;** about 3 h a day (4 Nov). Hand-writing 20 mutations feels a bit like a chore.

@@ -28,3 +28,6 @@ P56 (where the build lives: C, both, split by job), P57 (the Life: one engine) a
 meta as voice) were decided 16 Nov in the whole-road session: see decisions.md.
 P59 (the build on the board: branches are dials), P60 (the look: L1 split) and P61 (the road, the build toy first;
 the workshop) were decided 16 Nov in the same session: see decisions.md. None open.
+
+P62 (what carries between Lives: the mix), P63 (the clock: turns with work on a steady beat) and P64 (the next step:
+B0 round two, the kit toy; the budget) were decided 17 Nov after the B0 play: see decisions.md. None open.
