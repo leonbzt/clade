@@ -265,4 +265,4 @@ v1's file: `_v1/docs/ideas.md`. Marks: **(you)** your idea · **(AI)** AI idea.
 - (AI) The line's tree outside the Life, larger than a Life's kit and growing with XP (your budget call, 17 Nov). W5.
 - (AI) Stats shown ×10 ("bite 30") if small numbers read flat. After round two is played.
 - (AI) A drawn creature on the body screen (port `game/`'s equip stage, 61 lines). W2.
-- *The user:* author parts and skills for more species early "to get a better feeling for the strategy". A second clade's kit as a researcher batch: after round two is played, before W2's spec.
+- *The user:* author parts and skills for more species early "to get a better feeling for the strategy". A second clade's kit as a researcher batch: after round two is played, before W2's spec. Sources gathered 17 Nov, no draft: `research/periwinkle-kit-sources.md`, `research/roster-kit-material.md`, `research/new-species-candidates.md`.
