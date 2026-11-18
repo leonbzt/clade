@@ -31,7 +31,7 @@ wins (and the code is the truth for what's built).
 
 **Reference** (open when a spec needs it):
 - `research/`: sourced facts from the `researcher` agent (reference games, real evolution, the tree of life,
-  progression games, masses, licences). `research/species/`: batches of real species rows for the roster (from W3).
+  progression games, masses, licences). `research/species/`: batches of real species rows for the roster (from W3). `game-psychology.md`: motivation research applied to Clade.
 
 **Archived 16 Nov** in `_archive/2026-11-16/` (off limits unless you ask): every other design doc (the reviews, the
 four briefs, the whole-game pass, the full version, the body and world reviews), `planning/`, and the specs and
